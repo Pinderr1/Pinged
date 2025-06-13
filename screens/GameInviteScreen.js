@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
-  KeyboardAvoidingView,
-  Platform,
   Dimensions,
   ActivityIndicator
 } from 'react-native';
@@ -125,10 +123,6 @@ const GameInviteScreen = ({ route, navigation }) => {
     >
       <Header showLogoOnly />
       <SafeKeyboardView style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ flex: 1 }}
-        >
           <Text
             style={{
               fontSize: 18,
@@ -180,7 +174,6 @@ const GameInviteScreen = ({ route, navigation }) => {
             }}
             removeClippedSubviews={false}
           />
-        </KeyboardAvoidingView>
       </SafeKeyboardView>
     </LinearGradient>
   );

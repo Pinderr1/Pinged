@@ -1,17 +1,14 @@
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import React from 'react';
-import { KeyboardAvoidingView, View, Platform } from 'react-native';
 
-export default function SafeKeyboardView({ children, style, ...props }) {
-  if (Platform.OS === 'ios') {
-    return (
-      <KeyboardAvoidingView behavior="padding" style={style} {...props}>
-        {children}
-      </KeyboardAvoidingView>
-    );
-  }
+export default function SafeKeyboardView({ children, style }) {
   return (
-    <View style={style} {...props}>
+    <KeyboardAvoidingView
+      style={style}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+    >
       {children}
-    </View>
+    </KeyboardAvoidingView>
   );
 }

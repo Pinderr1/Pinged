@@ -5,14 +5,13 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   View,
 } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import styles from '../styles';
 
 export default function SignUpScreen({ navigation }) {
@@ -36,8 +35,7 @@ export default function SignUpScreen({ navigation }) {
 
   return (
     <GradientBackground>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      <SafeKeyboardView
         style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 30 }}
       >
         <Text style={[styles.logoText, { color: '#fff', marginBottom: 30 }]}>Create Account</Text>
@@ -67,7 +65,7 @@ export default function SignUpScreen({ navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 20 }}>
           <Text style={{ color: '#fff' }}>← Back to Login</Text>
         </TouchableOpacity>
-      </KeyboardAvoidingView>
+      </SafeKeyboardView>
     </GradientBackground>
   );
 }
