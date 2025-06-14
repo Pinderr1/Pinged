@@ -71,22 +71,6 @@ export default function ChatScreen({ route }) {
     }
   };
 
-  const handleAcceptInvite = () => {
-    if (pendingInvite) {
-      const title = games[pendingInvite.gameId].meta.title;
-      acceptGameInvite(user.id);
-      sendMessage(user.id, `Game starting: ${title}`, 'system');
-      setActiveSection('game');
-    }
-  };
-
-  const handleDeclineInvite = () => {
-    if (pendingInvite) {
-      clearGameInvite(user.id);
-      sendMessage(user.id, 'Invite declined', 'system');
-    }
-  };
-
   const handleGameEnd = (result) => {
     if (!result) return;
     if (result.winner !== undefined) {
@@ -100,6 +84,18 @@ export default function ChatScreen({ route }) {
     }
     setActiveGame(user.id, null);
     setActiveSection('chat');
+  };
+
+  const handleGameSelect = (gameId) => {
+    const title = games[gameId].meta.title;
+    if (activeGameId && activeGameId !== gameId) {
+      sendMessage(user.id, `Switched game to ${title}`, 'system');
+    } else if (!activeGameId) {
+      sendMessage(user.id, `Game started: ${title}`, 'system');
+    }
+    setActiveGame(user.id, gameId);
+    setActiveSection('game');
+    setShowGameModal(false);
   };
 
   const renderMessage = ({ item }) => (
@@ -124,23 +120,6 @@ export default function ChatScreen({ route }) {
     </View>
   );
 
-  const handleGameSelect = (gameId) => {
-    const title = games[gameId].meta.title;
-    if (activeGameId && activeGameId !== gameId) {
-      setActiveGame(user.id, gameId);
-      sendMessage(user.id, `Switched game to ${title}`, 'system');
-      setActiveSection('game');
-    }
-
-    if (!activeGameId) {
-      setActiveGame(user.id, gameId);
-      sendMessage(user.id, `Game started: ${title}`, 'system');
-      setActiveSection('game');
-    }
-
-    setShowGameModal(false);
-  };
-
   const renderGameOption = ({ item }) => (
     <TouchableOpacity
       style={chatStyles.gameOption}
@@ -155,27 +134,6 @@ export default function ChatScreen({ route }) {
       <Text style={[styles.logoText, { marginBottom: 10 }]}>
         Chat with {user.name}
       </Text>
-      {pendingInvite && pendingInvite.from === 'them' && (
-        <View style={chatStyles.inviteBanner}>
-          <Text style={chatStyles.inviteText}>
-            {user.name} invited you to play {games[pendingInvite.gameId].meta.title}
-          </Text>
-          <View style={chatStyles.inviteActions}>
-            <TouchableOpacity
-              style={[chatStyles.playButton, { marginRight: 8 }]}
-              onPress={handleAcceptInvite}
-            >
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Accept</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={chatStyles.declineButton}
-              onPress={handleDeclineInvite}
-            >
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Decline</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
       <View style={{ flex: 1 }}>
         <FlatList
           data={messages}
@@ -235,7 +193,7 @@ export default function ChatScreen({ route }) {
       <SelectedGameClient
         matchID={user.id}
         playerID="0"
-        boardProps={{ onGameEnd: handleGameEnd }}
+        onGameEnd={handleGameEnd}
       />
     </View>
   ) : null;
@@ -416,26 +374,5 @@ const chatStyles = StyleSheet.create({
   gameOptionText: {
     fontSize: 16,
     color: '#333',
-  },
-  inviteBanner: {
-    backgroundColor: '#333',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  inviteText: {
-    color: '#fff',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  inviteActions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  declineButton: {
-    backgroundColor: '#b00020',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
   },
 });
