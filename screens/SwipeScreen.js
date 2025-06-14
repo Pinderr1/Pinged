@@ -220,7 +220,7 @@ const SwipeScreen = () => {
   };
   return (
     <LinearGradient
-      colors={darkMode ? ['#121212', '#1e1e1e'] : ['#FF75B5', '#FF9A75']}
+      colors={darkMode ? ['#2c2c2c', '#1b1b1b'] : ['#FF75B5', '#FF9A75']}
       style={[styles.swipeScreen, { paddingTop: 10 }]}
     >
       <Header showLogoOnly />

@@ -18,7 +18,7 @@ const MatchesScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <LinearGradient colors={darkMode ? ['#121212', '#1e1e1e'] : ['#fff', '#ffe6f0']} style={{ flex: 1 }}>
+      <LinearGradient colors={darkMode ? ['#2c2c2c', '#1b1b1b'] : ['#fff', '#ffe6f0']} style={{ flex: 1 }}>
         <Header />
         <Text style={styles.title}>Your Matches</Text>
         <FlatList
