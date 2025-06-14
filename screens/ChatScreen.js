@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Dimensions,
   FlatList,
-  ScrollView,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -22,7 +21,6 @@ import { useTheme } from '../contexts/ThemeContext';
 export default function ChatScreen({ route }) {
   const { user } = route.params;
   const {
-    matches,
     getMessages,
     sendMessage,
     setActiveGame,
@@ -32,24 +30,21 @@ export default function ChatScreen({ route }) {
     acceptGameInvite,
     getPendingInvite,
   } = useChats();
+
   const { darkMode } = useTheme();
   const isWideScreen = Dimensions.get('window').width > 700;
   const [showGameModal, setShowGameModal] = useState(false);
-  const [selectedGameId, setSelectedGameId] = useState(getActiveGame(user.id));
   const [activeSection, setActiveSection] = useState('chat');
   const [text, setText] = useState('');
-  const [pendingInvite, setPendingInvite] = useState(getPendingInvite(user.id));
-
-  const rawMessages = getMessages(user.id) || [];
   const [messages, setMessages] = useState([]);
 
+  const activeGameId = getActiveGame(user.id);
+  const pendingInvite = getPendingInvite(user.id);
+  const rawMessages = getMessages(user.id) || [];
+
   useEffect(() => {
-    setSelectedGameId(getActiveGame(user.id));
-    setPendingInvite(getPendingInvite(user.id));
-    if (getActiveGame(user.id)) {
-      setActiveSection('game');
-    }
-  }, [matches]);
+    if (activeGameId) setActiveSection('game');
+  }, [activeGameId]);
 
   useEffect(() => {
     const converted = rawMessages.map((msg, index) => ({
@@ -72,8 +67,6 @@ export default function ChatScreen({ route }) {
       const title = games[pendingInvite.gameId].meta.title;
       acceptGameInvite(user.id);
       sendMessage(user.id, `Game starting: ${title}`, 'system');
-      setSelectedGameId(pendingInvite.gameId);
-      setPendingInvite(null);
       setActiveSection('game');
     }
   };
@@ -82,8 +75,34 @@ export default function ChatScreen({ route }) {
     if (pendingInvite) {
       clearGameInvite(user.id);
       sendMessage(user.id, 'Invite declined', 'system');
-      setPendingInvite(null);
     }
+  };
+
+  const handleGameEnd = (result) => {
+    if (!result) return;
+    if (result.winner !== undefined) {
+      const winnerName = result.winner === '0' ? 'You' : user.name;
+      sendMessage(user.id, `Game over. ${winnerName} won!`, 'system');
+    } else if (result.draw) {
+      sendMessage(user.id, 'Game over. Draw.', 'system');
+    }
+    setActiveGame(user.id, null);
+    setActiveSection('chat');
+  };
+
+  const handleGameSelect = (gameId) => {
+    const title = games[gameId].meta.title;
+    if (activeGameId) {
+      if (activeGameId !== gameId) {
+        setActiveGame(user.id, gameId);
+        sendMessage(user.id, `Switched game to ${title}`, 'system');
+        setActiveSection('game');
+      }
+    } else {
+      sendGameInvite(user.id, gameId, 'you');
+      sendMessage(user.id, `Invited ${user.name} to play ${title}`, 'system');
+    }
+    setShowGameModal(false);
   };
 
   const renderMessage = ({ item }) => (
@@ -107,22 +126,6 @@ export default function ChatScreen({ route }) {
       <Text style={chatStyles.messageText}>{item.text}</Text>
     </View>
   );
-
-  const handleGameSelect = (gameId) => {
-    const title = games[gameId].meta.title;
-    if (selectedGameId) {
-      if (selectedGameId !== gameId) {
-        setActiveGame(user.id, gameId);
-        sendMessage(user.id, `Switched game to ${title}`, 'system');
-        setSelectedGameId(gameId);
-        setActiveSection('game');
-      }
-    } else {
-      sendGameInvite(user.id, gameId, 'you');
-      sendMessage(user.id, `Invited ${user.name} to play ${title}`, 'system');
-    }
-    setShowGameModal(false);
-  };
 
   const renderGameOption = ({ item }) => (
     <TouchableOpacity
@@ -173,7 +176,7 @@ export default function ChatScreen({ route }) {
         keyboardVerticalOffset={60}
         style={chatStyles.inputBar}
       >
-        {selectedGameId ? (
+        {activeGameId ? (
           <TouchableOpacity
             style={chatStyles.changeButton}
             onPress={() => setShowGameModal(true)}
@@ -202,7 +205,7 @@ export default function ChatScreen({ route }) {
     </View>
   );
 
-  const SelectedGameClient = selectedGameId ? games[selectedGameId].Client : null;
+  const SelectedGameClient = activeGameId ? games[activeGameId]?.Client : null;
   const gameSection = SelectedGameClient ? (
     <View
       style={{
@@ -215,7 +218,11 @@ export default function ChatScreen({ route }) {
         alignItems: 'center',
       }}
     >
-      <SelectedGameClient />
+      <SelectedGameClient
+        matchID={user.id}
+        playerID="0"
+        boardProps={{ onGameEnd: handleGameEnd }}
+      />
     </View>
   ) : null;
 
