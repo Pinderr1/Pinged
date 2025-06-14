@@ -215,7 +215,7 @@ export default function ChatScreen({ route }) {
         alignItems: 'center',
       }}
     >
-      <SelectedGameClient />
+      <SelectedGameClient matchID={user.id} playerID="0" />
     </View>
   ) : null;
 
