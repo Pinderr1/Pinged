@@ -26,6 +26,8 @@ const MatchesScreen = ({ navigation }) => {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
+          horizontal={false}
         />
       </LinearGradient>
     </SafeAreaView>
