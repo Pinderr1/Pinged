@@ -1,24 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Dimensions,
-  FlatList,
-  ScrollView,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  Modal,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Header from '../components/Header';
-import styles from '../styles';
-import { games, gameList } from '../games';
-import { useChats } from '../contexts/ChatContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { useNotification } from '../contexts/NotificationContext';
+// SAME IMPORTS AS BEFORE
 
 export default function ChatScreen({ route }) {
   const { user } = route.params;
@@ -42,7 +22,6 @@ export default function ChatScreen({ route }) {
 
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
-
   const rawMessages = getMessages(user.id) || [];
   const [messages, setMessages] = useState([]);
 
@@ -53,7 +32,7 @@ export default function ChatScreen({ route }) {
       setActiveSection('game');
     }
     prevGameIdRef.current = activeGameId;
-  }, [activeGameId, showNotification]);
+  }, [activeGameId]);
 
   useEffect(() => {
     const converted = rawMessages.map((msg, index) => ({
@@ -74,11 +53,8 @@ export default function ChatScreen({ route }) {
   const handleGameEnd = (result) => {
     if (!result) return;
     if (result.winner !== undefined) {
-      if (result.winner === '0') {
-        sendMessage(user.id, 'Game over. You win!', 'system');
-      } else {
-        sendMessage(user.id, `Game over. ${user.name} wins.`, 'system');
-      }
+      const msg = result.winner === '0' ? 'You win!' : `${user.name} wins.`;
+      sendMessage(user.id, `Game over. ${msg}`, 'system');
     } else if (result.draw) {
       sendMessage(user.id, 'Game over. Draw.', 'system');
     }
@@ -148,21 +124,14 @@ export default function ChatScreen({ route }) {
         keyboardVerticalOffset={60}
         style={chatStyles.inputBar}
       >
-        {activeGameId ? (
-          <TouchableOpacity
-            style={chatStyles.changeButton}
-            onPress={() => setShowGameModal(true)}
-          >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Change Game</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={chatStyles.playButton}
-            onPress={() => setShowGameModal(true)}
-          >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Play</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={activeGameId ? chatStyles.changeButton : chatStyles.playButton}
+          onPress={() => setShowGameModal(true)}
+        >
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+            {activeGameId ? 'Change Game' : 'Play'}
+          </Text>
+        </TouchableOpacity>
         <TextInput
           placeholder="Type a message..."
           style={chatStyles.textInput}
@@ -256,12 +225,8 @@ export default function ChatScreen({ route }) {
       ) : (
         <View style={{ flex: 1, paddingTop: 60 }}>
           {toggleBar}
-          <View style={{ display: activeSection === 'game' ? 'flex' : 'none', flex: 1 }}>
-            {gameSection}
-          </View>
-          <View style={{ display: activeSection === 'chat' ? 'flex' : 'none', flex: 1 }}>
-            {chatSection}
-          </View>
+          {activeSection === 'game' && <View style={{ flex: 1 }}>{gameSection}</View>}
+          {activeSection === 'chat' && <View style={{ flex: 1 }}>{chatSection}</View>}
         </View>
       )}
     </LinearGradient>

@@ -17,6 +17,7 @@ import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
+import { useUser } from '../contexts/UserContext';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
@@ -94,6 +95,8 @@ const SwipeScreen = () => {
   const { darkMode } = useTheme();
   const navigation = useNavigation();
   const { showNotification } = useNotification();
+  const { user } = useUser();
+  const isPremiumUser = !!user?.isPremium;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likesUsed, setLikesUsed] = useState(0);
@@ -333,7 +336,10 @@ const SwipeScreen = () => {
               icon: 'star',
               bg: '#ffca28',
               onPress: () => {
-                if (!isPremiumUser) return setPremiumModalVisible(true);
+                if (!isPremiumUser) {
+                  ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
+                  return setPremiumModalVisible(true);
+                }
                 handleSwipe('right', true);
               }
             },
@@ -351,12 +357,24 @@ const SwipeScreen = () => {
             {
               icon: 'refresh',
               bg: '#facc15',
-              onPress: () => setPremiumModalVisible(true)
+              onPress: () => {
+                if (!isPremiumUser) {
+                  ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
+                  return setPremiumModalVisible(true);
+                }
+                // Rewind action placeholder
+              }
             },
             {
               icon: 'flash',
               bg: '#c084fc',
-              onPress: () => setBoostActive(true)
+              onPress: () => {
+                if (!isPremiumUser) {
+                  ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
+                  return setPremiumModalVisible(true);
+                }
+                setBoostActive(true);
+              }
             }
           ].map((btn, i) => {
             const IconSet = btn.lib === 'MaterialCommunityIcons' ? MaterialCommunityIcons : Ionicons;

@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import styles from '../styles';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 
 const SettingsScreen = ({ navigation }) => {
   const { darkMode, toggleTheme } = useTheme();
-  const [isPremium, setIsPremium] = useState(false); // Replace later with backend logic
+  const { user } = useUser();
+  const isPremium = !!user?.isPremium;
 
   const handleEditProfile = () => navigation.navigate('EditProfile');
   const handleLogout = () => navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
