@@ -13,6 +13,7 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
+import { useDev } from '../contexts/DevContext';
 import styles from '../styles';
 
 const MATCHES = [
@@ -26,30 +27,45 @@ const MATCHES = [
   { id: '8', name: 'Ava', photo: require('../assets/user4.jpg'), online: false }
 ];
 
+const devUser = {
+  id: '__devUser',
+  name: 'Dev Tester',
+  photo: require('../assets/user1.jpg'),
+  online: true,
+};
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH / 2 - 24;
 
 const GameInviteScreen = ({ route, navigation }) => {
   const game = route?.params?.game ?? { title: 'a game' };
   const { darkMode } = useTheme();
+  const { devMode } = useDev();
   const [search, setSearch] = useState('');
   const [invited, setInvited] = useState({});
   const [loadingId, setLoadingId] = useState(null);
+  const matches = devMode ? [devUser, ...MATCHES] : MATCHES;
 
   const handleInvite = (user) => {
     setInvited((prev) => ({ ...prev, [user.id]: true }));
     setLoadingId(user.id);
 
-    setTimeout(() => {
+    const toLobby = () =>
       navigation.navigate('GameLobby', {
         game: { title: game.title },
         opponent: { name: user.name, photo: user.photo },
-        status: 'waiting'
+        status: devMode ? 'ready' : 'waiting'
       });
-    }, 2000);
+
+    if (devMode) {
+      console.log('Auto-accepting invite');
+      toLobby();
+    } else {
+      setTimeout(toLobby, 2000);
+    }
   };
 
-  const filtered = MATCHES.filter((u) =>
+  const filtered = matches.filter((u) =>
     u.name.toLowerCase().includes(search.toLowerCase())
   );
 

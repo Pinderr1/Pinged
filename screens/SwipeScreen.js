@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,8 @@ import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
+import { useDev } from '../contexts/DevContext';
+import { useChats } from '../contexts/ChatContext';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
@@ -43,11 +45,21 @@ const allUsers = [
   }
 ];
 
+const devUser = {
+  id: '__devUser',
+  name: 'Dev Tester',
+  age: 99,
+  bio: 'Testing swipes',
+  images: [require('../assets/user1.jpg')],
+};
+
 const SwipeScreen = () => {
   const { darkMode } = useTheme();
   const navigation = useNavigation();
   const { showNotification } = useNotification();
   const { user: currentUser } = useUser();
+  const { devMode } = useDev();
+  const { addMatch } = useChats();
   const isPremiumUser = !!currentUser?.isPremium;
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -57,6 +69,7 @@ const SwipeScreen = () => {
   const [imageIndex, setImageIndex] = useState(0);
   const [history, setHistory] = useState([]);
   const [boostActive, setBoostActive] = useState(false);
+
   const pan = useRef(new Animated.ValueXY()).current;
   const scaleRefs = useRef(Array(6).fill(null).map(() => new Animated.Value(1))).current;
   const likeOpacity = pan.x.interpolate({
@@ -69,20 +82,39 @@ const SwipeScreen = () => {
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
-  const displayUser = allUsers[currentIndex] ?? null;
 
+  const users = devMode ? [devUser, ...allUsers] : allUsers;
+  const displayUser = users[currentIndex] ?? null;
+
+  useEffect(() => {
+    setCurrentIndex(0);
+    setHistory([]);
+  }, [devMode]);
   const handleSwipe = (direction) => {
     if (!displayUser) return;
 
     if (direction === 'right') {
-      if (likesUsed >= MAX_LIKES && !isPremiumUser) {
+      if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
         Alert.alert('Upgrade to Premium', 'You’ve hit your daily like limit.');
         return;
       }
+
       setLikesUsed((prev) => prev + 1);
       setMatchedUser(displayUser);
       setShowFireworks(true);
       showNotification(`You liked ${displayUser.name}`);
+      addMatch({
+        id: displayUser.id,
+        name: displayUser.name,
+        age: displayUser.age,
+        image: displayUser.images[0],
+        messages: [],
+        matchedAt: 'now',
+        activeGameId: null,
+        pendingInvite: null,
+      });
+
+      if (devMode) console.log('Auto-matching enabled');
       setTimeout(() => setShowFireworks(false), 2000);
     }
 
@@ -93,7 +125,7 @@ const SwipeScreen = () => {
   };
 
   const rewind = () => {
-    if (!isPremiumUser) {
+    if (!isPremiumUser && !devMode) {
       ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
       return;
     }
@@ -106,7 +138,7 @@ const SwipeScreen = () => {
   };
 
   const handleSuperLike = () => {
-    if (!isPremiumUser) {
+    if (!isPremiumUser && !devMode) {
       ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
       return;
     }
@@ -115,7 +147,7 @@ const SwipeScreen = () => {
   };
 
   const handleBoost = () => {
-    if (!isPremiumUser) {
+    if (!isPremiumUser && !devMode) {
       ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
       return;
     }
@@ -159,7 +191,6 @@ const SwipeScreen = () => {
   };
 
   const gradientColors = darkMode ? ['#1a1a1a', '#0f0f0f'] : ['#FF75B5', '#FF9A75'];
-
   return (
     <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
       <Header />
@@ -246,7 +277,6 @@ const SwipeScreen = () => {
             </Animated.View>
           ))}
         </View>
-
         {matchedUser && (
           <Modal visible={showFireworks} transparent animationType="fade">
             <View style={styles.fireworksOverlay}>
