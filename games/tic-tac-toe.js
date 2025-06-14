@@ -1,7 +1,18 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Client } from 'boardgame.io/react';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+
+const lines = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6],
+];
 
 const TicTacToeGame = {
   setup: () => ({ cells: Array(9).fill(null) }),
@@ -12,29 +23,58 @@ const TicTacToeGame = {
       G.cells[id] = ctx.currentPlayer;
     },
   },
+  endIf: ({ G, ctx }) => {
+    for (let i = 0; i < lines.length; i++) {
+      const [a, b, c] = lines[i];
+      if (
+        G.cells[a] !== null &&
+        G.cells[a] === G.cells[b] &&
+        G.cells[a] === G.cells[c]
+      ) {
+        return { winner: G.cells[a] };
+      }
+    }
+    if (G.cells.every((c) => c !== null)) {
+      return { draw: true };
+    }
+  },
 };
 
-const TicTacToeBoard = ({ G, ctx, moves }) => (
-  <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: 150 }}>
-    {G.cells.map((cell, idx) => (
-      <TouchableOpacity
-        key={idx}
-        onPress={() => moves.clickCell(idx)}
-        style={{
-          width: 50,
-          height: 50,
-          borderWidth: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Text style={{ fontSize: 24 }}>
-          {cell === '0' ? 'X' : cell === '1' ? 'O' : ''}
-        </Text>
-      </TouchableOpacity>
-    ))}
-  </View>
-);
+const TicTacToeBoard = ({ G, ctx, moves, onGameEnd }) => {
+  const endedRef = useRef(false);
+
+  useEffect(() => {
+    if (ctx.gameover && !endedRef.current) {
+      endedRef.current = true;
+      onGameEnd && onGameEnd(ctx.gameover);
+    }
+  }, [ctx.gameover, onGameEnd]);
+
+  const disabled = !!ctx.gameover;
+
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: 150 }}>
+      {G.cells.map((cell, idx) => (
+        <TouchableOpacity
+          key={idx}
+          onPress={() => moves.clickCell(idx)}
+          disabled={disabled}
+          style={{
+            width: 50,
+            height: 50,
+            borderWidth: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text style={{ fontSize: 24 }}>
+            {cell === '0' ? 'X' : cell === '1' ? 'O' : ''}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
 
 const TicTacToeClient = Client({
   game: TicTacToeGame,

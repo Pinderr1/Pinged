@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ChatContext = createContext();
 
@@ -14,6 +15,8 @@ const initialMatches = [
       { id: 'm3', text: 'Sounds good!', sender: 'them' },
     ],
     matchedAt: '2 days ago',
+    activeGameId: null,
+    pendingInvite: null,
   },
   {
     id: '2',
@@ -24,6 +27,8 @@ const initialMatches = [
       { id: 'm1', text: 'Ready for a rematch?', sender: 'them' },
     ],
     matchedAt: '1 day ago',
+    activeGameId: null,
+    pendingInvite: null,
   },
   {
     id: '3',
@@ -34,13 +39,36 @@ const initialMatches = [
       { id: 'm1', text: 'BRB grabbing coffee ☕', sender: 'them' },
     ],
     matchedAt: '5 hours ago',
+    activeGameId: null,
+    pendingInvite: null,
   },
 ];
 
 export const ChatProvider = ({ children }) => {
   const [matches, setMatches] = useState(initialMatches);
 
-  const sendMessage = (matchId, text) => {
+  const STORAGE_KEY = 'chatMatches';
+
+  useEffect(() => {
+    AsyncStorage.getItem(STORAGE_KEY).then((data) => {
+      if (data) {
+        try {
+          const parsed = JSON.parse(data);
+          if (Array.isArray(parsed)) {
+            setMatches(parsed);
+          }
+        } catch (e) {
+          console.warn('Failed to parse matches', e);
+        }
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(matches));
+  }, [matches]);
+
+  const sendMessage = (matchId, text, sender = 'you') => {
     setMatches((prev) =>
       prev.map((m) =>
         m.id === matchId
@@ -48,13 +76,54 @@ export const ChatProvider = ({ children }) => {
               ...m,
               messages: [
                 ...m.messages,
-                { id: Date.now().toString(), text, sender: 'you' },
+                { id: Date.now().toString(), text, sender },
               ],
             }
           : m
       )
     );
   };
+
+  const setActiveGame = (matchId, gameId) => {
+    setMatches((prev) =>
+      prev.map((m) =>
+        m.id === matchId ? { ...m, activeGameId: gameId, pendingInvite: null } : m
+      )
+    );
+  };
+
+  const sendGameInvite = (matchId, gameId, from = 'you') => {
+    setMatches((prev) =>
+      prev.map((m) =>
+        m.id === matchId ? { ...m, pendingInvite: { gameId, from } } : m
+      )
+    );
+  };
+
+  const clearGameInvite = (matchId) => {
+    setMatches((prev) =>
+      prev.map((m) => (m.id === matchId ? { ...m, pendingInvite: null } : m))
+    );
+  };
+
+  const acceptGameInvite = (matchId) => {
+    const invite = matches.find((m) => m.id === matchId)?.pendingInvite;
+    if (invite) {
+      setMatches((prev) =>
+        prev.map((m) =>
+          m.id === matchId
+            ? { ...m, activeGameId: invite.gameId, pendingInvite: null }
+            : m
+        )
+      );
+    }
+  };
+
+  const getPendingInvite = (matchId) =>
+    matches.find((m) => m.id === matchId)?.pendingInvite || null;
+
+  const getActiveGame = (matchId) =>
+    matches.find((m) => m.id === matchId)?.activeGameId || null;
 
   const removeMatch = (matchId) =>
     setMatches((prev) => prev.filter((m) => m.id !== matchId));
@@ -63,7 +132,20 @@ export const ChatProvider = ({ children }) => {
     matches.find((m) => m.id === matchId)?.messages || [];
 
   return (
-    <ChatContext.Provider value={{ matches, sendMessage, getMessages, removeMatch }}>
+    <ChatContext.Provider
+      value={{
+        matches,
+        sendMessage,
+        getMessages,
+        removeMatch,
+        setActiveGame,
+        getActiveGame,
+        sendGameInvite,
+        clearGameInvite,
+        acceptGameInvite,
+        getPendingInvite,
+      }}
+    >
       {children}
     </ChatContext.Provider>
   );
