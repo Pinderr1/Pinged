@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -17,24 +17,48 @@ import styles from '../styles';
 import { games, gameList } from '../games';
 import { useChats } from '../contexts/ChatContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useNotification } from '../contexts/NotificationContext';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params;
-  const { getMessages, sendMessage, setActiveGame, getActiveGame } = useChats();
+  const {
+    getMessages,
+    sendMessage,
+    setActiveGame,
+    getActiveGame,
+    sendGameInvite,
+    clearGameInvite,
+    acceptGameInvite,
+    getPendingInvite,
+  } = useChats();
 
   const { darkMode } = useTheme();
+  const { showNotification } = useNotification();
+  const prevGameIdRef = useRef(null);
   const isWideScreen = Dimensions.get('window').width > 700;
   const [showGameModal, setShowGameModal] = useState(false);
   const [activeSection, setActiveSection] = useState('chat');
   const [text, setText] = useState('');
-  const [messages, setMessages] = useState([]);
 
   const activeGameId = getActiveGame(user.id);
+  const pendingInvite = getPendingInvite(user.id);
+
   const rawMessages = getMessages(user.id) || [];
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    if (activeGameId) setActiveSection('game');
+    if (activeGameId) {
+      setActiveSection('game');
+    }
   }, [activeGameId]);
+
+  useEffect(() => {
+    if (activeGameId && activeGameId !== prevGameIdRef.current) {
+      const title = games[activeGameId].meta.title;
+      showNotification(`Game started: ${title}`);
+    }
+    prevGameIdRef.current = activeGameId;
+  }, [activeGameId, showNotification]);
 
   useEffect(() => {
     const converted = rawMessages.map((msg, index) => ({
@@ -52,13 +76,14 @@ export default function ChatScreen({ route }) {
     }
   };
 
-  // Invite flow will be implemented later
-
   const handleGameEnd = (result) => {
     if (!result) return;
     if (result.winner !== undefined) {
-      const winnerName = result.winner === '0' ? 'You' : user.name;
-      sendMessage(user.id, `Game over. ${winnerName} won!`, 'system');
+      if (result.winner === '0') {
+        sendMessage(user.id, 'Game over. You win!', 'system');
+      } else {
+        sendMessage(user.id, `Game over. ${user.name} wins.`, 'system');
+      }
     } else if (result.draw) {
       sendMessage(user.id, 'Game over. Draw.', 'system');
     }
@@ -68,7 +93,7 @@ export default function ChatScreen({ route }) {
 
   const handleGameSelect = (gameId) => {
     const title = games[gameId].meta.title;
-     if (activeGameId && activeGameId !== gameId) {
+    if (activeGameId && activeGameId !== gameId) {
       sendMessage(user.id, `Switched game to ${title}`, 'system');
     } else if (!activeGameId) {
       sendMessage(user.id, `Game starting: ${title}`, 'system');
@@ -85,16 +110,16 @@ export default function ChatScreen({ route }) {
         item.sender === 'you'
           ? chatStyles.messageRight
           : item.sender === 'system'
-            ? chatStyles.messageSystem
-            : chatStyles.messageLeft,
+          ? chatStyles.messageSystem
+          : chatStyles.messageLeft,
       ]}
     >
       <Text style={chatStyles.sender}>
         {item.sender === 'you'
           ? 'You'
           : item.sender === 'system'
-            ? 'System'
-            : user.name}
+          ? 'System'
+          : user.name}
       </Text>
       <Text style={chatStyles.messageText}>{item.text}</Text>
     </View>
@@ -157,7 +182,7 @@ export default function ChatScreen({ route }) {
     </View>
   );
 
-  const SelectedGameClient = activeGameId ? games[activeGameId]?.Client : null;
+  const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
   const gameSection = SelectedGameClient ? (
     <View
       style={{
@@ -351,5 +376,4 @@ const chatStyles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  
 });

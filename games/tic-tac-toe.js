@@ -52,26 +52,57 @@ const TicTacToeBoard = ({ G, ctx, moves, onGameEnd }) => {
 
   const disabled = !!ctx.gameover;
 
+  let resultText = '';
+  if (ctx.gameover) {
+    if (ctx.gameover.draw) {
+      resultText = 'Draw';
+    } else if (ctx.gameover.winner === '0') {
+      resultText = 'You win!';
+    } else {
+      resultText = 'You lose!';
+    }
+  }
+
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: 150 }}>
-      {G.cells.map((cell, idx) => (
-        <TouchableOpacity
-          key={idx}
-          onPress={() => moves.clickCell(idx)}
-          disabled={disabled}
-          style={{
-            width: 50,
-            height: 50,
-            borderWidth: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Text style={{ fontSize: 24 }}>
-            {cell === '0' ? 'X' : cell === '1' ? 'O' : ''}
-          </Text>
-        </TouchableOpacity>
-      ))}
+    <View style={{ alignItems: 'center' }}>
+      {!ctx.gameover && (
+        <Text style={{ marginBottom: 12, fontWeight: 'bold' }}>
+          {ctx.currentPlayer === '0' ? 'Your turn' : 'Waiting for opponent'}
+        </Text>
+      )}
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          width: 240,
+          height: 240,
+        }}
+      >
+        {G.cells.map((cell, idx) => (
+          <TouchableOpacity
+            key={idx}
+            onPress={() => moves.clickCell(idx)}
+            disabled={disabled}
+            style={{
+              width: 80,
+              height: 80,
+              borderWidth: 1,
+              borderColor: '#333',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={{ fontSize: 32, fontWeight: 'bold' }}>
+              {cell === '0' ? 'X' : cell === '1' ? 'O' : ''}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      {ctx.gameover && (
+        <Text style={{ marginTop: 12, fontWeight: 'bold', fontSize: 18 }}>
+          {resultText}
+        </Text>
+      )}
     </View>
   );
 };
