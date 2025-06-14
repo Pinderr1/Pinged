@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   Modal,
   Alert,
   StyleSheet,
-  ToastAndroid
+  ToastAndroid,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
@@ -19,8 +19,8 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import { Audio } from 'expo-av';
 import LottieView from 'lottie-react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_HEIGHT = 520;
@@ -55,7 +55,20 @@ const SwipeScreen = () => {
   const [matchedUser, setMatchedUser] = useState(null);
   const [showFireworks, setShowFireworks] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
+  const [history, setHistory] = useState([]);
+  const [boostActive, setBoostActive] = useState(false);
   const pan = useRef(new Animated.ValueXY()).current;
+  const scaleRefs = useRef(Array(6).fill(null).map(() => new Animated.Value(1))).current;
+  const likeOpacity = pan.x.interpolate({
+    inputRange: [0, 150],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+  const nopeOpacity = pan.x.interpolate({
+    inputRange: [-150, 0],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
   const displayUser = allUsers[currentIndex] ?? null;
 
   const handleSwipe = (direction) => {
@@ -73,9 +86,42 @@ const SwipeScreen = () => {
       setTimeout(() => setShowFireworks(false), 2000);
     }
 
+    setHistory((h) => [...h, currentIndex]);
     pan.setValue({ x: 0, y: 0 });
     setImageIndex(0);
     setCurrentIndex((i) => i + 1);
+  };
+
+  const rewind = () => {
+    if (!isPremiumUser) {
+      ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
+      return;
+    }
+    if (history.length === 0) return;
+    const prevIndex = history[history.length - 1];
+    setHistory((h) => h.slice(0, -1));
+    setCurrentIndex(prevIndex);
+    setImageIndex(0);
+    pan.setValue({ x: 0, y: 0 });
+  };
+
+  const handleSuperLike = () => {
+    if (!isPremiumUser) {
+      ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
+      return;
+    }
+    handleSwipe('right');
+    ToastAndroid.show('🌟 Superliked!', ToastAndroid.SHORT);
+  };
+
+  const handleBoost = () => {
+    if (!isPremiumUser) {
+      ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
+      return;
+    }
+    setBoostActive(true);
+    ToastAndroid.show('Boost activated!', ToastAndroid.SHORT);
+    setTimeout(() => setBoostActive(false), 5000);
   };
 
   const panResponder = useRef(
@@ -112,7 +158,7 @@ const SwipeScreen = () => {
     navigation.navigate('GameInvite', { user: displayUser });
   };
 
-  const gradientColors = darkMode ? ['#1a1a1a', '#0f0f0f'] : ['#ffe3ec', '#fff'];
+  const gradientColors = darkMode ? ['#1a1a1a', '#0f0f0f'] : ['#FF75B5', '#FF9A75'];
 
   return (
     <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
@@ -137,6 +183,12 @@ const SwipeScreen = () => {
               styles.card,
             ]}
           >
+            <Animated.View style={[styles.badge, styles.likeBadge, { opacity: likeOpacity }]}>
+              <Text style={[styles.badgeText, styles.likeText]}>LIKE</Text>
+            </Animated.View>
+            <Animated.View style={[styles.badge, styles.nopeBadge, { opacity: nopeOpacity }]}>
+              <Text style={[styles.badgeText, styles.nopeText]}>NOPE</Text>
+            </Animated.View>
             <TouchableOpacity
               onPress={() =>
                 setImageIndex((i) => (i + 1) % displayUser.images.length)
@@ -159,24 +211,40 @@ const SwipeScreen = () => {
         )}
 
         <View style={styles.buttonRow}>
-          <TouchableOpacity
-            onPress={() => handleSwipe('left')}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>❌</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleGameInvite}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>🎮</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleSwipe('right')}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>❤️</Text>
-          </TouchableOpacity>
+          {[
+            { icon: 'refresh', color: '#facc15', action: rewind },
+            { icon: 'close', color: '#f87171', action: () => handleSwipe('left') },
+            { icon: 'star', color: '#60a5fa', action: handleSuperLike },
+            { icon: 'game-controller', color: '#a78bfa', action: handleGameInvite },
+            { icon: 'heart', color: '#ff75b5', action: () => handleSwipe('right') },
+            { icon: 'flash', color: '#d81b60', action: handleBoost },
+          ].map((btn, i) => (
+            <Animated.View key={i} style={{ transform: [{ scale: scaleRefs[i] }] }}>
+              <TouchableOpacity
+                onPressIn={() =>
+                  Animated.spring(scaleRefs[i], {
+                    toValue: 0.9,
+                    useNativeDriver: true,
+                  }).start()
+                }
+                onPressOut={() =>
+                  Animated.spring(scaleRefs[i], {
+                    toValue: 1,
+                    friction: 3,
+                    useNativeDriver: true,
+                  }).start()
+                }
+                onPress={btn.action}
+                style={[styles.circleButton, { backgroundColor: btn.color }]}
+              >
+                {btn.icon === 'game-controller' ? (
+                  <MaterialCommunityIcons name="gamepad-variant" size={28} color="#fff" />
+                ) : (
+                  <Ionicons name={btn.icon} size={28} color="#fff" />
+                )}
+              </TouchableOpacity>
+            </Animated.View>
+          ))}
         </View>
 
         {matchedUser && (
@@ -236,18 +304,47 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
     marginTop: 20,
   },
-  button: {
-    backgroundColor: '#ff75b5',
-    marginHorizontal: 10,
-    padding: 14,
-    borderRadius: 40,
-    elevation: 3,
+  circleButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
   },
-  buttonText: {
-    fontSize: 20,
+  badge: {
+    position: 'absolute',
+    top: 40,
+    padding: 10,
+    borderWidth: 4,
+    borderRadius: 8,
+  },
+  likeBadge: {
+    left: 20,
+    borderColor: '#4ade80',
+    transform: [{ rotate: '-30deg' }],
+    backgroundColor: 'rgba(74, 222, 128, 0.2)',
+  },
+  nopeBadge: {
+    right: 20,
+    borderColor: '#f87171',
+    transform: [{ rotate: '30deg' }],
+    backgroundColor: 'rgba(248, 113, 113, 0.2)',
+  },
+  badgeText: {
+    fontSize: 32,
+    fontWeight: 'bold',
     color: '#fff',
+  },
+  likeText: {
+    color: '#4ade80',
+  },
+  nopeText: {
+    color: '#f87171',
   },
   fireworksOverlay: {
     flex: 1,
