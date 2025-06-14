@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
   FlatList,
+  ScrollView,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -17,6 +18,7 @@ import styles from '../styles';
 import { games, gameList } from '../games';
 import { useChats } from '../contexts/ChatContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useNotification } from '../contexts/NotificationContext';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params;
@@ -30,21 +32,33 @@ export default function ChatScreen({ route }) {
     acceptGameInvite,
     getPendingInvite,
   } = useChats();
-
   const { darkMode } = useTheme();
+  const { showNotification } = useNotification();
+  const prevGameIdRef = useRef(null);
   const isWideScreen = Dimensions.get('window').width > 700;
   const [showGameModal, setShowGameModal] = useState(false);
   const [activeSection, setActiveSection] = useState('chat');
   const [text, setText] = useState('');
-  const [messages, setMessages] = useState([]);
 
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
+
   const rawMessages = getMessages(user.id) || [];
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    if (activeGameId) setActiveSection('game');
+    if (activeGameId) {
+      setActiveSection('game');
+    }
   }, [activeGameId]);
+
+  useEffect(() => {
+    if (activeGameId && activeGameId !== prevGameIdRef.current) {
+      const title = games[activeGameId].meta.title;
+      showNotification(`Game started: ${title}`);
+    }
+    prevGameIdRef.current = activeGameId;
+  }, [activeGameId, showNotification]);
 
   useEffect(() => {
     const converted = rawMessages.map((msg, index) => ({
@@ -81,28 +95,16 @@ export default function ChatScreen({ route }) {
   const handleGameEnd = (result) => {
     if (!result) return;
     if (result.winner !== undefined) {
-      const winnerName = result.winner === '0' ? 'You' : user.name;
-      sendMessage(user.id, `Game over. ${winnerName} won!`, 'system');
+      if (result.winner === '0') {
+        sendMessage(user.id, 'Game over. You win!', 'system');
+      } else {
+        sendMessage(user.id, `Game over. ${user.name} wins.`, 'system');
+      }
     } else if (result.draw) {
       sendMessage(user.id, 'Game over. Draw.', 'system');
     }
     setActiveGame(user.id, null);
     setActiveSection('chat');
-  };
-
-  const handleGameSelect = (gameId) => {
-    const title = games[gameId].meta.title;
-    if (activeGameId) {
-      if (activeGameId !== gameId) {
-        setActiveGame(user.id, gameId);
-        sendMessage(user.id, `Switched game to ${title}`, 'system');
-        setActiveSection('game');
-      }
-    } else {
-      sendGameInvite(user.id, gameId, 'you');
-      sendMessage(user.id, `Invited ${user.name} to play ${title}`, 'system');
-    }
-    setShowGameModal(false);
   };
 
   const renderMessage = ({ item }) => (
@@ -126,6 +128,23 @@ export default function ChatScreen({ route }) {
       <Text style={chatStyles.messageText}>{item.text}</Text>
     </View>
   );
+
+  const handleGameSelect = (gameId) => {
+    const title = games[gameId].meta.title;
+    if (activeGameId && activeGameId !== gameId) {
+      setActiveGame(user.id, gameId);
+      sendMessage(user.id, `Switched game to ${title}`, 'system');
+      setActiveSection('game');
+    }
+
+    if (!activeGameId) {
+      setActiveGame(user.id, gameId);
+      sendMessage(user.id, `Game started: ${title}`, 'system');
+      setActiveSection('game');
+    }
+
+    setShowGameModal(false);
+  };
 
   const renderGameOption = ({ item }) => (
     <TouchableOpacity
@@ -205,7 +224,7 @@ export default function ChatScreen({ route }) {
     </View>
   );
 
-  const SelectedGameClient = activeGameId ? games[activeGameId]?.Client : null;
+  const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
   const gameSection = SelectedGameClient ? (
     <View
       style={{
