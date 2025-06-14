@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Dimensions,
   FlatList,
-  ScrollView,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -31,22 +30,20 @@ export default function ChatScreen({ route }) {
     acceptGameInvite,
     getPendingInvite,
   } = useChats();
+
   const { darkMode } = useTheme();
   const isWideScreen = Dimensions.get('window').width > 700;
   const [showGameModal, setShowGameModal] = useState(false);
   const [activeSection, setActiveSection] = useState('chat');
   const [text, setText] = useState('');
+  const [messages, setMessages] = useState([]);
 
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
-
   const rawMessages = getMessages(user.id) || [];
-  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    if (activeGameId) {
-      setActiveSection('game');
-    }
+    if (activeGameId) setActiveSection('game');
   }, [activeGameId]);
 
   useEffect(() => {
@@ -93,6 +90,21 @@ export default function ChatScreen({ route }) {
     setActiveSection('chat');
   };
 
+  const handleGameSelect = (gameId) => {
+    const title = games[gameId].meta.title;
+    if (activeGameId) {
+      if (activeGameId !== gameId) {
+        setActiveGame(user.id, gameId);
+        sendMessage(user.id, `Switched game to ${title}`, 'system');
+        setActiveSection('game');
+      }
+    } else {
+      sendGameInvite(user.id, gameId, 'you');
+      sendMessage(user.id, `Invited ${user.name} to play ${title}`, 'system');
+    }
+    setShowGameModal(false);
+  };
+
   const renderMessage = ({ item }) => (
     <View
       style={[
@@ -114,21 +126,6 @@ export default function ChatScreen({ route }) {
       <Text style={chatStyles.messageText}>{item.text}</Text>
     </View>
   );
-
-  const handleGameSelect = (gameId) => {
-    const title = games[gameId].meta.title;
-    if (activeGameId) {
-      if (activeGameId !== gameId) {
-        setActiveGame(user.id, gameId);
-        sendMessage(user.id, `Switched game to ${title}`, 'system');
-        setActiveSection('game');
-      }
-    } else {
-      sendGameInvite(user.id, gameId, 'you');
-      sendMessage(user.id, `Invited ${user.name} to play ${title}`, 'system');
-    }
-    setShowGameModal(false);
-  };
 
   const renderGameOption = ({ item }) => (
     <TouchableOpacity
@@ -208,7 +205,7 @@ export default function ChatScreen({ route }) {
     </View>
   );
 
-  const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
+  const SelectedGameClient = activeGameId ? games[activeGameId]?.Client : null;
   const gameSection = SelectedGameClient ? (
     <View
       style={{
