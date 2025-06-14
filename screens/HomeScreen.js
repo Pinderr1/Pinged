@@ -13,6 +13,7 @@ import {
 import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 
 
 const GAMES = [
@@ -39,7 +40,8 @@ const ACTIVE_GAMES = [
 
 const HomeScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
-  const isPremiumUser = false;
+  const { user } = useUser();
+  const isPremiumUser = !!user?.isPremium;
   const [freeGamesLeft, setFreeGamesLeft] = useState(isPremiumUser ? Infinity : 1);
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('stranger');

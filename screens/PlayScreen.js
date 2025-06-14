@@ -20,8 +20,8 @@ import {
   Ionicons
 } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 
-const isPremiumUser = false;
 const gamesLeftToday = 0;
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -257,6 +257,8 @@ const getAllCategories = () => {
 
 const PlayScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
+  const { user } = useUser();
+  const isPremiumUser = !!user?.isPremium;
   const [filter, setFilter] = useState('All');
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
@@ -545,6 +547,10 @@ const PlayScreen = ({ navigation }) => {
               disabled={!previewGame?.route}
               onPress={() => {
                 setPreviewGame(null);
+                if (previewGame?.premium && !isPremiumUser) {
+                  navigation.navigate('PremiumPaywall');
+                  return;
+                }
                 if (!isPremiumUser && gamesLeftToday <= 0) {
                   navigation.navigate('PremiumPaywall');
                   return;
