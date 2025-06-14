@@ -5,24 +5,29 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { UserProvider } from './contexts/UserContext';
 import { ChatProvider } from './contexts/ChatContext';
+import { DevProvider } from './contexts/DevContext';
 import NotificationCenter from './components/NotificationCenter';
+import DevBanner from './components/DevBanner';
 import Toast from 'react-native-toast-message';
 import RootNavigator from './navigation/RootNavigator';
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <NotificationProvider>
-        <UserProvider>
-          <ChatProvider>
-            <NavigationContainer>
-              <RootNavigator />
-            </NavigationContainer>
-            <NotificationCenter />
-            <Toast />
-          </ChatProvider>
-        </UserProvider>
-      </NotificationProvider>
-    </ThemeProvider>
+    <DevProvider>
+      <ThemeProvider>
+        <NotificationProvider>
+          <UserProvider>
+            <ChatProvider>
+              <NavigationContainer>
+                <RootNavigator />
+                <DevBanner />
+              </NavigationContainer>
+              <NotificationCenter />
+              <Toast />
+            </ChatProvider>
+          </UserProvider>
+        </NotificationProvider>
+      </ThemeProvider>
+    </DevProvider>
   );
 }

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDev } from './DevContext';
 
 const ChatContext = createContext();
 
@@ -47,7 +48,23 @@ const initialMatches = [
 ];
 
 export const ChatProvider = ({ children }) => {
-  const [matches, setMatches] = useState(initialMatches);
+  const { devMode } = useDev();
+  const devMatch = {
+    id: '__testMatch',
+    name: 'Dev Tester',
+    age: 99,
+    image: require('../assets/user1.jpg'),
+    messages: [
+      { id: 'dev1', text: 'Dev chat ready.', sender: 'system' },
+    ],
+    matchedAt: 'now',
+    activeGameId: null,
+    pendingInvite: null,
+  };
+
+  const [matches, setMatches] = useState(
+    devMode ? [...initialMatches, devMatch] : initialMatches
+  );
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((data) => {
@@ -63,6 +80,19 @@ export const ChatProvider = ({ children }) => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    setMatches((prev) => {
+      if (devMode) {
+        if (!prev.find((m) => m.id === devMatch.id)) {
+          console.log('Adding dev match');
+          return [...prev, devMatch];
+        }
+        return prev;
+      }
+      return prev.filter((m) => m.id !== devMatch.id);
+    });
+  }, [devMode]);
 
   useEffect(() => {
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(matches)).catch((err) => {
@@ -105,6 +135,10 @@ export const ChatProvider = ({ children }) => {
           : m
       )
     );
+    if (devMode) {
+      console.log('Auto-accepting game invite');
+      acceptGameInvite(matchId);
+    }
   };
 
   const clearGameInvite = (matchId) => {
@@ -143,6 +177,12 @@ export const ChatProvider = ({ children }) => {
   const getMessages = (matchId) =>
     matches.find((m) => m.id === matchId)?.messages || [];
 
+  const addMatch = (match) =>
+    setMatches((prev) => {
+      if (prev.find((m) => m.id === match.id)) return prev;
+      return [...prev, match];
+    });
+
   const removeMatch = (matchId) =>
     setMatches((prev) => prev.filter((m) => m.id !== matchId));
 
@@ -152,6 +192,7 @@ export const ChatProvider = ({ children }) => {
         matches,
         sendMessage,
         getMessages,
+        addMatch,
         removeMatch,
         setActiveGame,
         getActiveGame,

@@ -5,11 +5,13 @@ import styles from '../styles';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import { useDev } from '../contexts/DevContext';
 
 const SettingsScreen = ({ navigation }) => {
   const { darkMode, toggleTheme } = useTheme();
   const { user } = useUser();
   const isPremium = !!user?.isPremium;
+  const { devMode, toggleDevMode } = useDev();
 
   const handleEditProfile = () => navigation.navigate('EditProfile');
   const handleLogout = () => navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
@@ -59,6 +61,15 @@ const SettingsScreen = ({ navigation }) => {
         onPress={() => navigation.navigate('Stats')}
       >
         <Text style={styles.navBtnText}>View My Stats</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.navBtn, { backgroundColor: '#e11d48' }]}
+        onPress={toggleDevMode}
+      >
+        <Text style={styles.navBtnText}>
+          {devMode ? 'Disable Dev Mode' : 'Enable Dev Mode'}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity

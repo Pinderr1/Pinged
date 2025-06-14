@@ -1,4 +1,23 @@
-// SAME IMPORTS AS BEFORE
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  Modal,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Header from '../components/Header';
+import styles from '../styles';
+import { useTheme } from '../contexts/ThemeContext';
+import { useNotification } from '../contexts/NotificationContext';
+import { useChats } from '../contexts/ChatContext';
+import { games, gameList } from '../games';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params;
