@@ -86,7 +86,7 @@ const CommunityScreen = () => {
         style={[
           local.card,
           {
-            backgroundColor: darkMode ? '#1e1e1e' : '#fff',
+            backgroundColor: darkMode ? '#2c2c2c' : '#fff',
             marginRight: idx % 2 === 0 ? 8 : 0,
             marginLeft: idx % 2 !== 0 ? 8 : 0
           }
@@ -122,7 +122,7 @@ const CommunityScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: darkMode ? '#121212' : '#fce4ec' }}>
+    <View style={{ flex: 1, backgroundColor: darkMode ? '#1b1b1b' : '#fce4ec' }}>
       <Header />
 
       <ScrollView contentContainerStyle={{ paddingTop: 100, paddingBottom: 150 }}>

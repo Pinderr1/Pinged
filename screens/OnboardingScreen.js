@@ -280,8 +280,8 @@ export default function OnboardingScreen() {
 }
 
 const getStyles = (darkMode) => {
-  const background = darkMode ? '#101010' : '#FFFFFF';
-  const cardBg = darkMode ? '#1a1a1a' : '#FFFFFF';
+  const background = darkMode ? '#1b1b1b' : '#FFFFFF';
+  const cardBg = darkMode ? '#242424' : '#FFFFFF';
   const textColor = darkMode ? '#EEE' : '#222';
   const accent = '#FF75B5';
 

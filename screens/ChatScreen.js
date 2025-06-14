@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
   FlatList,
+  ScrollView,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -31,7 +32,6 @@ export default function ChatScreen({ route }) {
     acceptGameInvite,
     getPendingInvite,
   } = useChats();
-
   const { darkMode } = useTheme();
   const { showNotification } = useNotification();
   const prevGameIdRef = useRef(null);
@@ -47,15 +47,10 @@ export default function ChatScreen({ route }) {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    if (activeGameId) {
-      setActiveSection('game');
-    }
-  }, [activeGameId]);
-
-  useEffect(() => {
     if (activeGameId && activeGameId !== prevGameIdRef.current) {
       const title = games[activeGameId].meta.title;
       showNotification(`Game started: ${title}`);
+      setActiveSection('game');
     }
     prevGameIdRef.current = activeGameId;
   }, [activeGameId, showNotification]);
@@ -96,7 +91,7 @@ export default function ChatScreen({ route }) {
     if (activeGameId && activeGameId !== gameId) {
       sendMessage(user.id, `Switched game to ${title}`, 'system');
     } else if (!activeGameId) {
-      sendMessage(user.id, `Game starting: ${title}`, 'system');
+      sendMessage(user.id, `Game started: ${title}`, 'system');
     }
     setActiveGame(user.id, gameId);
     setActiveSection('game');
@@ -203,7 +198,7 @@ export default function ChatScreen({ route }) {
     </View>
   ) : null;
 
-  const gradientColors = darkMode ? ['#121212', '#1e1e1e'] : ['#fff', '#fdeef4'];
+  const gradientColors = darkMode ? ['#2c2c2c', '#1b1b1b'] : ['#fff', '#fdeef4'];
 
   const toggleBar = (
     <View style={chatStyles.toggleBar}>
@@ -261,8 +256,12 @@ export default function ChatScreen({ route }) {
       ) : (
         <View style={{ flex: 1, paddingTop: 60 }}>
           {toggleBar}
-          {activeSection === 'game' && gameSection}
-          {activeSection === 'chat' && chatSection}
+          <View style={{ display: activeSection === 'game' ? 'flex' : 'none', flex: 1 }}>
+            {gameSection}
+          </View>
+          <View style={{ display: activeSection === 'chat' ? 'flex' : 'none', flex: 1 }}>
+            {chatSection}
+          </View>
         </View>
       )}
     </LinearGradient>

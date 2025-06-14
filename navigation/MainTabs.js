@@ -28,7 +28,7 @@ export default function MainTabs() {
         tabBarInactiveTintColor: '#888',
         tabBarLabelStyle: { fontSize: 12, paddingBottom: 2 },
         tabBarStyle: {
-          backgroundColor: darkMode ? '#1e1e1e' : '#fff',
+          backgroundColor: darkMode ? '#2c2c2c' : '#fff',
           borderTopWidth: 1,
           borderColor: '#eee',
           height: 60,
