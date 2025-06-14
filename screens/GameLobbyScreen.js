@@ -91,7 +91,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
             alignItems: 'center',
             marginBottom: 12
           }}
-          onPress={() => navigation.navigate('ChatScreen', {
+          onPress={() => navigation.navigate('Chat', {
             user: opponent,
             gameId: game.id
           })}
