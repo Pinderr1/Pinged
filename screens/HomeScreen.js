@@ -13,6 +13,7 @@ import {
 import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 
 
 const GAMES = [
@@ -39,13 +40,14 @@ const ACTIVE_GAMES = [
 
 const HomeScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
-  const isPremiumUser = false;
+  const { user } = useUser();
+  const isPremiumUser = !!user?.isPremium;
   const [freeGamesLeft, setFreeGamesLeft] = useState(isPremiumUser ? Infinity : 1);
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('stranger');
 
   const card = (children, style = {}) => (
-    <View style={[local.card, { backgroundColor: darkMode ? '#1e1e1e' : '#fff' }, style]}>
+    <View style={[local.card, { backgroundColor: darkMode ? '#2c2c2c' : '#fff' }, style]}>
       {children}
     </View>
   );
@@ -83,7 +85,7 @@ const HomeScreen = ({ navigation }) => {
   });
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: darkMode ? '#121212' : '#fce4ec' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: darkMode ? '#1b1b1b' : '#fce4ec' }}>
       <View style={{ position: 'relative' }}>
         <Header showLogoOnly />
         <TouchableOpacity
@@ -136,7 +138,7 @@ const HomeScreen = ({ navigation }) => {
         <Text style={local.section}>Active Games</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16, marginBottom: 16 }}>
           {ACTIVE_GAMES.map((game) => (
-            <View key={game.id} style={[local.activeGameCard, { backgroundColor: darkMode ? '#1e1e1e' : '#fff' }]}>
+            <View key={game.id} style={[local.activeGameCard, { backgroundColor: darkMode ? '#2c2c2c' : '#fff' }]}>
               <View style={{ alignItems: 'center' }}>
                 <Image source={game.image} style={local.avatarRound} />
                 <Text style={local.nameSmall}>{game.name}</Text>

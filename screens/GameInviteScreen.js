@@ -60,7 +60,7 @@ const GameInviteScreen = ({ route, navigation }) => {
     return (
       <View
         style={{
-          backgroundColor: darkMode ? '#1e1e1e' : '#fff',
+          backgroundColor: darkMode ? '#2c2c2c' : '#fff',
           borderRadius: 16,
           borderWidth: 1,
           borderColor: darkMode ? '#333' : '#eee',
@@ -118,7 +118,7 @@ const GameInviteScreen = ({ route, navigation }) => {
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#121212', '#1e1e1e'] : ['#fff', '#ffe6f0']}
+      colors={darkMode ? ['#2c2c2c', '#1b1b1b'] : ['#fff', '#ffe6f0']}
       style={styles.swipeScreen}
     >
       <Header showLogoOnly />
