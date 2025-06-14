@@ -20,16 +20,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params;
-  const {
-    getMessages,
-    sendMessage,
-    setActiveGame,
-    getActiveGame,
-    sendGameInvite,
-    clearGameInvite,
-    acceptGameInvite,
-    getPendingInvite,
-  } = useChats();
+  const { getMessages, sendMessage, setActiveGame, getActiveGame } = useChats();
 
   const { darkMode } = useTheme();
   const isWideScreen = Dimensions.get('window').width > 700;
@@ -39,7 +30,6 @@ export default function ChatScreen({ route }) {
   const [messages, setMessages] = useState([]);
 
   const activeGameId = getActiveGame(user.id);
-  const pendingInvite = getPendingInvite(user.id);
   const rawMessages = getMessages(user.id) || [];
 
   useEffect(() => {
@@ -62,21 +52,7 @@ export default function ChatScreen({ route }) {
     }
   };
 
-  const handleAcceptInvite = () => {
-    if (pendingInvite) {
-      const title = games[pendingInvite.gameId].meta.title;
-      acceptGameInvite(user.id);
-      sendMessage(user.id, `Game starting: ${title}`, 'system');
-      setActiveSection('game');
-    }
-  };
-
-  const handleDeclineInvite = () => {
-    if (pendingInvite) {
-      clearGameInvite(user.id);
-      sendMessage(user.id, 'Invite declined', 'system');
-    }
-  };
+  // Invite flow will be implemented later
 
   const handleGameEnd = (result) => {
     if (!result) return;
@@ -92,16 +68,13 @@ export default function ChatScreen({ route }) {
 
   const handleGameSelect = (gameId) => {
     const title = games[gameId].meta.title;
-    if (activeGameId) {
-      if (activeGameId !== gameId) {
-        setActiveGame(user.id, gameId);
-        sendMessage(user.id, `Switched game to ${title}`, 'system');
-        setActiveSection('game');
-      }
-    } else {
-      sendGameInvite(user.id, gameId, 'you');
-      sendMessage(user.id, `Invited ${user.name} to play ${title}`, 'system');
+     if (activeGameId && activeGameId !== gameId) {
+      sendMessage(user.id, `Switched game to ${title}`, 'system');
+    } else if (!activeGameId) {
+      sendMessage(user.id, `Game starting: ${title}`, 'system');
     }
+    setActiveGame(user.id, gameId);
+    setActiveSection('game');
     setShowGameModal(false);
   };
 
@@ -112,16 +85,16 @@ export default function ChatScreen({ route }) {
         item.sender === 'you'
           ? chatStyles.messageRight
           : item.sender === 'system'
-          ? chatStyles.messageSystem
-          : chatStyles.messageLeft,
+            ? chatStyles.messageSystem
+            : chatStyles.messageLeft,
       ]}
     >
       <Text style={chatStyles.sender}>
         {item.sender === 'you'
           ? 'You'
           : item.sender === 'system'
-          ? 'System'
-          : user.name}
+            ? 'System'
+            : user.name}
       </Text>
       <Text style={chatStyles.messageText}>{item.text}</Text>
     </View>
@@ -141,27 +114,6 @@ export default function ChatScreen({ route }) {
       <Text style={[styles.logoText, { marginBottom: 10 }]}>
         Chat with {user.name}
       </Text>
-      {pendingInvite && pendingInvite.from === 'them' && (
-        <View style={chatStyles.inviteBanner}>
-          <Text style={chatStyles.inviteText}>
-            {user.name} invited you to play {games[pendingInvite.gameId].meta.title}
-          </Text>
-          <View style={chatStyles.inviteActions}>
-            <TouchableOpacity
-              style={[chatStyles.playButton, { marginRight: 8 }]}
-              onPress={handleAcceptInvite}
-            >
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Accept</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={chatStyles.declineButton}
-              onPress={handleDeclineInvite}
-            >
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Decline</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
       <View style={{ flex: 1 }}>
         <FlatList
           data={messages}
@@ -221,7 +173,7 @@ export default function ChatScreen({ route }) {
       <SelectedGameClient
         matchID={user.id}
         playerID="0"
-        boardProps={{ onGameEnd: handleGameEnd }}
+        onGameEnd={handleGameEnd}
       />
     </View>
   ) : null;
@@ -399,25 +351,5 @@ const chatStyles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  inviteBanner: {
-    backgroundColor: '#333',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  inviteText: {
-    color: '#fff',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  inviteActions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  declineButton: {
-    backgroundColor: '#b00020',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-  },
+  
 });

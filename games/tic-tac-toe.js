@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Client } from 'boardgame.io/react';
+import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 
