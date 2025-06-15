@@ -18,11 +18,25 @@ const GameLobbyScreen = ({ route, navigation }) => {
   const { darkMode } = useTheme();
   const { devMode } = useDev();
   const { recordGamePlayed } = useGameLimit();
-  const { game, opponent, status = 'waiting' } = route.params;
+  const { game, opponent, status = 'waiting' } = route.params || {};
   const [showGame, setShowGame] = useState(false);
   const GameComponent = game?.id ? games[game.id]?.Client : null;
 
   const isReady = devMode || status === 'ready';
+
+  if (!game || !opponent) {
+    return (
+      <LinearGradient
+        colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']}
+        style={styles.swipeScreen}
+      >
+        <Header showLogoOnly />
+        <Text style={{ marginTop: 80, color: darkMode ? '#fff' : '#000' }}>
+          Invalid game data.
+        </Text>
+      </LinearGradient>
+    );
+  }
 
   return (
     <LinearGradient

@@ -24,7 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
 
 export default function ChatScreen({ route }) {
-  const { user } = route.params;
+  const { user } = route.params || {};
   const navigation = useNavigation();
   const { user: currentUser } = useUser();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
@@ -41,6 +41,16 @@ export default function ChatScreen({ route }) {
   } = useChats();
   const { darkMode } = useTheme();
   const { showNotification } = useNotification();
+  if (!user) {
+    return (
+      <LinearGradient colors={[darkMode ? '#444' : '#fff', darkMode ? '#222' : '#ffe6f0']} style={{ flex: 1 }}>
+        <Header />
+        <Text style={{ marginTop: 80, textAlign: 'center', color: darkMode ? '#fff' : '#000' }}>
+          User not found.
+        </Text>
+      </LinearGradient>
+    );
+  }
   const prevGameIdRef = useRef(null);
   const isWideScreen = Dimensions.get('window').width > 700;
   const [showGameModal, setShowGameModal] = useState(false);
