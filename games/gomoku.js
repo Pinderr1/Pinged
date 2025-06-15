@@ -110,6 +110,8 @@ const GomokuBoard = ({ G, ctx, moves, onGameEnd }) => {
 
 const GomokuClient = Client({ game: GomokuGame, board: GomokuBoard });
 
+export const Game = GomokuGame;
+export const Board = GomokuBoard;
 export const meta = { id: 'gomoku', title: 'Gomoku' };
 
 export default GomokuClient;

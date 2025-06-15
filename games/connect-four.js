@@ -131,6 +131,8 @@ const ConnectFourBoard = ({ G, ctx, moves, onGameEnd }) => {
 
 const ConnectFourClient = Client({ game: ConnectFourGame, board: ConnectFourBoard });
 
+export const Game = ConnectFourGame;
+export const Board = ConnectFourBoard;
 export const meta = { id: 'connectFour', title: 'Connect Four' };
 
 export default ConnectFourClient;

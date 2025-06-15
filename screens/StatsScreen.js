@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import { avatarSource } from '../utils/avatar';
 
 const StatsScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
@@ -32,7 +33,7 @@ const StatsScreen = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.container}>
         {/* Profile Summary */}
         <View style={styles.profileCard}>
-          <Image source={require('../assets/user1.jpg')} style={styles.avatar} />
+          <Image source={avatarSource(user?.photoURL)} style={styles.avatar} />
           <Text style={styles.name}>{user?.displayName || 'User'}</Text>
           {isPremium && <Text style={styles.premiumBadge}>★ Premium</Text>}
         </View>

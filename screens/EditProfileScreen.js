@@ -1,18 +1,48 @@
 // /screens/EditProfileScreen.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import styles from '../styles';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { useUser } from '../contexts/UserContext';
 
 
 const EditProfileScreen = ({ navigation }) => {
-  const [name, setName] = useState('DemoUser');
-  const [age, setAge] = useState('23');
-  const [gender, setGender] = useState('Other');
-  const [bio, setBio] = useState('Looking to vibe and play chess 🎯');
-  const [location, setLocation] = useState('Toronto');
+  const { user, updateUser } = useUser();
+  const [name, setName] = useState(user?.displayName || '');
+  const [age, setAge] = useState(user?.age ? String(user.age) : '');
+  const [gender, setGender] = useState(user?.gender || 'Other');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [location, setLocation] = useState(user?.location || '');
+
+  useEffect(() => {
+    setName(user?.displayName || '');
+    setAge(user?.age ? String(user.age) : '');
+    setGender(user?.gender || 'Other');
+    setBio(user?.bio || '');
+    setLocation(user?.location || '');
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    const clean = {
+      displayName: name.trim(),
+      age: parseInt(age, 10) || null,
+      gender,
+      bio: bio.trim(),
+      location,
+    };
+    try {
+      await setDoc(doc(db, 'users', user.uid), clean, { merge: true });
+      updateUser(clean);
+      navigation.navigate('Main');
+    } catch (e) {
+      console.warn('Failed to save profile', e);
+    }
+  };
 
   return (
     <LinearGradient colors={['#fff', '#ffe6f0']} style={styles.container}>
@@ -68,10 +98,7 @@ const EditProfileScreen = ({ navigation }) => {
         onChangeText={setLocation}
       />
 
-      <TouchableOpacity
-        style={styles.emailBtn}
-        onPress={() => navigation.navigate('Main')}
-      >
+      <TouchableOpacity style={styles.emailBtn} onPress={handleSave}>
         <Text style={styles.btnText}>Save Changes</Text>
       </TouchableOpacity>
     </LinearGradient>

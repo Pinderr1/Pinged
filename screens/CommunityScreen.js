@@ -11,6 +11,7 @@ import {
   TextInput,
   Dimensions
 } from 'react-native';
+import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
@@ -92,7 +93,7 @@ const CommunityScreen = () => {
           }
         ]}
       >
-        <Image source={event.image} style={local.image} />
+        <Image source={eventImageSource(event.image)} style={local.image} />
         <Text style={local.title}>{event.title}</Text>
         <Text style={local.time}>{event.time}</Text>
         <Text style={local.desc}>{event.description}</Text>
@@ -148,7 +149,7 @@ const CommunityScreen = () => {
 
         {/* Featured */}
         <View style={[local.banner, { backgroundColor: darkMode ? '#333' : '#fff' }]}>
-          <Image source={require('../assets/user2.jpg')} style={local.bannerImage} />
+          <Image source={eventImageSource(require('../assets/user2.jpg'))} style={local.bannerImage} />
           <Text style={local.bannerTitle}>🔥 Featured</Text>
           <Text style={local.bannerText}>Truth or Dare Night — Friday @ 9PM</Text>
         </View>

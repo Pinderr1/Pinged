@@ -7,15 +7,18 @@ import { auth, db } from '../firebase';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import styles from '../styles';
+import { useOnboarding } from '../contexts/OnboardingContext';
 
 export default function EmailLoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { markOnboarded } = useOnboarding();
 
   const checkOnboarding = async (uid) => {
     try {
       const snap = await getDoc(doc(db, 'users', uid));
       if (snap.exists() && snap.data().onboardingComplete) {
+        markOnboarded();
         navigation.replace('Main');
       } else {
         navigation.replace('Onboarding');
