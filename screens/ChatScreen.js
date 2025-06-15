@@ -56,6 +56,7 @@ export default function ChatScreen({ route }) {
   const [showGameModal, setShowGameModal] = useState(false);
   const [activeSection, setActiveSection] = useState('chat');
   const [text, setText] = useState('');
+  const [devPlayer, setDevPlayer] = useState('0');
 
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
@@ -203,9 +204,36 @@ export default function ChatScreen({ route }) {
         alignItems: 'center',
       }}
     >
+      {devMode && (
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          <TouchableOpacity
+            onPress={() => setDevPlayer('0')}
+            style={{
+              backgroundColor: devPlayer === '0' ? '#d81b60' : '#ccc',
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 8,
+              marginRight: 8,
+            }}
+          >
+            <Text style={{ color: '#fff' }}>Player 1</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setDevPlayer('1')}
+            style={{
+              backgroundColor: devPlayer === '1' ? '#d81b60' : '#ccc',
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ color: '#fff' }}>Player 2</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       <SelectedGameClient
         matchID={user.id}
-        playerID="0"
+        playerID={devMode ? devPlayer : '0'}
         onGameEnd={handleGameEnd}
       />
     </View>
