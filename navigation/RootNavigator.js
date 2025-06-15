@@ -46,8 +46,8 @@ export default function RootNavigator() {
         console.log('Deep linking to Chat');
       }
     };
-    Linking.addEventListener('url', handleDeepLink);
-    return () => Linking.removeAllListeners('url');
+    const sub = Linking.addEventListener('url', handleDeepLink);
+    return () => sub.remove();
   }, []);
 
   if (isSplash) return <SplashScreen onFinish={() => setIsSplash(false)} />;
@@ -61,6 +61,7 @@ export default function RootNavigator() {
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="EmailLogin" component={EmailLoginScreen} />
           <Stack.Screen name="Signup" component={SignUpScreen} />
+          <Stack.Screen name="Main" component={MainTabs} />
         </>
       ) : onboarded ? (
         <>
@@ -78,7 +79,10 @@ export default function RootNavigator() {
           <Stack.Screen name="Stats" component={StatsScreen} />
         </>
       ) : (
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <>
+          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          <Stack.Screen name="Main" component={MainTabs} />
+        </>
       )}
     </Stack.Navigator>
   );
