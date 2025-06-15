@@ -26,17 +26,20 @@ const GameLobbyScreen = ({ route, navigation }) => {
   const { devMode } = useDev();
   const { recordGamePlayed } = useGameLimit();
   const { user } = useUser();
+  const { sendGameInvite } = useMatchmaking();
+
   const { game, opponent, status = 'waiting', inviteId } = route.params || {};
+
   const [inviteStatus, setInviteStatus] = useState(status);
   const [showGame, setShowGame] = useState(false);
   const [countdown, setCountdown] = useState(null);
   const [devPlayer, setDevPlayer] = useState('0');
   const [gameResult, setGameResult] = useState(null);
-  const { sendGameInvite } = useMatchmaking();
-  const GameComponent = game?.id ? games[game.id]?.Client : null;
 
+  const GameComponent = game?.id ? games[game.id]?.Client : null;
   const isReady = devMode || inviteStatus === 'ready';
 
+  // Listen for Firestore invite status
   useEffect(() => {
     if (!inviteId) return;
     const ref = doc(db, 'gameInvites', inviteId);
@@ -48,12 +51,14 @@ const GameLobbyScreen = ({ route, navigation }) => {
     return unsub;
   }, [inviteId]);
 
+  // Trigger countdown if ready
   useEffect(() => {
     if (isReady && !showGame && countdown === null && !devMode) {
       setCountdown(3);
     }
   }, [isReady]);
 
+  // Countdown logic
   useEffect(() => {
     if (countdown === null) return;
     if (countdown <= 0) {
@@ -216,6 +221,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
         </TouchableOpacity>
       </View>
 
+      {/* Game Component */}
       {showGame && GameComponent && (
         <View style={{ alignItems: 'center', marginTop: 20 }}>
           {devMode ? (
@@ -257,6 +263,8 @@ const GameLobbyScreen = ({ route, navigation }) => {
           )}
         </View>
       )}
+
+      {/* Game Over Modal */}
       <GameOverModal
         visible={!!gameResult}
         winnerName={
