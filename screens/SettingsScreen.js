@@ -6,6 +6,8 @@ import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
 
 const SettingsScreen = ({ navigation }) => {
   const { darkMode, toggleTheme } = useTheme();
@@ -14,7 +16,10 @@ const SettingsScreen = ({ navigation }) => {
   const { devMode, toggleDevMode } = useDev();
 
   const handleEditProfile = () => navigation.navigate('EditProfile');
-  const handleLogout = () => navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+  };
   const handleGoPremium = () => navigation.navigate('PremiumPaywall');
 
   return (
