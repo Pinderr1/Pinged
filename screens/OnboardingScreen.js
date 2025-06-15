@@ -8,7 +8,6 @@ import {
   StyleSheet,
   Image,
   Platform,
-  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
