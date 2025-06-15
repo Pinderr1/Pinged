@@ -20,6 +20,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
   const { recordGamePlayed } = useGameLimit();
   const { game, opponent, status = 'waiting' } = route.params || {};
   const [showGame, setShowGame] = useState(false);
+  const [devPlayer, setDevPlayer] = useState('0');
   const GameComponent = game?.id ? games[game.id]?.Client : null;
 
   const isReady = devMode || status === 'ready';
@@ -141,7 +142,34 @@ const GameLobbyScreen = ({ route, navigation }) => {
 
       {showGame && GameComponent && (
         <View style={{ alignItems: 'center', marginTop: 20 }}>
-          <GameComponent />
+          {devMode && (
+            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+              <TouchableOpacity
+                onPress={() => setDevPlayer('0')}
+                style={{
+                  backgroundColor: devPlayer === '0' ? '#d81b60' : '#ccc',
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 10,
+                  marginRight: 8,
+                }}
+              >
+                <Text style={{ color: '#fff' }}>Player 1</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setDevPlayer('1')}
+                style={{
+                  backgroundColor: devPlayer === '1' ? '#d81b60' : '#ccc',
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 10,
+                }}
+              >
+                <Text style={{ color: '#fff' }}>Player 2</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          <GameComponent playerID={devMode ? devPlayer : '0'} matchID="dev" />
         </View>
       )}
     </LinearGradient>

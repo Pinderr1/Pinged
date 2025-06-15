@@ -247,6 +247,146 @@ const allGames = [
     description: 'The ultimate social icebreaker. Play spicy or silly.',
     mode: 'co-op',
     speed: 'medium'
+  },
+  {
+    id: '21',
+    title: 'Sudoku',
+    icon: <MaterialCommunityIcons name="table" size={30} />,
+    route: null,
+    premium: false,
+    category: 'Puzzle',
+    description: 'Fill the grid with numbers 1-9 without repeating in rows or columns.',
+    mode: 'solo',
+    speed: 'slow'
+  },
+  {
+    id: '22',
+    title: 'Minesweeper',
+    icon: <MaterialCommunityIcons name="bomb" size={30} />,
+    route: null,
+    premium: false,
+    category: 'Puzzle',
+    description: 'Clear the board without detonating a mine. Classic brain teaser.',
+    mode: 'solo',
+    speed: 'medium'
+  },
+  {
+    id: '23',
+    title: 'Word Search',
+    icon: <Ionicons name="search" size={30} />,
+    route: null,
+    premium: false,
+    category: 'Word',
+    description: 'Find hidden words in the letter grid as fast as you can.',
+    mode: 'solo',
+    speed: 'quick'
+  },
+  {
+    id: '24',
+    title: 'Dominoes',
+    icon: <MaterialCommunityIcons name="dice-multiple" size={30} />,
+    route: null,
+    premium: true,
+    category: 'Board',
+    description: 'Match tiles end to end. A timeless strategy game.',
+    mode: 'versus',
+    speed: 'slow'
+  },
+  {
+    id: '25',
+    title: 'Mahjong',
+    icon: <MaterialCommunityIcons name="mahjong" size={30} />,
+    route: null,
+    premium: true,
+    category: 'International',
+    description: 'Tile-matching challenge from China. Clear the board to win.',
+    mode: 'versus',
+    speed: 'slow',
+    international: true
+  },
+  {
+    id: '26',
+    title: 'Go',
+    icon: <FontAwesome5 name="circle" size={30} />,
+    route: null,
+    premium: true,
+    category: 'International',
+    description: 'Ancient territory game. Surround more area than your opponent.',
+    mode: 'versus',
+    speed: 'slow',
+    international: true
+  },
+  {
+    id: '27',
+    title: 'Xiangqi',
+    icon: <FontAwesome5 name="chess" size={30} />,
+    route: null,
+    premium: true,
+    category: 'International',
+    description: 'Chinese chess. Outsmart your rival on the river board.',
+    mode: 'versus',
+    speed: 'slow',
+    international: true
+  },
+  {
+    id: '28',
+    title: 'Shogi',
+    icon: <FontAwesome5 name="chess-bishop" size={30} />,
+    route: null,
+    premium: true,
+    category: 'International',
+    description: 'Japanese chess with piece promotion and drops.',
+    mode: 'versus',
+    speed: 'slow',
+    international: true
+  },
+  {
+    id: '29',
+    title: 'Ludo',
+    icon: <MaterialCommunityIcons name="dice-4" size={30} />,
+    route: null,
+    premium: false,
+    category: 'International',
+    description: 'Race your tokens around the board. Family favourite worldwide.',
+    mode: 'versus',
+    speed: 'medium',
+    international: true
+  },
+  {
+    id: '30',
+    title: 'Carrom',
+    icon: <MaterialCommunityIcons name="circle-slice-8" size={30} />,
+    route: null,
+    premium: false,
+    category: 'International',
+    description: 'Flick discs into pockets in this popular Asian table game.',
+    mode: 'versus',
+    speed: 'medium',
+    international: true
+  },
+  {
+    id: '31',
+    title: 'Backgammon',
+    icon: <FontAwesome5 name="dice-d20" size={30} />,
+    route: null,
+    premium: true,
+    category: 'International',
+    description: 'Move your checkers off the board before your opponent does.',
+    mode: 'versus',
+    speed: 'slow',
+    international: true
+  },
+  {
+    id: '32',
+    title: 'Snakes & Ladders',
+    icon: <MaterialCommunityIcons name="stairs" size={30} />,
+    route: null,
+    premium: false,
+    category: 'International',
+    description: 'Climb up ladders and avoid snakes in this luck-based race.',
+    mode: 'versus',
+    speed: 'quick',
+    international: true
   }
 ];
 
@@ -257,6 +397,7 @@ const getAllCategories = () => {
 
 const PlayScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
+  const gradientColors = darkMode ? ['#444', '#222'] : ['#FF75B5', '#FF9A75'];
   const { user } = useUser();
   const { devMode } = useDev();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
@@ -286,6 +427,8 @@ const PlayScreen = ({ navigation }) => {
     return matchCategory && matchSearch && matchTag;
   });
 
+  const internationalGames = allGames.filter((g) => g.international);
+
   useEffect(() => {
     if (filter === 'Premium') {
       const firstPremiumIndex = filteredGames.findIndex((g) => g.premium);
@@ -297,8 +440,10 @@ const PlayScreen = ({ navigation }) => {
     }
   }, [filter]);
 
-  const renderItem = ({ item, index }) => (
-    <Animated.View style={{ transform: [{ scale: animatedScales[index] }] }}>
+  const renderItem = ({ item }) => {
+    const idx = allGames.findIndex((g) => g.id === item.id);
+    return (
+      <Animated.View style={{ transform: [{ scale: animatedScales[idx] }] }}>
       <TouchableOpacity
         style={{
           width: CARD_WIDTH,
@@ -317,13 +462,13 @@ const PlayScreen = ({ navigation }) => {
           position: 'relative'
         }}
         onPressIn={() =>
-          Animated.spring(animatedScales[index], {
+          Animated.spring(animatedScales[idx], {
             toValue: 0.96,
             useNativeDriver: true
           }).start()
         }
         onPressOut={() =>
-          Animated.spring(animatedScales[index], {
+          Animated.spring(animatedScales[idx], {
             toValue: 1,
             friction: 3,
             useNativeDriver: true
@@ -381,11 +526,12 @@ const PlayScreen = ({ navigation }) => {
         </Text>
       </TouchableOpacity>
     </Animated.View>
-  );
+    );
+  };
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']}
+      colors={gradientColors}
       style={styles.swipeScreen}
     >
       <Header showLogoOnly />
@@ -488,6 +634,31 @@ const PlayScreen = ({ navigation }) => {
           </TouchableOpacity>
         ))}
       </View>
+
+      {!!internationalGames.length && (
+        <>
+          <Text
+            style={{
+              fontSize: 15,
+              fontWeight: '600',
+              marginLeft: 16,
+              marginBottom: 6,
+              marginTop: 10,
+              color: darkMode ? '#fff' : '#000'
+            }}
+          >
+            International Games
+          </Text>
+          <FlatList
+            data={internationalGames}
+            horizontal
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 8 }}
+            renderItem={renderItem}
+          />
+        </>
+      )}
 
       <FlatList
         ref={flatListRef}
