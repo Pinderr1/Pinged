@@ -160,7 +160,18 @@ const HomeScreen = ({ navigation }) => {
         {/* 🔥 Suggested Match */}
         <Text style={local.section}>Suggested Match</Text>
         {card(
-          <TouchableOpacity onPress={() => navigation.navigate('Chat', { user: 'Emily' })} style={local.row}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('Chat', {
+                user: {
+                  id: '2',
+                  name: 'Emily',
+                  image: require('../assets/user2.jpg'),
+                },
+              })
+            }
+            style={local.row}
+          >
             <Image source={require('../assets/user2.jpg')} style={local.suggestedImage} />
             <View>
               <Text style={local.name}>Emily</Text>

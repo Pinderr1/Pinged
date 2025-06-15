@@ -98,10 +98,16 @@ const GameLobbyScreen = ({ route, navigation }) => {
             alignItems: 'center',
             marginBottom: 12
           }}
-          onPress={() => navigation.navigate('Chat', {
-            user: opponent,
-            gameId: game.id
-          })}
+          onPress={() =>
+            navigation.navigate('Chat', {
+              user: {
+                id: opponent?.id,
+                name: opponent?.name,
+                image: opponent?.photo,
+              },
+              gameId: game.id,
+            })
+          }
         >
           <Text style={{ color: '#000', fontWeight: '600' }}>Chat</Text>
         </TouchableOpacity>
