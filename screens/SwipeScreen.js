@@ -69,6 +69,7 @@ const SwipeScreen = () => {
   const [imageIndex, setImageIndex] = useState(0);
   const [history, setHistory] = useState([]);
   const [boostActive, setBoostActive] = useState(false);
+
   const pan = useRef(new Animated.ValueXY()).current;
   const scaleRefs = useRef(Array(6).fill(null).map(() => new Animated.Value(1))).current;
   const likeOpacity = pan.x.interpolate({
@@ -81,6 +82,7 @@ const SwipeScreen = () => {
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
+
   const users = devMode ? [devUser, ...allUsers] : allUsers;
   const displayUser = users[currentIndex] ?? null;
 
@@ -97,6 +99,7 @@ const SwipeScreen = () => {
         Alert.alert('Upgrade to Premium', 'You’ve hit your daily like limit.');
         return;
       }
+
       setLikesUsed((prev) => prev + 1);
       setMatchedUser(displayUser);
       setShowFireworks(true);
@@ -111,6 +114,7 @@ const SwipeScreen = () => {
         activeGameId: null,
         pendingInvite: null,
       });
+
       if (devMode) console.log('Auto-matching enabled');
       setTimeout(() => setShowFireworks(false), 2000);
     }
@@ -219,14 +223,9 @@ const SwipeScreen = () => {
               <Text style={[styles.badgeText, styles.nopeText]}>NOPE</Text>
             </Animated.View>
             <TouchableOpacity
-              onPress={() =>
-                setImageIndex((i) => (i + 1) % displayUser.images.length)
-              }
+              onPress={() => setImageIndex((i) => (i + 1) % displayUser.images.length)}
             >
-              <Image
-                source={displayUser.images[imageIndex]}
-                style={styles.image}
-              />
+              <Image source={displayUser.images[imageIndex]} style={styles.image} />
             </TouchableOpacity>
             <View style={styles.info}>
               <Text style={styles.name}>

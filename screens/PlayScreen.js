@@ -24,7 +24,6 @@ import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 
-
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH * 0.42;
 
@@ -554,9 +553,9 @@ const PlayScreen = ({ navigation }) => {
                   navigation.navigate('PremiumPaywall');
                   return;
                 }
-                if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-                  navigation.navigate('PremiumPaywall');
-                  return;
+              if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
+              navigation.navigate('PremiumPaywall');
+              return;
                 }
                 const { id, title, category, description } = previewGame;
                 navigation.navigate('GameInvite', {
