@@ -18,21 +18,28 @@ import styles from '../styles';
 import { games } from '../games';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SyncedGame from '../components/SyncedGame';
+import GameOverModal from '../components/GameOverModal';
+import { useMatchmaking } from '../contexts/MatchmakingContext';
 
 const GameLobbyScreen = ({ route, navigation }) => {
   const { darkMode } = useTheme();
   const { devMode } = useDev();
   const { recordGamePlayed } = useGameLimit();
   const { user } = useUser();
+  const { sendGameInvite } = useMatchmaking();
+
   const { game, opponent, status = 'waiting', inviteId } = route.params || {};
+
   const [inviteStatus, setInviteStatus] = useState(status);
   const [showGame, setShowGame] = useState(false);
   const [countdown, setCountdown] = useState(null);
   const [devPlayer, setDevPlayer] = useState('0');
-  const GameComponent = game?.id ? games[game.id]?.Client : null;
+  const [gameResult, setGameResult] = useState(null);
 
+  const GameComponent = game?.id ? games[game.id]?.Client : null;
   const isReady = devMode || inviteStatus === 'ready';
 
+  // Listen for Firestore invite status
   useEffect(() => {
     if (!inviteId) return;
     const ref = doc(db, 'gameInvites', inviteId);
@@ -44,12 +51,14 @@ const GameLobbyScreen = ({ route, navigation }) => {
     return unsub;
   }, [inviteId]);
 
+  // Trigger countdown if ready
   useEffect(() => {
     if (isReady && !showGame && countdown === null && !devMode) {
       setCountdown(3);
     }
   }, [isReady]);
 
+  // Countdown logic
   useEffect(() => {
     if (countdown === null) return;
     if (countdown <= 0) {
@@ -66,6 +75,32 @@ const GameLobbyScreen = ({ route, navigation }) => {
       return () => clearTimeout(t);
     }
   }, [countdown]);
+
+  const handleGameEnd = (result) => {
+    setGameResult(result);
+  };
+
+  const handleRematch = async () => {
+    if (inviteId) {
+      await updateDoc(doc(db, 'gameInvites', inviteId), {
+        status: 'finished',
+        endedAt: serverTimestamp(),
+      });
+      await updateDoc(doc(db, 'gameSessions', inviteId), {
+        archived: true,
+        archivedAt: serverTimestamp(),
+      });
+    }
+
+    const newId = await sendGameInvite(opponent.id, game.id);
+    setGameResult(null);
+    navigation.replace('GameLobby', {
+      game,
+      opponent,
+      inviteId: newId,
+      status: devMode ? 'ready' : 'waiting',
+    });
+  };
 
   if (!game || !opponent) {
     return (
@@ -186,6 +221,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
         </TouchableOpacity>
       </View>
 
+      {/* Game Component */}
       {showGame && GameComponent && (
         <View style={{ alignItems: 'center', marginTop: 20 }}>
           {devMode ? (
@@ -218,10 +254,34 @@ const GameLobbyScreen = ({ route, navigation }) => {
               <GameComponent playerID={devPlayer} matchID="dev" />
             </>
           ) : (
-            <SyncedGame sessionId={inviteId} gameId={game.id} opponentId={opponent.id} />
+            <SyncedGame
+              sessionId={inviteId}
+              gameId={game.id}
+              opponentId={opponent.id}
+              onGameEnd={handleGameEnd}
+            />
           )}
         </View>
       )}
+
+      {/* Game Over Modal */}
+      <GameOverModal
+        visible={!!gameResult}
+        winnerName={
+          gameResult?.winner === '0'
+            ? 'You'
+            : gameResult?.winner === '1'
+            ? opponent.name
+            : null
+        }
+        onRematch={handleRematch}
+        onChat={() =>
+          navigation.navigate('Chat', {
+            user: { id: opponent.id, name: opponent.name, image: opponent.photo },
+            gameId: game.id,
+          })
+        }
+      />
     </LinearGradient>
   );
 };
