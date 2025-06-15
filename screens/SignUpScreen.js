@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  View,
 } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';

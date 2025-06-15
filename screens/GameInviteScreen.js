@@ -38,7 +38,9 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH / 2 - 24;
 
 const GameInviteScreen = ({ route, navigation }) => {
-  const game = route?.params?.game ?? { title: 'a game' };
+  const rawGame = route?.params?.game;
+  const gameTitle = typeof rawGame === 'string' ? rawGame : rawGame?.title || 'a game';
+  const gameId = typeof rawGame === 'object' ? rawGame.id : null;
   const { darkMode } = useTheme();
   const { devMode } = useDev();
   const [search, setSearch] = useState('');
@@ -52,7 +54,7 @@ const GameInviteScreen = ({ route, navigation }) => {
 
     const toLobby = () =>
       navigation.navigate('GameLobby', {
-        game: { title: game.title },
+        game: { id: gameId, title: gameTitle },
         opponent: { id: user.id, name: user.name, photo: user.photo },
         status: devMode ? 'ready' : 'waiting',
       });
@@ -149,7 +151,7 @@ const GameInviteScreen = ({ route, navigation }) => {
               color: darkMode ? '#fff' : '#000'
             }}
           >
-            Invite to play {game.title}
+            Invite to play {gameTitle}
           </Text>
 
           <View

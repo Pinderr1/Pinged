@@ -74,7 +74,7 @@ const HomeScreen = ({ navigation }) => {
     if (playTarget === 'stranger') {
       navigation.navigate('Play');
     } else {
-      navigation.navigate('GameInvite', { game: game.name });
+      navigation.navigate('GameInvite', { game: { title: game.name } });
     }
   };
 
