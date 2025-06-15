@@ -15,6 +15,7 @@ import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 const GAMES = [
@@ -24,20 +25,6 @@ const GAMES = [
   { name: 'Rock Paper Scissors', tier: 1 }
 ];
 
-const MATCHES = [
-  { id: '1', name: 'Liam', image: require('../assets/user1.jpg'), online: true },
-  { id: '2', name: 'Emily', image: require('../assets/user2.jpg'), online: false },
-  { id: '3', name: 'Sophie', image: require('../assets/user3.jpg'), online: true },
-  { id: '4', name: 'Noah', image: require('../assets/user4.jpg'), online: true },
-  { id: '5', name: 'Ava', image: require('../assets/user5.jpg'), online: false },
-  { id: '6', name: 'Ethan', image: require('../assets/user6.jpg'), online: true }
-];
-
-const ACTIVE_GAMES = [
-  { id: '1', name: 'Liam', image: require('../assets/user1.jpg'), game: 'Checkers', yourTurn: true },
-  { id: '2', name: 'Ava', image: require('../assets/user5.jpg'), game: 'Truth or Dare', yourTurn: false },
-  { id: '3', name: 'Ethan', image: require('../assets/user6.jpg'), game: 'Tic Tac Toe', yourTurn: true }
-];
 
 const HomeScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
@@ -78,15 +65,11 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const onlineGlow = (isOnline) => ({
-    borderWidth: 2,
-    borderColor: isOnline ? '#00e676' : '#ccc',
-    borderRadius: 32,
-    padding: 2
-  });
+  const gradientColors = darkMode ? ['#444', '#222'] : ['#FF75B5', '#FF9A75'];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: darkMode ? '#333' : '#fce4ec' }}>
+    <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
       <View style={{ position: 'relative' }}>
         <Header showLogoOnly />
         <TouchableOpacity
@@ -98,6 +81,17 @@ const HomeScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 200, paddingTop: 80 }}>
+        <Text style={local.section}>
+          {`Welcome${user?.name ? `, ${user.name}` : ''}!`}
+        </Text>
+        {card(
+          <Text style={local.subText}>
+            {gamesLeft === Infinity
+              ? 'Unlimited games today'
+              : `${gamesLeft} game${gamesLeft === 1 ? '' : 's'} left today`}
+          </Text>
+        )}
+
         {/* 💎 Premium Banner */}
         <View style={local.premiumBanner}>
           <View style={{ flex: 1 }}>
@@ -109,77 +103,13 @@ const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* 🎯 Your Matches */}
-        <Text style={local.section}>Your Matches</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16, marginBottom: 12 }}>
-          {MATCHES.map((m) => (
-            <View key={m.id} style={{ alignItems: 'center', marginRight: 16 }}>
-              <View style={onlineGlow(m.online)}>
-                <Image source={m.image} style={local.avatarRound} />
-              </View>
-              <Text style={local.nameSmall}>{m.name}</Text>
-              <TouchableOpacity style={local.inviteMiniBtn} onPress={() => openGamePicker('match')}>
-                <Text style={local.inviteMiniText}>Invite</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-
-        {/* 👥 Invite Match */}
+        {/* 👥 Invite a Match */}
         {card(
           <TouchableOpacity
             style={[styles.emailBtn, { backgroundColor: '#4287f5', alignSelf: 'center' }]}
             onPress={() => openGamePicker('match')}
           >
-            <Text style={styles.btnText}>👥 Invite a Match to Play</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* 🕹️ Active Games */}
-        <Text style={local.section}>Active Games</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16, marginBottom: 16 }}>
-          {ACTIVE_GAMES.map((game) => (
-            <View key={game.id} style={[local.activeGameCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
-              <View style={{ alignItems: 'center' }}>
-                <Image source={game.image} style={local.avatarRound} />
-                <Text style={local.nameSmall}>{game.name}</Text>
-                <Text style={[local.subText, { marginTop: 2, marginBottom: 6 }]}>
-                  {game.game} • {game.yourTurn ? 'Your Turn 🔥' : 'Their Turn'}
-                </Text>
-                <TouchableOpacity
-                  style={local.inviteMiniBtn}
-                  onPress={() => navigation.navigate('Play')}
-                >
-                  <Text style={local.inviteMiniText}>Continue</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-
-        {/* 🔥 Suggested Match */}
-        <Text style={local.section}>Suggested Match</Text>
-        {card(
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('Chat', {
-                user: {
-                  id: '2',
-                  name: 'Emily',
-                  image: require('../assets/user2.jpg'),
-                },
-              })
-            }
-            style={local.row}
-          >
-            <Image source={require('../assets/user2.jpg')} style={local.suggestedImage} />
-            <View>
-              <Text style={local.name}>Emily</Text>
-              <Text style={local.subText}>“Loves chess and cuddles.”</Text>
-              <TouchableOpacity style={local.inviteBtn}>
-                <Text style={local.inviteText}>Message</Text>
-              </TouchableOpacity>
-            </View>
+            <Text style={styles.btnText}>Invite a Match</Text>
           </TouchableOpacity>
         )}
 
@@ -189,68 +119,8 @@ const HomeScreen = ({ navigation }) => {
             style={[styles.emailBtn, { alignSelf: 'center' }]}
             onPress={() => openGamePicker('stranger')}
           >
-            <Text style={styles.btnText}>🎮 Play With Stranger</Text>
+            <Text style={styles.btnText}>Play With Stranger</Text>
           </TouchableOpacity>
-        )}
-
-        {/* ✅ XP / Streak */}
-        <Text style={local.section}>Level & Streak</Text>
-        {card(
-          <>
-            <Text style={local.subText}>Level 3</Text>
-            <View style={local.progressBar}>
-              <View style={local.progressFill} />
-            </View>
-            <Text style={[local.subText, { marginTop: 6 }]}>🔥 Daily streak: 4 days</Text>
-            <Text style={[local.subText, { marginTop: 6 }]}>🎁 You earned 1 Boost today!</Text>
-          </>
-        )}
-
-        {/* 🌍 Community */}
-        <Text style={local.section}>Community</Text>
-        {card(
-          <>
-            <Text style={local.subText}>Join events and meet people through games.</Text>
-            <TouchableOpacity
-              style={[styles.emailBtn, { marginTop: 10 }]}
-              onPress={() => navigation.navigate('Community')}
-            >
-              <Text style={styles.btnText}>🗓 View Events & Tournaments</Text>
-            </TouchableOpacity>
-            <Text style={[local.subText, { marginTop: 6 }]}>Upcoming: Truth or Dare Game Night – Friday 9PM</Text>
-          </>
-        )}
-
-        {/* 🔥 Daily Highlights */}
-        <Text style={local.section}>Today’s Highlights</Text>
-        {card(
-          <>
-            <Text style={[local.subText, { marginBottom: 10 }]}>✅ You matched with 5 people this week!</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Play')}>
-              <Text style={local.bottomTitle}>🎮 Game of the Day: Truth or Dare</Text>
-              <Text style={local.subText}>175 people playing now</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={{ marginTop: 16 }} onPress={() => alert('Thanks for your response!')}>
-              <Text style={local.bottomTitle}>💬 Icebreaker of the Day</Text>
-              <Text style={local.subText}>“What’s your guilty pleasure game?” (Tap to answer)</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={{ marginTop: 16 }}>
-              <Text style={local.bottomTitle}>🔥 Featured Player</Text>
-              <Text style={local.subText}>Sophie is on a 5-game streak 💘</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={{ marginTop: 16 }}>
-              <Text style={local.bottomTitle}>🏆 Challenge</Text>
-              <Text style={local.subText}>Win 1 game today to earn a Boost</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={{ marginTop: 16 }}>
-              <Text style={local.bottomTitle}>✨ Upcoming Event</Text>
-              <Text style={local.subText}>Flirty Game Week starts Monday 💋</Text>
-            </TouchableOpacity>
-          </>
         )}
       </ScrollView>
 
@@ -287,6 +157,7 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </Modal>
     </SafeAreaView>
+    </LinearGradient>
   );
 };
 
