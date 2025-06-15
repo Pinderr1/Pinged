@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline'
   },
   navBtn: {
-    backgroundColor: '#111',
+    backgroundColor: '#222',
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 12,

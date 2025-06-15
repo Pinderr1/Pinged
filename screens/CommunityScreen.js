@@ -86,7 +86,7 @@ const CommunityScreen = () => {
         style={[
           local.card,
           {
-            backgroundColor: darkMode ? '#2c2c2c' : '#fff',
+            backgroundColor: darkMode ? '#444' : '#fff',
             marginRight: idx % 2 === 0 ? 8 : 0,
             marginLeft: idx % 2 !== 0 ? 8 : 0
           }
@@ -122,7 +122,7 @@ const CommunityScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: darkMode ? '#1b1b1b' : '#fce4ec' }}>
+    <View style={{ flex: 1, backgroundColor: darkMode ? '#333' : '#fce4ec' }}>
       <Header />
 
       <ScrollView contentContainerStyle={{ paddingTop: 100, paddingBottom: 150 }}>
@@ -147,7 +147,7 @@ const CommunityScreen = () => {
         </ScrollView>
 
         {/* Featured */}
-        <View style={[local.banner, { backgroundColor: darkMode ? '#272727' : '#fff' }]}>
+        <View style={[local.banner, { backgroundColor: darkMode ? '#333' : '#fff' }]}>
           <Image source={require('../assets/user2.jpg')} style={local.bannerImage} />
           <Text style={local.bannerTitle}>🔥 Featured</Text>
           <Text style={local.bannerText}>Truth or Dare Night — Friday @ 9PM</Text>

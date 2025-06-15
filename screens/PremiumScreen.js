@@ -27,7 +27,7 @@ const PremiumScreen = () => {
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#2c2c2c', '#1b1b1b'] : ['#fff', '#ffe6f0']}
+      colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']}
       style={{ flex: 1 }}
     >
       <Header />

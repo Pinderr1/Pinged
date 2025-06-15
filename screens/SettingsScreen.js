@@ -24,7 +24,7 @@ const SettingsScreen = ({ navigation }) => {
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#222', '#000'] : ['#fff', '#fce4ec']}
+      colors={darkMode ? ['#444', '#222'] : ['#fff', '#fce4ec']}
       style={styles.container}
     >
       <Header />

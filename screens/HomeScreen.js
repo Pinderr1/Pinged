@@ -48,7 +48,7 @@ const HomeScreen = ({ navigation }) => {
   const [playTarget, setPlayTarget] = useState('stranger');
 
   const card = (children, style = {}) => (
-    <View style={[local.card, { backgroundColor: darkMode ? '#2c2c2c' : '#fff' }, style]}>
+    <View style={[local.card, { backgroundColor: darkMode ? '#444' : '#fff' }, style]}>
       {children}
     </View>
   );
@@ -86,7 +86,7 @@ const HomeScreen = ({ navigation }) => {
   });
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: darkMode ? '#1b1b1b' : '#fce4ec' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: darkMode ? '#333' : '#fce4ec' }}>
       <View style={{ position: 'relative' }}>
         <Header showLogoOnly />
         <TouchableOpacity
@@ -139,7 +139,7 @@ const HomeScreen = ({ navigation }) => {
         <Text style={local.section}>Active Games</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16, marginBottom: 16 }}>
           {ACTIVE_GAMES.map((game) => (
-            <View key={game.id} style={[local.activeGameCard, { backgroundColor: darkMode ? '#2c2c2c' : '#fff' }]}>
+            <View key={game.id} style={[local.activeGameCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
               <View style={{ alignItems: 'center' }}>
                 <Image source={game.image} style={local.avatarRound} />
                 <Text style={local.nameSmall}>{game.name}</Text>
