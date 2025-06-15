@@ -191,7 +191,7 @@ const SwipeScreen = () => {
     navigation.navigate('GameInvite', { user: displayUser });
   };
 
-  const gradientColors = darkMode ? ['#1a1a1a', '#0f0f0f'] : ['#FF75B5', '#FF9A75'];
+  const gradientColors = darkMode ? ['#333', '#222'] : ['#FF75B5', '#FF9A75'];
 
   return (
     <LinearGradient colors={gradientColors} style={{ flex: 1 }}>

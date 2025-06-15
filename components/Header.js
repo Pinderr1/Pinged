@@ -10,7 +10,7 @@ const Header = () => {
   const notificationCount = 5; // 🔥 Replace with dynamic logic later
 
   return (
-    <View style={[styles.container, { backgroundColor: darkMode ? '#111' : '#fff' }]}>
+    <View style={[styles.container, { backgroundColor: darkMode ? '#222' : '#fff' }]}>
       {/* Left icon - Gear */}
       <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.iconWrapper}>
         <Image

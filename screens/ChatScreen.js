@@ -201,7 +201,7 @@ export default function ChatScreen({ route }) {
     </View>
   ) : null;
 
-  const gradientColors = darkMode ? ['#2c2c2c', '#1b1b1b'] : ['#fff', '#fdeef4'];
+  const gradientColors = darkMode ? ['#444', '#222'] : ['#fff', '#fdeef4'];
 
   const toggleBar = (
     <View style={chatStyles.toggleBar}>
