@@ -72,7 +72,7 @@ const HomeScreen = ({ navigation }) => {
     setGamePickerVisible(false);
     recordGamePlayed();
     if (playTarget === 'stranger') {
-      navigation.navigate('Play', { game: game.name });
+      navigation.navigate('Play');
     } else {
       navigation.navigate('GameInvite', { game: game.name });
     }
@@ -148,7 +148,7 @@ const HomeScreen = ({ navigation }) => {
                 </Text>
                 <TouchableOpacity
                   style={local.inviteMiniBtn}
-                  onPress={() => navigation.navigate('Play', { game: game.game })}
+                  onPress={() => navigation.navigate('Play')}
                 >
                   <Text style={local.inviteMiniText}>Continue</Text>
                 </TouchableOpacity>
@@ -226,7 +226,7 @@ const HomeScreen = ({ navigation }) => {
         {card(
           <>
             <Text style={[local.subText, { marginBottom: 10 }]}>✅ You matched with 5 people this week!</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Play', { game: 'Truth or Dare' })}>
+            <TouchableOpacity onPress={() => navigation.navigate('Play')}>
               <Text style={local.bottomTitle}>🎮 Game of the Day: Truth or Dare</Text>
               <Text style={local.subText}>175 people playing now</Text>
             </TouchableOpacity>
