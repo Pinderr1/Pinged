@@ -105,6 +105,8 @@ const SudokuBoard = ({ G, ctx, moves, onGameEnd }) => {
 
 const SudokuClient = Client({ game: SudokuGame, board: SudokuBoard });
 
+export const Game = SudokuGame;
+export const Board = SudokuBoard;
 export const meta = { id: 'sudoku', title: 'Sudoku' };
 
 export default SudokuClient;

@@ -112,6 +112,8 @@ const TicTacToeClient = Client({
   board: TicTacToeBoard,
 });
 
+export const Game = TicTacToeGame;
+export const Board = TicTacToeBoard;
 export const meta = {
   id: 'ticTacToe',
   title: 'Tic Tac Toe',

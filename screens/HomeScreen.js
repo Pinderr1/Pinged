@@ -82,7 +82,7 @@ const HomeScreen = ({ navigation }) => {
 
       <ScrollView contentContainerStyle={{ paddingBottom: 200, paddingTop: 80 }}>
         <Text style={local.section}>
-          {`Welcome${user?.name ? `, ${user.name}` : ''}!`}
+          {`Welcome${user?.displayName ? `, ${user.displayName}` : ''}!`}
         </Text>
         {card(
           <Text style={local.subText}>

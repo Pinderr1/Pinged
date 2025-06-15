@@ -154,6 +154,8 @@ const MinesweeperBoard = ({ G, ctx, moves, onGameEnd }) => {
 
 const MinesweeperClient = Client({ game: MinesweeperGame, board: MinesweeperBoard });
 
+export const Game = MinesweeperGame;
+export const Board = MinesweeperBoard;
 export const meta = { id: 'minesweeper', title: 'Minesweeper' };
 
 export default MinesweeperClient;

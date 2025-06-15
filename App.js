@@ -3,7 +3,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { UserProvider } from './contexts/UserContext';
+import { OnboardingProvider } from './contexts/OnboardingContext';
 import { ChatProvider } from './contexts/ChatContext';
+import { MatchmakingProvider } from './contexts/MatchmakingContext';
 import { DevProvider } from './contexts/DevContext';
 import { GameLimitProvider } from './contexts/GameLimitContext';
 import NotificationCenter from './components/NotificationCenter';
@@ -17,16 +19,20 @@ export default function App() {
       <ThemeProvider>
         <NotificationProvider>
           <UserProvider>
-            <GameLimitProvider>
-              <ChatProvider>
-                <NavigationContainer>
-                  <RootNavigator />
-                  <DevBanner />
-                </NavigationContainer>
-                <NotificationCenter />
-                <Toast />
-              </ChatProvider>
-            </GameLimitProvider>
+            <OnboardingProvider>
+              <GameLimitProvider>
+                <ChatProvider>
+                  <MatchmakingProvider>
+                    <NavigationContainer>
+                      <RootNavigator />
+                      <DevBanner />
+                    </NavigationContainer>
+                    <NotificationCenter />
+                    <Toast />
+                  </MatchmakingProvider>
+                </ChatProvider>
+              </GameLimitProvider>
+            </OnboardingProvider>
           </UserProvider>
         </NotificationProvider>
       </ThemeProvider>

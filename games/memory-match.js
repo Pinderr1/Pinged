@@ -93,6 +93,8 @@ const MemoryMatchBoard = ({ G, ctx, moves, onGameEnd }) => {
 
 const MemoryMatchClient = Client({ game: MemoryMatchGame, board: MemoryMatchBoard });
 
+export const Game = MemoryMatchGame;
+export const Board = MemoryMatchBoard;
 export const meta = { id: 'memoryMatch', title: 'Memory Match' };
 
 export default MemoryMatchClient;
