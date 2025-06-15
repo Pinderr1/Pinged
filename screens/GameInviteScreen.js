@@ -53,8 +53,8 @@ const GameInviteScreen = ({ route, navigation }) => {
     const toLobby = () =>
       navigation.navigate('GameLobby', {
         game: { title: game.title },
-        opponent: { name: user.name, photo: user.photo },
-        status: devMode ? 'ready' : 'waiting'
+        opponent: { id: user.id, name: user.name, photo: user.photo },
+        status: devMode ? 'ready' : 'waiting',
       });
 
     if (devMode) {
