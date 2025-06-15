@@ -21,8 +21,9 @@ import {
 } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import { useDev } from '../contexts/DevContext';
+import { useGameLimit } from '../contexts/GameLimitContext';
 
-const gamesLeftToday = 0;
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH * 0.42;
@@ -54,7 +55,7 @@ const allGames = [
     id: '3',
     title: 'Rock Paper Scissors',
     icon: <MaterialCommunityIcons name="hand-peace" size={30} />,
-    route: null,
+    route: 'RockPaperScissors',
     premium: false,
     category: 'Quick',
     description: 'A quick reaction game. Co-op friendly. Tap fast to win!',
@@ -65,7 +66,7 @@ const allGames = [
     id: '4',
     title: 'Connect Four',
     icon: <MaterialCommunityIcons name="dots-grid" size={30} />,
-    route: null,
+    route: 'ConnectFour',
     premium: false,
     category: 'Board',
     description: 'Drop your discs into the grid. First to four in a row wins!',
@@ -87,7 +88,7 @@ const allGames = [
     id: '6',
     title: 'Memory Match',
     icon: <Ionicons name="images-outline" size={30} />,
-    route: null,
+    route: 'MemoryMatch',
     premium: false,
     category: 'Memory',
     description: 'Flip cards to find matches. Co-op or solo for fun brain training!',
@@ -98,7 +99,7 @@ const allGames = [
     id: '7',
     title: 'Hangman',
     icon: <MaterialCommunityIcons name="human-male-female" size={30} />,
-    route: null,
+    route: 'Hangman',
     premium: false,
     category: 'Word',
     description: 'Guess the word before the figure is drawn. Great for laughs and learning.',
@@ -120,7 +121,7 @@ const allGames = [
     id: '9',
     title: 'Gomoku',
     icon: <MaterialCommunityIcons name="grid-large" size={28} />,
-    route: null,
+    route: 'Gomoku',
     premium: false,
     category: 'Board',
     description: 'Five in a row wins. A deep strategy game similar to tic-tac-toe.',
@@ -258,6 +259,8 @@ const getAllCategories = () => {
 const PlayScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
   const { user } = useUser();
+  const { devMode } = useDev();
+  const { gamesLeft, recordGamePlayed } = useGameLimit();
   const isPremiumUser = !!user?.isPremium;
   const [filter, setFilter] = useState('All');
   const [category, setCategory] = useState('All');
@@ -547,11 +550,11 @@ const PlayScreen = ({ navigation }) => {
               disabled={!previewGame?.route}
               onPress={() => {
                 setPreviewGame(null);
-                if (previewGame?.premium && !isPremiumUser) {
+                if (previewGame?.premium && !isPremiumUser && !devMode) {
                   navigation.navigate('PremiumPaywall');
                   return;
                 }
-                if (!isPremiumUser && gamesLeftToday <= 0) {
+                if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
                   navigation.navigate('PremiumPaywall');
                   return;
                 }
@@ -559,6 +562,7 @@ const PlayScreen = ({ navigation }) => {
                 navigation.navigate('GameInvite', {
                   game: { id, title, category, description }
                 });
+                recordGamePlayed();
               }}
             >
               <Text style={{ color: '#fff', fontWeight: 'bold' }}>
