@@ -84,11 +84,20 @@ export default function OnboardingScreen() {
       setStep(step + 1);
     } else {
       try {
-        await setDoc(doc(db, 'users', auth.currentUser.uid), {
-          ...answers,
-          age: parseInt(answers.age, 10),
+        const clean = {
+          photoURL: answers.avatar,
+          displayName: answers.name.trim(),
+          age: parseInt(answers.age, 10) || null,
+          gender: answers.gender,
+          bio: answers.bio.trim(),
+          location: answers.location,
+          favoriteGame: answers.favoriteGame,
+          skillLevel: answers.skillLevel,
           onboardingComplete: true,
-        }, { merge: true });
+        };
+        await setDoc(doc(db, 'users', auth.currentUser.uid), clean, {
+          merge: true,
+        });
         Toast.show({ type: 'success', text1: 'Profile saved!' });
         navigation.replace('Main');
       } catch (e) {

@@ -22,8 +22,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
-
-const gamesLeftToday = 1;
+import { useGameLimit } from '../contexts/GameLimitContext';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH * 0.42;
@@ -260,6 +259,7 @@ const PlayScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
   const { user } = useUser();
   const { devMode } = useDev();
+  const { gamesLeft, recordGamePlayed } = useGameLimit();
   const isPremiumUser = !!user?.isPremium;
   const [filter, setFilter] = useState('All');
   const [category, setCategory] = useState('All');
@@ -553,14 +553,15 @@ const PlayScreen = ({ navigation }) => {
                   navigation.navigate('PremiumPaywall');
                   return;
                 }
-                if (!isPremiumUser && gamesLeftToday <= 0 && !devMode) {
-                  navigation.navigate('PremiumPaywall');
-                  return;
+              if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
+              navigation.navigate('PremiumPaywall');
+              return;
                 }
                 const { id, title, category, description } = previewGame;
                 navigation.navigate('GameInvite', {
                   game: { id, title, category, description }
                 });
+                recordGamePlayed();
               }}
             >
               <Text style={{ color: '#fff', fontWeight: 'bold' }}>

@@ -14,6 +14,7 @@ import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import { useGameLimit } from '../contexts/GameLimitContext';
 
 
 const GAMES = [
@@ -42,7 +43,7 @@ const HomeScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
   const { user } = useUser();
   const isPremiumUser = !!user?.isPremium;
-  const [freeGamesLeft, setFreeGamesLeft] = useState(isPremiumUser ? Infinity : 1);
+  const { gamesLeft, recordGamePlayed } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('stranger');
 
@@ -53,7 +54,7 @@ const HomeScreen = ({ navigation }) => {
   );
 
   const openGamePicker = (target) => {
-    if (freeGamesLeft > 0 || isPremiumUser) {
+    if (gamesLeft > 0 || isPremiumUser) {
       setPlayTarget(target);
       setGamePickerVisible(true);
     } else {
@@ -69,7 +70,7 @@ const HomeScreen = ({ navigation }) => {
       return;
     }
     setGamePickerVisible(false);
-    setFreeGamesLeft(prev => prev - 1);
+    recordGamePlayed();
     if (playTarget === 'stranger') {
       navigation.navigate('Play', { game: game.name });
     } else {

@@ -9,6 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
+import { useGameLimit } from '../contexts/GameLimitContext';
 import styles from '../styles';
 import { games } from '../games';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -16,6 +17,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 const GameLobbyScreen = ({ route, navigation }) => {
   const { darkMode } = useTheme();
   const { devMode } = useDev();
+  const { recordGamePlayed } = useGameLimit();
   const { game, opponent, status = 'waiting' } = route.params;
   const [showGame, setShowGame] = useState(false);
   const GameComponent = game?.id ? games[game.id]?.Client : null;
@@ -80,7 +82,10 @@ const GameLobbyScreen = ({ route, navigation }) => {
             marginBottom: 12
           }}
           disabled={!isReady}
-          onPress={() => setShowGame(true)}
+          onPress={() => {
+            setShowGame(true);
+            recordGamePlayed();
+          }}
         >
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Play Now</Text>
         </TouchableOpacity>

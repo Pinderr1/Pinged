@@ -90,6 +90,7 @@ const SwipeScreen = () => {
     setCurrentIndex(0);
     setHistory([]);
   }, [devMode]);
+
   const handleSwipe = (direction) => {
     if (!displayUser) return;
 
@@ -191,6 +192,7 @@ const SwipeScreen = () => {
   };
 
   const gradientColors = darkMode ? ['#1a1a1a', '#0f0f0f'] : ['#FF75B5', '#FF9A75'];
+
   return (
     <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
       <Header />
@@ -221,14 +223,9 @@ const SwipeScreen = () => {
               <Text style={[styles.badgeText, styles.nopeText]}>NOPE</Text>
             </Animated.View>
             <TouchableOpacity
-              onPress={() =>
-                setImageIndex((i) => (i + 1) % displayUser.images.length)
-              }
+              onPress={() => setImageIndex((i) => (i + 1) % displayUser.images.length)}
             >
-              <Image
-                source={displayUser.images[imageIndex]}
-                style={styles.image}
-              />
+              <Image source={displayUser.images[imageIndex]} style={styles.image} />
             </TouchableOpacity>
             <View style={styles.info}>
               <Text style={styles.name}>
@@ -277,6 +274,7 @@ const SwipeScreen = () => {
             </Animated.View>
           ))}
         </View>
+
         {matchedUser && (
           <Modal visible={showFireworks} transparent animationType="fade">
             <View style={styles.fireworksOverlay}>
