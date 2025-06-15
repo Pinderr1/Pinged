@@ -77,6 +77,8 @@ const GuessNumberBoard = ({ G, ctx, moves, onGameEnd }) => {
 
 const GuessNumberClient = Client({ game: GuessNumberGame, board: GuessNumberBoard });
 
+export const Game = GuessNumberGame;
+export const Board = GuessNumberBoard;
 export const meta = { id: 'guessNumber', title: 'Guess Number' };
 
 export default GuessNumberClient;

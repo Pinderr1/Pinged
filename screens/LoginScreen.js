@@ -11,16 +11,19 @@ import { auth, db } from '../firebase';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
+import { useOnboarding } from '../contexts/OnboardingContext';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const navigation = useNavigation();
+  const { markOnboarded } = useOnboarding();
 
   const checkOnboarding = async (uid) => {
     try {
       const snap = await getDoc(doc(db, 'users', uid));
       if (snap.exists() && snap.data().onboardingComplete) {
+        markOnboarded();
         navigation.replace('Main');
       } else {
         navigation.replace('Onboarding');

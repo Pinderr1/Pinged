@@ -86,6 +86,8 @@ const RPSBoard = ({ G, ctx, moves, onGameEnd }) => {
 
 const RPSClient = Client({ game: RPSGame, board: RPSBoard });
 
+export const Game = RPSGame;
+export const Board = RPSBoard;
 export const meta = { id: 'rockPaperScissors', title: 'Rock Paper Scissors' };
 
 export default RPSClient;

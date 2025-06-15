@@ -13,8 +13,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
+import { useUser } from '../contexts/UserContext';
+import { useOnboarding } from '../contexts/OnboardingContext';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { avatarSource } from '../utils/avatar';
 import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -34,6 +37,8 @@ const questions = [
 export default function OnboardingScreen() {
   const navigation = useNavigation();
   const { darkMode } = useTheme();
+  const { updateUser } = useUser();
+  const { markOnboarded } = useOnboarding();
   const styles = getStyles(darkMode);
 
   const [step, setStep] = useState(0);
@@ -96,6 +101,8 @@ export default function OnboardingScreen() {
         await setDoc(doc(db, 'users', auth.currentUser.uid), clean, {
           merge: true,
         });
+        updateUser(clean);
+        markOnboarded();
         Toast.show({ type: 'success', text1: 'Profile saved!' });
         navigation.replace('Main');
       } catch (e) {
@@ -151,9 +158,8 @@ export default function OnboardingScreen() {
     if (currentField === 'avatar') {
       return (
         <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-          {answers.avatar ? (
-            <Image source={{ uri: answers.avatar }} style={styles.avatar} />
-          ) : (
+          <Image source={avatarSource(answers.avatar)} style={styles.avatar} />
+          {!answers.avatar && (
             <View style={styles.placeholder}>
               <Text style={{ color: '#999' }}>Tap to select image</Text>
             </View>

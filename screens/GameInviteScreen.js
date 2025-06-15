@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
+import { useMatchmaking } from '../contexts/MatchmakingContext';
 import styles from '../styles';
 
 const MATCHES = [
@@ -43,19 +44,23 @@ const GameInviteScreen = ({ route, navigation }) => {
   const gameId = typeof rawGame === 'object' ? rawGame.id : null;
   const { darkMode } = useTheme();
   const { devMode } = useDev();
+  const { sendGameInvite } = useMatchmaking();
   const [search, setSearch] = useState('');
   const [invited, setInvited] = useState({});
   const [loadingId, setLoadingId] = useState(null);
   const matches = devMode ? [devUser, ...MATCHES] : MATCHES;
 
-  const handleInvite = (user) => {
+  const handleInvite = async (user) => {
     setInvited((prev) => ({ ...prev, [user.id]: true }));
     setLoadingId(user.id);
+
+    const inviteId = await sendGameInvite(user.id, gameId);
 
     const toLobby = () =>
       navigation.navigate('GameLobby', {
         game: { id: gameId, title: gameTitle },
         opponent: { id: user.id, name: user.name, photo: user.photo },
+        inviteId,
         status: devMode ? 'ready' : 'waiting',
       });
 

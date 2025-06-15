@@ -78,6 +78,8 @@ const HangmanBoard = ({ G, ctx, moves, onGameEnd }) => {
 
 const HangmanClient = Client({ game: HangmanGame, board: HangmanBoard });
 
+export const Game = HangmanGame;
+export const Board = HangmanBoard;
 export const meta = { id: 'hangman', title: 'Hangman' };
 
 export default HangmanClient;
