@@ -17,10 +17,18 @@ import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useChats } from '../contexts/ChatContext';
+import { useGameLimit } from '../contexts/GameLimitContext';
+import { useUser } from '../contexts/UserContext';
+import { useDev } from '../contexts/DevContext';
+import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params;
+  const navigation = useNavigation();
+  const { user: currentUser } = useUser();
+  const { gamesLeft, recordGamePlayed } = useGameLimit();
+  const { devMode } = useDev();
   const {
     getMessages,
     sendMessage,
@@ -82,11 +90,18 @@ export default function ChatScreen({ route }) {
   };
 
   const handleGameSelect = (gameId) => {
+    const isPremiumUser = !!currentUser?.isPremium;
+    if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
+      setShowGameModal(false);
+      navigation.navigate('PremiumPaywall');
+      return;
+    }
     const title = games[gameId].meta.title;
     if (activeGameId && activeGameId !== gameId) {
       sendMessage(user.id, `Switched game to ${title}`, 'system');
     } else if (!activeGameId) {
       sendMessage(user.id, `Game started: ${title}`, 'system');
+      recordGamePlayed();
     }
     setActiveGame(user.id, gameId);
     setActiveSection('game');
