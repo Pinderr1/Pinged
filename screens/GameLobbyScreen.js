@@ -25,7 +25,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
   const { darkMode } = useTheme();
   const { devMode } = useDev();
   const { recordGamePlayed } = useGameLimit();
-  const { user } = useUser();
+  const { user, addGameXP } = useUser();
   const { sendGameInvite } = useMatchmaking();
 
   const { game, opponent, status = 'waiting', inviteId } = route.params || {};
@@ -77,6 +77,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
   }, [countdown]);
 
   const handleGameEnd = (result) => {
+    if (result) addGameXP();
     setGameResult(result);
   };
 

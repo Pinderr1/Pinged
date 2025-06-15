@@ -96,6 +96,9 @@ export default function OnboardingScreen() {
           location: answers.location,
           favoriteGame: answers.favoriteGame,
           skillLevel: answers.skillLevel,
+          xp: 0,
+          streak: 0,
+          lastPlayedAt: null,
           onboardingComplete: true,
         };
         await setDoc(doc(db, 'users', auth.currentUser.uid), clean, {

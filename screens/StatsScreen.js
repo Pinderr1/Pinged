@@ -20,7 +20,8 @@ const StatsScreen = ({ navigation }) => {
     matches: 120,
     swipes: 421,
     messagesSent: 198,
-    streak: 7,
+    xp: user?.xp || 0,
+    streak: user?.streak || 0,
     badge: 'Top 5% Swipers',
   };
 
@@ -51,6 +52,10 @@ const StatsScreen = ({ navigation }) => {
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>Favorite Game</Text>
           <Text style={styles.statValue}>{stats.favoriteGame}</Text>
+        </View>
+        <View style={styles.statBox}>
+          <Text style={styles.statLabel}>XP</Text>
+          <Text style={styles.statValue}>{stats.xp}</Text>
         </View>
 
         {/* Social Stats */}

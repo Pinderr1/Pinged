@@ -26,7 +26,7 @@ import { games, gameList } from '../games';
 export default function ChatScreen({ route }) {
   const { user } = route.params || {};
   const navigation = useNavigation();
-  const { user: currentUser } = useUser();
+  const { user: currentUser, addGameXP } = useUser();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { devMode } = useDev();
   const {
@@ -90,6 +90,7 @@ export default function ChatScreen({ route }) {
 
   const handleGameEnd = (result) => {
     if (!result) return;
+    addGameXP();
     if (result.winner !== undefined) {
       const msg = result.winner === '0' ? 'You win!' : `${user.name} wins.`;
       sendMessage(user.id, `Game over. ${msg}`, 'system');

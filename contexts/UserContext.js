@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { useDev } from './DevContext';
 import { useOnboarding } from './OnboardingContext';
@@ -20,6 +20,8 @@ export const UserProvider = ({ children }) => {
     bio: 'Development user',
     location: 'Localhost',
     photoURL: null,
+    xp: 0,
+    streak: 0,
   };
 
   useEffect(() => {
@@ -73,8 +75,42 @@ export const UserProvider = ({ children }) => {
     setUser((prev) => ({ ...prev, ...updates }));
   };
 
+  const addGameXP = async (amount = 10) => {
+    if (!user?.uid) return;
+    const last = user.lastPlayedAt ? user.lastPlayedAt.toDate?.() || new Date(user.lastPlayedAt) : null;
+    let newStreak = user.streak || 0;
+    if (last) {
+      const lastMid = new Date(last);
+      lastMid.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const diff = Math.floor((today - lastMid) / 86400000);
+      if (diff === 0) {
+        newStreak = user.streak || 1;
+      } else if (diff === 1) {
+        newStreak = (user.streak || 0) + 1;
+      } else {
+        newStreak = 1;
+      }
+    } else {
+      newStreak = 1;
+    }
+
+    const newXP = (user.xp || 0) + amount;
+    updateUser({ xp: newXP, streak: newStreak, lastPlayedAt: new Date() });
+    try {
+      await updateDoc(doc(db, 'users', user.uid), {
+        xp: newXP,
+        streak: newStreak,
+        lastPlayedAt: serverTimestamp(),
+      });
+    } catch (e) {
+      console.warn('Failed to update XP', e);
+    }
+  };
+
   return (
-    <UserContext.Provider value={{ user, updateUser, loading }}>
+    <UserContext.Provider value={{ user, updateUser, addGameXP, loading }}>
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#d81b60" />
