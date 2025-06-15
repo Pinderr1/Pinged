@@ -252,7 +252,7 @@ const allGames = [
     id: '21',
     title: 'Sudoku',
     icon: <MaterialCommunityIcons name="table" size={30} />,
-    route: null,
+    route: 'Sudoku',
     premium: false,
     category: 'Puzzle',
     description: 'Fill the grid with numbers 1-9 without repeating in rows or columns.',
@@ -263,7 +263,7 @@ const allGames = [
     id: '22',
     title: 'Minesweeper',
     icon: <MaterialCommunityIcons name="bomb" size={30} />,
-    route: null,
+    route: 'Minesweeper',
     premium: false,
     category: 'Puzzle',
     description: 'Clear the board without detonating a mine. Classic brain teaser.',
@@ -387,6 +387,17 @@ const allGames = [
     mode: 'versus',
     speed: 'quick',
     international: true
+  },
+  {
+    id: '33',
+    title: 'Guess Number',
+    icon: <MaterialCommunityIcons name="numeric" size={30} />,
+    route: 'GuessNumber',
+    premium: false,
+    category: 'Puzzle',
+    description: 'Guess the secret number with hints each turn.',
+    mode: 'solo',
+    speed: 'quick'
   }
 ];
 
@@ -427,7 +438,6 @@ const PlayScreen = ({ navigation }) => {
     return matchCategory && matchSearch && matchTag;
   });
 
-  const internationalGames = allGames.filter((g) => g.international);
 
   useEffect(() => {
     if (filter === 'Premium') {
@@ -635,30 +645,7 @@ const PlayScreen = ({ navigation }) => {
         ))}
       </View>
 
-      {!!internationalGames.length && (
-        <>
-          <Text
-            style={{
-              fontSize: 15,
-              fontWeight: '600',
-              marginLeft: 16,
-              marginBottom: 6,
-              marginTop: 10,
-              color: darkMode ? '#fff' : '#000'
-            }}
-          >
-            International Games
-          </Text>
-          <FlatList
-            data={internationalGames}
-            horizontal
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 8 }}
-            renderItem={renderItem}
-          />
-        </>
-      )}
+
 
       <FlatList
         ref={flatListRef}
