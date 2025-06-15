@@ -34,8 +34,8 @@ const SettingsScreen = ({ navigation }) => {
       </Text>
 
       <View style={{ marginBottom: 20 }}>
-        <Text style={[styles.settingText, { color: darkMode ? '#ccc' : '#666' }]}>
-          Account: DemoUser@example.com
+        <Text style={[styles.settingText, { color: darkMode ? '#ccc' : '#666' }]}> 
+          Account: {user?.email || 'Unknown'}
         </Text>
         <Text style={[styles.settingText, { color: darkMode ? '#aaa' : '#999' }]}>
           Status: {isPremium ? '🌟 Premium Member' : 'Free Member'}
