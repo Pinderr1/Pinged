@@ -5,20 +5,22 @@ import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'rea
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 
 const StatsScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
+  const { user } = useUser();
+  const isPremium = !!user?.isPremium;
 
   const stats = {
     gamesPlayed: 87,
     gamesWon: 52,
-    favoriteGame: 'Chess',
+    favoriteGame: user?.favoriteGame || 'Chess',
     matches: 120,
     swipes: 421,
     messagesSent: 198,
     streak: 7,
     badge: 'Top 5% Swipers',
-    premium: false
   };
 
   return (
@@ -31,8 +33,8 @@ const StatsScreen = ({ navigation }) => {
         {/* Profile Summary */}
         <View style={styles.profileCard}>
           <Image source={require('../assets/user1.jpg')} style={styles.avatar} />
-          <Text style={styles.name}>DemoUser</Text>
-          {stats.premium && <Text style={styles.premiumBadge}>★ Premium</Text>}
+          <Text style={styles.name}>{user?.displayName || 'User'}</Text>
+          {isPremium && <Text style={styles.premiumBadge}>★ Premium</Text>}
         </View>
 
         {/* Game Stats */}
@@ -76,7 +78,7 @@ const StatsScreen = ({ navigation }) => {
           <Text style={styles.statValue}>{stats.badge}</Text>
         </View>
 
-        {!stats.premium && (
+        {!isPremium && (
           <TouchableOpacity
             onPress={() => navigation.navigate('PremiumPaywall')}
             style={styles.premiumButton}
