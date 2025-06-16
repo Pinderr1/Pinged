@@ -2,12 +2,12 @@ import React from 'react';
 import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
+import { useNotification } from '../contexts/NotificationContext';
 
 const Header = () => {
   const navigation = useNavigation();
   const { darkMode } = useTheme();
-
-  const notificationCount = 5; // 🔥 Replace with dynamic logic later
+  const { unseenCount } = useNotification();
 
   return (
     <View style={[styles.container, { backgroundColor: darkMode ? '#222' : '#fff' }]}>
@@ -32,9 +32,9 @@ const Header = () => {
             source={require('../assets/bell.png')}
             style={[styles.icon, { tintColor: darkMode ? '#fff' : '#000' }]}
           />
-          {notificationCount > 0 && (
+          {unseenCount > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>{notificationCount}</Text>
+              <Text style={styles.badgeText}>{unseenCount}</Text>
             </View>
           )}
         </View>

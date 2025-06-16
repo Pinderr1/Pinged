@@ -17,9 +17,9 @@ export default function App() {
   return (
     <DevProvider>
       <ThemeProvider>
-        <NotificationProvider>
-          <OnboardingProvider>
-            <UserProvider>
+        <OnboardingProvider>
+          <UserProvider>
+            <NotificationProvider>
               <GameLimitProvider>
                 <ChatProvider>
                   <MatchmakingProvider>
@@ -32,9 +32,9 @@ export default function App() {
                   </MatchmakingProvider>
                 </ChatProvider>
               </GameLimitProvider>
-            </UserProvider>
-          </OnboardingProvider>
-        </NotificationProvider>
+            </NotificationProvider>
+          </UserProvider>
+        </OnboardingProvider>
       </ThemeProvider>
     </DevProvider>
   );
