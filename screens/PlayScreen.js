@@ -424,8 +424,11 @@ const allGames = [
   }
 ];
 
+// Filter out games that are not yet implemented (route is null)
+const releasedGames = allGames.filter((g) => g.route);
+
 const getAllCategories = () => {
-  const cats = [...new Set(allGames.map((g) => g.category))].filter(
+  const cats = [...new Set(releasedGames.map((g) => g.category))].filter(
     (c) => !HIDDEN_CATEGORIES.includes(c)
   );
   return ['All', ...cats];
@@ -472,7 +475,7 @@ const PlayScreen = ({ navigation }) => {
     );
   };
 
-  const filteredGames = allGames.filter((game) => {
+  const filteredGames = releasedGames.filter((game) => {
     const matchCategory =
       filter === 'All' ||
       (filter === 'Free' && !game.premium) ||
