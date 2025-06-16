@@ -37,3 +37,7 @@ npm start
 ```
 
 Expo will load the values from the `.env` file automatically using the `dotenv` package configured in `app.config.js`.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
