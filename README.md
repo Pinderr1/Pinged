@@ -23,3 +23,43 @@ EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=<your storageBucket>
 EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=<your messagingSenderId>
 EXPO_PUBLIC_FIREBASE_APP_ID=<your appId>
 EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID=<your Web client ID>
+```
+
+## Installation
+
+Install dependencies with npm:
+
+```sh
+npm install
+```
+
+## Starting the app
+
+Start the Expo development server:
+
+```sh
+npm start
+```
+
+This runs `expo start`, so you can also invoke that command directly.
+
+## Running tests
+
+Execute the Jest test suite with:
+
+```sh
+npm test
+```
+
+## Example `.env` file
+
+```env
+EXPO_PUBLIC_FIREBASE_API_KEY=<your apiKey>
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=<your authDomain>
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=<your projectId>
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=<your storageBucket>
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=<your messagingSenderId>
+EXPO_PUBLIC_FIREBASE_APP_ID=<your appId>
+EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=<your measurementId>
+EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID=<your Web client ID>
+```
