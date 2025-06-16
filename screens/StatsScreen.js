@@ -8,6 +8,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import usePremiumStatus from '../hooks/usePremiumStatus';
 import { avatarSource } from '../utils/avatar';
+import PremiumBadge from '../components/PremiumBadge';
 
 const StatsScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
@@ -37,7 +38,7 @@ const StatsScreen = ({ navigation }) => {
         <View style={styles.profileCard}>
           <Image source={avatarSource(user?.photoURL)} style={styles.avatar} />
           <Text style={styles.name}>{user?.displayName || 'User'}</Text>
-          {isPremium && <Text style={styles.premiumBadge}>★ Premium</Text>}
+          <PremiumBadge visible={isPremium} />
         </View>
 
         {/* Game Stats */}
@@ -117,15 +118,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 20,
     fontWeight: 'bold'
-  },
-  premiumBadge: {
-    marginTop: 6,
-    color: '#fff',
-    backgroundColor: '#d81b60',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    fontSize: 12
   },
   sectionTitle: {
     fontSize: 16,
