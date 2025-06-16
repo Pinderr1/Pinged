@@ -22,6 +22,7 @@ import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params || {};
@@ -29,6 +30,7 @@ export default function ChatScreen({ route }) {
   const { user: currentUser, addGameXP } = useUser();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { devMode } = useDev();
+  const isPremiumUser = !!currentUser?.isPremium;
   const {
     getMessages,
     sendMessage,
@@ -88,6 +90,10 @@ export default function ChatScreen({ route }) {
     }
   };
 
+  const handleVoice = () => {
+    sendMessage(user.id, '[Voice Message]');
+  };
+
   const handleGameEnd = (result) => {
     if (!result) return;
     addGameXP();
@@ -102,7 +108,6 @@ export default function ChatScreen({ route }) {
   };
 
   const handleGameSelect = (gameId) => {
-    const isPremiumUser = !!currentUser?.isPremium;
     if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
       setShowGameModal(false);
       navigation.navigate('PremiumPaywall');
@@ -138,7 +143,14 @@ export default function ChatScreen({ route }) {
           ? 'System'
           : user.name}
       </Text>
-      <Text style={chatStyles.messageText}>{item.text}</Text>
+      <View style={chatStyles.messageRow}>
+        <Text style={chatStyles.messageText}>{item.text}</Text>
+        {isPremiumUser && item.sender !== 'system' && (
+          <TouchableOpacity style={chatStyles.reactButton} onPress={() => {}}>
+            <Ionicons name="heart-outline" size={14} color="#d81b60" />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 
@@ -153,9 +165,12 @@ export default function ChatScreen({ route }) {
 
   const chatSection = (
     <View style={{ flex: 1, padding: 10 }}>
-      <Text style={[styles.logoText, { marginBottom: 10 }]}>
-        Chat with {user.name}
-      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+        <Text style={styles.logoText}>Chat with {user.name}</Text>
+        {isPremiumUser && (
+          <Text style={chatStyles.premiumBadge}>★ Premium</Text>
+        )}
+      </View>
       <View style={{ flex: 1 }}>
         <FlatList
           data={messages}
@@ -185,6 +200,11 @@ export default function ChatScreen({ route }) {
           onChangeText={setText}
           placeholderTextColor="#888"
         />
+        {isPremiumUser && (
+          <TouchableOpacity style={chatStyles.voiceButton} onPress={handleVoice}>
+            <Ionicons name="mic" size={20} color="#fff" />
+          </TouchableOpacity>
+        )}
         <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
@@ -329,6 +349,14 @@ const chatStyles = StyleSheet.create({
     fontSize: 15,
     color: '#333',
   },
+  messageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  reactButton: {
+    marginLeft: 6,
+  },
   sender: {
     fontSize: 11,
     fontWeight: 'bold',
@@ -351,6 +379,12 @@ const chatStyles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: 16,
     marginRight: 10,
+  },
+  voiceButton: {
+    backgroundColor: '#607d8b',
+    padding: 10,
+    borderRadius: 20,
+    marginRight: 6,
   },
   sendButton: {
     backgroundColor: '#ff4081',
@@ -412,5 +446,14 @@ const chatStyles = StyleSheet.create({
   gameOptionText: {
     fontSize: 16,
     color: '#333',
+  },
+  premiumBadge: {
+    marginLeft: 8,
+    color: '#fff',
+    backgroundColor: '#d81b60',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    fontSize: 12,
   },
 });

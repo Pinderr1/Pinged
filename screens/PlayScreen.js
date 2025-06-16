@@ -438,6 +438,26 @@ const PlayScreen = ({ navigation }) => {
   const { devMode } = useDev();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const isPremiumUser = !!user?.isPremium;
+  if (!isPremiumUser && !devMode) {
+    return (
+      <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
+        <Header showLogoOnly />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
+            {gamesLeft === 0
+              ? 'You reached today\'s free game limit.'
+              : `You have ${gamesLeft} free game${gamesLeft === 1 ? '' : 's'} left today.`}
+          </Text>
+          <TouchableOpacity
+            style={styles.emailBtn}
+            onPress={() => navigation.navigate('PremiumPaywall')}
+          >
+            <Text style={styles.btnText}>Unlock Premium</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    );
+  }
   const [filter, setFilter] = useState('All');
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');

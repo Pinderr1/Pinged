@@ -1,51 +1,24 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  collection,
+  doc,
+  query,
+  onSnapshot,
+  addDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  orderBy,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { db } from '../firebase';
 import { useDev } from './DevContext';
+import { useUser } from './UserContext';
 
 const ChatContext = createContext();
 
 const STORAGE_KEY = 'chatMatches';
-
-const initialMatches = [
-  {
-    id: '1',
-    name: 'Emily',
-    age: 25,
-    image: require('../assets/user1.jpg'),
-    messages: [
-      { id: 'm1', text: 'Hey! Want to play a game?', sender: 'them' },
-      { id: 'm2', text: 'Sure! Tic Tac Toe?', sender: 'you' },
-      { id: 'm3', text: 'Sounds good!', sender: 'them' },
-    ],
-    matchedAt: '2 days ago',
-    activeGameId: null,
-    pendingInvite: null,
-  },
-  {
-    id: '2',
-    name: 'Liam',
-    age: 27,
-    image: require('../assets/user2.jpg'),
-    messages: [
-      { id: 'm1', text: 'Ready for a rematch?', sender: 'them' },
-    ],
-    matchedAt: '1 day ago',
-    activeGameId: null,
-    pendingInvite: null,
-  },
-  {
-    id: '3',
-    name: 'Ava',
-    age: 23,
-    image: require('../assets/user1.jpg'),
-    messages: [
-      { id: 'm1', text: 'BRB grabbing coffee ☕', sender: 'them' },
-    ],
-    matchedAt: '5 hours ago',
-    activeGameId: null,
-    pendingInvite: null,
-  },
-];
 
 export const ChatProvider = ({ children }) => {
   const { devMode } = useDev();
@@ -62,30 +35,105 @@ export const ChatProvider = ({ children }) => {
     pendingInvite: null,
   };
 
-  const [matches, setMatches] = useState(
-    devMode ? [...initialMatches, devMatch] : initialMatches
-  );
+  const [matches, setMatches] = useState(devMode ? [devMatch] : []);
 
+  const { user } = useUser();
+
+  // Migrate any old AsyncStorage data into Firestore
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((data) => {
-      if (data) {
-        try {
-          const parsed = JSON.parse(data);
-          if (Array.isArray(parsed)) {
-            setMatches(parsed);
-          }
-        } catch (e) {
-          console.warn('Failed to parse matches from storage', e);
+    if (!user?.uid) return;
+    const migrate = async () => {
+      try {
+        const data = await AsyncStorage.getItem(STORAGE_KEY);
+        if (!data) return;
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) {
+          await Promise.all(
+            parsed.map(async (m) => {
+              const ref = doc(db, 'users', user.uid, 'matches', m.id);
+              await setDoc(
+                ref,
+                {
+                  name: m.name,
+                  age: m.age,
+                  image: m.image,
+                  activeGameId: m.activeGameId || null,
+                  pendingInvite: m.pendingInvite || null,
+                  createdAt: serverTimestamp(),
+                },
+                { merge: true }
+              );
+              const msgCol = collection(ref, 'messages');
+              for (const msg of m.messages || []) {
+                await addDoc(msgCol, {
+                  text: msg.text,
+                  sender: msg.sender,
+                  createdAt: serverTimestamp(),
+                });
+              }
+            })
+          );
+          await AsyncStorage.removeItem(STORAGE_KEY);
         }
+      } catch (e) {
+        console.warn('Chat migration failed', e);
+      }
+    };
+    migrate();
+  }, [user?.uid]);
+
+  // Subscribe to Firestore match documents
+  useEffect(() => {
+    if (!user?.uid) return;
+    const q = query(
+      collection(db, 'users', user.uid, 'matches'),
+      orderBy('createdAt', 'desc')
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data(), messages: [] }));
+      setMatches((prev) => {
+        const filtered = prev.filter((m) => m.id === devMatch.id);
+        return devMode ? [...data, ...filtered] : data;
+      });
+    });
+    return unsub;
+  }, [user?.uid, devMode]);
+
+  // Subscribe to messages for each match
+  const messageSubs = useRef({});
+  useEffect(() => {
+    if (!user?.uid) return;
+    const ids = matches.filter((m) => m.id !== devMatch.id).map((m) => m.id);
+    ids.forEach((id) => {
+      if (!messageSubs.current[id]) {
+        const mq = query(
+          collection(db, 'users', user.uid, 'matches', id, 'messages'),
+          orderBy('createdAt', 'asc')
+        );
+        messageSubs.current[id] = onSnapshot(mq, (snap) => {
+          const msgs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          setMatches((prev) =>
+            prev.map((m) => (m.id === id ? { ...m, messages: msgs } : m))
+          );
+        });
       }
     });
-  }, []);
+    Object.keys(messageSubs.current).forEach((id) => {
+      if (!ids.includes(id)) {
+        messageSubs.current[id]();
+        delete messageSubs.current[id];
+      }
+    });
+    return () => {
+      Object.values(messageSubs.current).forEach((u) => u());
+      messageSubs.current = {};
+    };
+  }, [user?.uid, matches.map((m) => m.id).join()]);
 
   useEffect(() => {
     setMatches((prev) => {
       if (devMode) {
         if (!prev.find((m) => m.id === devMatch.id)) {
-          console.log('Adding dev match');
           return [...prev, devMatch];
         }
         return prev;
@@ -94,78 +142,97 @@ export const ChatProvider = ({ children }) => {
     });
   }, [devMode]);
 
-  useEffect(() => {
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(matches)).catch((err) => {
-      console.warn('Failed to save matches to storage', err);
-    });
-  }, [matches]);
 
-  const sendMessage = (matchId, text, sender = 'you') => {
-    if (!text) return;
-    setMatches((prev) =>
-      prev.map((m) =>
-        m.id === matchId
-          ? {
-              ...m,
-              messages: [
-                ...m.messages,
-                { id: Date.now().toString(), text, sender },
-              ],
-            }
-          : m
-      )
-    );
-  };
-
-  const setActiveGame = (matchId, gameId) => {
-    setMatches((prev) =>
-      prev.map((m) =>
-        m.id === matchId
-          ? { ...m, activeGameId: gameId, pendingInvite: null }
-          : m
-      )
-    );
-  };
-
-  const sendGameInvite = (matchId, gameId, from = 'you') => {
-    setMatches((prev) =>
-      prev.map((m) =>
-        m.id === matchId
-          ? { ...m, pendingInvite: { gameId, from } }
-          : m
-      )
-    );
-    if (devMode) {
-      console.log('Auto-accepting game invite');
-      acceptGameInvite(matchId);
-    }
-  };
-
-  const clearGameInvite = (matchId) => {
-    setMatches((prev) =>
-      prev.map((m) =>
-        m.id === matchId
-          ? { ...m, pendingInvite: null }
-          : m
-      )
-    );
-  };
-
-  const acceptGameInvite = (matchId) => {
-    const invite = matches.find((m) => m.id === matchId)?.pendingInvite;
-    if (invite) {
+  const sendMessage = async (matchId, text, sender = 'you') => {
+    if (!user?.uid || !text) return;
+    if (matchId === devMatch.id) {
       setMatches((prev) =>
         prev.map((m) =>
           m.id === matchId
             ? {
                 ...m,
-                activeGameId: invite.gameId,
-                pendingInvite: null,
+                messages: [
+                  ...m.messages,
+                  { id: Date.now().toString(), text, sender },
+                ],
               }
             : m
         )
       );
+      return;
     }
+    await addDoc(
+      collection(db, 'users', user.uid, 'matches', matchId, 'messages'),
+      { text, sender, createdAt: serverTimestamp() }
+    );
+  };
+
+  const setActiveGame = (matchId, gameId) => {
+    if (!user?.uid) return;
+    if (matchId === devMatch.id) {
+      setMatches((prev) =>
+        prev.map((m) =>
+          m.id === matchId
+            ? { ...m, activeGameId: gameId, pendingInvite: null }
+            : m
+        )
+      );
+      return;
+    }
+    updateDoc(doc(db, 'users', user.uid, 'matches', matchId), {
+      activeGameId: gameId,
+      pendingInvite: null,
+    });
+  };
+
+  const sendGameInvite = async (matchId, gameId, from = 'you') => {
+    if (!user?.uid) return;
+    if (matchId === devMatch.id) {
+      setMatches((prev) =>
+        prev.map((m) =>
+          m.id === matchId ? { ...m, pendingInvite: { gameId, from } } : m
+        )
+      );
+      if (devMode) acceptGameInvite(matchId);
+      return;
+    }
+    await updateDoc(doc(db, 'users', user.uid, 'matches', matchId), {
+      pendingInvite: { gameId, from },
+    });
+    if (devMode) acceptGameInvite(matchId);
+  };
+
+  const clearGameInvite = (matchId) => {
+    if (!user?.uid) return;
+    if (matchId === devMatch.id) {
+      setMatches((prev) =>
+        prev.map((m) => (m.id === matchId ? { ...m, pendingInvite: null } : m))
+      );
+      return;
+    }
+    updateDoc(doc(db, 'users', user.uid, 'matches', matchId), {
+      pendingInvite: null,
+    });
+  };
+
+  const acceptGameInvite = (matchId) => {
+    if (!user?.uid) return;
+    const invite = matches.find((m) => m.id === matchId)?.pendingInvite;
+    if (!invite) return;
+    if (matchId === devMatch.id) {
+      setMatches((prev) =>
+        prev.map((m) =>
+          m.id === matchId
+            ? { ...m, activeGameId: invite.gameId, pendingInvite: null }
+            : m
+        )
+      );
+      return;
+    }
+    updateDoc(doc(db, 'users', user.uid, 'matches', matchId), {
+      activeGameId: invite.gameId,
+      pendingInvite: null,
+    });
   };
 
   const getPendingInvite = (matchId) =>
@@ -177,14 +244,37 @@ export const ChatProvider = ({ children }) => {
   const getMessages = (matchId) =>
     matches.find((m) => m.id === matchId)?.messages || [];
 
-  const addMatch = (match) =>
-    setMatches((prev) => {
-      if (prev.find((m) => m.id === match.id)) return prev;
-      return [...prev, match];
-    });
+  const addMatch = async (match) => {
+    if (!user?.uid || !match?.id) return;
+    if (match.id === devMatch.id) {
+      setMatches((prev) => {
+        if (prev.find((m) => m.id === match.id)) return prev;
+        return [...prev, match];
+      });
+      return;
+    }
+    await setDoc(
+      doc(db, 'users', user.uid, 'matches', match.id),
+      {
+        name: match.name,
+        age: match.age,
+        image: match.image,
+        activeGameId: null,
+        pendingInvite: null,
+        createdAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  };
 
-  const removeMatch = (matchId) =>
-    setMatches((prev) => prev.filter((m) => m.id !== matchId));
+  const removeMatch = (matchId) => {
+    if (!user?.uid) return;
+    if (matchId === devMatch.id) {
+      setMatches((prev) => prev.filter((m) => m.id !== matchId));
+      return;
+    }
+    deleteDoc(doc(db, 'users', user.uid, 'matches', matchId));
+  };
 
   return (
     <ChatContext.Provider
