@@ -12,6 +12,7 @@ import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import styles from '../styles';
+import log from '../utils/logger';
 
 export default function SignUpScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -24,7 +25,7 @@ export default function SignUpScreen({ navigation }) {
     }
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email.trim(), password);
-      console.log('✅ Signed up:', userCred.user.uid);
+      log('✅ Signed up:', userCred.user.uid);
       navigation.replace('Onboarding');
     } catch (error) {
       console.error(error);

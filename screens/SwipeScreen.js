@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import log from '../utils/logger';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_HEIGHT = 520;
@@ -46,13 +47,6 @@ const allUsers = [
   }
 ];
 
-const devUser = {
-  id: '__devUser',
-  name: 'Dev Tester',
-  age: 99,
-  bio: 'Testing swipes',
-  images: [require('../assets/user1.jpg')],
-};
 
 const SwipeScreen = () => {
   const { darkMode } = useTheme();
@@ -84,7 +78,7 @@ const SwipeScreen = () => {
     extrapolate: 'clamp',
   });
 
-  const users = devMode ? [devUser, ...allUsers] : allUsers;
+  const users = allUsers;
   const displayUser = users[currentIndex] ?? null;
 
   useEffect(() => {
@@ -116,7 +110,7 @@ const SwipeScreen = () => {
         pendingInvite: null,
       });
 
-      if (devMode) console.log('Auto-matching enabled');
+      if (devMode) log('Auto-matching enabled');
       setTimeout(() => setShowFireworks(false), 2000);
     }
 

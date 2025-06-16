@@ -25,6 +25,9 @@ EXPO_PUBLIC_FIREBASE_APP_ID=<your appId>
 EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID=<your Web client ID>
 ```
 
+You can copy the included `.env.example` file to `.env` and populate it with
+your values.
+
 These variables are consumed in [`firebase.js`](firebase.js) when initializing Firebase and in [`authConfig.js`](authConfig.js) for authentication.
 
 ## Running the app
