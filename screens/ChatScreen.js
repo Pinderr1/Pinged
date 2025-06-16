@@ -22,11 +22,13 @@ import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
+import usePremiumStatus from '../hooks/usePremiumStatus';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params || {};
   const navigation = useNavigation();
   const { user: currentUser, addGameXP } = useUser();
+  const isPremiumUser = usePremiumStatus();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { devMode } = useDev();
   const {
@@ -38,6 +40,8 @@ export default function ChatScreen({ route }) {
     clearGameInvite,
     acceptGameInvite,
     getPendingInvite,
+    sendReaction,
+    sendVoiceMessage,
   } = useChats();
   const { darkMode } = useTheme();
   const { showNotification } = useNotification();
@@ -77,6 +81,7 @@ export default function ChatScreen({ route }) {
       id: msg.id || index.toString(),
       text: msg.text,
       sender: msg.sender,
+      type: msg.type || 'text',
     }));
     setMessages(converted.reverse());
   }, [rawMessages]);
@@ -102,7 +107,6 @@ export default function ChatScreen({ route }) {
   };
 
   const handleGameSelect = (gameId) => {
-    const isPremiumUser = !!currentUser?.isPremium;
     if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
       setShowGameModal(false);
       navigation.navigate('PremiumPaywall');
@@ -118,6 +122,14 @@ export default function ChatScreen({ route }) {
     setActiveGame(user.id, gameId);
     setActiveSection('game');
     setShowGameModal(false);
+  };
+
+  const handleReaction = () => {
+    sendReaction(user.id, '❤️');
+  };
+
+  const handleVoice = () => {
+    sendVoiceMessage(user.id);
   };
 
   const renderMessage = ({ item }) => (
@@ -137,8 +149,15 @@ export default function ChatScreen({ route }) {
           : item.sender === 'system'
           ? 'System'
           : user.name}
+        {item.sender === 'them' && user.isPremium && ' 💎'}
       </Text>
-      <Text style={chatStyles.messageText}>{item.text}</Text>
+      {item.type === 'reaction' ? (
+        <Text style={chatStyles.messageText}>{item.text}</Text>
+      ) : item.type === 'voice' ? (
+        <Text style={chatStyles.messageText}>🎤 Voice Message</Text>
+      ) : (
+        <Text style={chatStyles.messageText}>{item.text}</Text>
+      )}
     </View>
   );
 
@@ -153,9 +172,10 @@ export default function ChatScreen({ route }) {
 
   const chatSection = (
     <View style={{ flex: 1, padding: 10 }}>
-      <Text style={[styles.logoText, { marginBottom: 10 }]}>
-        Chat with {user.name}
-      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+        <Text style={styles.logoText}>Chat with {user.name}</Text>
+        {user.isPremium && <Text style={{ marginLeft: 6 }}>💎</Text>}
+      </View>
       <View style={{ flex: 1 }}>
         <FlatList
           data={messages}
@@ -185,6 +205,22 @@ export default function ChatScreen({ route }) {
           onChangeText={setText}
           placeholderTextColor="#888"
         />
+        {isPremiumUser && (
+          <>
+            <TouchableOpacity
+              style={chatStyles.reactionButton}
+              onPress={handleReaction}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>😊</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={chatStyles.voiceButton}
+              onPress={handleVoice}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>🎤</Text>
+            </TouchableOpacity>
+          </>
+        )}
         <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
@@ -357,6 +393,20 @@ const chatStyles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
+  },
+  reactionButton: {
+    backgroundColor: '#ffb300',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginRight: 6,
+  },
+  voiceButton: {
+    backgroundColor: '#8e24aa',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginRight: 6,
   },
   playButton: {
     backgroundColor: '#009688',

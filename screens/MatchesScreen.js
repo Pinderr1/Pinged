@@ -12,7 +12,10 @@ const MatchesScreen = ({ navigation }) => {
   const renderItem = ({ item }) => (
     <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Chat', { user: item })}>
       <Image source={item.image} style={styles.avatar} />
-      <Text style={styles.name}>{item.name}</Text>
+      <Text style={styles.name}>
+        {item.name}
+        {item.isPremium && ' 💎'}
+      </Text>
     </TouchableOpacity>
   );
 
