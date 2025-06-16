@@ -13,9 +13,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
+import usePremiumPurchase from '../hooks/usePremiumPurchase';
 
 const PremiumScreen = () => {
   const { darkMode } = useTheme();
+  const { purchase } = usePremiumPurchase();
 
   const features = [
     { icon: require('../assets/icons/unlimited.png'), text: 'Unlimited Game Invites' },
@@ -46,7 +48,7 @@ const PremiumScreen = () => {
             ))}
           </View>
 
-          <TouchableOpacity style={styles.emailBtn} onPress={() => alert('Redirect to payment screen')}>
+          <TouchableOpacity style={styles.emailBtn} onPress={purchase}>
             <Text style={styles.btnText}>💎 Upgrade Now</Text>
           </TouchableOpacity>
 

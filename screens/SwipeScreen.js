@@ -17,6 +17,7 @@ import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
+import usePremiumStatus from '../hooks/usePremiumStatus';
 import { useDev } from '../contexts/DevContext';
 import { useChats } from '../contexts/ChatContext';
 import { useNavigation } from '@react-navigation/native';
@@ -60,7 +61,7 @@ const SwipeScreen = () => {
   const { user: currentUser } = useUser();
   const { devMode } = useDev();
   const { addMatch } = useChats();
-  const isPremiumUser = !!currentUser?.isPremium;
+  const isPremiumUser = usePremiumStatus();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likesUsed, setLikesUsed] = useState(0);

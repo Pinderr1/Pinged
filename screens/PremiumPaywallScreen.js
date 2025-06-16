@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
+import usePremiumPurchase from '../hooks/usePremiumPurchase';
 
 const features = [
   {
@@ -33,6 +34,7 @@ const features = [
 
 const PremiumPaywallScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
+  const { purchase } = usePremiumPurchase();
 
   return (
     <LinearGradient
@@ -57,7 +59,7 @@ const PremiumPaywallScreen = ({ navigation }) => {
           )}
         />
 
-        <TouchableOpacity style={local.upgradeBtn}>
+        <TouchableOpacity style={local.upgradeBtn} onPress={purchase}>
           <Text style={local.upgradeText}>Upgrade Now</Text>
         </TouchableOpacity>
 
