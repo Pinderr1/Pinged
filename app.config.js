@@ -7,6 +7,8 @@ export default {
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
+    userInterfaceStyle: "light",
+    newArchEnabled: false,
     scheme: "pinged",
     splash: {
       image: "./assets/splash.png",
@@ -29,14 +31,15 @@ export default {
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#FFFFFF"
+        backgroundColor: "#ffffff"
       },
+      edgeToEdgeEnabled: true,
       permissions: ["CAMERA", "ACCESS_FINE_LOCATION"]
     },
     web: {
       favicon: "./assets/favicon.png"
     },
-    plugins: ["expo-web-browser"],
+    plugins: ["expo-web-browser", "expo-secure-store"],
     extra: {
       EXPO_PUBLIC_FIREBASE_API_KEY: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
       EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,

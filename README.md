@@ -1,6 +1,6 @@
 # Pinged
 
-Pinged is a React Native/Expo application. This repository does not include the Firebase configuration values that the application expects at runtime. These values are supplied through environment variables loaded from a `.env` file.
+Pinged is a React Native/Expo application. This repository does not include the Firebase configuration values that the application expects at runtime. These values are supplied through environment variables loaded from a `.env` file. Expo uses `app.config.js` as the single source for build configuration, which automatically loads these variables.
 
 ## Obtaining Firebase configuration values
 
