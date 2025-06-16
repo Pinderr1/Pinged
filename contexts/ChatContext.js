@@ -25,21 +25,7 @@ export const ChatProvider = ({ children }) => {
   const { user } = useUser();
   const isPremium = usePremiumStatus();
 
-  const devMatch = {
-    id: '__testMatch',
-    name: 'Dev Tester',
-    age: 99,
-    image: require('../assets/user1.jpg'),
-    messages: [
-      { id: 'dev1', text: 'Dev chat ready.', sender: 'system', type: 'text' },
-    ],
-    matchedAt: 'now',
-    activeGameId: null,
-    pendingInvite: null,
-    isPremium: false,
-  };
-
-  const [matches, setMatches] = useState(devMode ? [devMatch] : []);
+  const [matches, setMatches] = useState([]);
 
   // Migrate old AsyncStorage matches into Firestore
   useEffect(() => {
@@ -87,19 +73,16 @@ export const ChatProvider = ({ children }) => {
     const q = query(collection(db, 'users', user.uid, 'matches'), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, (snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data(), messages: [] }));
-      setMatches((prev) => {
-        const filtered = prev.filter((m) => m.id === devMatch.id);
-        return devMode ? [...data, ...filtered] : data;
-      });
+      setMatches(data);
     });
     return unsub;
-  }, [user?.uid, devMode]);
+  }, [user?.uid]);
 
   // Live message sync for all matches
   const messageSubs = useRef({});
   useEffect(() => {
     if (!user?.uid) return;
-    const ids = matches.filter((m) => m.id !== devMatch.id).map((m) => m.id);
+    const ids = matches.map((m) => m.id);
     ids.forEach((id) => {
       if (!messageSubs.current[id]) {
         const mq = query(collection(db, 'users', user.uid, 'matches', id, 'messages'), orderBy('createdAt', 'asc'));
@@ -123,30 +106,9 @@ export const ChatProvider = ({ children }) => {
     };
   }, [user?.uid, matches.map((m) => m.id).join()]);
 
-  useEffect(() => {
-    setMatches((prev) => {
-      if (devMode && !prev.find((m) => m.id === devMatch.id)) {
-        return [...prev, devMatch];
-      }
-      return devMode ? prev : prev.filter((m) => m.id !== devMatch.id);
-    });
-  }, [devMode]);
 
   const sendMessage = async (matchId, text, sender = 'you', type = 'text') => {
     if (!user?.uid || !text) return;
-    if (matchId === devMatch.id) {
-      setMatches((prev) =>
-        prev.map((m) =>
-          m.id === matchId
-            ? {
-                ...m,
-                messages: [...m.messages, { id: Date.now().toString(), text, sender, type }],
-              }
-            : m
-        )
-      );
-      return;
-    }
     await addDoc(collection(db, 'users', user.uid, 'matches', matchId, 'messages'), {
       text,
       sender,

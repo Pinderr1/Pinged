@@ -68,14 +68,16 @@ const SettingsScreen = ({ navigation }) => {
         <Text style={styles.navBtnText}>View My Stats</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.navBtn, { backgroundColor: '#e11d48' }]}
-        onPress={toggleDevMode}
-      >
-        <Text style={styles.navBtnText}>
-          {devMode ? 'Disable Dev Mode' : 'Enable Dev Mode'}
-        </Text>
-      </TouchableOpacity>
+      {__DEV__ && (
+        <TouchableOpacity
+          style={[styles.navBtn, { backgroundColor: '#e11d48' }]}
+          onPress={toggleDevMode}
+        >
+          <Text style={styles.navBtnText}>
+            {devMode ? 'Disable Dev Mode' : 'Enable Dev Mode'}
+          </Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
         style={[styles.navBtn, { backgroundColor: '#999' }]}

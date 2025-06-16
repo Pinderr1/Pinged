@@ -47,13 +47,6 @@ const allUsers = [
   }
 ];
 
-const devUser = {
-  id: '__devUser',
-  name: 'Dev Tester',
-  age: 99,
-  bio: 'Testing swipes',
-  images: [require('../assets/user1.jpg')],
-};
 
 const SwipeScreen = () => {
   const { darkMode } = useTheme();
@@ -85,7 +78,7 @@ const SwipeScreen = () => {
     extrapolate: 'clamp',
   });
 
-  const users = devMode ? [devUser, ...allUsers] : allUsers;
+  const users = allUsers;
   const displayUser = users[currentIndex] ?? null;
 
   useEffect(() => {
