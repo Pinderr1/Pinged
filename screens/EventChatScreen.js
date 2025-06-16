@@ -11,63 +11,86 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp,
+  updateDoc,
+  doc,
+  arrayUnion,
+} from 'firebase/firestore';
+import { db } from '../firebase';
 
 const REACTIONS = ['🔥', '❤️', '😂'];
 
 const EventChatScreen = ({ route }) => {
   const { event } = route.params;
   const { darkMode } = useTheme();
+  const { user } = useUser();
 
-  const [messages, setMessages] = useState([
-    { id: '1', user: 'Emily', text: 'Who’s playing tonight?', time: '9:01 PM', reactions: [], pinned: false },
-    { id: '2', user: 'You', text: 'I’m in 🔥', time: '9:02 PM', reactions: ['🔥'], pinned: false },
-    { id: '3', user: 'Host', text: 'Event starts in 10 minutes!', time: '9:03 PM', reactions: [], pinned: true }
-  ]);
-
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [typing, setTyping] = useState(false);
   const [reactionTarget, setReactionTarget] = useState(null);
   const flatListRef = useRef();
 
   useEffect(() => {
-    const timer = setTimeout(() => setTyping(true), 5000); // mock typing
-    return () => clearTimeout(timer);
-  }, []);
+    const q = query(
+      collection(db, 'events', String(event.id), 'messages'),
+      orderBy('createdAt', 'asc')
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => {
+        const m = d.data();
+        return {
+          id: d.id,
+          user: m.senderName,
+          text: m.text,
+          time: m.createdAt
+            ? new Date(m.createdAt.toDate()).toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+              })
+            : '',
+          reactions: m.reactions || [],
+        };
+      });
+      setMessages(data);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 0);
+    });
+    return unsub;
+  }, [event.id]);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    const newMsg = {
-      id: Date.now().toString(),
-      user: 'You',
-      text: input.trim(),
-      time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
-      reactions: [],
-      pinned: false
-    };
-    setMessages([...messages, newMsg]);
-    setInput('');
-    flatListRef.current?.scrollToEnd({ animated: true });
+  const sendMessage = async () => {
+    if (!input.trim() || !user?.displayName) return;
+    try {
+      await addDoc(collection(db, 'events', String(event.id), 'messages'), {
+        text: input.trim(),
+        senderName: user.displayName,
+        createdAt: serverTimestamp(),
+        reactions: [],
+      });
+      setInput('');
+    } catch (e) {
+      console.warn('Failed to send message', e);
+    }
   };
 
-  const addReaction = (msgId, emoji) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === msgId
-          ? { ...msg, reactions: [...msg.reactions, emoji] }
-          : msg
-      )
-    );
+  const addReaction = async (msgId, emoji) => {
+    try {
+      await updateDoc(
+        doc(db, 'events', String(event.id), 'messages', msgId),
+        {
+          reactions: arrayUnion(emoji),
+        }
+      );
+    } catch (e) {
+      console.warn('Failed to react to message', e);
+    }
     setReactionTarget(null);
-  };
-
-  const pinMessage = (msgId) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === msgId
-          ? { ...msg, pinned: !msg.pinned }
-          : msg
-      )
-    );
   };
 
   const renderMessage = ({ item }) => (
@@ -75,7 +98,9 @@ const EventChatScreen = ({ route }) => {
       onLongPress={() => setReactionTarget(item.id)}
       style={[
         stylesLocal.messageBubble,
-        item.user === 'You' ? stylesLocal.userBubble : stylesLocal.otherBubble
+        item.user === user?.displayName
+          ? stylesLocal.userBubble
+          : stylesLocal.otherBubble,
       ]}
     >
       <Text style={stylesLocal.sender}>{item.user}</Text>
@@ -100,13 +125,6 @@ const EventChatScreen = ({ route }) => {
         </View>
       )}
 
-      {item.user === 'Host' && (
-        <TouchableOpacity onPress={() => pinMessage(item.id)}>
-          <Text style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
-            {item.pinned ? '📌 Unpin' : '📍 Pin Message'}
-          </Text>
-        </TouchableOpacity>
-      )}
     </TouchableOpacity>
   );
 
@@ -118,11 +136,6 @@ const EventChatScreen = ({ route }) => {
       <Header />
       <Text style={stylesLocal.eventTitle}>{event.title}</Text>
 
-      {messages.filter(m => m.pinned).map((msg) => (
-        <View key={msg.id} style={stylesLocal.pinnedBanner}>
-          <Text style={stylesLocal.pinnedText}>📌 {msg.text}</Text>
-        </View>
-      ))}
 
       <FlatList
         ref={flatListRef}
@@ -132,11 +145,6 @@ const EventChatScreen = ({ route }) => {
         contentContainerStyle={{ padding: 16 }}
       />
 
-      {typing && (
-        <Text style={{ fontStyle: 'italic', color: '#999', textAlign: 'center', marginBottom: 6 }}>
-          Emily is typing...
-        </Text>
-      )}
 
       <SafeKeyboardView>
         <View style={stylesLocal.inputRow}>
@@ -226,18 +234,8 @@ const stylesLocal = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 6,
-    marginTop: 6
+    marginTop: 6,
   },
-  pinnedBanner: {
-    backgroundColor: '#fff3cd',
-    padding: 10,
-    margin: 10,
-    borderRadius: 8
-  },
-  pinnedText: {
-    fontSize: 13,
-    color: '#8a6d3b'
-  }
 });
 
 export default EventChatScreen;
