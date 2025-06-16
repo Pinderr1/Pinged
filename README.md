@@ -13,7 +13,7 @@ Pinged is a React Native/Expo application. This repository does not include the 
 
 ## Creating the `.env` file
 
-Create a file named `.env` at the project root and define the following variables using the values from the steps above:
+Copy `.env.example` to `.env` at the project root and define the following variables using the values from the steps above:
 
 ```env
 EXPO_PUBLIC_FIREBASE_API_KEY=<your apiKey>
@@ -37,3 +37,27 @@ npm start
 ```
 
 Expo will load the values from the `.env` file automatically using the `dotenv` package configured in `app.config.js`.
+
+## Building a release
+
+This project uses **Expo Application Services (EAS)** to create production builds.
+
+1. Install the EAS CLI if you do not have it:
+
+```bash
+npm install -g eas-cli
+```
+
+2. Log in to your Expo account:
+
+```bash
+eas login
+```
+
+3. Build the app for Android or iOS:
+
+```bash
+eas build --platform android   # or ios
+```
+
+EAS will read the Firebase configuration from environment variables. For production builds you can create a `.env.production` file or define the variables in your EAS project settings so that the release uses your production Firebase project.
