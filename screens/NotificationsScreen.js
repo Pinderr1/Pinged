@@ -1,5 +1,5 @@
 // /screens/NotificationsScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,34 +10,45 @@ import {
 import Header from '../components/Header';
 import styles from '../styles';
 import { LinearGradient } from 'expo-linear-gradient';
+import { collection, query, onSnapshot, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { useUser } from '../contexts/UserContext';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
-const mockNotifications = [
-  {
-    id: '1',
-    text: 'Emily liked your profile!',
-    action: 'View Profile'
-  },
-  {
-    id: '2',
-    text: 'Liam sent you a game invite.',
-    action: 'Play'
-  },
-  {
-    id: '3',
-    text: 'You and Sarah both swiped right!',
-    action: 'Say Hi'
-  }
-];
+dayjs.extend(relativeTime);
+
 
 const NotificationsScreen = ({ navigation }) => {
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const { user } = useUser();
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const q = query(
+      collection(db, 'users', user.uid, 'notifications'),
+      orderBy('timestamp', 'desc')
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setNotifications(data);
+    });
+    return unsub;
+  }, [user?.uid]);
 
   const handleAction = (n) => {
-    alert(`Action: ${n.action}`);
+    if (n.action) alert(`Action: ${n.action}`);
   };
 
-  const handleDismiss = (id) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const handleDismiss = async (id) => {
+    if (!user?.uid) return;
+    try {
+      await updateDoc(doc(db, 'users', user.uid, 'notifications', id), {
+        seen: true,
+      });
+    } catch (e) {
+      console.warn('Failed to mark notification seen', e);
+    }
   };
 
   return (
@@ -50,15 +61,28 @@ const NotificationsScreen = ({ navigation }) => {
           <Text style={local.empty}>You're all caught up!</Text>
         ) : (
           notifications.map((n) => (
-            <View key={n.id} style={local.card}>
-              <Text style={local.text}>{n.text}</Text>
+            <View
+              key={n.id}
+              style={[
+                local.card,
+                n.seen && { opacity: 0.6 },
+              ]}
+            >
+              <Text style={local.text}>{n.message}</Text>
+              {n.timestamp && (
+                <Text style={local.time}>
+                  {dayjs(n.timestamp.toDate?.() || n.timestamp).fromNow()}
+                </Text>
+              )}
               <View style={local.actions}>
-                <TouchableOpacity
-                  style={[styles.emailBtn, { marginRight: 10 }]}
-                  onPress={() => handleAction(n)}
-                >
-                  <Text style={styles.btnText}>{n.action}</Text>
-                </TouchableOpacity>
+                {n.action && (
+                  <TouchableOpacity
+                    style={[styles.emailBtn, { marginRight: 10 }]}
+                    onPress={() => handleAction(n)}
+                  >
+                    <Text style={styles.btnText}>{n.action}</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity onPress={() => handleDismiss(n.id)}>
                   <Text style={{ color: '#d81b60', fontSize: 13 }}>Dismiss</Text>
                 </TouchableOpacity>
@@ -88,6 +112,11 @@ const local = StyleSheet.create({
     fontSize: 14,
     color: '#444',
     marginBottom: 10
+  },
+  time: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 6,
   },
   actions: {
     flexDirection: 'row',

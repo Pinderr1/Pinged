@@ -96,7 +96,8 @@ const styles = StyleSheet.create({
     color: '#fff'
   },
   uploadBtn: {
-    marginBottom: 20
+    marginBottom: 20,
+    alignItems: 'center'
   },
   uploadText: {
     fontSize: 16,
