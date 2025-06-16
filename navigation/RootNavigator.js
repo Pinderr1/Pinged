@@ -13,6 +13,7 @@ import SignUpScreen from '../screens/SignUpScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import MainTabs from './MainTabs';
 import ChatScreen from '../screens/ChatScreen';
+import log from '../utils/logger';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import GameInviteScreen from '../screens/GameInviteScreen';
@@ -43,7 +44,7 @@ export default function RootNavigator() {
     const handleDeepLink = ({ url }) => {
       const parsed = Linking.parse(url);
       if (parsed.path === 'chat') {
-        console.log('Deep linking to Chat');
+        log('Deep linking to Chat');
       }
     };
     const sub = Linking.addEventListener('url', handleDeepLink);

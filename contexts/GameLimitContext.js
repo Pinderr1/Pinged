@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from './UserContext';
 import usePremiumStatus from '../hooks/usePremiumStatus';
 import { useDev } from './DevContext';
+import log from '../utils/logger';
 
 const GameLimitContext = createContext();
 const STORAGE_KEY = 'gamesPlayed';
@@ -33,7 +34,7 @@ export const GameLimitProvider = ({ children }) => {
           }
         }
       } catch (e) {
-        console.log('Failed to load game limit', e);
+        log('Failed to load game limit', e);
       }
     };
     load();
@@ -47,7 +48,7 @@ export const GameLimitProvider = ({ children }) => {
       AsyncStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({ date: today, count: DAILY_LIMIT - next })
-      ).catch((e) => console.log('Save game limit failed', e));
+      ).catch((e) => log('Save game limit failed', e));
       return next;
     });
   };

@@ -3,6 +3,7 @@ import * as InAppPurchases from 'expo-in-app-purchases';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useUser } from '../contexts/UserContext';
+import log from '../utils/logger';
 
 const PRODUCT_ID = 'premium_access';
 
@@ -28,7 +29,7 @@ export default function usePremiumPurchase() {
           }
         });
       } catch (e) {
-        console.log('IAP setup failed', e);
+        log('IAP setup failed', e);
       }
     };
     setup();
