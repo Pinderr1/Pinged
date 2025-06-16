@@ -18,13 +18,20 @@ export default {
     },
     assetBundlePatterns: ["**/*"],
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      infoPlist: {
+        NSCameraUsageDescription:
+          'Allow Pinged to access your camera to take profile photos.',
+        NSLocationWhenInUseUsageDescription:
+          'Allow Pinged to access your location to autofill your profile.'
+      }
     },
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#FFFFFF"
-      }
+      },
+      permissions: ["CAMERA", "ACCESS_FINE_LOCATION"]
     },
     web: {
       favicon: "./assets/favicon.png"
