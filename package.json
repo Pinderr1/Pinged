@@ -31,6 +31,7 @@
     "expo-secure-store": "~14.2.3",
     "expo-status-bar": "~2.2.3",
     "expo-web-browser": "~14.1.6",
+    "expo-in-app-purchases": "~14.1.1",
     "firebase": "^9.6.11",
     "lottie-ios": "^4.5.1",
     "lottie-react-native": "7.2.2",

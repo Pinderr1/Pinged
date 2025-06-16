@@ -23,14 +23,15 @@ import { useDev } from '../contexts/DevContext';
 import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
 import { Ionicons } from '@expo/vector-icons';
+import usePremiumStatus from '../hooks/usePremiumStatus';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params || {};
   const navigation = useNavigation();
   const { user: currentUser, addGameXP } = useUser();
+  const isPremiumUser = usePremiumStatus();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { devMode } = useDev();
-  const isPremiumUser = !!currentUser?.isPremium;
   const {
     getMessages,
     sendMessage,
@@ -40,6 +41,8 @@ export default function ChatScreen({ route }) {
     clearGameInvite,
     acceptGameInvite,
     getPendingInvite,
+    sendReaction,
+    sendVoiceMessage,
   } = useChats();
   const { darkMode } = useTheme();
   const { showNotification } = useNotification();
@@ -53,6 +56,7 @@ export default function ChatScreen({ route }) {
       </LinearGradient>
     );
   }
+
   const prevGameIdRef = useRef(null);
   const isWideScreen = Dimensions.get('window').width > 700;
   const [showGameModal, setShowGameModal] = useState(false);
@@ -79,10 +83,10 @@ export default function ChatScreen({ route }) {
       id: msg.id || index.toString(),
       text: msg.text,
       sender: msg.sender,
+      type: msg.type || 'text',
     }));
     setMessages(converted.reverse());
   }, [rawMessages]);
-
   const handleSend = () => {
     if (text.trim()) {
       sendMessage(user.id, text.trim());
@@ -91,7 +95,7 @@ export default function ChatScreen({ route }) {
   };
 
   const handleVoice = () => {
-    sendMessage(user.id, '[Voice Message]');
+    sendVoiceMessage(user.id);
   };
 
   const handleGameEnd = (result) => {
@@ -125,6 +129,9 @@ export default function ChatScreen({ route }) {
     setShowGameModal(false);
   };
 
+  const handleReaction = () => {
+    sendReaction(user.id, '❤️');
+  };
   const renderMessage = ({ item }) => (
     <View
       style={[
@@ -142,11 +149,16 @@ export default function ChatScreen({ route }) {
           : item.sender === 'system'
           ? 'System'
           : user.name}
+        {item.sender === 'them' && user.isPremium && ' 💎'}
       </Text>
       <View style={chatStyles.messageRow}>
-        <Text style={chatStyles.messageText}>{item.text}</Text>
+        <Text style={chatStyles.messageText}>
+          {item.type === 'voice'
+            ? '🎤 Voice Message'
+            : item.text}
+        </Text>
         {isPremiumUser && item.sender !== 'system' && (
-          <TouchableOpacity style={chatStyles.reactButton} onPress={() => {}}>
+          <TouchableOpacity style={chatStyles.reactButton} onPress={handleReaction}>
             <Ionicons name="heart-outline" size={14} color="#d81b60" />
           </TouchableOpacity>
         )}
@@ -162,6 +174,8 @@ export default function ChatScreen({ route }) {
       <Text style={chatStyles.gameOptionText}>{item.title}</Text>
     </TouchableOpacity>
   );
+
+  const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
 
   const chatSection = (
     <View style={{ flex: 1, padding: 10 }}>
@@ -201,9 +215,14 @@ export default function ChatScreen({ route }) {
           placeholderTextColor="#888"
         />
         {isPremiumUser && (
-          <TouchableOpacity style={chatStyles.voiceButton} onPress={handleVoice}>
-            <Ionicons name="mic" size={20} color="#fff" />
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity style={chatStyles.reactionButton} onPress={handleReaction}>
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>😊</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={chatStyles.voiceButton} onPress={handleVoice}>
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>🎤</Text>
+            </TouchableOpacity>
+          </>
         )}
         <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
@@ -211,8 +230,6 @@ export default function ChatScreen({ route }) {
       </KeyboardAvoidingView>
     </View>
   );
-
-  const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
   const gameSection = SelectedGameClient ? (
     <View
       style={{
@@ -325,7 +342,6 @@ export default function ChatScreen({ route }) {
     </LinearGradient>
   );
 }
-
 const chatStyles = StyleSheet.create({
   messageBubble: {
     padding: 10,
@@ -381,8 +397,16 @@ const chatStyles = StyleSheet.create({
     marginRight: 10,
   },
   voiceButton: {
-    backgroundColor: '#607d8b',
-    padding: 10,
+    backgroundColor: '#8e24aa',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginRight: 6,
+  },
+  reactionButton: {
+    backgroundColor: '#ffb300',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 20,
     marginRight: 6,
   },

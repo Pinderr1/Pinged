@@ -6,12 +6,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import usePremiumStatus from '../hooks/usePremiumStatus';
 import { avatarSource } from '../utils/avatar';
 
 const StatsScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
   const { user } = useUser();
-  const isPremium = !!user?.isPremium;
+  const isPremium = usePremiumStatus();
 
   const stats = {
     gamesPlayed: 87,

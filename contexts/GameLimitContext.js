@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from './UserContext';
+import usePremiumStatus from '../hooks/usePremiumStatus';
 import { useDev } from './DevContext';
 
 const GameLimitContext = createContext();
@@ -10,7 +11,7 @@ const DAILY_LIMIT = 1;
 export const GameLimitProvider = ({ children }) => {
   const { user } = useUser();
   const { devMode } = useDev();
-  const isPremium = !!user?.isPremium;
+  const isPremium = usePremiumStatus();
   const [gamesLeft, setGamesLeft] = useState(isPremium ? Infinity : DAILY_LIMIT);
 
   useEffect(() => {
