@@ -18,6 +18,7 @@ import { useOnboarding } from '../contexts/OnboardingContext';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { avatarSource } from '../utils/avatar';
+import log from '../utils/logger';
 import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -147,7 +148,7 @@ export default function OnboardingScreen() {
       const { city, region } = geo[0];
       setAnswers((prev) => ({ ...prev, location: `${city}, ${region}` }));
     } catch (e) {
-      console.log('Geo error:', e);
+      log('Geo error:', e);
     }
   };
 

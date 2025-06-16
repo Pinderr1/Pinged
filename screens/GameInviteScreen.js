@@ -15,6 +15,7 @@ import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
+import log from '../utils/logger';
 import styles from '../styles';
 
 const MATCHES = [
@@ -65,7 +66,7 @@ const GameInviteScreen = ({ route, navigation }) => {
       });
 
     if (devMode) {
-      console.log('Auto-accepting invite');
+      log('Auto-accepting invite');
       toLobby();
     } else {
       setTimeout(toLobby, 2000);

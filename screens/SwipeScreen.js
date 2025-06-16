@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import log from '../utils/logger';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_HEIGHT = 520;
@@ -116,7 +117,7 @@ const SwipeScreen = () => {
         pendingInvite: null,
       });
 
-      if (devMode) console.log('Auto-matching enabled');
+      if (devMode) log('Auto-matching enabled');
       setTimeout(() => setShowFireworks(false), 2000);
     }
 

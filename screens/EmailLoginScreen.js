@@ -8,6 +8,7 @@ import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import styles from '../styles';
 import { useOnboarding } from '../contexts/OnboardingContext';
+import log from '../utils/logger';
 
 export default function EmailLoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -31,7 +32,7 @@ export default function EmailLoginScreen({ navigation }) {
   const handleLogin = async () => {
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
-      console.log('✅ Logged in:', userCred.user.uid);
+      log('✅ Logged in:', userCred.user.uid);
       await checkOnboarding(userCred.user.uid);
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
