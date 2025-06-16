@@ -5,6 +5,7 @@ const DevContext = createContext();
 export const DevProvider = ({ children }) => {
   const [devMode, setDevMode] = useState(false);
   const toggleDevMode = () => {
+    if (!__DEV__) return;
     setDevMode((prev) => {
       const next = !prev;
       console.log(`Dev mode ${next ? 'enabled' : 'disabled'}`);
@@ -13,7 +14,7 @@ export const DevProvider = ({ children }) => {
   };
 
   return (
-    <DevContext.Provider value={{ devMode, toggleDevMode }}>
+    <DevContext.Provider value={{ devMode: __DEV__ ? devMode : false, toggleDevMode }}>
       {children}
     </DevContext.Provider>
   );

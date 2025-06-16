@@ -28,12 +28,6 @@ const MATCHES = [
   { id: '8', name: 'Ava', photo: require('../assets/user4.jpg'), online: false }
 ];
 
-const devUser = {
-  id: '__devUser',
-  name: 'Dev Tester',
-  photo: require('../assets/user1.jpg'),
-  online: true,
-};
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH / 2 - 24;
@@ -48,7 +42,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   const [search, setSearch] = useState('');
   const [invited, setInvited] = useState({});
   const [loadingId, setLoadingId] = useState(null);
-  const matches = devMode ? [devUser, ...MATCHES] : MATCHES;
+  const matches = MATCHES;
 
   const handleInvite = async (user) => {
     setInvited((prev) => ({ ...prev, [user.id]: true }));
