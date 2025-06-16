@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
 import { Ionicons } from '@expo/vector-icons';
 import usePremiumStatus from '../hooks/usePremiumStatus';
+import PremiumBadge from '../components/PremiumBadge';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params || {};
@@ -181,9 +182,7 @@ export default function ChatScreen({ route }) {
     <View style={{ flex: 1, padding: 10 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
         <Text style={styles.logoText}>Chat with {user.name}</Text>
-        {isPremiumUser && (
-          <Text style={chatStyles.premiumBadge}>★ Premium</Text>
-        )}
+        <PremiumBadge visible={isPremiumUser} />
       </View>
       <View style={{ flex: 1 }}>
         <FlatList
@@ -470,14 +469,5 @@ const chatStyles = StyleSheet.create({
   gameOptionText: {
     fontSize: 16,
     color: '#333',
-  },
-  premiumBadge: {
-    marginLeft: 8,
-    color: '#fff',
-    backgroundColor: '#d81b60',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    fontSize: 12,
   },
 });
