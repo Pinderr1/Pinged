@@ -26,6 +26,7 @@ import { useGameLimit } from '../contexts/GameLimitContext';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH * 0.42;
+const HIDDEN_CATEGORIES = ['Word', 'Card', 'Memory', 'Party'];
 
 const allGames = [
   {
@@ -398,11 +399,35 @@ const allGames = [
     description: 'Guess the secret number with hints each turn.',
     mode: 'solo',
     speed: 'quick'
+  },
+  {
+    id: '34',
+    title: 'Coin Flip',
+    icon: <MaterialCommunityIcons name="coin" size={30} />,
+    route: 'CoinFlip',
+    premium: false,
+    category: 'Quick',
+    description: 'Choose heads or tails and see who wins the flip.',
+    mode: 'versus',
+    speed: 'quick'
+  },
+  {
+    id: '35',
+    title: 'Dice Roll',
+    icon: <FontAwesome5 name="dice" size={28} />,
+    route: 'DiceRoll',
+    premium: false,
+    category: 'Quick',
+    description: 'Roll a die and beat your opponent with the highest number.',
+    mode: 'versus',
+    speed: 'quick'
   }
 ];
 
 const getAllCategories = () => {
-  const cats = [...new Set(allGames.map((g) => g.category))];
+  const cats = [...new Set(allGames.map((g) => g.category))].filter(
+    (c) => !HIDDEN_CATEGORIES.includes(c)
+  );
   return ['All', ...cats];
 };
 
@@ -531,9 +556,11 @@ const PlayScreen = ({ navigation }) => {
         <Text style={{ fontSize: 15, fontWeight: '600', textAlign: 'center' }}>
           {item.title}
         </Text>
-        <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
-          {item.category}
-        </Text>
+        {!HIDDEN_CATEGORIES.includes(item.category) && (
+          <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+            {item.category}
+          </Text>
+        )}
       </TouchableOpacity>
     </Animated.View>
     );
@@ -688,9 +715,20 @@ const PlayScreen = ({ navigation }) => {
               {previewGame?.description}
             </Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10 }}>
-              <Text style={{ backgroundColor: '#eee', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginRight: 8, fontSize: 12 }}>
-                {previewGame?.category}
-              </Text>
+              {!HIDDEN_CATEGORIES.includes(previewGame?.category) && (
+                <Text
+                  style={{
+                    backgroundColor: '#eee',
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 12,
+                    marginRight: 8,
+                    fontSize: 12,
+                  }}
+                >
+                  {previewGame?.category}
+                </Text>
+              )}
               {previewGame?.mode && (
                 <Text style={{ backgroundColor: '#d1fae5', color: '#065f46', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginRight: 8, fontSize: 12 }}>
                   {previewGame?.mode === 'both' ? 'Co-op or Versus' : previewGame.mode}
