@@ -5,6 +5,7 @@ import Toast from 'react-native-toast-message';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import styles from '../styles';
+import log from '../utils/logger';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import { auth, db } from '../firebase';
@@ -44,7 +45,7 @@ export default function LoginScreen() {
       const credential = GoogleAuthProvider.credential(id_token);
       signInWithCredential(auth, credential)
         .then((res) => {
-          console.log('✅ Google login success:', res.user.uid);
+          log('✅ Google login success:', res.user.uid);
           checkOnboarding(res.user.uid);
         })
         .catch((error) => {

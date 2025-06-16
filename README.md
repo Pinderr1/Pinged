@@ -13,7 +13,7 @@ Pinged is a React Native/Expo application. This repository does not include the 
 
 ## Creating the `.env` file
 
-Create a file named `.env` at the project root and define the following variables using the values from the steps above:
+Copy `.env.example` to `.env` at the project root and define the following variables using the values from the steps above:
 
 ```env
 EXPO_PUBLIC_FIREBASE_API_KEY=<your apiKey>
@@ -23,21 +23,3 @@ EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=<your storageBucket>
 EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=<your messagingSenderId>
 EXPO_PUBLIC_FIREBASE_APP_ID=<your appId>
 EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID=<your Web client ID>
-```
-
-These variables are consumed in [`firebase.js`](firebase.js) when initializing Firebase and in [`authConfig.js`](authConfig.js) for authentication.
-
-## Running the app
-
-Install dependencies and start Expo:
-
-```bash
-npm install
-npm start
-```
-
-Expo will load the values from the `.env` file automatically using the `dotenv` package configured in `app.config.js`.
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
