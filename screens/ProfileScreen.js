@@ -6,9 +6,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import styles from '../styles';
 import Header from '../components/Header';
 import { useUser } from '../contexts/UserContext';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import Toast from 'react-native-toast-message';
 
 const ProfileScreen = ({ navigation }) => {
-  const { user } = useUser();
+  const { user, updateUser } = useUser();
   const [name, setName] = useState(user?.displayName || '');
   const [age, setAge] = useState(user?.age ? String(user.age) : '');
   const [gender, setGender] = useState(user?.gender || '');
@@ -22,6 +25,26 @@ const ProfileScreen = ({ navigation }) => {
     setBio(user?.bio || '');
     setLocation(user?.location || '');
   }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    const clean = {
+      displayName: name.trim(),
+      age: parseInt(age, 10) || null,
+      gender,
+      bio: bio.trim(),
+      location,
+    };
+    try {
+      await setDoc(doc(db, 'users', user.uid), clean, { merge: true });
+      updateUser(clean);
+      Toast.show({ type: 'success', text1: 'Profile saved!' });
+      navigation.navigate('Main', { screen: 'Home' });
+    } catch (e) {
+      console.warn('Failed to save profile', e);
+      Toast.show({ type: 'error', text1: 'Save failed' });
+    }
+  };
 
   return (
     <LinearGradient colors={['#fff', '#fce4ec']} style={styles.container}>
@@ -81,11 +104,8 @@ const ProfileScreen = ({ navigation }) => {
         <Text style={styles.uploadText}>Upload Avatar (Coming Soon)</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.emailBtn}
-        onPress={() => navigation.navigate('Main', { screen: 'Home' })}
-      >
-        <Text style={styles.btnText}>Continue</Text>
+      <TouchableOpacity style={styles.emailBtn} onPress={handleSave}>
+        <Text style={styles.btnText}>Save</Text>
       </TouchableOpacity>
     </LinearGradient>
   );
