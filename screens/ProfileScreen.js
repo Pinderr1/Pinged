@@ -38,11 +38,11 @@ const ProfileScreen = ({ navigation }) => {
     try {
       await setDoc(doc(db, 'users', user.uid), clean, { merge: true });
       updateUser(clean);
-      Toast.show({ type: 'success', text1: 'Profile saved!' });
+      Toast.show({ type: 'success', text1: 'Profile updated!' });
       navigation.navigate('Main', { screen: 'Home' });
     } catch (e) {
-      console.warn('Failed to save profile', e);
-      Toast.show({ type: 'error', text1: 'Save failed' });
+      console.warn('Failed to update profile', e);
+      Toast.show({ type: 'error', text1: 'Update failed' });
     }
   };
 
