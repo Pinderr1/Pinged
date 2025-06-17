@@ -104,7 +104,16 @@ export default function OnboardingScreen() {
         await setDoc(doc(db, 'users', auth.currentUser.uid), clean, {
           merge: true,
         });
-        updateUser(clean);
+        updateUser({
+          photoURL: answers.avatar,
+          age: parseInt(answers.age, 10) || null,
+          gender: answers.gender,
+          bio: answers.bio.trim(),
+          location: answers.location,
+          favoriteGame: answers.favoriteGame,
+          skillLevel: answers.skillLevel,
+          onboardingComplete: true,
+        });
         markOnboarded();
         Toast.show({ type: 'success', text1: 'Profile saved!' });
         navigation.replace('Main');
