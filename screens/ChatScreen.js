@@ -22,6 +22,15 @@ import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { db } from '../firebase';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params || {};
@@ -30,8 +39,6 @@ export default function ChatScreen({ route }) {
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { devMode } = useDev();
   const {
-    getMessages,
-    sendMessage,
     setActiveGame,
     getActiveGame,
     sendGameInvite,
@@ -60,8 +67,21 @@ export default function ChatScreen({ route }) {
 
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
-  const rawMessages = getMessages(user.id) || [];
   const [messages, setMessages] = useState([]);
+
+  const sendChatMessage = async (msgText, sender = 'user') => {
+    if (!msgText.trim()) return;
+    if (!user?.id) return;
+    try {
+      await addDoc(collection(db, 'matches', user.id, 'messages'), {
+        senderId: sender === 'system' ? 'system' : currentUser?.uid,
+        text: msgText.trim(),
+        timestamp: serverTimestamp(),
+      });
+    } catch (e) {
+      console.warn('Failed to send message', e);
+    }
+  };
 
   useEffect(() => {
     if (activeGameId && activeGameId !== prevGameIdRef.current) {
@@ -73,17 +93,31 @@ export default function ChatScreen({ route }) {
   }, [activeGameId]);
 
   useEffect(() => {
-    const converted = rawMessages.map((msg, index) => ({
-      id: msg.id || index.toString(),
-      text: msg.text,
-      sender: msg.sender,
-    }));
-    setMessages(converted.reverse());
-  }, [rawMessages]);
+    if (!user?.id) return;
+    const q = query(
+      collection(db, 'matches', user.id, 'messages'),
+      orderBy('timestamp', 'asc')
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => {
+        const val = d.data();
+        return {
+          id: d.id,
+          text: val.text,
+          sender:
+            val.senderId === currentUser?.uid
+              ? 'you'
+              : val.senderId || 'them',
+        };
+      });
+      setMessages(data.reverse());
+    });
+    return unsub;
+  }, [user?.id, currentUser?.uid]);
 
   const handleSend = () => {
     if (text.trim()) {
-      sendMessage(user.id, text.trim());
+      sendChatMessage(text);
       setText('');
     }
   };
@@ -93,9 +127,9 @@ export default function ChatScreen({ route }) {
     addGameXP();
     if (result.winner !== undefined) {
       const msg = result.winner === '0' ? 'You win!' : `${user.name} wins.`;
-      sendMessage(user.id, `Game over. ${msg}`, 'system');
+      sendChatMessage(`Game over. ${msg}`, 'system');
     } else if (result.draw) {
-      sendMessage(user.id, 'Game over. Draw.', 'system');
+      sendChatMessage('Game over. Draw.', 'system');
     }
     setActiveGame(user.id, null);
     setActiveSection('chat');
@@ -110,9 +144,9 @@ export default function ChatScreen({ route }) {
     }
     const title = games[gameId].meta.title;
     if (activeGameId && activeGameId !== gameId) {
-      sendMessage(user.id, `Switched game to ${title}`, 'system');
+      sendChatMessage(`Switched game to ${title}`, 'system');
     } else if (!activeGameId) {
-      sendMessage(user.id, `Game started: ${title}`, 'system');
+      sendChatMessage(`Game started: ${title}`, 'system');
       recordGamePlayed();
     }
     setActiveGame(user.id, gameId);
