@@ -18,7 +18,10 @@ export default function useGameSession(sessionId, gameId, opponentId) {
     let initialized = false;
     const unsub = onSnapshot(ref, async (snap) => {
       if (snap.exists()) {
-        setSession(snap.data());
+        const data = snap.data();
+        if (data.players?.includes(user.uid)) {
+          setSession(data);
+        }
       } else if (!initialized) {
         initialized = true;
         await setDoc(ref, {
@@ -36,6 +39,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
   const sendMove = useCallback(async (moveName, ...args) => {
     if (!session || !Game) return;
     const idx = session.players.indexOf(user.uid);
+    if (idx === -1) return;
     if (String(idx) !== session.currentPlayer) return;
     if (session.gameover) return;
 

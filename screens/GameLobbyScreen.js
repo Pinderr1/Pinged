@@ -11,7 +11,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useUser } from '../contexts/UserContext';
-import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { avatarSource } from '../utils/avatar';
 import styles from '../styles';
@@ -41,15 +41,18 @@ const GameLobbyScreen = ({ route, navigation }) => {
 
   // Listen for Firestore invite status
   useEffect(() => {
-    if (!inviteId) return;
+    if (!inviteId || !user?.uid) return;
     const ref = doc(db, 'gameInvites', inviteId);
     const unsub = onSnapshot(ref, (snap) => {
       if (snap.exists()) {
-        setInviteStatus(snap.data().status);
+        const data = snap.data();
+        if (data.from === user.uid || data.to === user.uid) {
+          setInviteStatus(data.status);
+        }
       }
     });
     return unsub;
-  }, [inviteId]);
+  }, [inviteId, user?.uid]);
 
   // Trigger countdown if ready
   useEffect(() => {
@@ -61,20 +64,29 @@ const GameLobbyScreen = ({ route, navigation }) => {
   // Countdown logic
   useEffect(() => {
     if (countdown === null) return;
-    if (countdown <= 0) {
+    const handleStart = async () => {
       setShowGame(true);
       recordGamePlayed();
-      if (inviteId) {
-        updateDoc(doc(db, 'gameInvites', inviteId), {
-          status: 'active',
-          startedAt: serverTimestamp(),
-        });
+      if (inviteId && user?.uid) {
+        const ref = doc(db, 'gameInvites', inviteId);
+        const snap = await getDoc(ref);
+        const data = snap.data();
+        if (snap.exists() && (data.from === user.uid || data.to === user.uid)) {
+          updateDoc(ref, {
+            status: 'active',
+            startedAt: serverTimestamp(),
+          });
+        }
       }
+    };
+
+    if (countdown <= 0) {
+      handleStart();
     } else {
       const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
       return () => clearTimeout(t);
     }
-  }, [countdown]);
+  }, [countdown, inviteId, user?.uid]);
 
   const handleGameEnd = (result) => {
     if (result) addGameXP();
@@ -82,15 +94,20 @@ const GameLobbyScreen = ({ route, navigation }) => {
   };
 
   const handleRematch = async () => {
-    if (inviteId) {
-      await updateDoc(doc(db, 'gameInvites', inviteId), {
-        status: 'finished',
-        endedAt: serverTimestamp(),
-      });
-      await updateDoc(doc(db, 'gameSessions', inviteId), {
-        archived: true,
-        archivedAt: serverTimestamp(),
-      });
+    if (inviteId && user?.uid) {
+      const ref = doc(db, 'gameInvites', inviteId);
+      const snap = await getDoc(ref);
+      const data = snap.data();
+      if (snap.exists() && (data.from === user.uid || data.to === user.uid)) {
+        await updateDoc(ref, {
+          status: 'finished',
+          endedAt: serverTimestamp(),
+        });
+        await updateDoc(doc(db, 'gameSessions', inviteId), {
+          archived: true,
+          archivedAt: serverTimestamp(),
+        });
+      }
     }
 
     const newId = await sendGameInvite(opponent.id, game.id);

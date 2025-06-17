@@ -71,11 +71,23 @@ export const MatchmakingProvider = ({ children }) => {
     return ref.id;
   };
 
-  const acceptMatchRequest = (id) =>
-    updateDoc(doc(db, 'matchRequests', id), { status: 'accepted' });
+  const acceptMatchRequest = async (id) => {
+    if (!user?.uid || !id) return;
+    const ref = doc(db, 'matchRequests', id);
+    const snap = await getDoc(ref);
+    const data = snap.data();
+    if (!snap.exists() || (data.from !== user.uid && data.to !== user.uid)) return;
+    await updateDoc(ref, { status: 'accepted' });
+  };
 
-  const cancelMatchRequest = (id) =>
-    updateDoc(doc(db, 'matchRequests', id), { status: 'cancelled' });
+  const cancelMatchRequest = async (id) => {
+    if (!user?.uid || !id) return;
+    const ref = doc(db, 'matchRequests', id);
+    const snap = await getDoc(ref);
+    const data = snap.data();
+    if (!snap.exists() || (data.from !== user.uid && data.to !== user.uid)) return;
+    await updateDoc(ref, { status: 'cancelled' });
+  };
 
   const sendGameInvite = async (to, gameId) => {
     if (!user?.uid || !to || !gameId) return null;
@@ -93,16 +105,25 @@ export const MatchmakingProvider = ({ children }) => {
   const acceptGameInvite = async (id) => {
     if (!user?.uid || !id) return;
     const ref = doc(db, 'gameInvites', id);
-    await updateDoc(ref, { acceptedBy: arrayUnion(user.uid) });
     const snap = await getDoc(ref);
     const data = snap.data();
-    if (data.acceptedBy?.length >= 2) {
+    if (!snap.exists() || (data.from !== user.uid && data.to !== user.uid)) return;
+    await updateDoc(ref, { acceptedBy: arrayUnion(user.uid) });
+    if (data.acceptedBy?.length + 1 >= 2 && !data.acceptedBy?.includes(user.uid)) {
+      await updateDoc(ref, { status: 'ready' });
+    } else if (data.acceptedBy?.length >= 2) {
       await updateDoc(ref, { status: 'ready' });
     }
   };
 
-  const cancelGameInvite = (id) =>
-    updateDoc(doc(db, 'gameInvites', id), { status: 'cancelled' });
+  const cancelGameInvite = async (id) => {
+    if (!user?.uid || !id) return;
+    const ref = doc(db, 'gameInvites', id);
+    const snap = await getDoc(ref);
+    const data = snap.data();
+    if (!snap.exists() || (data.from !== user.uid && data.to !== user.uid)) return;
+    await updateDoc(ref, { status: 'cancelled' });
+  };
 
   return (
     <MatchmakingContext.Provider
