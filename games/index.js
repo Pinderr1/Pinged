@@ -1,6 +1,7 @@
 import TicTacToeClient, { Game as ticTacToeGame, Board as TicTacToeBoard, meta as ticTacToeMeta } from './tic-tac-toe';
 import RPSClient, { Game as rpsGame, Board as RPSBoard, meta as rpsMeta } from './rock-paper-scissors';
 import ConnectFourClient, { Game as connectFourGame, Board as ConnectFourBoard, meta as connectFourMeta } from './connect-four';
+import ChessClient, { Game as chessGame, Board as ChessBoard, meta as chessMeta } from './chess';
 import GomokuClient, { Game as gomokuGame, Board as GomokuBoard, meta as gomokuMeta } from './gomoku';
 import MemoryMatchClient, { Game as memoryMatchGame, Board as MemoryMatchBoard, meta as memoryMatchMeta } from './memory-match';
 import HangmanClient, { Game as hangmanGame, Board as HangmanBoard, meta as hangmanMeta } from './hangman';
@@ -22,6 +23,7 @@ export const games = {
     Board: ConnectFourBoard,
     meta: connectFourMeta,
   },
+  [chessMeta.id]: { Client: ChessClient, Game: chessGame, Board: ChessBoard, meta: chessMeta },
   [gomokuMeta.id]: { Client: GomokuClient, Game: gomokuGame, Board: GomokuBoard, meta: gomokuMeta },
   [memoryMatchMeta.id]: {
     Client: MemoryMatchClient,
