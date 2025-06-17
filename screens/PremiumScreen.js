@@ -15,7 +15,7 @@ import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 
 const PremiumScreen = () => {
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
 
   const features = [
     { icon: require('../assets/icons/unlimited.png'), text: 'Unlimited Game Invites' },
@@ -27,7 +27,7 @@ const PremiumScreen = () => {
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']}
+      colors={[theme.gradientStart, theme.gradientEnd]}
       style={{ flex: 1 }}
     >
       <Header />

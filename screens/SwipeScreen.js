@@ -41,7 +41,7 @@ const MAX_LIKES = 100;
 
 
 const SwipeScreen = () => {
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
   const navigation = useNavigation();
   const { showNotification } = useNotification();
   const { user: currentUser } = useUser();
@@ -252,7 +252,7 @@ const SwipeScreen = () => {
     navigation.navigate('GameInvite', { user: displayUser });
   };
 
-  const gradientColors = darkMode ? ['#333', '#222'] : ['#FF75B5', '#FF9A75'];
+  const gradientColors = [theme.gradientStart, theme.gradientEnd];
 
   return (
     <LinearGradient colors={gradientColors} style={{ flex: 1 }}>

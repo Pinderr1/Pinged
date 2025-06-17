@@ -16,7 +16,7 @@ const REACTIONS = ['🔥', '❤️', '😂'];
 
 const EventChatScreen = ({ route }) => {
   const { event } = route.params;
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
 
   const [messages, setMessages] = useState([
     { id: '1', user: 'Emily', text: 'Who’s playing tonight?', time: '9:01 PM', reactions: [], pinned: false },
@@ -112,7 +112,7 @@ const EventChatScreen = ({ route }) => {
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']}
+      colors={[theme.gradientStart, theme.gradientEnd]}
       style={{ flex: 1 }}
     >
       <Header />

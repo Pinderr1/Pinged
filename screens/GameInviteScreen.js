@@ -34,7 +34,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   const rawGame = route?.params?.game;
   const gameTitle = typeof rawGame === 'string' ? rawGame : rawGame?.title || 'a game';
   const gameId = typeof rawGame === 'object' ? rawGame.id : null;
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
   const { devMode } = useDev();
   const { user: currentUser } = useUser();
   const { sendGameInvite } = useMatchmaking();
@@ -100,7 +100,7 @@ const GameInviteScreen = ({ route, navigation }) => {
     return (
       <View
         style={{
-          backgroundColor: darkMode ? '#444' : '#fff',
+          backgroundColor: theme.card,
           borderRadius: 16,
           borderWidth: 1,
           borderColor: darkMode ? '#333' : '#eee',
@@ -123,7 +123,7 @@ const GameInviteScreen = ({ route, navigation }) => {
               marginBottom: 8
             }}
           />
-          <Text style={{ fontSize: 15, fontWeight: '600', color: darkMode ? '#fff' : '#000' }}>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>
             {item.name}
           </Text>
           <Text style={{ fontSize: 12, color: item.online ? '#2ecc71' : '#999', marginBottom: 6 }}>
@@ -133,7 +133,7 @@ const GameInviteScreen = ({ route, navigation }) => {
           {isInvited && isLoading ? (
             <View style={{ alignItems: 'center', marginTop: 8 }}>
               <ActivityIndicator size="small" color="#d81b60" />
-              <Text style={{ color: darkMode ? '#ccc' : '#555', fontSize: 12, marginTop: 4 }}>
+              <Text style={{ color: theme.textSecondary, fontSize: 12, marginTop: 4 }}>
                 Waiting for {item.name}...
               </Text>
             </View>
@@ -158,7 +158,7 @@ const GameInviteScreen = ({ route, navigation }) => {
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']}
+      colors={[theme.gradientStart, theme.gradientEnd]}
       style={styles.swipeScreen}
     >
       <Header showLogoOnly />
@@ -170,7 +170,7 @@ const GameInviteScreen = ({ route, navigation }) => {
               textAlign: 'center',
               marginTop: 36,
               marginBottom: 12,
-              color: darkMode ? '#fff' : '#000'
+              color: theme.text
             }}
           >
             Invite to play {gameTitle}
@@ -180,7 +180,7 @@ const GameInviteScreen = ({ route, navigation }) => {
             style={{
               marginHorizontal: 16,
               marginBottom: 10,
-              backgroundColor: darkMode ? '#333' : '#fff',
+              backgroundColor: theme.card,
               borderRadius: 12,
               paddingHorizontal: 12,
               paddingVertical: 8
@@ -193,7 +193,7 @@ const GameInviteScreen = ({ route, navigation }) => {
               onChangeText={setSearch}
               style={{
                 fontSize: 14,
-                color: darkMode ? '#fff' : '#000',
+                color: theme.text,
                 paddingVertical: 4
               }}
             />

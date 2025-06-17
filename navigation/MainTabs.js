@@ -18,7 +18,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 const Tab = createBottomTabNavigator();
 
 export default function MainTabs() {
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
 
   return (
     <Tab.Navigator
@@ -28,7 +28,7 @@ export default function MainTabs() {
         tabBarInactiveTintColor: '#888',
         tabBarLabelStyle: { fontSize: 12, paddingBottom: 2 },
         tabBarStyle: {
-          backgroundColor: darkMode ? '#444' : '#fff',
+          backgroundColor: theme.card,
           borderTopWidth: 1,
           borderColor: '#eee',
           height: 60,

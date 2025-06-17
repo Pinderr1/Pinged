@@ -407,8 +407,8 @@ const getAllCategories = () => {
 };
 
 const PlayScreen = ({ navigation }) => {
-  const { darkMode } = useTheme();
-  const gradientColors = darkMode ? ['#444', '#222'] : ['#FF75B5', '#FF9A75'];
+  const { darkMode, theme } = useTheme();
+  const gradientColors = [theme.gradientStart, theme.gradientEnd];
   const { user } = useUser();
   const { devMode } = useDev();
   const { gamesLeft, recordGamePlayed } = useGameLimit();

@@ -5,17 +5,17 @@ import { useTheme } from '../contexts/ThemeContext';
 
 const Header = () => {
   const navigation = useNavigation();
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
 
   const notificationCount = 5; // 🔥 Replace with dynamic logic later
 
   return (
-    <View style={[styles.container, { backgroundColor: darkMode ? '#222' : '#fff' }]}>
+    <View style={[styles.container, { backgroundColor: theme.headerBackground }]}>
       {/* Left icon - Gear */}
       <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.iconWrapper}>
         <Image
           source={require('../assets/gear.png')}
-          style={[styles.icon, { tintColor: darkMode ? '#fff' : '#000' }]}
+          style={[styles.icon, { tintColor: theme.text }]}
         />
       </TouchableOpacity>
 
@@ -30,7 +30,7 @@ const Header = () => {
         <View style={styles.bellWrapper}>
           <Image
             source={require('../assets/bell.png')}
-            style={[styles.icon, { tintColor: darkMode ? '#fff' : '#000' }]}
+            style={[styles.icon, { tintColor: theme.text }]}
           />
           {notificationCount > 0 && (
             <View style={styles.badge}>
