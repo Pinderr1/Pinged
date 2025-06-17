@@ -1,17 +1,27 @@
 // /screens/ProfileScreen.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import styles from '../styles';
 import Header from '../components/Header';
+import { useUser } from '../contexts/UserContext';
 
 const ProfileScreen = ({ navigation }) => {
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
-  const [bio, setBio] = useState('');
-  const [location, setLocation] = useState('');
+  const { user } = useUser();
+  const [name, setName] = useState(user?.displayName || '');
+  const [age, setAge] = useState(user?.age ? String(user.age) : '');
+  const [gender, setGender] = useState(user?.gender || '');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [location, setLocation] = useState(user?.location || '');
+
+  useEffect(() => {
+    setName(user?.displayName || '');
+    setAge(user?.age ? String(user.age) : '');
+    setGender(user?.gender || '');
+    setBio(user?.bio || '');
+    setLocation(user?.location || '');
+  }, [user]);
 
   return (
     <LinearGradient colors={['#fff', '#fce4ec']} style={styles.container}>

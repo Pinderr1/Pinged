@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
@@ -13,6 +13,25 @@ export default function EmailLoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { markOnboarded } = useOnboarding();
+
+  const ensureUserDoc = async (fbUser) => {
+    try {
+      const ref = doc(db, 'users', fbUser.uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          uid: fbUser.uid,
+          email: fbUser.email,
+          displayName: fbUser.displayName || '',
+          photoURL: fbUser.photoURL || '',
+          onboardingComplete: false,
+          createdAt: serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to ensure user doc', e);
+    }
+  };
 
   const checkOnboarding = async (uid) => {
     try {
@@ -32,6 +51,7 @@ export default function EmailLoginScreen({ navigation }) {
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
       console.log('✅ Logged in:', userCred.user.uid);
+      await ensureUserDoc(userCred.user);
       await checkOnboarding(userCred.user.uid);
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
