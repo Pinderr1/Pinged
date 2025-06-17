@@ -7,6 +7,7 @@ import HangmanClient, { Game as hangmanGame, Board as HangmanBoard, meta as hang
 import MinesweeperClient, { Game as minesweeperGame, Board as MinesweeperBoard, meta as minesweeperMeta } from './minesweeper';
 import SudokuClient, { Game as sudokuGame, Board as SudokuBoard, meta as sudokuMeta } from './sudoku';
 import GuessNumberClient, { Game as guessNumberGame, Board as GuessNumberBoard, meta as guessNumberMeta } from './guess-number';
+import Twenty48DuelClient, { Game as twenty48Game, Board as Twenty48Board, meta as twenty48Meta } from './2048-duel';
 
 export const games = {
   [ticTacToeMeta.id]: {
@@ -42,6 +43,12 @@ export const games = {
     Game: guessNumberGame,
     Board: GuessNumberBoard,
     meta: guessNumberMeta,
+  },
+  [twenty48Meta.id]: {
+    Client: Twenty48DuelClient,
+    Game: twenty48Game,
+    Board: Twenty48Board,
+    meta: twenty48Meta,
   },
 };
 
