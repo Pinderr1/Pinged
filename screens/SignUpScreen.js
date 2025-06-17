@@ -7,7 +7,8 @@ import {
   Alert,
 } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import SafeKeyboardView from '../components/SafeKeyboardView';
@@ -23,8 +24,20 @@ export default function SignUpScreen({ navigation }) {
       return;
     }
     try {
-      const userCred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
       console.log('✅ Signed up:', userCred.user.uid);
+      await setDoc(doc(db, 'users', userCred.user.uid), {
+        uid: userCred.user.uid,
+        email: userCred.user.email,
+        displayName: userCred.user.displayName || '',
+        photoURL: userCred.user.photoURL || '',
+        onboardingComplete: false,
+        createdAt: serverTimestamp(),
+      });
       navigation.replace('Onboarding');
     } catch (error) {
       console.error(error);

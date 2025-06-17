@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,17 +16,9 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import styles from '../styles';
-
-const MATCHES = [
-  { id: '1', name: 'Liam', photo: require('../assets/user1.jpg'), online: true },
-  { id: '2', name: 'Emily', photo: require('../assets/user2.jpg'), online: false },
-  { id: '3', name: 'Sophie', photo: require('../assets/user3.jpg'), online: true },
-  { id: '4', name: 'Noah', photo: require('../assets/user4.jpg'), online: false },
-  { id: '5', name: 'Alex', photo: require('../assets/user1.jpg'), online: true },
-  { id: '6', name: 'Mia', photo: require('../assets/user2.jpg'), online: false },
-  { id: '7', name: 'Lucas', photo: require('../assets/user3.jpg'), online: true },
-  { id: '8', name: 'Ava', photo: require('../assets/user4.jpg'), online: false }
-];
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../firebase';
+import { useUser } from '../contexts/UserContext';
 
 const devUser = {
   id: '__devUser',
@@ -44,11 +36,36 @@ const GameInviteScreen = ({ route, navigation }) => {
   const gameId = typeof rawGame === 'object' ? rawGame.id : null;
   const { darkMode } = useTheme();
   const { devMode } = useDev();
+  const { user: currentUser } = useUser();
   const { sendGameInvite } = useMatchmaking();
   const [search, setSearch] = useState('');
   const [invited, setInvited] = useState({});
   const [loadingId, setLoadingId] = useState(null);
-  const matches = devMode ? [devUser, ...MATCHES] : MATCHES;
+  const [matches, setMatches] = useState([]);
+
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        const q = currentUser?.uid
+          ? query(collection(db, 'users'), where('uid', '!=', currentUser.uid))
+          : collection(db, 'users');
+        const snap = await getDocs(q);
+        let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        if (devMode) data = [devUser, ...data];
+        setMatches(
+          data.map((u) => ({
+            id: u.uid || u.id,
+            name: u.displayName || 'User',
+            photo: u.photoURL ? { uri: u.photoURL } : require('../assets/user1.jpg'),
+            online: true,
+          }))
+        );
+      } catch (e) {
+        console.warn('Failed to load users', e);
+      }
+    };
+    fetchMatches();
+  }, [currentUser?.uid, devMode]);
 
   const handleInvite = async (user) => {
     setInvited((prev) => ({ ...prev, [user.id]: true }));
