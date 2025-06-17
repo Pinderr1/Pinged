@@ -10,6 +10,7 @@ import {
   serverTimestamp,
   arrayUnion,
   getDoc,
+  setDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useUser } from './UserContext';
@@ -34,6 +35,7 @@ export const MatchmakingProvider = ({ children }) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setOutgoingRequests(data);
     });
+
     const unsubIn = onSnapshot(inQ, (snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setIncomingRequests(data);
@@ -47,6 +49,7 @@ export const MatchmakingProvider = ({ children }) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setOutgoingInvites(data);
     });
+
     const unsubInInv = onSnapshot(inInvQ, (snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setIncomingInvites(data);
@@ -91,14 +94,23 @@ export const MatchmakingProvider = ({ children }) => {
 
   const sendGameInvite = async (to, gameId) => {
     if (!user?.uid || !to || !gameId) return null;
-    const ref = await addDoc(collection(db, 'gameInvites'), {
+    const payload = {
       from: user.uid,
       to,
       gameId,
+      fromName: user.displayName || 'User',
       status: 'pending',
       acceptedBy: [user.uid],
       createdAt: serverTimestamp(),
-    });
+    };
+    const ref = await addDoc(collection(db, 'gameInvites'), payload);
+    const inviteData = { ...payload, inviteId: ref.id };
+    try {
+      await setDoc(doc(db, 'users', user.uid, 'gameInvites', ref.id), inviteData);
+      await setDoc(doc(db, 'users', to, 'gameInvites', ref.id), inviteData);
+    } catch (e) {
+      console.warn('Failed to create invite subdocs', e);
+    }
     return ref.id;
   };
 
@@ -109,20 +121,42 @@ export const MatchmakingProvider = ({ children }) => {
     const data = snap.data();
     if (!snap.exists() || (data.from !== user.uid && data.to !== user.uid)) return;
     await updateDoc(ref, { acceptedBy: arrayUnion(user.uid) });
+
     if (data.acceptedBy?.length + 1 >= 2 && !data.acceptedBy?.includes(user.uid)) {
       await updateDoc(ref, { status: 'ready' });
     } else if (data.acceptedBy?.length >= 2) {
       await updateDoc(ref, { status: 'ready' });
     }
+
+    try {
+      await updateDoc(doc(db, 'users', user.uid, 'gameInvites', id), {
+        status: 'accepted',
+      });
+    } catch (e) {
+      console.warn('Failed to update invite status', e);
+    }
   };
 
   const cancelGameInvite = async (id) => {
     if (!user?.uid || !id) return;
+
     const ref = doc(db, 'gameInvites', id);
     const snap = await getDoc(ref);
+
+    if (!snap.exists()) return;
+
     const data = snap.data();
-    if (!snap.exists() || (data.from !== user.uid && data.to !== user.uid)) return;
-    await updateDoc(ref, { status: 'cancelled' });
+    if (data.from !== user.uid && data.to !== user.uid) return;
+
+    try {
+      await updateDoc(ref, { status: 'cancelled' });
+
+      await updateDoc(doc(db, 'users', user.uid, 'gameInvites', id), {
+        status: 'cancelled',
+      });
+    } catch (e) {
+      console.warn('Failed to cancel game invite', e);
+    }
   };
 
   return (
