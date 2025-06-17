@@ -76,7 +76,7 @@ const allGames = [
     id: '5',
     title: 'Checkers',
     icon: <MaterialCommunityIcons name="checkerboard" size={30} />,
-    route: null,
+    route: 'Checkers',
     premium: false,
     category: 'Board',
     description: 'Jump your opponent and crown your pieces in this strategic game.',
