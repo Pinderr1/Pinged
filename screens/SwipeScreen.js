@@ -19,6 +19,8 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import { useChats } from '../contexts/ChatContext';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../firebase';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
@@ -28,30 +30,6 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_HEIGHT = 520;
 const MAX_LIKES = 100;
 
-const allUsers = [
-  {
-    id: '1',
-    name: 'Emily',
-    age: 24,
-    bio: 'Let’s play chess and chill 🧠',
-    images: [require('../assets/user1.jpg')],
-  },
-  {
-    id: '2',
-    name: 'Liam',
-    age: 28,
-    bio: 'Pro gamer looking for my co-op partner 🎮',
-    images: [require('../assets/user2.jpg')],
-  }
-];
-
-const devUser = {
-  id: '__devUser',
-  name: 'Dev Tester',
-  age: 99,
-  bio: 'Testing swipes',
-  images: [require('../assets/user1.jpg')],
-};
 
 const SwipeScreen = () => {
   const { darkMode } = useTheme();
@@ -83,13 +61,50 @@ const SwipeScreen = () => {
     extrapolate: 'clamp',
   });
 
-  const users = devMode ? [devUser, ...allUsers] : allUsers;
+  const [users, setUsers] = useState([]);
   const displayUser = users[currentIndex] ?? null;
 
   useEffect(() => {
     setCurrentIndex(0);
     setHistory([]);
   }, [devMode]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!currentUser?.uid) return;
+      try {
+        const q = query(
+          collection(db, 'users'),
+          where('uid', '!=', currentUser.uid)
+        );
+        const snap = await getDocs(q);
+        let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        if (devMode) {
+          data = [
+            {
+              id: '__devUser',
+              displayName: 'Dev Tester',
+              age: 99,
+              bio: 'Testing swipes',
+              photoURL: null,
+            },
+            ...data,
+          ];
+        }
+        const formatted = data.map((u) => ({
+          id: u.uid || u.id,
+          name: u.displayName || 'User',
+          age: u.age || '',
+          bio: u.bio || '',
+          images: [u.photoURL || require('../assets/user1.jpg')],
+        }));
+        setUsers(formatted);
+      } catch (e) {
+        console.warn('Failed to load users', e);
+      }
+    };
+    fetchUsers();
+  }, [currentUser?.uid, devMode]);
 
   const handleSwipe = (direction) => {
     if (!displayUser) return;
