@@ -4,7 +4,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, StatusBar, Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useUser } from '../contexts/UserContext';
-import { useOnboarding } from '../contexts/OnboardingContext';
 
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
@@ -31,8 +30,7 @@ const splashDuration = 2000;
 
 export default function RootNavigator() {
   const [isSplash, setIsSplash] = useState(true);
-  const { user } = useUser();
-  const { hasOnboarded } = useOnboarding();
+  const { user, loading } = useUser();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsSplash(false), splashDuration);
@@ -50,9 +48,11 @@ export default function RootNavigator() {
     return () => sub.remove();
   }, []);
 
-  if (isSplash) return <SplashScreen onFinish={() => setIsSplash(false)} />;
+  if (isSplash || loading) {
+    return <SplashScreen onFinish={() => setIsSplash(false)} />;
+  }
 
-  const onboarded = user?.onboardingComplete || hasOnboarded;
+  const onboarded = user?.onboardingComplete;
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
