@@ -131,7 +131,7 @@ const allGames = [
     id: '10',
     title: 'Mancala',
     icon: <MaterialCommunityIcons name="dots-circle" size={28} />,
-    route: null,
+    route: 'Mancala',
     premium: false,
     category: 'Board',
     description: 'Capture your opponent’s pieces in this ancient strategy game.',
