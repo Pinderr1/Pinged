@@ -11,6 +11,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
+import { db } from '../firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import Toast from 'react-native-toast-message';
 
 const features = [
   {
@@ -33,6 +37,20 @@ const features = [
 
 const PremiumPaywallScreen = ({ navigation }) => {
   const { darkMode } = useTheme();
+  const { user, updateUser } = useUser();
+
+  const handleUpgrade = async () => {
+    if (!user?.uid) return;
+    try {
+      await updateDoc(doc(db, 'users', user.uid), { isPremium: true });
+      updateUser({ isPremium: true });
+      Toast.show({ type: 'success', text1: 'Premium activated!' });
+      navigation.goBack();
+    } catch (e) {
+      console.warn('Failed to upgrade', e);
+      Toast.show({ type: 'error', text1: 'Upgrade failed' });
+    }
+  };
 
   return (
     <LinearGradient
@@ -57,7 +75,7 @@ const PremiumPaywallScreen = ({ navigation }) => {
           )}
         />
 
-        <TouchableOpacity style={local.upgradeBtn}>
+        <TouchableOpacity style={local.upgradeBtn} onPress={handleUpgrade}>
           <Text style={local.upgradeText}>Upgrade Now</Text>
         </TouchableOpacity>
 
