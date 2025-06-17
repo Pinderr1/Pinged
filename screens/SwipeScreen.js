@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Dimensions,
   Modal,
-  Alert,
   StyleSheet,
   ToastAndroid,
 } from 'react-native';
@@ -121,7 +120,7 @@ const SwipeScreen = () => {
 
     if (direction === 'right') {
       if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
-        Alert.alert('Upgrade to Premium', 'You’ve hit your daily like limit.');
+        navigation.navigate('PremiumPaywall');
         return;
       }
 
@@ -189,7 +188,7 @@ const SwipeScreen = () => {
 
   const rewind = () => {
     if (!isPremiumUser && !devMode) {
-      ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
+      navigation.navigate('PremiumPaywall');
       return;
     }
     if (history.length === 0) return;
@@ -202,7 +201,7 @@ const SwipeScreen = () => {
 
   const handleSuperLike = () => {
     if (!isPremiumUser && !devMode) {
-      ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
+      navigation.navigate('PremiumPaywall');
       return;
     }
     handleSwipe('right');
@@ -211,7 +210,7 @@ const SwipeScreen = () => {
 
   const handleBoost = () => {
     if (!isPremiumUser && !devMode) {
-      ToastAndroid.show('Premium feature', ToastAndroid.SHORT);
+      navigation.navigate('PremiumPaywall');
       return;
     }
     setBoostActive(true);
