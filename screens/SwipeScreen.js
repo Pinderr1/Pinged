@@ -19,7 +19,17 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import { useChats } from '../contexts/ChatContext';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  doc,
+  setDoc,
+  getDoc,
+  addDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
@@ -106,7 +116,7 @@ const SwipeScreen = () => {
     fetchUsers();
   }, [currentUser?.uid, devMode]);
 
-  const handleSwipe = (direction) => {
+  const handleSwipe = async (direction) => {
     if (!displayUser) return;
 
     if (direction === 'right') {
@@ -116,22 +126,59 @@ const SwipeScreen = () => {
       }
 
       setLikesUsed((prev) => prev + 1);
-      setMatchedUser(displayUser);
-      setShowFireworks(true);
       showNotification(`You liked ${displayUser.name}`);
-      addMatch({
-        id: displayUser.id,
-        name: displayUser.name,
-        age: displayUser.age,
-        image: displayUser.images[0],
-        messages: [],
-        matchedAt: 'now',
-        activeGameId: null,
-        pendingInvite: null,
-      });
 
-      if (devMode) console.log('Auto-matching enabled');
-      setTimeout(() => setShowFireworks(false), 2000);
+      if (currentUser?.uid && displayUser.id && !devMode) {
+        try {
+          await setDoc(
+            doc(db, 'likes', currentUser.uid, 'liked', displayUser.id),
+            { createdAt: serverTimestamp() }
+          );
+
+          const reciprocal = await getDoc(
+            doc(db, 'likes', displayUser.id, 'liked', currentUser.uid)
+          );
+
+          if (reciprocal.exists()) {
+            const matchRef = await addDoc(collection(db, 'matches'), {
+              users: [currentUser.uid, displayUser.id],
+              createdAt: serverTimestamp(),
+            });
+
+            addMatch({
+              id: matchRef.id,
+              name: displayUser.name,
+              age: displayUser.age,
+              image: displayUser.images[0],
+              messages: [],
+              matchedAt: 'now',
+              activeGameId: null,
+              pendingInvite: null,
+            });
+
+            setMatchedUser(displayUser);
+            setShowFireworks(true);
+            setTimeout(() => setShowFireworks(false), 2000);
+          }
+        } catch (e) {
+          console.warn('Failed to process like', e);
+        }
+      } else if (devMode) {
+        // In dev mode instantly match
+        addMatch({
+          id: displayUser.id,
+          name: displayUser.name,
+          age: displayUser.age,
+          image: displayUser.images[0],
+          messages: [],
+          matchedAt: 'now',
+          activeGameId: null,
+          pendingInvite: null,
+        });
+        setMatchedUser(displayUser);
+        setShowFireworks(true);
+        setTimeout(() => setShowFireworks(false), 2000);
+      }
     }
 
     setHistory((h) => [...h, currentIndex]);
