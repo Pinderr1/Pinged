@@ -20,7 +20,7 @@ import { games } from '../games';
 const NotificationsScreen = ({ navigation }) => {
   const { incomingInvites, acceptGameInvite, cancelGameInvite } = useMatchmaking();
   const { user } = useUser();
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
   const [loadingId, setLoadingId] = useState(null);
 
   const pendingInvites = incomingInvites.filter((i) => i.status === 'pending');
@@ -66,25 +66,25 @@ const NotificationsScreen = ({ navigation }) => {
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']}
+      colors={[theme.gradientStart, theme.gradientEnd]}
       style={styles.container}
     >
       <Header navigation={navigation} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
-        <Text style={[local.title, { color: darkMode ? '#fff' : '#000' }]}>Game Invites</Text>
+        <Text style={[local.title, { color: theme.text }]}>Game Invites</Text>
 
         {pendingInvites.length === 0 ? (
-          <Text style={[local.empty, { color: darkMode ? '#ccc' : '#888' }]}>No invites right now.</Text>
+          <Text style={[local.empty, { color: theme.textSecondary }]}>No invites right now.</Text>
         ) : (
           pendingInvites.map((inv) => (
             <View
               key={inv.id}
               style={[
                 local.card,
-                { backgroundColor: darkMode ? '#333' : '#fff' },
+                { backgroundColor: theme.card },
               ]}
             >
-              <Text style={[local.text, { color: darkMode ? '#fff' : '#444' }]}> 
+              <Text style={[local.text, { color: theme.text }]}> 
                 {inv.fromName ? `${inv.fromName} invited you to play ${games[inv.gameId]?.meta?.title || 'a game'}` : 'Game invite received'}
               </Text>
               <View style={local.actions}>
@@ -95,7 +95,7 @@ const NotificationsScreen = ({ navigation }) => {
                   <Text style={styles.btnText}>Accept</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDecline(inv)}>
-                  <Text style={{ color: '#d81b60', fontSize: 13 }}>Decline</Text>
+                  <Text style={{ color: theme.accent, fontSize: 13 }}>Decline</Text>
                 </TouchableOpacity>
               </View>
             </View>

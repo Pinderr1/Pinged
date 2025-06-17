@@ -9,7 +9,7 @@ import { useUser } from '../contexts/UserContext';
 import { avatarSource } from '../utils/avatar';
 
 const StatsScreen = ({ navigation }) => {
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
   const { user } = useUser();
   const isPremium = !!user?.isPremium;
 
@@ -27,7 +27,7 @@ const StatsScreen = ({ navigation }) => {
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']}
+      colors={[theme.gradientStart, theme.gradientEnd]}
       style={{ flex: 1 }}
     >
       <Header showLogoOnly />

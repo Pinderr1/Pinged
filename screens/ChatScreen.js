@@ -46,13 +46,13 @@ export default function ChatScreen({ route }) {
     acceptGameInvite,
     getPendingInvite,
   } = useChats();
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
   const { showNotification } = useNotification();
   if (!user) {
     return (
-      <LinearGradient colors={[darkMode ? '#444' : '#fff', darkMode ? '#222' : '#ffe6f0']} style={{ flex: 1 }}>
+      <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
         <Header />
-        <Text style={{ marginTop: 80, textAlign: 'center', color: darkMode ? '#fff' : '#000' }}>
+        <Text style={{ marginTop: 80, textAlign: 'center', color: theme.text }}>
           User not found.
         </Text>
       </LinearGradient>
@@ -274,7 +274,7 @@ export default function ChatScreen({ route }) {
     </View>
   ) : null;
 
-  const gradientColors = darkMode ? ['#444', '#222'] : ['#fff', '#fdeef4'];
+  const gradientColors = [theme.gradientStart, theme.gradientEnd];
 
   const toggleBar = (
     <View style={chatStyles.toggleBar}>

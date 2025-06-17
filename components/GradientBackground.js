@@ -5,8 +5,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import styles from '../styles';
 
 export default function GradientBackground({ children }) {
-  const { darkMode } = useTheme();
-  const colors = darkMode ? ['#444', '#222'] : ['#FF75B5', '#FF9A75'];
+  const { theme } = useTheme();
+  const colors = [theme.gradientStart, theme.gradientEnd];
 
   return (
     <LinearGradient colors={colors} style={styles.container}>

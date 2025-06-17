@@ -27,7 +27,7 @@ const GAMES = [
 
 
 const HomeScreen = ({ navigation }) => {
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
   const { user } = useUser();
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft, recordGamePlayed } = useGameLimit();
@@ -35,7 +35,7 @@ const HomeScreen = ({ navigation }) => {
   const [playTarget, setPlayTarget] = useState('stranger');
 
   const card = (children, style = {}) => (
-    <View style={[local.card, { backgroundColor: darkMode ? '#444' : '#fff' }, style]}>
+    <View style={[local.card, { backgroundColor: theme.card }, style]}>
       {children}
     </View>
   );
@@ -65,7 +65,7 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const gradientColors = darkMode ? ['#444', '#222'] : ['#FF75B5', '#FF9A75'];
+  const gradientColors = [theme.gradientStart, theme.gradientEnd];
 
   return (
     <LinearGradient colors={gradientColors} style={{ flex: 1 }}>

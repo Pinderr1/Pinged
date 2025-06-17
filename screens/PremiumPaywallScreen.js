@@ -32,11 +32,11 @@ const features = [
 ];
 
 const PremiumPaywallScreen = ({ navigation }) => {
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']}
+      colors={[theme.gradientStart, theme.gradientEnd]}
       style={{ flex: 1 }}
     >
       <Header />

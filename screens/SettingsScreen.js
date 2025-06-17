@@ -10,7 +10,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 
 const SettingsScreen = ({ navigation }) => {
-  const { darkMode, toggleTheme } = useTheme();
+  const { darkMode, toggleTheme, theme } = useTheme();
   const { user } = useUser();
   const isPremium = !!user?.isPremium;
   const { devMode, toggleDevMode } = useDev();
@@ -24,20 +24,20 @@ const SettingsScreen = ({ navigation }) => {
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#444', '#222'] : ['#fff', '#fce4ec']}
+      colors={[theme.gradientStart, theme.gradientEnd]}
       style={styles.container}
     >
       <Header />
 
-      <Text style={[styles.logoText, { color: darkMode ? '#fff' : '#d81b60', marginBottom: 10 }]}>
+      <Text style={[styles.logoText, { color: theme.text, marginBottom: 10 }]}>
         Settings
       </Text>
 
       <View style={{ marginBottom: 20 }}>
-        <Text style={[styles.settingText, { color: darkMode ? '#ccc' : '#666' }]}> 
+        <Text style={[styles.settingText, { color: theme.textSecondary }]}>
           Account: {user?.email || 'Unknown'}
         </Text>
-        <Text style={[styles.settingText, { color: darkMode ? '#aaa' : '#999' }]}>
+        <Text style={[styles.settingText, { color: theme.textSecondary }]}>
           Status: {isPremium ? '🌟 Premium Member' : 'Free Member'}
         </Text>
       </View>

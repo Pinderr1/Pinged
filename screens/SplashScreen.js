@@ -21,8 +21,8 @@ const useFadeIn = (duration = 1000) => {
 
 export default function SplashScreen({ onFinish }) {
   const fadeAnim = useFadeIn();
-  const { darkMode } = useTheme();
-  const colors = darkMode ? ['#444', '#222'] : ['#FF75B5', '#FF9A75'];
+  const { darkMode, theme } = useTheme();
+  const colors = [theme.gradientStart, theme.gradientEnd];
 
   useEffect(() => {
     const timeout = setTimeout(onFinish, splashDuration);

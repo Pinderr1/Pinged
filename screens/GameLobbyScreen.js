@@ -22,7 +22,7 @@ import GameOverModal from '../components/GameOverModal';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 
 const GameLobbyScreen = ({ route, navigation }) => {
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
   const { devMode } = useDev();
   const { recordGamePlayed } = useGameLimit();
   const { user, addGameXP } = useUser();
@@ -123,11 +123,11 @@ const GameLobbyScreen = ({ route, navigation }) => {
   if (!game || !opponent) {
     return (
       <LinearGradient
-        colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']}
+        colors={[theme.gradientStart, theme.gradientEnd]}
         style={styles.swipeScreen}
       >
         <Header showLogoOnly />
-        <Text style={{ marginTop: 80, color: darkMode ? '#fff' : '#000' }}>
+        <Text style={{ marginTop: 80, color: theme.text }}>
           Invalid game data.
         </Text>
       </LinearGradient>
@@ -136,15 +136,15 @@ const GameLobbyScreen = ({ route, navigation }) => {
 
   return (
     <LinearGradient
-      colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']}
+      colors={[theme.gradientStart, theme.gradientEnd]}
       style={styles.swipeScreen}
     >
       <Header showLogoOnly />
 
       {/* Game Info */}
       <View style={{ alignItems: 'center', marginTop: 70, marginBottom: 20 }}>
-        <MaterialCommunityIcons name="controller-classic" size={34} color={darkMode ? '#fff' : '#d81b60'} />
-        <Text style={{ fontSize: 20, fontWeight: '700', color: darkMode ? '#fff' : '#000' }}>
+        <MaterialCommunityIcons name="controller-classic" size={34} color={theme.text} />
+        <Text style={{ fontSize: 20, fontWeight: '700', color: theme.text }}>
           {game.title}
         </Text>
       </View>
@@ -157,7 +157,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
             source={avatarSource(user?.photoURL)}
             style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 6 }}
           />
-          <Text style={{ fontSize: 14, fontWeight: '600', color: darkMode ? '#fff' : '#222' }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: theme.text }}>
             You
           </Text>
         </View>
@@ -170,14 +170,14 @@ const GameLobbyScreen = ({ route, navigation }) => {
             source={avatarSource(opponent?.photo)}
             style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 6 }}
           />
-          <Text style={{ fontSize: 14, fontWeight: '600', color: darkMode ? '#fff' : '#222' }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: theme.text }}>
             {opponent?.name || 'Unknown'}
           </Text>
         </View>
       </View>
 
       {/* Status Message */}
-      <Text style={{ textAlign: 'center', color: darkMode ? '#aaa' : '#666', marginBottom: 30 }}>
+      <Text style={{ textAlign: 'center', color: theme.textSecondary, marginBottom: 30 }}>
         {countdown !== null
           ? `Starting in ${countdown}...`
           : isReady

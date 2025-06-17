@@ -6,19 +6,22 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
 
 const MatchesScreen = ({ navigation }) => {
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
   const { matches } = useChats();
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Chat', { user: item })}>
+    <TouchableOpacity
+      style={[styles.item, { backgroundColor: theme.card }]}
+      onPress={() => navigation.navigate('Chat', { user: item })}
+    >
       <Image source={item.image} style={styles.avatar} />
-      <Text style={styles.name}>{item.name}</Text>
+      <Text style={[styles.name, { color: theme.text }]}>{item.name}</Text>
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <LinearGradient colors={darkMode ? ['#444', '#222'] : ['#fff', '#ffe6f0']} style={{ flex: 1 }}>
+      <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
         <Header />
         <Text style={styles.title}>Your Matches</Text>
         <FlatList
