@@ -10,6 +10,7 @@ import {
   serverTimestamp,
   arrayUnion,
   getDoc,
+  setDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useUser } from './UserContext';
@@ -79,14 +80,23 @@ export const MatchmakingProvider = ({ children }) => {
 
   const sendGameInvite = async (to, gameId) => {
     if (!user?.uid || !to || !gameId) return null;
-    const ref = await addDoc(collection(db, 'gameInvites'), {
+    const payload = {
       from: user.uid,
       to,
       gameId,
+      fromName: user.displayName || 'User',
       status: 'pending',
       acceptedBy: [user.uid],
       createdAt: serverTimestamp(),
-    });
+    };
+    const ref = await addDoc(collection(db, 'gameInvites'), payload);
+    const inviteData = { ...payload, inviteId: ref.id };
+    try {
+      await setDoc(doc(db, 'users', user.uid, 'gameInvites', ref.id), inviteData);
+      await setDoc(doc(db, 'users', to, 'gameInvites', ref.id), inviteData);
+    } catch (e) {
+      console.warn('Failed to create invite subdocs', e);
+    }
     return ref.id;
   };
 
@@ -99,10 +109,23 @@ export const MatchmakingProvider = ({ children }) => {
     if (data.acceptedBy?.length >= 2) {
       await updateDoc(ref, { status: 'ready' });
     }
+    try {
+      await updateDoc(doc(db, 'users', user.uid, 'gameInvites', id), {
+        status: 'accepted',
+      });
+    } catch (e) {
+      console.warn('Failed to update invite status', e);
+    }
   };
 
-  const cancelGameInvite = (id) =>
+  const cancelGameInvite = (id) => {
     updateDoc(doc(db, 'gameInvites', id), { status: 'cancelled' });
+    if (user?.uid) {
+      updateDoc(doc(db, 'users', user.uid, 'gameInvites', id), {
+        status: 'cancelled',
+      }).catch((e) => console.warn('Failed to cancel invite', e));
+    }
+  };
 
   return (
     <MatchmakingContext.Provider
