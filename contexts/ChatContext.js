@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useDev } from './DevContext';
+import { useUser } from './UserContext';
+import { db } from '../firebase';
 
 const ChatContext = createContext();
 
@@ -49,6 +52,7 @@ const initialMatches = [
 
 export const ChatProvider = ({ children }) => {
   const { devMode } = useDev();
+  const { user } = useUser();
   const devMatch = {
     id: '__testMatch',
     name: 'Dev Tester',
@@ -80,6 +84,30 @@ export const ChatProvider = ({ children }) => {
       }
     });
   }, []);
+
+  // Subscribe to Firestore matches for the current user
+  useEffect(() => {
+    if (!user?.uid) return;
+    const q = query(collection(db, 'matches'), where('users', 'array-contains', user.uid));
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setMatches((prev) => {
+        const others = prev.filter((m) => !data.find((d) => d.id === m.id));
+        const converted = data.map((m) => ({
+          id: m.id,
+          name: m.name || 'Match',
+          age: m.age || 0,
+          image: m.image ? { uri: m.image } : require('../assets/user1.jpg'),
+          messages: [],
+          matchedAt: m.createdAt ? m.createdAt.toDate?.().toISOString() : 'now',
+          activeGameId: null,
+          pendingInvite: null,
+        }));
+        return [...others, ...converted];
+      });
+    });
+    return unsub;
+  }, [user?.uid]);
 
   useEffect(() => {
     setMatches((prev) => {

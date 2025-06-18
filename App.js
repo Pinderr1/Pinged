@@ -11,9 +11,11 @@ import { GameLimitProvider } from './contexts/GameLimitContext';
 import NotificationCenter from './components/NotificationCenter';
 import DevBanner from './components/DevBanner';
 import Toast from 'react-native-toast-message';
+import usePushNotifications from './hooks/usePushNotifications';
 import RootNavigator from './navigation/RootNavigator';
 
 export default function App() {
+  usePushNotifications();
   return (
     <DevProvider>
       <ThemeProvider>

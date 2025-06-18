@@ -1,0 +1,10 @@
+{
+  "name": "pinged-functions",
+  "private": true,
+  "engines": { "node": "18" },
+  "dependencies": {
+    "firebase-admin": "^11.10.1",
+    "firebase-functions": "^4.4.1",
+    "express": "^4.18.2"
+  }
+}
