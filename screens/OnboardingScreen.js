@@ -12,7 +12,8 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { db, auth, storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -87,8 +88,17 @@ export default function OnboardingScreen() {
       setStep(step + 1);
     } else {
       try {
+        let photoURL = answers.avatar;
+        if (answers.avatar && !answers.avatar.startsWith('http')) {
+          const response = await fetch(answers.avatar);
+          const blob = await response.blob();
+          const avatarRef = ref(storage, `avatars/${auth.currentUser.uid}.jpg`);
+          await uploadBytes(avatarRef, blob);
+          photoURL = await getDownloadURL(avatarRef);
+        }
+
         const clean = {
-          photoURL: answers.avatar,
+          photoURL,
           displayName: answers.name.trim(),
           age: parseInt(answers.age, 10) || null,
           gender: answers.gender,
@@ -105,7 +115,7 @@ export default function OnboardingScreen() {
           merge: true,
         });
         updateUser({
-          photoURL: answers.avatar,
+          photoURL,
           age: parseInt(answers.age, 10) || null,
           gender: answers.gender,
           bio: answers.bio.trim(),
