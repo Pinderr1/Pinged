@@ -10,12 +10,31 @@ import {
   Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as WebBrowser from 'expo-web-browser';
 import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
+import { functions } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
 
 const PremiumScreen = () => {
   const { darkMode, theme } = useTheme();
+
+  const startCheckout = async () => {
+    try {
+      const createSession = httpsCallable(functions, 'createCheckoutSession');
+      const result = await createSession({
+        successUrl: 'https://example.com/success',
+        cancelUrl: 'https://example.com/cancel'
+      });
+      const { url } = result.data || {};
+      if (url) {
+        await WebBrowser.openBrowserAsync(url);
+      }
+    } catch (e) {
+      console.warn('Checkout failed', e);
+    }
+  };
 
   const features = [
     { icon: require('../assets/icons/unlimited.png'), text: 'Unlimited Game Invites' },
@@ -46,7 +65,7 @@ const PremiumScreen = () => {
             ))}
           </View>
 
-          <TouchableOpacity style={styles.emailBtn} onPress={() => alert('Redirect to payment screen')}>
+          <TouchableOpacity style={styles.emailBtn} onPress={startCheckout}>
             <Text style={styles.btnText}>💎 Upgrade Now</Text>
           </TouchableOpacity>
 

@@ -1,27 +1,55 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const Stripe = require('stripe');
+
 admin.initializeApp();
 
-exports.paymentWebhook = functions.https.onRequest(async (req, res) => {
-  if (req.method !== 'POST') {
-    res.status(405).send('Method Not Allowed');
-    return;
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
+exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
+  const uid = context.auth && context.auth.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
-  const event = req.body;
-  if (event.type === 'payment_success') {
-    const uid = event.data.userId;
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [
+        { price: process.env.STRIPE_PRICE_ID, quantity: 1 }
+      ],
+      metadata: { uid },
+      success_url: data.successUrl || 'https://example.com/success',
+      cancel_url: data.cancelUrl || 'https://example.com/cancel'
+    });
+    return { url: session.url };
+  } catch (err) {
+    console.error('Failed to create checkout session', err);
+    throw new functions.https.HttpsError('internal', 'Unable to create session');
+  }
+});
+
+exports.stripeWebhook = functions.https.onRequest((req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error('Webhook signature verification failed', err);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const uid = session.metadata && session.metadata.uid;
     if (uid) {
-      try {
-        await admin.firestore().collection('users').doc(uid).update({
-          isPremium: true,
-          premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-      } catch (e) {
-        console.error('Failed to update premium status', e);
-        res.status(500).send('error');
-        return;
-      }
+      admin.firestore().collection('users').doc(uid).update({
+        isPremium: true,
+        premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }).catch(e => console.error('Failed to update premium status', e));
     }
   }
+
   res.status(200).send('ok');
 });
