@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,10 +16,21 @@ import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
+import { useUser } from '../contexts/UserContext';
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { db } from '../firebase';
 
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = (screenWidth - 48) / 2;
 
+// Default events used if Firestore is empty
 const ALL_EVENTS = [
   {
     id: 1,
@@ -60,14 +71,28 @@ const FILTERS = ['All', 'Tonight', 'Flirty', 'Tournaments'];
 const CommunityScreen = () => {
   const { darkMode } = useTheme();
   const navigation = useNavigation();
+  const { user } = useUser();
+  const [events, setEvents] = useState([]);
   const [joinedEvents, setJoinedEvents] = useState([]);
   const [activeFilter, setActiveFilter] = useState('All');
   const [showHostModal, setShowHostModal] = useState(false);
   const [firstJoin, setFirstJoin] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newTime, setNewTime] = useState('');
+  const [newDesc, setNewDesc] = useState('');
+
+  useEffect(() => {
+    const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setEvents(data.length ? data : ALL_EVENTS);
+    });
+    return unsub;
+  }, []);
 
   const filteredEvents = activeFilter === 'All'
-    ? ALL_EVENTS
-    : ALL_EVENTS.filter(e => e.category === activeFilter);
+    ? events
+    : events.filter((e) => e.category === activeFilter);
 
   const toggleJoin = (id) => {
     const isJoined = joinedEvents.includes(id);
@@ -181,21 +206,44 @@ const CommunityScreen = () => {
             <Text style={local.modalTitle}>Host an Event</Text>
             <TextInput
               placeholder="Event Title"
+              value={newTitle}
+              onChangeText={setNewTitle}
               style={local.input}
               placeholderTextColor="#888"
             />
             <TextInput
               placeholder="When and where?"
+              value={newTime}
+              onChangeText={setNewTime}
               style={local.input}
               placeholderTextColor="#888"
             />
             <TextInput
               placeholder="Details..."
+              value={newDesc}
+              onChangeText={setNewDesc}
               style={[local.input, { height: 60 }]}
               multiline
               placeholderTextColor="#888"
             />
-            <TouchableOpacity onPress={() => setShowHostModal(false)} style={[styles.emailBtn, { marginTop: 14 }]}>
+            <TouchableOpacity onPress={async () => {
+              try {
+                await addDoc(collection(db, 'events'), {
+                  title: newTitle,
+                  time: newTime,
+                  description: newDesc,
+                  category: 'Tonight',
+                  hostId: user?.uid || null,
+                  createdAt: serverTimestamp(),
+                });
+                setShowHostModal(false);
+                setNewTitle('');
+                setNewTime('');
+                setNewDesc('');
+              } catch (e) {
+                Alert.alert('Error', 'Failed to create event');
+              }
+            }} style={[styles.emailBtn, { marginTop: 14 }]}>
               <Text style={styles.btnText}>Submit Event</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowHostModal(false)} style={{ marginTop: 10 }}>

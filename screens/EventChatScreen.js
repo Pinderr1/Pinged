@@ -11,18 +11,28 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  doc,
+  updateDoc,
+  arrayUnion,
+} from 'firebase/firestore';
+import { db } from '../firebase';
 
 const REACTIONS = ['🔥', '❤️', '😂'];
 
 const EventChatScreen = ({ route }) => {
   const { event } = route.params;
   const { darkMode, theme } = useTheme();
+  const { user } = useUser();
 
-  const [messages, setMessages] = useState([
-    { id: '1', user: 'Emily', text: 'Who’s playing tonight?', time: '9:01 PM', reactions: [], pinned: false },
-    { id: '2', user: 'You', text: 'I’m in 🔥', time: '9:02 PM', reactions: ['🔥'], pinned: false },
-    { id: '3', user: 'Host', text: 'Event starts in 10 minutes!', time: '9:03 PM', reactions: [], pinned: true }
-  ]);
+  const [messages, setMessages] = useState([]);
 
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
@@ -30,44 +40,76 @@ const EventChatScreen = ({ route }) => {
   const flatListRef = useRef();
 
   useEffect(() => {
+    const q = query(
+      collection(db, 'events', event.id, 'messages'),
+      orderBy('timestamp', 'asc')
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => {
+        const val = d.data();
+        return {
+          id: d.id,
+          user: val.user,
+          userId: val.userId,
+          reactions: val.reactions || [],
+          pinned: !!val.pinned,
+          time: val.timestamp?.toDate?.().toLocaleTimeString([], {
+            hour: 'numeric',
+            minute: '2-digit',
+          }),
+          text: val.text,
+        };
+      });
+      setMessages(data);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
+    });
+    return unsub;
+  }, [event.id]);
+
+  useEffect(() => {
     const timer = setTimeout(() => setTyping(true), 5000); // mock typing
     return () => clearTimeout(timer);
   }, []);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
-    const newMsg = {
-      id: Date.now().toString(),
-      user: 'You',
-      text: input.trim(),
-      time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
-      reactions: [],
-      pinned: false
-    };
-    setMessages([...messages, newMsg]);
-    setInput('');
-    flatListRef.current?.scrollToEnd({ animated: true });
+    try {
+      await addDoc(collection(db, 'events', event.id, 'messages'), {
+        user: user?.displayName || 'You',
+        userId: user?.uid || null,
+        text: input.trim(),
+        timestamp: serverTimestamp(),
+        reactions: [],
+        pinned: false,
+      });
+      setInput('');
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
+    } catch (e) {
+      console.warn('Failed to send message', e);
+    }
   };
 
-  const addReaction = (msgId, emoji) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === msgId
-          ? { ...msg, reactions: [...msg.reactions, emoji] }
-          : msg
-      )
-    );
+  const addReaction = async (msgId, emoji) => {
+    try {
+      await updateDoc(doc(db, 'events', event.id, 'messages', msgId), {
+        reactions: arrayUnion(emoji),
+      });
+    } catch (e) {
+      console.warn('Failed to add reaction', e);
+    }
     setReactionTarget(null);
   };
 
-  const pinMessage = (msgId) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === msgId
-          ? { ...msg, pinned: !msg.pinned }
-          : msg
-      )
-    );
+  const pinMessage = async (msgId) => {
+    const msg = messages.find((m) => m.id === msgId);
+    if (!msg) return;
+    try {
+      await updateDoc(doc(db, 'events', event.id, 'messages', msgId), {
+        pinned: !msg.pinned,
+      });
+    } catch (e) {
+      console.warn('Failed to pin message', e);
+    }
   };
 
   const renderMessage = ({ item }) => (
@@ -75,10 +117,12 @@ const EventChatScreen = ({ route }) => {
       onLongPress={() => setReactionTarget(item.id)}
       style={[
         stylesLocal.messageBubble,
-        item.user === 'You' ? stylesLocal.userBubble : stylesLocal.otherBubble
+        item.userId === user?.uid ? stylesLocal.userBubble : stylesLocal.otherBubble
       ]}
     >
-      <Text style={stylesLocal.sender}>{item.user}</Text>
+      <Text style={stylesLocal.sender}>
+        {item.userId === user?.uid ? 'You' : item.user}
+      </Text>
       <Text style={stylesLocal.text}>{item.text}</Text>
       <Text style={stylesLocal.time}>{item.time}</Text>
 
