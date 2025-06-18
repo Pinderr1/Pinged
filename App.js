@@ -19,28 +19,28 @@ export default function App() {
   usePushNotifications();
   return (
     <DevProvider>
-      <ThemeProvider>
-        <NotificationProvider>
-          <AuthProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <NotificationProvider>
             <OnboardingProvider>
               <UserProvider>
                 <GameLimitProvider>
                   <ChatProvider>
                     <MatchmakingProvider>
-                    <NavigationContainer>
-                      <RootNavigator />
-                      <DevBanner />
-                    </NavigationContainer>
-                    <NotificationCenter />
-                    <Toast />
-                  </MatchmakingProvider>
-                </ChatProvider>
-              </GameLimitProvider>
-            </UserProvider>
-          </OnboardingProvider>
-        </AuthProvider>
-        </NotificationProvider>
-      </ThemeProvider>
+                      <NavigationContainer>
+                        <RootNavigator />
+                        <DevBanner />
+                      </NavigationContainer>
+                      <NotificationCenter />
+                      <Toast />
+                    </MatchmakingProvider>
+                  </ChatProvider>
+                </GameLimitProvider>
+              </UserProvider>
+            </OnboardingProvider>
+          </NotificationProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </DevProvider>
   );
 }
