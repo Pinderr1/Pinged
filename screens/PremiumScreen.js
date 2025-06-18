@@ -24,8 +24,8 @@ const PremiumScreen = () => {
     try {
       const createSession = httpsCallable(functions, 'createCheckoutSession');
       const result = await createSession({
-        successUrl: 'https://example.com/success',
-        cancelUrl: 'https://example.com/cancel'
+        successUrl: process.env.SUCCESS_URL,
+        cancelUrl: process.env.CANCEL_URL
       });
       const { url } = result.data || {};
       if (url) {
