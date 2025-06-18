@@ -19,8 +19,8 @@ export default function App() {
   usePushNotifications();
   return (
     <DevProvider>
-      <AuthProvider>
-        <ThemeProvider>
+      <ThemeProvider>
+        <AuthProvider>
           <NotificationProvider>
             <OnboardingProvider>
               <UserProvider>
@@ -39,8 +39,8 @@ export default function App() {
               </UserProvider>
             </OnboardingProvider>
           </NotificationProvider>
-        </ThemeProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </DevProvider>
   );
 }
