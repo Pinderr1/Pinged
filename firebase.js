@@ -3,6 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
+import { getMessaging, onMessage } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -16,6 +17,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app); // <-- ADD THIS
+const storage = getStorage(app);
+const messaging = getMessaging(app);
 
-export { auth, db, storage };
+// Listen for foreground messages
+onMessage(messaging, (payload) => {
+  console.log('FCM Message:', payload);
+});
+
+export { auth, db, storage, messaging };
