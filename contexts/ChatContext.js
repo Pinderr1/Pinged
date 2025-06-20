@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useDev } from './DevContext';
 import { useUser } from './UserContext';
 import { db } from '../firebase';
@@ -69,6 +69,7 @@ export const ChatProvider = ({ children }) => {
   const [matches, setMatches] = useState(
     devMode ? [...initialMatches, devMatch] : initialMatches
   );
+  const [messagesMap, setMessagesMap] = useState({});
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((data) => {
@@ -128,21 +129,44 @@ export const ChatProvider = ({ children }) => {
     });
   }, [matches]);
 
-  const sendMessage = (matchId, text, sender = 'you') => {
-    if (!text) return;
-    setMatches((prev) =>
-      prev.map((m) =>
-        m.id === matchId
-          ? {
-              ...m,
-              messages: [
-                ...m.messages,
-                { id: Date.now().toString(), text, sender },
-              ],
-            }
-          : m
-      )
-    );
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsubs = matches.map((m) => {
+      const q = query(
+        collection(db, 'matches', m.id, 'messages'),
+        orderBy('timestamp', 'asc')
+      );
+      return onSnapshot(q, (snap) => {
+        const msgs = snap.docs.map((d) => {
+          const val = d.data();
+          return {
+            id: d.id,
+            text: val.text,
+            sender:
+              val.senderId === user.uid
+                ? 'you'
+                : val.senderId || 'them',
+          };
+        });
+        setMessagesMap((prev) => ({ ...prev, [m.id]: msgs }));
+      });
+    });
+    return () => {
+      unsubs.forEach((u) => u && u());
+    };
+  }, [user?.uid, matches.map((m) => m.id).join(',')]);
+
+  const sendMessage = async (matchId, text, sender = 'you') => {
+    if (!text || !matchId || !user?.uid) return;
+    try {
+      await addDoc(collection(db, 'matches', matchId, 'messages'), {
+        senderId: sender === 'you' ? user.uid : sender,
+        text: text.trim(),
+        timestamp: serverTimestamp(),
+      });
+    } catch (e) {
+      console.warn('Failed to send message', e);
+    }
   };
 
   const setActiveGame = (matchId, gameId) => {
@@ -203,7 +227,7 @@ export const ChatProvider = ({ children }) => {
     matches.find((m) => m.id === matchId)?.activeGameId || null;
 
   const getMessages = (matchId) =>
-    matches.find((m) => m.id === matchId)?.messages || [];
+    messagesMap[matchId] || [];
 
   const addMatch = (match) =>
     setMatches((prev) => {
