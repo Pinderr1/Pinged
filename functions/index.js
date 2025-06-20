@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const Stripe = require('stripe');
+const fetch = require('node-fetch');
 require('dotenv').config();
 
 admin.initializeApp();
@@ -82,4 +83,44 @@ exports.handleStripeWebhook = functions.https.onRequest(async (req, res) => {
   }
 
   res.status(200).send('ok');
+});
+
+exports.sendPushNotification = functions.https.onCall(async (data, context) => {
+  const { uid, title, message, extra } = data || {};
+  if (!uid || !message) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'uid and message are required'
+    );
+  }
+
+  try {
+    const snap = await admin.firestore().collection('users').doc(uid).get();
+    const userData = snap.data();
+    const token = userData && userData.expoPushToken;
+    if (!token) {
+      throw new Error('No Expo push token for user');
+    }
+
+    const res = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: token,
+        title: title || 'Pinged',
+        sound: 'default',
+        body: message,
+        data: extra || {},
+      }),
+    });
+
+    const result = await res.json();
+    return result;
+  } catch (e) {
+    console.error('Failed to send push notification', e);
+    throw new functions.https.HttpsError(
+      'internal',
+      'Unable to send push notification'
+    );
+  }
 });
