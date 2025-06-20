@@ -29,7 +29,7 @@ export default {
     web: {
       favicon: "./assets/favicon.png"
     },
-    plugins: ["expo-web-browser"],
+    plugins: ["expo-web-browser", "expo-notifications"],
     extra: {
       EXPO_PUBLIC_FIREBASE_API_KEY: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
       EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
