@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext } from 'react';
 import {
   collection,
   addDoc,
@@ -6,7 +6,6 @@ import {
   doc,
   query,
   where,
-  onSnapshot,
   serverTimestamp,
   arrayUnion,
   getDoc,
@@ -14,54 +13,18 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useUser } from './UserContext';
+import { useListeners } from './ListenerContext';
 
 const MatchmakingContext = createContext();
 
 export const MatchmakingProvider = ({ children }) => {
   const { user } = useUser();
-  const [incomingRequests, setIncomingRequests] = useState([]);
-  const [outgoingRequests, setOutgoingRequests] = useState([]);
-  const [incomingInvites, setIncomingInvites] = useState([]);
-  const [outgoingInvites, setOutgoingInvites] = useState([]);
-
-  useEffect(() => {
-    if (!user?.uid) return;
-
-    const reqRef = collection(db, 'matchRequests');
-    const outQ = query(reqRef, where('from', '==', user.uid));
-    const inQ = query(reqRef, where('to', '==', user.uid));
-
-    const unsubOut = onSnapshot(outQ, (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setOutgoingRequests(data);
-    });
-
-    const unsubIn = onSnapshot(inQ, (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setIncomingRequests(data);
-    });
-
-    const inviteRef = collection(db, 'gameInvites');
-    const outInvQ = query(inviteRef, where('from', '==', user.uid));
-    const inInvQ = query(inviteRef, where('to', '==', user.uid));
-
-    const unsubOutInv = onSnapshot(outInvQ, (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setOutgoingInvites(data);
-    });
-
-    const unsubInInv = onSnapshot(inInvQ, (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setIncomingInvites(data);
-    });
-
-    return () => {
-      unsubOut();
-      unsubIn();
-      unsubOutInv();
-      unsubInInv();
-    };
-  }, [user?.uid]);
+  const {
+    incomingRequests,
+    outgoingRequests,
+    incomingInvites,
+    outgoingInvites,
+  } = useListeners();
 
   const sendMatchRequest = async (to) => {
     if (!user?.uid || !to) return null;
