@@ -108,6 +108,9 @@ export default function OnboardingScreen() {
           xp: 0,
           streak: 0,
           lastPlayedAt: null,
+          isPremium: false,
+          dailyPlayCount: 0,
+          lastGamePlayedAt: null,
           onboardingComplete: true,
         };
         await setDoc(doc(db, 'users', auth.currentUser.uid), clean, {
@@ -121,6 +124,9 @@ export default function OnboardingScreen() {
           location: answers.location,
           favoriteGame: answers.favoriteGame,
           skillLevel: answers.skillLevel,
+          isPremium: false,
+          dailyPlayCount: 0,
+          lastGamePlayedAt: null,
           onboardingComplete: true,
         });
         markOnboarded();

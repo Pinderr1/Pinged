@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import { ChatProvider } from './contexts/ChatContext';
 import { MatchmakingProvider } from './contexts/MatchmakingContext';
+import { GameSessionProvider } from './contexts/GameSessionContext';
 import { DevProvider } from './contexts/DevContext';
 import { GameLimitProvider } from './contexts/GameLimitContext';
 import NotificationCenter from './components/NotificationCenter';
@@ -27,12 +28,14 @@ export default function App() {
                 <GameLimitProvider>
                   <ChatProvider>
                     <MatchmakingProvider>
-                      <NavigationContainer>
-                        <RootNavigator />
-                        <DevBanner />
-                      </NavigationContainer>
-                      <NotificationCenter />
-                      <Toast />
+                      <GameSessionProvider>
+                        <NavigationContainer>
+                          <RootNavigator />
+                          <DevBanner />
+                        </NavigationContainer>
+                        <NotificationCenter />
+                        <Toast />
+                      </GameSessionProvider>
                     </MatchmakingProvider>
                   </ChatProvider>
                 </GameLimitProvider>

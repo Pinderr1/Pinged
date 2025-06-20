@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useUser } from './UserContext';
 import { useDev } from './DevContext';
+import { db } from '../firebase';
 
 const GameLimitContext = createContext();
-const STORAGE_KEY = 'gamesPlayed';
 const DAILY_LIMIT = 1;
 
 export const GameLimitProvider = ({ children }) => {
@@ -18,37 +18,35 @@ export const GameLimitProvider = ({ children }) => {
       setGamesLeft(Infinity);
       return;
     }
-    const load = async () => {
-      try {
-        const data = await AsyncStorage.getItem(STORAGE_KEY);
-        if (data) {
-          const { date, count } = JSON.parse(data);
-          const today = new Date().toDateString();
-          if (date === today) {
-            setGamesLeft(Math.max(DAILY_LIMIT - count, 0));
-          } else {
-            await AsyncStorage.removeItem(STORAGE_KEY);
-            setGamesLeft(DAILY_LIMIT);
-          }
-        }
-      } catch (e) {
-        console.log('Failed to load game limit', e);
-      }
-    };
-    load();
-  }, [isPremium, devMode]);
+    const last = user?.lastGamePlayedAt?.toDate?.() ||
+      (user?.lastGamePlayedAt ? new Date(user.lastGamePlayedAt) : null);
+    const today = new Date().toDateString();
+    if (last && last.toDateString() === today) {
+      setGamesLeft(Math.max(DAILY_LIMIT - (user.dailyPlayCount || 0), 0));
+    } else {
+      setGamesLeft(DAILY_LIMIT);
+    }
+  }, [isPremium, devMode, user?.dailyPlayCount, user?.lastGamePlayedAt]);
 
   const recordGamePlayed = async () => {
-    if (isPremium || devMode) return;
-    setGamesLeft((left) => {
-      const next = Math.max(left - 1, 0);
-      const today = new Date().toDateString();
-      AsyncStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ date: today, count: DAILY_LIMIT - next })
-      ).catch((e) => console.log('Save game limit failed', e));
-      return next;
-    });
+    if (isPremium || devMode || !user?.uid) return;
+
+    const last = user.lastGamePlayedAt?.toDate?.() ||
+      (user.lastGamePlayedAt ? new Date(user.lastGamePlayedAt) : null);
+    const today = new Date();
+    let count = 1;
+    if (last && last.toDateString() === today.toDateString()) {
+      count = (user.dailyPlayCount || 0) + 1;
+    }
+    setGamesLeft(Math.max(DAILY_LIMIT - count, 0));
+    try {
+      await updateDoc(doc(db, 'users', user.uid), {
+        dailyPlayCount: count,
+        lastGamePlayedAt: serverTimestamp(),
+      });
+    } catch (e) {
+      console.log('Failed to update play count', e);
+    }
   };
 
   return (

@@ -36,6 +36,9 @@ export default function SignUpScreen({ navigation }) {
         displayName: userCred.user.displayName || '',
         photoURL: userCred.user.photoURL || '',
         onboardingComplete: false,
+        isPremium: false,
+        dailyPlayCount: 0,
+        lastGamePlayedAt: null,
         createdAt: serverTimestamp(),
       });
       navigation.replace('Onboarding');
