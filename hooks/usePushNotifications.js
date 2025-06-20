@@ -1,24 +1,27 @@
 import { useEffect } from 'react';
-import { getToken, onMessage } from 'firebase/messaging';
-import { messaging } from '../firebase';
+import * as Notifications from 'expo-notifications';
+import { useUser } from '../contexts/UserContext';
+import { registerForPushNotificationsAsync } from '../utils/notifications';
 
 export default function usePushNotifications() {
+  const { user } = useUser();
+
   useEffect(() => {
-    const requestPermission = async () => {
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          const token = await getToken(messaging);
-          console.log('FCM token', token);
-        }
-      } catch (e) {
-        console.warn('Failed to get FCM token', e);
-      }
-    };
-    requestPermission();
-    const unsub = onMessage(messaging, (payload) => {
-      console.log('Message received in foreground', payload);
+    if (user?.uid) {
+      registerForPushNotificationsAsync(user.uid).catch(console.warn);
+    }
+  }, [user?.uid]);
+
+  useEffect(() => {
+    const receivedSub = Notifications.addNotificationReceivedListener((notification) => {
+      console.log('Notification received in foreground', notification);
     });
-    return unsub;
+    const responseSub = Notifications.addNotificationResponseReceivedListener((response) => {
+      console.log('Notification response received', response);
+    });
+    return () => {
+      receivedSub.remove();
+      responseSub.remove();
+    };
   }, []);
 }
