@@ -7,8 +7,10 @@ import { AuthProvider } from './contexts/AuthContext';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import { ChatProvider } from './contexts/ChatContext';
 import { MatchmakingProvider } from './contexts/MatchmakingContext';
+import { GameSessionProvider } from './contexts/GameSessionContext';
 import { DevProvider } from './contexts/DevContext';
 import { GameLimitProvider } from './contexts/GameLimitContext';
+import { ListenerProvider } from './contexts/ListenerContext';
 import NotificationCenter from './components/NotificationCenter';
 import DevBanner from './components/DevBanner';
 import Toast from 'react-native-toast-message';
@@ -24,18 +26,22 @@ export default function App() {
           <NotificationProvider>
             <OnboardingProvider>
               <UserProvider>
-                <GameLimitProvider>
-                  <ChatProvider>
-                    <MatchmakingProvider>
-                      <NavigationContainer>
-                        <RootNavigator />
-                        <DevBanner />
-                      </NavigationContainer>
-                      <NotificationCenter />
-                      <Toast />
-                    </MatchmakingProvider>
-                  </ChatProvider>
-                </GameLimitProvider>
+                <ListenerProvider>
+                  <GameLimitProvider>
+                    <ChatProvider>
+                      <MatchmakingProvider>
+                        <GameSessionProvider>
+                          <NavigationContainer>
+                            <RootNavigator />
+                            <DevBanner />
+                          </NavigationContainer>
+                          <NotificationCenter />
+                          <Toast />
+                        </GameSessionProvider>
+                      </MatchmakingProvider>
+                    </ChatProvider>
+                  </GameLimitProvider>
+                </ListenerProvider>
               </UserProvider>
             </OnboardingProvider>
           </NotificationProvider>

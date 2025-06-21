@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useDev } from './DevContext';
 import { useUser } from './UserContext';
 import { db } from '../firebase';
+import { useListeners } from './ListenerContext';
 
 const ChatContext = createContext();
 
@@ -53,6 +54,7 @@ const initialMatches = [
 export const ChatProvider = ({ children }) => {
   const { devMode } = useDev();
   const { user } = useUser();
+  const { getMessages } = useListeners();
   const devMatch = {
     id: '__testMatch',
     name: 'Dev Tester',
@@ -128,21 +130,18 @@ export const ChatProvider = ({ children }) => {
     });
   }, [matches]);
 
-  const sendMessage = (matchId, text, sender = 'you') => {
-    if (!text) return;
-    setMatches((prev) =>
-      prev.map((m) =>
-        m.id === matchId
-          ? {
-              ...m,
-              messages: [
-                ...m.messages,
-                { id: Date.now().toString(), text, sender },
-              ],
-            }
-          : m
-      )
-    );
+
+  const sendMessage = async (matchId, text, sender = 'you') => {
+    if (!text || !matchId || !user?.uid) return;
+    try {
+      await addDoc(collection(db, 'matches', matchId, 'messages'), {
+        senderId: sender === 'you' ? user.uid : sender,
+        text: text.trim(),
+        timestamp: serverTimestamp(),
+      });
+    } catch (e) {
+      console.warn('Failed to send message', e);
+    }
   };
 
   const setActiveGame = (matchId, gameId) => {
@@ -202,8 +201,6 @@ export const ChatProvider = ({ children }) => {
   const getActiveGame = (matchId) =>
     matches.find((m) => m.id === matchId)?.activeGameId || null;
 
-  const getMessages = (matchId) =>
-    matches.find((m) => m.id === matchId)?.messages || [];
 
   const addMatch = (match) =>
     setMatches((prev) => {
