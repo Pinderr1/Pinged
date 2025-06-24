@@ -43,7 +43,7 @@ const allGames = [
     id: '2',
     title: 'Chess',
     icon: <FontAwesome5 name="chess-knight" size={30} />,
-    route: null,
+    route: 'Chess',
     premium: false,
     category: 'Board',
     description: 'Outsmart your opponent in this strategic classic.',
