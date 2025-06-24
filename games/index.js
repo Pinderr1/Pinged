@@ -10,6 +10,10 @@ import GuessNumberClient, { Game as guessNumberGame, Board as GuessNumberBoard, 
 import BattleshipClient, { Game as battleshipGame, Board as BattleshipBoard, meta as battleshipMeta } from './battleship';
 import CheckersClient, { Game as checkersGame, Board as CheckersBoard, meta as checkersMeta } from './checkers';
 import DominoesClient, { Game as dominoesGame, Board as DominoesBoard, meta as dominoesMeta } from './dominoes';
+import DotsBoxesClient, { Game as dotsBoxesGame, Board as DotsBoxesBoard, meta as dotsBoxesMeta } from './dots-and-boxes';
+import SnakesLaddersClient, { Game as snakesLaddersGame, Board as SnakesLaddersBoard, meta as snakesLaddersMeta } from './snakes-and-ladders';
+import MancalaClient, { Game as mancalaGame, Board as MancalaBoard, meta as mancalaMeta } from './mancala';
+import BlackjackClient, { Game as blackjackGame, Board as BlackjackBoard, meta as blackjackMeta } from './blackjack';
 
 export const games = {
   [ticTacToeMeta.id]: {
@@ -63,6 +67,30 @@ export const games = {
     Game: battleshipGame,
     Board: BattleshipBoard,
     meta: battleshipMeta,
+  },
+  [dotsBoxesMeta.id]: {
+    Client: DotsBoxesClient,
+    Game: dotsBoxesGame,
+    Board: DotsBoxesBoard,
+    meta: dotsBoxesMeta,
+  },
+  [snakesLaddersMeta.id]: {
+    Client: SnakesLaddersClient,
+    Game: snakesLaddersGame,
+    Board: SnakesLaddersBoard,
+    meta: snakesLaddersMeta,
+  },
+  [mancalaMeta.id]: {
+    Client: MancalaClient,
+    Game: mancalaGame,
+    Board: MancalaBoard,
+    meta: mancalaMeta,
+  },
+  [blackjackMeta.id]: {
+    Client: BlackjackClient,
+    Game: blackjackGame,
+    Board: BlackjackBoard,
+    meta: blackjackMeta,
   },
 };
 
