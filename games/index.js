@@ -12,6 +12,7 @@ import CheckersClient, { Game as checkersGame, Board as CheckersBoard, meta as c
 import DominoesClient, { Game as dominoesGame, Board as DominoesBoard, meta as dominoesMeta } from './dominoes';
 import DotsBoxesClient, { Game as dotsBoxesGame, Board as DotsBoxesBoard, meta as dotsBoxesMeta } from './dots-and-boxes';
 import SnakesLaddersClient, { Game as snakesLaddersGame, Board as SnakesLaddersBoard, meta as snakesLaddersMeta } from './snakes-and-ladders';
+import MancalaClient, { Game as mancalaGame, Board as MancalaBoard, meta as mancalaMeta } from './mancala';
 
 export const games = {
   [ticTacToeMeta.id]: {
@@ -71,6 +72,12 @@ export const games = {
     Game: dotsBoxesGame,
     Board: DotsBoxesBoard,
     meta: dotsBoxesMeta,
+  },
+  [mancalaMeta.id]: {
+    Client: MancalaClient,
+    Game: mancalaGame,
+    Board: MancalaBoard,
+    meta: mancalaMeta,
   },
   [snakesLaddersMeta.id]: {
     Client: SnakesLaddersClient,
