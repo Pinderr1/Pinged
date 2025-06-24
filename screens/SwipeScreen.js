@@ -131,7 +131,7 @@ const SwipeScreen = () => {
             .doc(currentUser.uid)
             .get();
 
-          if (reciprocal.exists()) {
+          if (reciprocal.exists) {
             const matchRef = await db
               .collection('matches')
               .add({

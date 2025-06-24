@@ -14,12 +14,23 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
+console.log('Firebase config loaded', firebaseConfig);
+
+try {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+} catch (e) {
+  console.log('Firebase init error', e);
 }
 
 const auth = firebase.auth();
-const db = firebase.firestore();
+let db;
+try {
+  db = firebase.firestore();
+} catch (e) {
+  console.log('Firestore init error', e);
+}
 const storage = firebase.storage();
 const functions = firebase.app().functions();
 

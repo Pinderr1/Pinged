@@ -30,7 +30,7 @@ export const MatchmakingProvider = ({ children }) => {
     const ref = db.collection('matchRequests').doc(id);
     const snap = await ref.get();
     const data = snap.data();
-    if (!snap.exists() || (data.from !== user.uid && data.to !== user.uid)) return;
+    if (!snap.exists || (data.from !== user.uid && data.to !== user.uid)) return;
     await ref.update({ status: 'accepted' });
   };
 
@@ -39,7 +39,7 @@ export const MatchmakingProvider = ({ children }) => {
     const ref = db.collection('matchRequests').doc(id);
     const snap = await ref.get();
     const data = snap.data();
-    if (!snap.exists() || (data.from !== user.uid && data.to !== user.uid)) return;
+    if (!snap.exists || (data.from !== user.uid && data.to !== user.uid)) return;
     await ref.update({ status: 'cancelled' });
   };
 
@@ -80,7 +80,7 @@ export const MatchmakingProvider = ({ children }) => {
     const ref = db.collection('gameInvites').doc(id);
     const snap = await ref.get();
     const data = snap.data();
-    if (!snap.exists() || (data.from !== user.uid && data.to !== user.uid)) return;
+    if (!snap.exists || (data.from !== user.uid && data.to !== user.uid)) return;
     await ref.update({
       acceptedBy: firebase.firestore.FieldValue.arrayUnion(user.uid),
     });
@@ -109,7 +109,7 @@ export const MatchmakingProvider = ({ children }) => {
     const ref = db.collection('gameInvites').doc(id);
     const snap = await ref.get();
 
-    if (!snap.exists()) return;
+    if (!snap.exists) return;
 
     const data = snap.data();
     if (data.from !== user.uid && data.to !== user.uid) return;

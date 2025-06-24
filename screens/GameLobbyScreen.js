@@ -43,7 +43,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
     if (!inviteId || !user?.uid) return;
     const ref = db.collection('gameInvites').doc(inviteId);
     const unsub = ref.onSnapshot((snap) => {
-      if (snap.exists()) {
+      if (snap.exists) {
         const data = snap.data();
         if (data.from === user.uid || data.to === user.uid) {
           setInviteStatus(data.status);
@@ -70,7 +70,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
         const ref = db.collection('gameInvites').doc(inviteId);
         const snap = await ref.get();
         const data = snap.data();
-        if (snap.exists() && (data.from === user.uid || data.to === user.uid)) {
+        if (snap.exists && (data.from === user.uid || data.to === user.uid)) {
           ref.update({
             status: 'active',
             startedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -97,7 +97,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
       const ref = db.collection('gameInvites').doc(inviteId);
       const snap = await ref.get();
       const data = snap.data();
-      if (snap.exists() && (data.from === user.uid || data.to === user.uid)) {
+      if (snap.exists && (data.from === user.uid || data.to === user.uid)) {
         await ref.update({
           status: 'finished',
           endedAt: firebase.firestore.FieldValue.serverTimestamp(),
