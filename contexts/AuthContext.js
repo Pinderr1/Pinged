@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import { auth, db, firebase } from '../firebase';
+import { snapshotExists } from '../utils/firestore';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -18,7 +19,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const ref = db.collection('users').doc(fbUser.uid);
       const snap = await ref.get();
-      if (!snap.exists) {
+      if (!snapshotExists(snap)) {
         await ref.set({
           uid: fbUser.uid,
           email: fbUser.email,

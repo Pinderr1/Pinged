@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { auth, db, firebase } from '../firebase';
 import { useDev } from './DevContext';
 import { useOnboarding } from './OnboardingContext';
+import { snapshotExists } from '../utils/firestore';
 
 const UserContext = createContext();
 
@@ -35,7 +36,7 @@ export const UserProvider = ({ children }) => {
         const ref = db.collection('users').doc(fbUser.uid);
         unsubProfile = ref.onSnapshot(
           (snap) => {
-            if (snap.exists) {
+            if (snapshotExists(snap)) {
               const data = snap.data();
               if (data.onboardingComplete) markOnboarded();
               setUser({

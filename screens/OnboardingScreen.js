@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import { db, auth, firebase } from '../firebase';
 import { uploadAvatarAsync } from '../utils/upload';
+import { snapshotExists } from '../utils/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -74,7 +75,7 @@ export default function OnboardingScreen() {
       if (!uid) return;
       const ref = db.collection('users').doc(uid);
       const snap = await ref.get();
-      if (snap.exists && snap.data().onboardingComplete) {
+      if (snapshotExists(snap) && snap.data().onboardingComplete) {
         navigation.replace('Main');
       }
     };

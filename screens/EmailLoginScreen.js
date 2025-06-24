@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { auth, db, firebase } from '../firebase';
+import { snapshotExists } from '../utils/firestore';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import styles from '../styles';
@@ -14,7 +15,7 @@ export default function EmailLoginScreen({ navigation }) {
     try {
       const ref = db.collection('users').doc(fbUser.uid);
       const snap = await ref.get();
-      if (!snap.exists) {
+      if (!snapshotExists(snap)) {
         await ref.set({
           uid: fbUser.uid,
           email: fbUser.email,
