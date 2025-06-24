@@ -16,7 +16,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
     const ref = db.collection('gameSessions').doc(sessionId);
     let initialized = false;
     const unsub = ref.onSnapshot(async (snap) => {
-      if (snap.exists()) {
+      if (snap.exists) {
         const data = snap.data();
         if (data.players?.includes(user.uid)) {
           setSession(data);

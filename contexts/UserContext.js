@@ -35,7 +35,7 @@ export const UserProvider = ({ children }) => {
         const ref = db.collection('users').doc(fbUser.uid);
         unsubProfile = ref.onSnapshot(
           (snap) => {
-            if (snap.exists()) {
+            if (snap.exists) {
               const data = snap.data();
               if (data.onboardingComplete) markOnboarded();
               setUser({
