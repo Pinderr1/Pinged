@@ -10,6 +10,13 @@ export async function registerForPushNotificationsAsync() {
       return null;
     }
 
+    if (Constants.appOwnership === 'expo' && Platform.OS === 'android') {
+      console.log(
+        'Remote push notifications are not supported in Expo Go on Android. Use a development build.'
+      );
+      return null;
+    }
+
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
     if (existingStatus !== 'granted') {

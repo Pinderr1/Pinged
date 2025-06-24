@@ -295,7 +295,7 @@ const allGames = [
   {
     id: '25',
     title: 'Mahjong',
-    icon: <MaterialCommunityIcons name="mahjong" size={30} />,
+    icon: <MaterialCommunityIcons name="puzzle" size={30} />,
     route: null,
     premium: true,
     category: 'International',
