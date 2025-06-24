@@ -9,46 +9,9 @@ const ChatContext = createContext();
 
 const STORAGE_KEY = 'chatMatches';
 
-const initialMatches = [
-  {
-    id: '1',
-    name: 'Emily',
-    age: 25,
-    image: require('../assets/user1.jpg'),
-    messages: [
-      { id: 'm1', text: 'Hey! Want to play a game?', sender: 'them' },
-      { id: 'm2', text: 'Sure! Tic Tac Toe?', sender: 'you' },
-      { id: 'm3', text: 'Sounds good!', sender: 'them' },
-    ],
-    matchedAt: '2 days ago',
-    activeGameId: null,
-    pendingInvite: null,
-  },
-  {
-    id: '2',
-    name: 'Liam',
-    age: 27,
-    image: require('../assets/user2.jpg'),
-    messages: [
-      { id: 'm1', text: 'Ready for a rematch?', sender: 'them' },
-    ],
-    matchedAt: '1 day ago',
-    activeGameId: null,
-    pendingInvite: null,
-  },
-  {
-    id: '3',
-    name: 'Ava',
-    age: 23,
-    image: require('../assets/user1.jpg'),
-    messages: [
-      { id: 'm1', text: 'BRB grabbing coffee ☕', sender: 'them' },
-    ],
-    matchedAt: '5 hours ago',
-    activeGameId: null,
-    pendingInvite: null,
-  },
-];
+// Default to an empty match list; real matches are loaded from Firestore or
+// AsyncStorage. Dummy entries were previously used here for demo purposes.
+const initialMatches = [];
 
 export const ChatProvider = ({ children }) => {
   const { devMode } = useDev();
