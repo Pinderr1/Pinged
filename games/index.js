@@ -9,6 +9,7 @@ import SudokuClient, { Game as sudokuGame, Board as SudokuBoard, meta as sudokuM
 import GuessNumberClient, { Game as guessNumberGame, Board as GuessNumberBoard, meta as guessNumberMeta } from './guess-number';
 import BattleshipClient, { Game as battleshipGame, Board as BattleshipBoard, meta as battleshipMeta } from './battleship';
 import CheckersClient, { Game as checkersGame, Board as CheckersBoard, meta as checkersMeta } from './checkers';
+import DominoesClient, { Game as dominoesGame, Board as DominoesBoard, meta as dominoesMeta } from './dominoes';
 
 export const games = {
   [ticTacToeMeta.id]: {
@@ -50,6 +51,12 @@ export const games = {
     Game: checkersGame,
     Board: CheckersBoard,
     meta: checkersMeta,
+  },
+  [dominoesMeta.id]: {
+    Client: DominoesClient,
+    Game: dominoesGame,
+    Board: DominoesBoard,
+    meta: dominoesMeta,
   },
   [battleshipMeta.id]: {
     Client: BattleshipClient,
