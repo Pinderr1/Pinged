@@ -38,7 +38,12 @@ export default function RootNavigator() {
     return <SplashScreen onFinish={() => setIsSplash(false)} />;
   }
 
-  const onboarded = user?.onboardingComplete || hasOnboarded;
+  // Prefer the onboarding flag from the user's profile. Only fall back to
+  // the locally persisted flag when the profile has not been loaded yet.
+  const onboarded =
+    user?.onboardingComplete !== undefined
+      ? user.onboardingComplete
+      : hasOnboarded;
 
   if (!user) {
     return <AuthStack />;
