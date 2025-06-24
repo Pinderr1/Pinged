@@ -71,7 +71,6 @@ export default function OnboardingScreen() {
 
   useEffect(() => {
     if (hasOnboarded) {
-      navigation.replace('Main');
       return;
     }
     const checkExisting = async () => {
@@ -80,7 +79,8 @@ export default function OnboardingScreen() {
       const ref = db.collection('users').doc(uid);
       const snap = await ref.get();
       if (snapshotExists(snap) && snap.data().onboardingComplete) {
-        navigation.replace('Main');
+        updateUser(snap.data());
+        markOnboarded();
       }
     };
     checkExisting();
@@ -141,7 +141,6 @@ export default function OnboardingScreen() {
         updateUser(profile);
         markOnboarded();
         Toast.show({ type: 'success', text1: 'Profile saved!' });
-        navigation.replace('Main');
       } catch (e) {
         console.error('Save error:', e);
         Toast.show({ type: 'error', text1: 'Failed to save profile' });
