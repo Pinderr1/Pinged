@@ -31,16 +31,13 @@ export default function SignUpScreen({ navigation }) {
         .collection('users')
         .doc(userCred.user.uid)
         .set({
-        uid: userCred.user.uid,
-        email: userCred.user.email,
-        displayName: userCred.user.displayName || '',
-        photoURL: userCred.user.photoURL || '',
-        onboardingComplete: false,
-        isPremium: false,
-        dailyPlayCount: 0,
-        lastGamePlayedAt: null,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
+          uid: userCred.user.uid,
+          email: userCred.user.email,
+          displayName: userCred.user.displayName || '',
+          photoURL: userCred.user.photoURL || '',
+          onboardingComplete: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
       navigation.replace('Onboarding');
     } catch (error) {
       console.error(error);

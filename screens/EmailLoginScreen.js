@@ -21,9 +21,6 @@ export default function EmailLoginScreen({ navigation }) {
           displayName: fbUser.displayName || '',
           photoURL: fbUser.photoURL || '',
           onboardingComplete: false,
-          isPremium: false,
-          dailyPlayCount: 0,
-          lastGamePlayedAt: null,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
