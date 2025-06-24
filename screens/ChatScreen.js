@@ -23,6 +23,7 @@ import { useDev } from '../contexts/DevContext';
 import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
 import { db, firebase } from '../firebase';
+import Toast from 'react-native-toast-message';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params || {};
@@ -74,8 +75,14 @@ export default function ChatScreen({ route }) {
           text: msgText.trim(),
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
+      if (sender === 'user') {
+        Toast.show({ type: 'success', text1: 'Message sent' });
+      }
     } catch (e) {
       console.warn('Failed to send message', e);
+      if (sender === 'user') {
+        Toast.show({ type: 'error', text1: 'Failed to send message' });
+      }
     }
   };
 

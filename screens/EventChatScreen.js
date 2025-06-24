@@ -13,6 +13,7 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { db, firebase } from '../firebase';
+import Toast from 'react-native-toast-message';
 
 const REACTIONS = ['🔥', '❤️', '😂'];
 
@@ -73,8 +74,10 @@ const EventChatScreen = ({ route }) => {
       });
       setInput('');
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
+      Toast.show({ type: 'success', text1: 'Message sent' });
     } catch (e) {
       console.warn('Failed to send message', e);
+      Toast.show({ type: 'error', text1: 'Failed to send message' });
     }
   };
 
