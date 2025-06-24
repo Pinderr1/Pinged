@@ -40,7 +40,7 @@ export default function OnboardingScreen() {
   const navigation = useNavigation();
   const { darkMode } = useTheme();
   const { updateUser } = useUser();
-  const { markOnboarded } = useOnboarding();
+  const { markOnboarded, hasOnboarded } = useOnboarding();
   const styles = getStyles(darkMode);
 
   const [step, setStep] = useState(0);
@@ -70,6 +70,10 @@ export default function OnboardingScreen() {
   const isValid = validateField();
 
   useEffect(() => {
+    if (hasOnboarded) {
+      navigation.replace('Main');
+      return;
+    }
     const checkExisting = async () => {
       const uid = auth.currentUser?.uid;
       if (!uid) return;
@@ -80,7 +84,7 @@ export default function OnboardingScreen() {
       }
     };
     checkExisting();
-  }, []);
+  }, [hasOnboarded]);
   const handleNext = async () => {
     if (!auth.currentUser) {
       Toast.show({ type: 'error', text1: 'No user signed in' });
