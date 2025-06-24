@@ -15,6 +15,7 @@ import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
+import { useGameLimit } from '../contexts/GameLimitContext';
 import styles from '../styles';
 import { db } from '../firebase';
 import { useUser } from '../contexts/UserContext';
@@ -37,6 +38,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   const { devMode } = useDev();
   const { user: currentUser } = useUser();
   const { sendGameInvite } = useMatchmaking();
+  const { gamesLeft } = useGameLimit();
   const [search, setSearch] = useState('');
   const [invited, setInvited] = useState({});
   const [loadingId, setLoadingId] = useState(null);
@@ -67,6 +69,12 @@ const GameInviteScreen = ({ route, navigation }) => {
   }, [currentUser?.uid, devMode]);
 
   const handleInvite = async (user) => {
+    const isPremiumUser = !!currentUser?.isPremium;
+    if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
+      navigation.navigate('PremiumPaywall');
+      return;
+    }
+
     setInvited((prev) => ({ ...prev, [user.id]: true }));
     setLoadingId(user.id);
 
