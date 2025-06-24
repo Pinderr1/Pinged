@@ -19,6 +19,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SyncedGame from '../components/SyncedGame';
 import GameOverModal from '../components/GameOverModal';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
+import { snapshotExists } from '../utils/firestore';
 
 const GameLobbyScreen = ({ route, navigation }) => {
   const { darkMode, theme } = useTheme();
@@ -43,7 +44,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
     if (!inviteId || !user?.uid) return;
     const ref = db.collection('gameInvites').doc(inviteId);
     const unsub = ref.onSnapshot((snap) => {
-      if (snap.exists) {
+      if (snapshotExists(snap)) {
         const data = snap.data();
         if (data.from === user.uid || data.to === user.uid) {
           setInviteStatus(data.status);
@@ -70,7 +71,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
         const ref = db.collection('gameInvites').doc(inviteId);
         const snap = await ref.get();
         const data = snap.data();
-        if (snap.exists && (data.from === user.uid || data.to === user.uid)) {
+        if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
           ref.update({
             status: 'active',
             startedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -95,14 +96,14 @@ const GameLobbyScreen = ({ route, navigation }) => {
   const handleRematch = async () => {
     if (inviteId && user?.uid) {
       const ref = db.collection('gameInvites').doc(inviteId);
-      const snap = await ref.get();
-      const data = snap.data();
-      if (snap.exists && (data.from === user.uid || data.to === user.uid)) {
-        await ref.update({
-          status: 'finished',
-          endedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-        await db
+        const snap = await ref.get();
+        const data = snap.data();
+        if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
+          await ref.update({
+            status: 'finished',
+            endedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          await db
           .collection('gameSessions')
           .doc(inviteId)
           .update({

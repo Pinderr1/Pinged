@@ -3,6 +3,7 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import { db, firebase } from '../firebase';
 import { games } from '../games';
 import { useUser } from '../contexts/UserContext';
+import { snapshotExists } from '../utils/firestore';
 
 export default function useGameSession(sessionId, gameId, opponentId) {
   const { user } = useUser();
@@ -16,7 +17,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
     const ref = db.collection('gameSessions').doc(sessionId);
     let initialized = false;
     const unsub = ref.onSnapshot(async (snap) => {
-      if (snap.exists) {
+      if (snapshotExists(snap)) {
         const data = snap.data();
         if (data.players?.includes(user.uid)) {
           setSession(data);

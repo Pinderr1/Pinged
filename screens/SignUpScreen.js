@@ -38,7 +38,7 @@ export default function SignUpScreen({ navigation }) {
           onboardingComplete: false,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
-      navigation.replace('Onboarding');
+      // Onboarding screen will appear automatically after signup
     } catch (error) {
       console.error(error);
       Alert.alert('Signup Failed', error.message);
