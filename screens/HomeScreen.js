@@ -16,6 +16,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getRandomBot } from '../ai/bots';
 
 
 const GAMES = [
@@ -120,6 +121,19 @@ const HomeScreen = ({ navigation }) => {
             onPress={() => openGamePicker('stranger')}
           >
             <Text style={styles.btnText}>Play With Stranger</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* 🤖 Play With AI */}
+        {card(
+          <TouchableOpacity
+            style={[styles.emailBtn, { alignSelf: 'center', backgroundColor: '#6c5ce7' }]}
+            onPress={() => {
+              const bot = getRandomBot();
+              navigation.navigate('GameWithBot', { botId: bot.id });
+            }}
+          >
+            <Text style={styles.btnText}>Play With AI</Text>
           </TouchableOpacity>
         )}
       </ScrollView>

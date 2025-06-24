@@ -13,6 +13,7 @@ import EventChatScreen from '../screens/EventChatScreen';
 import PremiumScreen from '../screens/PremiumScreen';
 import PremiumPaywallScreen from '../screens/PremiumPaywallScreen';
 import StatsScreen from '../screens/StatsScreen';
+import GameWithBotScreen from '../screens/GameWithBotScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,7 @@ export default function AppStack() {
       <Stack.Screen name="Premium" component={PremiumScreen} />
       <Stack.Screen name="PremiumPaywall" component={PremiumPaywallScreen} />
       <Stack.Screen name="Stats" component={StatsScreen} />
+      <Stack.Screen name="GameWithBot" component={GameWithBotScreen} />
     </Stack.Navigator>
   );
 }
