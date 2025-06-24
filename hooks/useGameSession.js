@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { db } from '../firebase';
+import { db, firebase } from '../firebase';
 import { games } from '../games';
 import { useUser } from '../contexts/UserContext';
 
@@ -14,9 +13,9 @@ export default function useGameSession(sessionId, gameId, opponentId) {
 
   useEffect(() => {
     if (!Game || !sessionId || !user?.uid) return;
-    const ref = doc(db, 'gameSessions', sessionId);
+    const ref = db.collection('gameSessions').doc(sessionId);
     let initialized = false;
-    const unsub = onSnapshot(ref, async (snap) => {
+    const unsub = ref.onSnapshot(async (snap) => {
       if (snap.exists()) {
         const data = snap.data();
         if (data.players?.includes(user.uid)) {
@@ -24,12 +23,12 @@ export default function useGameSession(sessionId, gameId, opponentId) {
         }
       } else if (!initialized) {
         initialized = true;
-        await setDoc(ref, {
+        await ref.set({
           gameId,
           players: [user.uid, opponentId],
           state: Game.setup(),
           currentPlayer: '0',
-          createdAt: serverTimestamp(),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
     });
@@ -65,12 +64,15 @@ export default function useGameSession(sessionId, gameId, opponentId) {
 
     const gameover = Game.endIf ? Game.endIf({ G, ctx: { currentPlayer: nextPlayer } }) : undefined;
 
-    await updateDoc(doc(db, 'gameSessions', sessionId), {
-      state: G,
-      currentPlayer: nextPlayer,
-      gameover: gameover || null,
-      updatedAt: serverTimestamp(),
-    });
+    await db
+      .collection('gameSessions')
+      .doc(sessionId)
+      .update({
+        state: G,
+        currentPlayer: nextPlayer,
+        gameover: gameover || null,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
   }, [session, Game, sessionId, user?.uid]);
 
   const moves = {};

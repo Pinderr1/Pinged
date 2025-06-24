@@ -1,19 +1,19 @@
 import { useEffect } from 'react';
 import { registerForPushNotificationsAsync } from '../utils/notifications';
-import { auth, db } from '../firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { updateDoc, doc } from 'firebase/firestore';
+import { auth, db, firebase } from '../firebase';
 
 export default function usePushNotifications() {
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (fbUser) => {
+    const unsub = auth.onAuthStateChanged((fbUser) => {
       if (!fbUser) return;
       registerForPushNotificationsAsync()
         .then((token) => {
           if (token) {
-            updateDoc(doc(db, 'users', fbUser.uid), {
-              expoPushToken: token,
-            }).catch((e) => console.warn('Failed to save push token', e));
+            db
+              .collection('users')
+              .doc(fbUser.uid)
+              .update({ expoPushToken: token })
+              .catch((e) => console.warn('Failed to save push token', e));
           }
         })
         .catch((e) => {

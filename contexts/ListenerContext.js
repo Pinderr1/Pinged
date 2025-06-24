@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { collection, doc, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useUser } from './UserContext';
 
@@ -20,21 +19,21 @@ export const ListenerProvider = ({ children }) => {
   // Subscribe to match messages for current user
   useEffect(() => {
     if (!user?.uid) return;
-    const matchQ = query(
-      collection(db, 'matches'),
-      where('users', 'array-contains', user.uid)
-    );
-    const unsubMatches = onSnapshot(matchQ, (snap) => {
+    const matchQ = db
+      .collection('matches')
+      .where('users', 'array-contains', user.uid);
+    const unsubMatches = matchQ.onSnapshot((snap) => {
       const ids = snap.docs.map((d) => d.id);
       // Clean up previous listeners
       Object.values(messageUnsubs.current).forEach((u) => u && u());
       messageUnsubs.current = {};
       ids.forEach((id) => {
-        const q = query(
-          collection(db, 'matches', id, 'messages'),
-          orderBy('timestamp', 'asc')
-        );
-        messageUnsubs.current[id] = onSnapshot(q, (msgSnap) => {
+        const q = db
+          .collection('matches')
+          .doc(id)
+          .collection('messages')
+          .orderBy('timestamp', 'asc');
+        messageUnsubs.current[id] = q.onSnapshot((msgSnap) => {
           const msgs = msgSnap.docs.map((doc) => {
             const val = doc.data();
             return { id: doc.id, text: val.text, senderId: val.senderId };
@@ -53,30 +52,30 @@ export const ListenerProvider = ({ children }) => {
   // Subscribe to invites and match requests
   useEffect(() => {
     if (!user?.uid) return;
-    const reqRef = collection(db, 'matchRequests');
-    const outQ = query(reqRef, where('from', '==', user.uid));
-    const inQ = query(reqRef, where('to', '==', user.uid));
+    const reqRef = db.collection('matchRequests');
+    const outQ = reqRef.where('from', '==', user.uid);
+    const inQ = reqRef.where('to', '==', user.uid);
 
-    const unsubOut = onSnapshot(outQ, (snap) => {
+    const unsubOut = outQ.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setOutgoingRequests(data);
     });
 
-    const unsubIn = onSnapshot(inQ, (snap) => {
+    const unsubIn = inQ.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setIncomingRequests(data);
     });
 
-    const inviteRef = collection(db, 'gameInvites');
-    const outInvQ = query(inviteRef, where('from', '==', user.uid));
-    const inInvQ = query(inviteRef, where('to', '==', user.uid));
+    const inviteRef = db.collection('gameInvites');
+    const outInvQ = inviteRef.where('from', '==', user.uid);
+    const inInvQ = inviteRef.where('to', '==', user.uid);
 
-    const unsubOutInv = onSnapshot(outInvQ, (snap) => {
+    const unsubOutInv = outInvQ.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setOutgoingInvites(data);
     });
 
-    const unsubInInv = onSnapshot(inInvQ, (snap) => {
+    const unsubInInv = inInvQ.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setIncomingInvites(data);
     });
@@ -92,11 +91,10 @@ export const ListenerProvider = ({ children }) => {
   // Subscribe to game sessions for current user
   useEffect(() => {
     if (!user?.uid) return;
-    const q = query(
-      collection(db, 'gameSessions'),
-      where('players', 'array-contains', user.uid)
-    );
-    const unsub = onSnapshot(q, (snap) => {
+    const q = db
+      .collection('gameSessions')
+      .where('players', 'array-contains', user.uid);
+    const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setSessions(data);
     });

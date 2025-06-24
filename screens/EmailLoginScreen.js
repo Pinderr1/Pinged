@@ -1,9 +1,7 @@
 // screens/EmailLoginScreen.js
 import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../firebase';
+import { auth, db, firebase } from '../firebase';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import styles from '../styles';
@@ -14,10 +12,10 @@ export default function EmailLoginScreen({ navigation }) {
 
   const ensureUserDoc = async (fbUser) => {
     try {
-      const ref = doc(db, 'users', fbUser.uid);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) {
-        await setDoc(ref, {
+      const ref = db.collection('users').doc(fbUser.uid);
+      const snap = await ref.get();
+      if (!snap.exists) {
+        await ref.set({
           uid: fbUser.uid,
           email: fbUser.email,
           displayName: fbUser.displayName || '',
@@ -26,7 +24,7 @@ export default function EmailLoginScreen({ navigation }) {
           isPremium: false,
           dailyPlayCount: 0,
           lastGamePlayedAt: null,
-          createdAt: serverTimestamp(),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
     } catch (e) {
@@ -37,7 +35,10 @@ export default function EmailLoginScreen({ navigation }) {
 
   const handleLogin = async () => {
     try {
-      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      const userCred = await auth.signInWithEmailAndPassword(
+        email,
+        password
+      );
       console.log('✅ Logged in:', userCred.user.uid);
       await ensureUserDoc(userCred.user);
     } catch (error) {

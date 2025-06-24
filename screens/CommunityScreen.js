@@ -17,15 +17,7 @@ import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../contexts/UserContext';
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-} from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, firebase } from '../firebase';
 
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = (screenWidth - 48) / 2;
@@ -82,8 +74,8 @@ const CommunityScreen = () => {
   const [newDesc, setNewDesc] = useState('');
 
   useEffect(() => {
-    const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'));
-    const unsub = onSnapshot(q, (snap) => {
+    const q = db.collection('events').orderBy('createdAt', 'desc');
+    const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setEvents(data.length ? data : ALL_EVENTS);
     });
@@ -228,13 +220,13 @@ const CommunityScreen = () => {
             />
             <TouchableOpacity onPress={async () => {
               try {
-                await addDoc(collection(db, 'events'), {
+                await db.collection('events').add({
                   title: newTitle,
                   time: newTime,
                   description: newDesc,
                   category: 'Tonight',
                   hostId: user?.uid || null,
-                  createdAt: serverTimestamp(),
+                  createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 });
                 setShowHostModal(false);
                 setNewTitle('');

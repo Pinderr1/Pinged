@@ -5,8 +5,7 @@ import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import styles from '../styles';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, firebase } from '../firebase';
 import { useUser } from '../contexts/UserContext';
 
 
@@ -36,7 +35,10 @@ const EditProfileScreen = ({ navigation }) => {
       location,
     };
     try {
-      await setDoc(doc(db, 'users', user.uid), clean, { merge: true });
+      await db
+        .collection('users')
+        .doc(user.uid)
+        .set(clean, { merge: true });
       updateUser(clean);
       navigation.navigate('Main');
     } catch (e) {

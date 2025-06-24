@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { collection, onSnapshot, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useDev } from './DevContext';
 import { useUser } from './UserContext';
-import { db } from '../firebase';
+import { db, firebase } from '../firebase';
 import { useListeners } from './ListenerContext';
 
 const ChatContext = createContext();
@@ -90,8 +89,8 @@ export const ChatProvider = ({ children }) => {
   // Subscribe to Firestore matches for the current user
   useEffect(() => {
     if (!user?.uid) return;
-    const q = query(collection(db, 'matches'), where('users', 'array-contains', user.uid));
-    const unsub = onSnapshot(q, (snap) => {
+    const q = db.collection('matches').where('users', 'array-contains', user.uid);
+    const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setMatches((prev) => {
         const others = prev.filter((m) => !data.find((d) => d.id === m.id));
@@ -134,11 +133,15 @@ export const ChatProvider = ({ children }) => {
   const sendMessage = async (matchId, text, sender = 'you') => {
     if (!text || !matchId || !user?.uid) return;
     try {
-      await addDoc(collection(db, 'matches', matchId, 'messages'), {
-        senderId: sender === 'you' ? user.uid : sender,
-        text: text.trim(),
-        timestamp: serverTimestamp(),
-      });
+      await db
+        .collection('matches')
+        .doc(matchId)
+        .collection('messages')
+        .add({
+          senderId: sender === 'you' ? user.uid : sender,
+          text: text.trim(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        });
     } catch (e) {
       console.warn('Failed to send message', e);
     }

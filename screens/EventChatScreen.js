@@ -12,18 +12,7 @@ import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-  doc,
-  updateDoc,
-  arrayUnion,
-} from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, firebase } from '../firebase';
 
 const REACTIONS = ['🔥', '❤️', '😂'];
 
@@ -40,11 +29,12 @@ const EventChatScreen = ({ route }) => {
   const flatListRef = useRef();
 
   useEffect(() => {
-    const q = query(
-      collection(db, 'events', event.id, 'messages'),
-      orderBy('timestamp', 'asc')
-    );
-    const unsub = onSnapshot(q, (snap) => {
+    const q = db
+      .collection('events')
+      .doc(event.id)
+      .collection('messages')
+      .orderBy('timestamp', 'asc');
+    const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => {
         const val = d.data();
         return {
@@ -74,11 +64,15 @@ const EventChatScreen = ({ route }) => {
   const sendMessage = async () => {
     if (!input.trim()) return;
     try {
-      await addDoc(collection(db, 'events', event.id, 'messages'), {
+      await db
+        .collection('events')
+        .doc(event.id)
+        .collection('messages')
+        .add({
         user: user?.displayName || 'You',
         userId: user?.uid || null,
         text: input.trim(),
-        timestamp: serverTimestamp(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         reactions: [],
         pinned: false,
       });
@@ -91,9 +85,14 @@ const EventChatScreen = ({ route }) => {
 
   const addReaction = async (msgId, emoji) => {
     try {
-      await updateDoc(doc(db, 'events', event.id, 'messages', msgId), {
-        reactions: arrayUnion(emoji),
-      });
+      await db
+        .collection('events')
+        .doc(event.id)
+        .collection('messages')
+        .doc(msgId)
+        .update({
+          reactions: firebase.firestore.FieldValue.arrayUnion(emoji),
+        });
     } catch (e) {
       console.warn('Failed to add reaction', e);
     }
@@ -104,9 +103,14 @@ const EventChatScreen = ({ route }) => {
     const msg = messages.find((m) => m.id === msgId);
     if (!msg) return;
     try {
-      await updateDoc(doc(db, 'events', event.id, 'messages', msgId), {
-        pinned: !msg.pinned,
-      });
+      await db
+        .collection('events')
+        .doc(event.id)
+        .collection('messages')
+        .doc(msgId)
+        .update({
+          pinned: !msg.pinned,
+        });
     } catch (e) {
       console.warn('Failed to pin message', e);
     }

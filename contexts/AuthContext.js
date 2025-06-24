@@ -1,21 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithCredential,
-  GoogleAuthProvider,
-  signOut,
-  onAuthStateChanged,
-} from 'firebase/auth';
-import {
-  doc,
-  getDoc,
-  setDoc,
-  serverTimestamp,
-} from 'firebase/firestore';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
-import { auth, db } from '../firebase';
+import { auth, db, firebase } from '../firebase';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -30,10 +16,10 @@ export const AuthProvider = ({ children }) => {
 
   const ensureUserDoc = async (fbUser) => {
     try {
-      const ref = doc(db, 'users', fbUser.uid);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) {
-        await setDoc(ref, {
+      const ref = db.collection('users').doc(fbUser.uid);
+      const snap = await ref.get();
+      if (!snap.exists) {
+        await ref.set({
           uid: fbUser.uid,
           email: fbUser.email,
           displayName: fbUser.displayName || '',
@@ -42,7 +28,7 @@ export const AuthProvider = ({ children }) => {
           isPremium: false,
           dailyPlayCount: 0,
           lastGamePlayedAt: null,
-          createdAt: serverTimestamp(),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
     } catch (e) {
@@ -51,8 +37,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithEmail = async (email, password) => {
-    const userCred = await signInWithEmailAndPassword(
-      auth,
+    const userCred = await auth.signInWithEmailAndPassword(
       email.trim(),
       password,
     );
@@ -60,27 +45,26 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signUpWithEmail = async (email, password) => {
-    const userCred = await createUserWithEmailAndPassword(
-      auth,
+    const userCred = await auth.createUserWithEmailAndPassword(
       email.trim(),
       password,
     );
-    await setDoc(doc(db, 'users', userCred.user.uid), {
+    await db.collection('users').doc(userCred.user.uid).set({
       uid: userCred.user.uid,
       email: userCred.user.email,
       displayName: userCred.user.displayName || '',
       photoURL: userCred.user.photoURL || '',
       onboardingComplete: false,
-      createdAt: serverTimestamp(),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
   };
 
   const loginWithGoogle = () => promptAsync({ prompt: 'select_account' });
 
-  const logout = () => signOut(auth);
+  const logout = () => auth.signOut();
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+    const unsub = auth.onAuthStateChanged(async (fbUser) => {
       setUser(fbUser);
       if (fbUser) await ensureUserDoc(fbUser);
       setLoading(false);
@@ -91,8 +75,9 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (response?.type === 'success') {
       const { id_token } = response.params;
-      const credential = GoogleAuthProvider.credential(id_token);
-      signInWithCredential(auth, credential)
+      const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
+      auth
+        .signInWithCredential(credential)
         .then((res) => ensureUserDoc(res.user))
         .catch((err) => console.warn('Google login failed', err));
     }
