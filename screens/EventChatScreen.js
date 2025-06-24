@@ -24,7 +24,6 @@ const EventChatScreen = ({ route }) => {
   const [messages, setMessages] = useState([]);
 
   const [input, setInput] = useState('');
-  const [typing, setTyping] = useState(false);
   const [reactionTarget, setReactionTarget] = useState(null);
   const flatListRef = useRef();
 
@@ -56,10 +55,6 @@ const EventChatScreen = ({ route }) => {
     return unsub;
   }, [event.id]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setTyping(true), 5000); // mock typing
-    return () => clearTimeout(timer);
-  }, []);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -179,12 +174,6 @@ const EventChatScreen = ({ route }) => {
         renderItem={renderMessage}
         contentContainerStyle={{ padding: 16 }}
       />
-
-      {typing && (
-        <Text style={{ fontStyle: 'italic', color: '#999', textAlign: 'center', marginBottom: 6 }}>
-          Emily is typing...
-        </Text>
-      )}
 
       <SafeKeyboardView>
         <View style={stylesLocal.inputRow}>
