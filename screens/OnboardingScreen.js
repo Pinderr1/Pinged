@@ -11,8 +11,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { db, auth, firebase } from '../firebase';
 import { uploadAvatarAsync } from '../utils/upload';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
@@ -71,8 +70,9 @@ export default function OnboardingScreen() {
     const checkExisting = async () => {
       const uid = auth.currentUser?.uid;
       if (!uid) return;
-      const snap = await getDoc(doc(db, 'users', uid));
-      if (snap.exists() && snap.data().onboardingComplete) {
+      const ref = db.collection('users').doc(uid);
+      const snap = await ref.get();
+      if (snap.exists && snap.data().onboardingComplete) {
         navigation.replace('Main');
       }
     };
@@ -85,6 +85,23 @@ export default function OnboardingScreen() {
     }
 
     if (step < questions.length - 1) {
+      if (
+        currentField === 'avatar' &&
+        answers.avatar &&
+        !answers.avatar.startsWith('http')
+      ) {
+        try {
+          const url = await uploadAvatarAsync(
+            answers.avatar,
+            auth.currentUser.uid
+          );
+          setAnswers((prev) => ({ ...prev, avatar: url }));
+        } catch (e) {
+          console.error('Photo upload failed:', e);
+          Toast.show({ type: 'error', text1: 'Failed to upload photo' });
+          return;
+        }
+      }
       setStep(step + 1);
     } else {
       try {
@@ -98,7 +115,7 @@ export default function OnboardingScreen() {
 
         const clean = {
           photoURL,
-          displayName: answers.name.trim(),
+          name: answers.name.trim(),
           age: parseInt(answers.age, 10) || null,
           gender: answers.gender,
           bio: answers.bio.trim(),
@@ -113,11 +130,13 @@ export default function OnboardingScreen() {
           lastGamePlayedAt: null,
           onboardingComplete: true,
         };
-        await setDoc(doc(db, 'users', auth.currentUser.uid), clean, {
-          merge: true,
-        });
+        await db
+          .collection('users')
+          .doc(auth.currentUser.uid)
+          .set(clean, { merge: true });
         updateUser({
           photoURL,
+          name: answers.name.trim(),
           age: parseInt(answers.age, 10) || null,
           gender: answers.gender,
           bio: answers.bio.trim(),

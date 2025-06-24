@@ -6,7 +6,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import styles from '../styles';
 import Header from '../components/Header';
 import { useUser } from '../contexts/UserContext';
-import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
@@ -69,7 +68,10 @@ const ProfileScreen = ({ navigation }) => {
       photoURL,
     };
     try {
-      await setDoc(doc(db, 'users', user.uid), clean, { merge: true });
+      await db
+        .collection('users')
+        .doc(user.uid)
+        .set(clean, { merge: true });
       updateUser(clean);
       setAvatar(photoURL);
       Toast.show({ type: 'success', text1: 'Profile updated!' });

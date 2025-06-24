@@ -18,18 +18,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import { useChats } from '../contexts/ChatContext';
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  doc,
-  setDoc,
-  getDoc,
-  addDoc,
-  serverTimestamp,
-} from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, firebase } from '../firebase';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
@@ -82,11 +71,10 @@ const SwipeScreen = () => {
     const fetchUsers = async () => {
       if (!currentUser?.uid) return;
       try {
-        const q = query(
-          collection(db, 'users'),
-          where('uid', '!=', currentUser.uid)
-        );
-        const snap = await getDocs(q);
+        const q = db
+          .collection('users')
+          .where('uid', '!=', currentUser.uid);
+        const snap = await q.get();
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         if (devMode) {
           data = [
@@ -129,20 +117,27 @@ const SwipeScreen = () => {
 
       if (currentUser?.uid && displayUser.id && !devMode) {
         try {
-          await setDoc(
-            doc(db, 'likes', currentUser.uid, 'liked', displayUser.id),
-            { createdAt: serverTimestamp() }
-          );
+          await db
+            .collection('likes')
+            .doc(currentUser.uid)
+            .collection('liked')
+            .doc(displayUser.id)
+            .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
 
-          const reciprocal = await getDoc(
-            doc(db, 'likes', displayUser.id, 'liked', currentUser.uid)
-          );
+          const reciprocal = await db
+            .collection('likes')
+            .doc(displayUser.id)
+            .collection('liked')
+            .doc(currentUser.uid)
+            .get();
 
           if (reciprocal.exists()) {
-            const matchRef = await addDoc(collection(db, 'matches'), {
-              users: [currentUser.uid, displayUser.id],
-              createdAt: serverTimestamp(),
-            });
+            const matchRef = await db
+              .collection('matches')
+              .add({
+                users: [currentUser.uid, displayUser.id],
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+              });
 
             addMatch({
               id: matchRef.id,

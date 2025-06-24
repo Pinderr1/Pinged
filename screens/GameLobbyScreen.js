@@ -11,8 +11,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useUser } from '../contexts/UserContext';
-import { doc, onSnapshot, updateDoc, serverTimestamp, getDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, firebase } from '../firebase';
 import { avatarSource } from '../utils/avatar';
 import styles from '../styles';
 import { games } from '../games';
@@ -42,8 +41,8 @@ const GameLobbyScreen = ({ route, navigation }) => {
   // Listen for Firestore invite status
   useEffect(() => {
     if (!inviteId || !user?.uid) return;
-    const ref = doc(db, 'gameInvites', inviteId);
-    const unsub = onSnapshot(ref, (snap) => {
+    const ref = db.collection('gameInvites').doc(inviteId);
+    const unsub = ref.onSnapshot((snap) => {
       if (snap.exists()) {
         const data = snap.data();
         if (data.from === user.uid || data.to === user.uid) {
@@ -68,13 +67,13 @@ const GameLobbyScreen = ({ route, navigation }) => {
       setShowGame(true);
       recordGamePlayed();
       if (inviteId && user?.uid) {
-        const ref = doc(db, 'gameInvites', inviteId);
-        const snap = await getDoc(ref);
+        const ref = db.collection('gameInvites').doc(inviteId);
+        const snap = await ref.get();
         const data = snap.data();
         if (snap.exists() && (data.from === user.uid || data.to === user.uid)) {
-          updateDoc(ref, {
+          ref.update({
             status: 'active',
-            startedAt: serverTimestamp(),
+            startedAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
         }
       }
@@ -95,18 +94,21 @@ const GameLobbyScreen = ({ route, navigation }) => {
 
   const handleRematch = async () => {
     if (inviteId && user?.uid) {
-      const ref = doc(db, 'gameInvites', inviteId);
-      const snap = await getDoc(ref);
+      const ref = db.collection('gameInvites').doc(inviteId);
+      const snap = await ref.get();
       const data = snap.data();
       if (snap.exists() && (data.from === user.uid || data.to === user.uid)) {
-        await updateDoc(ref, {
+        await ref.update({
           status: 'finished',
-          endedAt: serverTimestamp(),
+          endedAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
-        await updateDoc(doc(db, 'gameSessions', inviteId), {
-          archived: true,
-          archivedAt: serverTimestamp(),
-        });
+        await db
+          .collection('gameSessions')
+          .doc(inviteId)
+          .update({
+            archived: true,
+            archivedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
       }
     }
 

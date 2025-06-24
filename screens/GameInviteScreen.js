@@ -16,7 +16,6 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import styles from '../styles';
-import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useUser } from '../contexts/UserContext';
 
@@ -47,9 +46,9 @@ const GameInviteScreen = ({ route, navigation }) => {
     const fetchMatches = async () => {
       try {
         const q = currentUser?.uid
-          ? query(collection(db, 'users'), where('uid', '!=', currentUser.uid))
-          : collection(db, 'users');
-        const snap = await getDocs(q);
+          ? db.collection('users').where('uid', '!=', currentUser.uid)
+          : db.collection('users');
+        const snap = await q.get();
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         if (devMode) data = [devUser, ...data];
         setMatches(
