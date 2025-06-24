@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
@@ -10,10 +18,13 @@ import { Board as TicTacToeBoard } from '../games/tic-tac-toe';
 
 export default function GameWithBotScreen({ route }) {
   const botId = route.params?.botId;
-  const bot = bots.find((b) => b.id === botId) || getRandomBot();
+  const [bot, setBot] = useState(
+    bots.find((b) => b.id === botId) || getRandomBot()
+  );
   const { theme } = useTheme();
   const { G, ctx, moves, reset } = useTicTacToeBotGame(handleGameEnd);
 
+  const [gameOver, setGameOver] = useState(false);
   const [messages, setMessages] = useState([
     { id: 'start', sender: bot.name, text: `Hi! I'm ${bot.name}. Let's play!` },
   ]);
@@ -24,6 +35,7 @@ export default function GameWithBotScreen({ route }) {
     let msg = 'Draw.';
     if (res.winner === '0') msg = 'You win!';
     else if (res.winner === '1') msg = `${bot.name} wins.`;
+    setGameOver(true);
     addSystemMessage(`Game over. ${msg}`);
   }
 
@@ -53,23 +65,59 @@ export default function GameWithBotScreen({ route }) {
     setText('');
   };
 
-  const renderMessage = ({ item }) => (
-    <View
-      style={[
-        styles.message,
-        item.sender === 'you'
-          ? styles.right
-          : item.sender === 'system'
-          ? styles.system
-          : styles.left,
-      ]}
-    >
-      <Text style={styles.sender}>
-        {item.sender === 'you' ? 'You' : item.sender}
-      </Text>
-      <Text style={styles.text}>{item.text}</Text>
-    </View>
-  );
+  const playAgain = () => {
+    reset();
+    setGameOver(false);
+  };
+
+  const switchBot = () => {
+    const newBot = getRandomBot();
+    setBot(newBot);
+    setMessages((m) => [
+      {
+        id: Date.now().toString(),
+        sender: newBot.name,
+        text: `Hi! I'm ${newBot.name}. Let's play!`,
+      },
+      ...m,
+    ]);
+    reset();
+    setGameOver(false);
+  };
+
+  const renderMessage = ({ item }) => {
+    if (item.sender === 'system') {
+      return (
+        <View style={[styles.messageRow, styles.rowCenter]}>
+          <View style={[styles.message, styles.system]}>
+            <Text style={styles.sender}>System</Text>
+            <Text style={styles.text}>{item.text}</Text>
+          </View>
+        </View>
+      );
+    }
+
+    const isUser = item.sender === 'you';
+    return (
+      <View
+        style={[
+          styles.messageRow,
+          isUser ? styles.rowRight : styles.rowLeft,
+        ]}
+      >
+        {!isUser && <Image source={bot.image} style={styles.avatar} />}
+        <View
+          style={[
+            styles.message,
+            isUser ? styles.right : styles.left,
+          ]}
+        >
+          <Text style={styles.sender}>{isUser ? 'You' : bot.name}</Text>
+          <Text style={styles.text}>{item.text}</Text>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
@@ -84,6 +132,16 @@ export default function GameWithBotScreen({ route }) {
         <TouchableOpacity style={styles.resetBtn} onPress={reset}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Reset</Text>
         </TouchableOpacity>
+        {gameOver && (
+          <View style={styles.overButtons}>
+            <TouchableOpacity style={styles.againBtn} onPress={playAgain}>
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Play Again</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.newBotBtn} onPress={switchBot}>
+              <Text style={{ color: '#000', fontWeight: 'bold' }}>New Bot</Text>
+            </TouchableOpacity>
+          </View>
+        )}
         <View style={{ flex: 1, marginTop: 20 }}>
           <FlatList
             data={messages}
@@ -110,10 +168,17 @@ export default function GameWithBotScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
+  messageRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginVertical: 4,
+  },
+  rowLeft: { justifyContent: 'flex-start' },
+  rowRight: { justifyContent: 'flex-end' },
+  rowCenter: { justifyContent: 'center' },
   message: {
     padding: 8,
     borderRadius: 10,
-    marginVertical: 4,
     maxWidth: '80%',
   },
   left: {
@@ -160,5 +225,28 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignSelf: 'center',
     marginTop: 10,
+  },
+  overButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  againBtn: {
+    backgroundColor: '#28c76f',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  newBotBtn: {
+    backgroundColor: '#facc15',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginHorizontal: 6,
   },
 });
