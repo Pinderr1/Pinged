@@ -4,6 +4,7 @@ import { useDev } from './DevContext';
 import { useUser } from './UserContext';
 import { db, firebase } from '../firebase';
 import { useListeners } from './ListenerContext';
+import Toast from 'react-native-toast-message';
 
 const ChatContext = createContext();
 
@@ -105,8 +106,14 @@ export const ChatProvider = ({ children }) => {
           text: text.trim(),
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
+      if (sender === 'you') {
+        Toast.show({ type: 'success', text1: 'Message sent' });
+      }
     } catch (e) {
       console.warn('Failed to send message', e);
+      if (sender === 'you') {
+        Toast.show({ type: 'error', text1: 'Failed to send message' });
+      }
     }
   };
 
