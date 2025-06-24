@@ -28,6 +28,7 @@ const questions = [
   { key: 'name', label: 'What’s your name?' },
   { key: 'age', label: 'How old are you?' },
   { key: 'gender', label: 'Select your gender' },
+  { key: 'genderPref', label: 'Preferred teammate gender' },
   { key: 'bio', label: 'Write a short bio' },
   { key: 'location', label: 'Where are you located?' },
   { key: 'favoriteGame', label: 'Pick your favorite game' },
@@ -47,6 +48,7 @@ export default function OnboardingScreen() {
     name: '',
     age: '',
     gender: '',
+    genderPref: '',
     bio: '',
     location: '',
     favoriteGame: '',
@@ -113,41 +115,25 @@ export default function OnboardingScreen() {
           );
         }
 
-        const clean = {
+        const user = auth.currentUser;
+        const profile = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || '',
           photoURL,
           name: answers.name.trim(),
           age: parseInt(answers.age, 10) || null,
           gender: answers.gender,
-          bio: answers.bio.trim(),
+          genderPref: answers.genderPref,
           location: answers.location,
           favoriteGame: answers.favoriteGame,
           skillLevel: answers.skillLevel,
-          xp: 0,
-          streak: 0,
-          lastPlayedAt: null,
-          isPremium: false,
-          dailyPlayCount: 0,
-          lastGamePlayedAt: null,
+          bio: answers.bio.trim(),
           onboardingComplete: true,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         };
-        await db
-          .collection('users')
-          .doc(auth.currentUser.uid)
-          .set(clean, { merge: true });
-        updateUser({
-          photoURL,
-          name: answers.name.trim(),
-          age: parseInt(answers.age, 10) || null,
-          gender: answers.gender,
-          bio: answers.bio.trim(),
-          location: answers.location,
-          favoriteGame: answers.favoriteGame,
-          skillLevel: answers.skillLevel,
-          isPremium: false,
-          dailyPlayCount: 0,
-          lastGamePlayedAt: null,
-          onboardingComplete: true,
-        });
+        await db.collection('users').doc(user.uid).set(profile);
+        updateUser(profile);
         markOnboarded();
         Toast.show({ type: 'success', text1: 'Profile saved!' });
         navigation.replace('Main');
@@ -257,6 +243,12 @@ export default function OnboardingScreen() {
         { label: 'Male', value: 'Male' },
         { label: 'Female', value: 'Female' },
         { label: 'Other', value: 'Other' },
+      ],
+      genderPref: [
+        { label: 'Male', value: 'Male' },
+        { label: 'Female', value: 'Female' },
+        { label: 'Other', value: 'Other' },
+        { label: 'Any', value: 'Any' },
       ],
       favoriteGame: [
         { label: 'Chess', value: 'Chess' },
