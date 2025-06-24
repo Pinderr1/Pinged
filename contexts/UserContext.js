@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../firebase';
+import { auth, db, firebase } from '../firebase';
 import { useDev } from './DevContext';
 import { useOnboarding } from './OnboardingContext';
 
@@ -26,7 +24,7 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     let unsubProfile;
-    const unsubAuth = onAuthStateChanged(auth, (fbUser) => {
+    const unsubAuth = auth.onAuthStateChanged((fbUser) => {
       if (unsubProfile) {
         unsubProfile();
         unsubProfile = null;
@@ -34,9 +32,8 @@ export const UserProvider = ({ children }) => {
 
       if (fbUser) {
         setLoading(true);
-        const ref = doc(db, 'users', fbUser.uid);
-        unsubProfile = onSnapshot(
-          ref,
+        const ref = db.collection('users').doc(fbUser.uid);
+        unsubProfile = ref.onSnapshot(
           (snap) => {
             if (snap.exists()) {
               const data = snap.data();
@@ -99,11 +96,14 @@ export const UserProvider = ({ children }) => {
     const newXP = (user.xp || 0) + amount;
     updateUser({ xp: newXP, streak: newStreak, lastPlayedAt: new Date() });
     try {
-      await updateDoc(doc(db, 'users', user.uid), {
-        xp: newXP,
-        streak: newStreak,
-        lastPlayedAt: serverTimestamp(),
-      });
+      await db
+        .collection('users')
+        .doc(user.uid)
+        .update({
+          xp: newXP,
+          streak: newStreak,
+          lastPlayedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
     } catch (e) {
       console.warn('Failed to update XP', e);
     }

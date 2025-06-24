@@ -6,9 +6,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../firebase';
+import { auth, db, firebase } from '../firebase';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import SafeKeyboardView from '../components/SafeKeyboardView';
@@ -24,13 +22,15 @@ export default function SignUpScreen({ navigation }) {
       return;
     }
     try {
-      const userCred = await createUserWithEmailAndPassword(
-        auth,
+      const userCred = await auth.createUserWithEmailAndPassword(
         email.trim(),
         password
       );
       console.log('✅ Signed up:', userCred.user.uid);
-      await setDoc(doc(db, 'users', userCred.user.uid), {
+      await db
+        .collection('users')
+        .doc(userCred.user.uid)
+        .set({
         uid: userCred.user.uid,
         email: userCred.user.email,
         displayName: userCred.user.displayName || '',
@@ -39,7 +39,7 @@ export default function SignUpScreen({ navigation }) {
         isPremium: false,
         dailyPlayCount: 0,
         lastGamePlayedAt: null,
-        createdAt: serverTimestamp(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       navigation.replace('Onboarding');
     } catch (error) {

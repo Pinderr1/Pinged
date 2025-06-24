@@ -7,8 +7,7 @@ import GradientButton from '../components/GradientButton';
 import styles from '../styles';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
-import { auth } from '../firebase';
-import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
+import { auth, firebase } from '../firebase';
 import { useNavigation } from '@react-navigation/native';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -23,8 +22,9 @@ export default function LoginScreen() {
   useEffect(() => {
     if (response?.type === 'success') {
       const { id_token } = response.params;
-      const credential = GoogleAuthProvider.credential(id_token);
-      signInWithCredential(auth, credential)
+      const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
+      auth
+        .signInWithCredential(credential)
         .then((res) => {
           console.log('✅ Google login success:', res.user.uid);
         })

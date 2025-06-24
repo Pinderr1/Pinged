@@ -22,15 +22,7 @@ import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-} from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, firebase } from '../firebase';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params || {};
@@ -73,11 +65,15 @@ export default function ChatScreen({ route }) {
     if (!msgText.trim()) return;
     if (!user?.id) return;
     try {
-      await addDoc(collection(db, 'matches', user.id, 'messages'), {
-        senderId: sender === 'system' ? 'system' : currentUser?.uid,
-        text: msgText.trim(),
-        timestamp: serverTimestamp(),
-      });
+      await db
+        .collection('matches')
+        .doc(user.id)
+        .collection('messages')
+        .add({
+          senderId: sender === 'system' ? 'system' : currentUser?.uid,
+          text: msgText.trim(),
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        });
     } catch (e) {
       console.warn('Failed to send message', e);
     }
@@ -94,11 +90,12 @@ export default function ChatScreen({ route }) {
 
   useEffect(() => {
     if (!user?.id) return;
-    const q = query(
-      collection(db, 'matches', user.id, 'messages'),
-      orderBy('timestamp', 'asc')
-    );
-    const unsub = onSnapshot(q, (snap) => {
+    const q = db
+      .collection('matches')
+      .doc(user.id)
+      .collection('messages')
+      .orderBy('timestamp', 'asc');
+    const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => {
         const val = d.data();
         return {

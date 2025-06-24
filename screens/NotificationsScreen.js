@@ -14,7 +14,6 @@ import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { useUser } from '../contexts/UserContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { db } from '../firebase';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { games } from '../games';
 
 const NotificationsScreen = ({ navigation }) => {
@@ -29,11 +28,13 @@ const NotificationsScreen = ({ navigation }) => {
     setLoadingId(invite.id);
     await acceptGameInvite(invite.id);
     try {
-      await updateDoc(
-        doc(db, 'users', user.uid, 'gameInvites', invite.id),
-        { status: 'accepted' }
-      );
-      const snap = await getDoc(doc(db, 'users', invite.from));
+      await db
+        .collection('users')
+        .doc(user.uid)
+        .collection('gameInvites')
+        .doc(invite.id)
+        .update({ status: 'accepted' });
+      const snap = await db.collection('users').doc(invite.from).get();
       const opp = snap.data() || {};
       navigation.navigate('GameLobby', {
         game: {
@@ -57,10 +58,13 @@ const NotificationsScreen = ({ navigation }) => {
   const handleDecline = async (invite) => {
     setLoadingId(invite.id + '_decline');
     cancelGameInvite(invite.id);
-    await updateDoc(
-      doc(db, 'users', user.uid, 'gameInvites', invite.id),
-      { status: 'declined' }
-    ).catch((e) => console.warn('Failed to decline invite', e));
+    await db
+      .collection('users')
+      .doc(user.uid)
+      .collection('gameInvites')
+      .doc(invite.id)
+      .update({ status: 'declined' })
+      .catch((e) => console.warn('Failed to decline invite', e));
     setLoadingId(null);
   };
 
