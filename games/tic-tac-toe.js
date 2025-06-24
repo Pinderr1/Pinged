@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
 
 const lines = [
   [0, 1, 2],
@@ -13,6 +13,10 @@ const lines = [
   [0, 4, 8],
   [2, 4, 6],
 ];
+
+const BOARD_MARGIN = 40;
+const BOARD_SIZE = Math.min(Dimensions.get('window').width - BOARD_MARGIN, 300);
+const CELL_SIZE = BOARD_SIZE / 3;
 
 const TicTacToeGame = {
   setup: () => ({ cells: Array(9).fill(null) }),
@@ -66,46 +70,64 @@ const TicTacToeBoard = ({ G, ctx, moves, onGameEnd }) => {
   return (
     <View style={{ alignItems: 'center' }}>
       {!ctx.gameover && (
-        <Text style={{ marginBottom: 12, fontWeight: 'bold' }}>
+        <Text style={styles.statusText}>
           {ctx.currentPlayer === '0' ? 'Your turn' : 'Waiting for opponent'}
         </Text>
       )}
-      <View
-        style={{
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          width: 240,
-          height: 240,
-        }}
-      >
+      <View style={styles.boardContainer}>
         {G.cells.map((cell, idx) => (
           <TouchableOpacity
             key={idx}
             onPress={() => moves.clickCell(idx)}
             disabled={disabled}
-            style={{
-              width: 80,
-              height: 80,
-              borderWidth: 1,
-              borderColor: '#333',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            style={styles.cell}
           >
-            <Text style={{ fontSize: 32, fontWeight: 'bold' }}>
+            <Text style={[styles.mark, { fontSize: CELL_SIZE * 0.6 }] }>
               {cell === '0' ? 'X' : cell === '1' ? 'O' : ''}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
       {ctx.gameover && (
-        <Text style={{ marginTop: 12, fontWeight: 'bold', fontSize: 18 }}>
+        <Text style={styles.resultText}>
           {resultText}
         </Text>
       )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  boardContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: BOARD_SIZE,
+    height: BOARD_SIZE,
+    borderWidth: 2,
+    borderColor: '#d81b60',
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  cell: {
+    width: CELL_SIZE,
+    height: CELL_SIZE,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mark: {
+    fontWeight: 'bold',
+  },
+  statusText: { marginBottom: 12, fontWeight: 'bold' },
+  resultText: { marginTop: 12, fontWeight: 'bold', fontSize: 18 },
+});
 
 const TicTacToeClient = Client({
   game: TicTacToeGame,

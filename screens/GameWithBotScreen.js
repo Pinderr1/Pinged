@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
@@ -151,7 +153,11 @@ export default function GameWithBotScreen({ route }) {
             contentContainerStyle={{ paddingBottom: 20 }}
           />
         </View>
-        <View style={styles.inputBar}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={60}
+          style={styles.inputBar}
+        >
           <TextInput
             style={styles.input}
             placeholder="Type a message..."
@@ -161,7 +167,7 @@ export default function GameWithBotScreen({ route }) {
           <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
             <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
           </TouchableOpacity>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </LinearGradient>
   );
