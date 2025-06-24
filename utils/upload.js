@@ -6,7 +6,8 @@ export async function uploadAvatarAsync(uri, uid) {
   const response = await fetch(uri);
   const blob = await response.blob();
 
-  const avatarRef = storage.ref().child(`avatars/${uid}.jpg`);
+  // Store avatar inside a user specific folder so it matches storage.rules
+  const avatarRef = storage.ref().child(`avatars/${uid}/avatar.jpg`);
   const uploadTask = avatarRef.put(blob);
 
   await new Promise((resolve, reject) => {
