@@ -24,8 +24,9 @@ import { snapshotExists } from '../utils/firestore';
 const GameLobbyScreen = ({ route, navigation }) => {
   const { darkMode, theme } = useTheme();
   const { devMode } = useDev();
-  const { recordGamePlayed } = useGameLimit();
+  const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { user, addGameXP } = useUser();
+  const isPremiumUser = !!user?.isPremium;
   const { sendGameInvite } = useMatchmaking();
 
   const { game, opponent, status = 'waiting', inviteId } = route.params || {};
@@ -65,6 +66,10 @@ const GameLobbyScreen = ({ route, navigation }) => {
   useEffect(() => {
     if (countdown === null) return;
     const handleStart = async () => {
+      if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
+        navigation.navigate('PremiumPaywall');
+        return;
+      }
       setShowGame(true);
       recordGamePlayed();
       if (inviteId && user?.uid) {
@@ -94,6 +99,10 @@ const GameLobbyScreen = ({ route, navigation }) => {
   };
 
   const handleRematch = async () => {
+    if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
+      navigation.navigate('PremiumPaywall');
+      return;
+    }
     if (inviteId && user?.uid) {
       const ref = db.collection('gameInvites').doc(inviteId);
         const snap = await ref.get();
@@ -200,6 +209,10 @@ const GameLobbyScreen = ({ route, navigation }) => {
           }}
           disabled={!isReady || countdown !== null}
           onPress={() => {
+            if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
+              navigation.navigate('PremiumPaywall');
+              return;
+            }
             setShowGame(true);
             recordGamePlayed();
           }}

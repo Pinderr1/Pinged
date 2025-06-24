@@ -17,6 +17,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
+import { useGameLimit } from '../contexts/GameLimitContext';
 import { useChats } from '../contexts/ChatContext';
 import { db, firebase } from '../firebase';
 import { useNavigation } from '@react-navigation/native';
@@ -36,6 +37,7 @@ const SwipeScreen = () => {
   const { user: currentUser } = useUser();
   const { devMode } = useDev();
   const { addMatch } = useChats();
+  const { gamesLeft } = useGameLimit();
   const isPremiumUser = !!currentUser?.isPremium;
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -244,6 +246,10 @@ const SwipeScreen = () => {
 
   const handleGameInvite = () => {
     if (!displayUser) return;
+    if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
+      navigation.navigate('PremiumPaywall');
+      return;
+    }
     navigation.navigate('GameInvite', { user: displayUser });
   };
 
