@@ -25,6 +25,8 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `dailyPlayCount` (number) – count of games started today for free users
 - `lastGamePlayedAt` (timestamp) – when the last game session began
 - `expoPushToken` (string)
+- `online` (boolean)
+- `lastSeenAt` (timestamp)
 
 ### Subcollections
 - **gameInvites** – invitations sent or received by the user. Each invite document mirrors the root `gameInvites` collection.

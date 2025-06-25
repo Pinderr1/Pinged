@@ -4,6 +4,7 @@ import { ThemeProvider } from './ThemeContext';
 import { AuthProvider } from './AuthContext';
 import { NotificationProvider } from './NotificationContext';
 import { OnboardingProvider } from './OnboardingContext';
+import { PresenceProvider } from './PresenceContext';
 import { UserProvider } from './UserContext';
 import { ListenerProvider } from './ListenerContext';
 import { GameLimitProvider } from './GameLimitContext';
@@ -15,8 +16,9 @@ const Providers = ({ children }) => (
   <DevProvider>
     <ThemeProvider>
       <AuthProvider>
-        <NotificationProvider>
-          <OnboardingProvider>
+        <PresenceProvider>
+          <NotificationProvider>
+            <OnboardingProvider>
             <UserProvider>
               <ListenerProvider>
                 <GameLimitProvider>
@@ -30,6 +32,7 @@ const Providers = ({ children }) => (
             </UserProvider>
           </OnboardingProvider>
         </NotificationProvider>
+        </PresenceProvider>
       </AuthProvider>
     </ThemeProvider>
   </DevProvider>
