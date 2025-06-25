@@ -8,6 +8,8 @@ import {
   StyleSheet,
   Modal,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
@@ -22,7 +24,6 @@ import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
 import { db, firebase } from '../firebase';
 import Toast from 'react-native-toast-message';
-import SafeKeyboardView from '../components/SafeKeyboardView';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params || {};
@@ -178,40 +179,36 @@ export default function ChatScreen({ route }) {
 
   const chatSection = (
     <View style={{ flex: 1, padding: 10 }}>
-      <Text style={[styles.logoText, { marginBottom: 10 }]}>
-        Chat with {user.name}
-      </Text>
-      <View style={{ flex: 1 }}>
-        <FlatList
-          data={messages}
-          keyExtractor={(item) => item.id}
-          renderItem={renderMessage}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          inverted
+      <Text style={[styles.logoText, { marginBottom: 10 }]}>Chat with {user.name}</Text>
+      <FlatList
+        style={{ flex: 1 }}
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={renderMessage}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        inverted
+        keyboardShouldPersistTaps="handled"
+      />
+      <View style={chatStyles.inputBar}>
+        <TouchableOpacity
+          style={activeGameId ? chatStyles.changeButton : chatStyles.playButton}
+          onPress={() => setShowGameModal(true)}
+        >
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+            {activeGameId ? 'Change Game' : 'Play'}
+          </Text>
+        </TouchableOpacity>
+        <TextInput
+          placeholder="Type a message..."
+          style={chatStyles.textInput}
+          value={text}
+          onChangeText={setText}
+          placeholderTextColor="#888"
         />
+        <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
+        </TouchableOpacity>
       </View>
-      <SafeKeyboardView>
-        <View style={chatStyles.inputBar}>
-          <TouchableOpacity
-            style={activeGameId ? chatStyles.changeButton : chatStyles.playButton}
-            onPress={() => setShowGameModal(true)}
-          >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-              {activeGameId ? 'Change Game' : 'Play'}
-            </Text>
-          </TouchableOpacity>
-          <TextInput
-            placeholder="Type a message..."
-            style={chatStyles.textInput}
-            value={text}
-            onChangeText={setText}
-            placeholderTextColor="#888"
-          />
-          <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeKeyboardView>
     </View>
   );
 
@@ -219,6 +216,7 @@ export default function ChatScreen({ route }) {
   const gameSection = SelectedGameClient ? (
     <View
       style={{
+        flex: 1,
         padding: 10,
         borderBottomWidth: 1,
         borderColor: darkMode ? '#444' : '#ccc',
@@ -288,9 +286,17 @@ export default function ChatScreen({ route }) {
           </View>
         </View>
       </Modal>
-      <SafeAreaView style={{ flex: 1, paddingTop: 60 }}>
-        {gameSection}
-        {chatSection}
+      <SafeAreaView style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          style={{ flex: 1, paddingTop: 60 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={60}
+        >
+          <View style={{ flex: 1 }}>
+            {gameSection}
+            {chatSection}
+          </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
   );
