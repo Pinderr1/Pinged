@@ -14,7 +14,11 @@ const lines = [
   [2, 4, 6],
 ];
 
-const BOARD_MARGIN = 40;const BOARD_SIZE = Math.min(Dimensions.get('window').width - BOARD_MARGIN, 300);
+const BOARD_MARGIN = 40;
+const BOARD_SIZE = Math.min(
+  Dimensions.get('window').width - BOARD_MARGIN,
+  240
+);
 const CELL_SIZE = BOARD_SIZE / 3;
 
 const TicTacToeGame = {
