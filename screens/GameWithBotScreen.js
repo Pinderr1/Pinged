@@ -130,11 +130,11 @@ export default function GameWithBotScreen({ route }) {
     >
       <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
         <Header />
-        <SafeAreaView style={{ flex: 1, paddingTop: 60, paddingHorizontal: 10 }}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: theme.text }}>
+        <SafeAreaView style={{ flex: 1, paddingTop: 80, paddingHorizontal: 10, paddingBottom: 20 }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, color: theme.text }}>
           Playing Tic Tac Toe with {bot.name}
         </Text>
-        <View style={{ alignItems: 'center' }}>
+        <View style={styles.boardWrapper}>
           <TicTacToeBoard G={G} ctx={ctx} moves={moves} onGameEnd={handleGameEnd} />
         </View>
         <TouchableOpacity style={styles.resetBtn} onPress={reset}>
@@ -150,13 +150,13 @@ export default function GameWithBotScreen({ route }) {
             </TouchableOpacity>
           </View>
         )}
-        <View style={{ flex: 1, marginTop: 20 }}>
+        <View style={{ flex: 1, marginTop: 30, marginBottom: 10 }}>
           <FlatList
             data={messages}
             keyExtractor={(item) => item.id}
             renderItem={renderMessage}
             inverted
-            contentContainerStyle={{ paddingBottom: 20 }}
+            contentContainerStyle={{ paddingBottom: 40 }}
           />
         </View>
         <View style={styles.inputBar}>
@@ -251,6 +251,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 12,
+  },
+  boardWrapper: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
   },
   avatar: {
     width: 32,
