@@ -8,6 +8,30 @@ admin.initializeApp();
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
+async function pushToUser(uid, title, body, extra = {}) {
+  const snap = await admin.firestore().collection('users').doc(uid).get();
+  const userData = snap.data();
+  const token = userData && userData.expoPushToken;
+  if (!token) {
+    console.log(`No Expo push token for user ${uid}`);
+    return null;
+  }
+
+  const res = await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      to: token,
+      title: title || 'Pinged',
+      sound: 'default',
+      body,
+      data: extra,
+    }),
+  });
+
+  return res.json();
+}
+
 exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
   const uid = context.auth && context.auth.uid;
   if (!uid) {
@@ -124,6 +148,40 @@ exports.sendPushNotification = functions.https.onCall(async (data, context) => {
     );
   }
 });
+
+exports.onGameInviteCreated = functions.firestore
+  .document('gameInvites/{inviteId}')
+  .onCreate(async (snap, context) => {
+    const data = snap.data();
+    if (!data || !data.to) return null;
+    try {
+      await pushToUser(
+        data.to,
+        'Game Invite',
+        `${data.fromName || 'Someone'} invited you to play`,
+        { type: 'invite', inviteId: snap.id, gameId: data.gameId }
+      );
+    } catch (e) {
+      console.error('Failed to send invite notification', e);
+    }
+    return null;
+  });
+
+exports.onMatchCreated = functions.firestore
+  .document('matches/{matchId}')
+  .onCreate(async (snap, context) => {
+    const data = snap.data();
+    if (!data || !Array.isArray(data.users)) return null;
+    await Promise.all(
+      data.users.map((uid) =>
+        pushToUser(uid, 'New Match', 'You have a new match!', {
+          type: 'match',
+          matchId: snap.id,
+        }).catch((e) => console.error('Failed to send match notification', e))
+      )
+    );
+    return null;
+  });
 
 exports.syncPresence = functions.database
   .ref('/status/{uid}')
