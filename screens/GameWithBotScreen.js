@@ -7,8 +7,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,6 +16,7 @@ import { bots, getRandomBot } from '../ai/bots';
 import { generateReply } from '../ai/chatBot';
 import useTicTacToeBotGame from '../hooks/useTicTacToeBotGame';
 import { Board as TicTacToeBoard } from '../games/tic-tac-toe';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import useRPSBotGame from '../hooks/useRPSBotGame';
 import { Board as RPSBoard } from '../games/rock-paper-scissors';
 
@@ -145,11 +144,6 @@ export default function GameWithBotScreen({ route }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={60}
-    >
       <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
         <Header />
         <SafeAreaView style={{ flex: 1, paddingTop: 80, paddingHorizontal: 10, paddingBottom: 20 }}>
@@ -198,20 +192,21 @@ export default function GameWithBotScreen({ route }) {
             contentContainerStyle={{ paddingBottom: 40 }}
           />
         </View>
-        <View style={styles.inputBar}>
-          <TextInput
-            style={styles.input}
-            placeholder="Type a message..."
-            value={text}
-            onChangeText={setText}
-          />
-          <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
-          </TouchableOpacity>
-        </View>
+        <SafeKeyboardView>
+          <View style={styles.inputBar}>
+            <TextInput
+              style={styles.input}
+              placeholder="Type a message..."
+              value={text}
+              onChangeText={setText}
+            />
+            <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeKeyboardView>
         </SafeAreaView>
       </LinearGradient>
-    </KeyboardAvoidingView>
   );
 }
 
