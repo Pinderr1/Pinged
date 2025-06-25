@@ -9,9 +9,30 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
+    function canPlayDaily(oldData, newData) {
+      let premium = (oldData.isPremium == true) || (newData.isPremium == true);
+      if (premium) return true;
+
+      // When play count fields aren't being modified just allow
+      let countChanged = newData.dailyPlayCount != oldData.dailyPlayCount ||
+        newData.lastGamePlayedAt != oldData.lastGamePlayedAt;
+      if (!countChanged) return true;
+
+      // require lastGamePlayedAt to be set to server time when updating
+      if (newData.lastGamePlayedAt != request.time) return false;
+
+      let limit = 1;
+      // No previous timestamp or more than 24h since last game -> reset count
+      return (!oldData.lastGamePlayedAt ||
+          request.time - oldData.lastGamePlayedAt > duration.value(1, 'd'))
+        ? newData.dailyPlayCount == 1 && newData.dailyPlayCount <= limit
+        : newData.dailyPlayCount == oldData.dailyPlayCount + 1 &&
+          newData.dailyPlayCount <= limit;
+    }
+
     match /users/{userId} {
       allow read: if signedIn();
-      allow write: if isUser(userId);
+      allow write: if isUser(userId) && canPlayDaily(resource.data, request.resource.data);
       match /gameInvites/{inviteId} {
         allow read, write: if isUser(userId);
       }
