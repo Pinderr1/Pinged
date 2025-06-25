@@ -1,6 +1,7 @@
 // screens/EmailLoginScreen.js
 import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import { auth, db, firebase } from '../firebase';
 import { snapshotExists } from '../utils/firestore';
 import GradientBackground from '../components/GradientBackground';
@@ -57,6 +58,7 @@ export default function EmailLoginScreen({ navigation }) {
 
   return (
     <GradientBackground>
+      <SafeKeyboardView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%' }}>
       <Text style={[styles.logoText, { color: '#fff' }]}>Log In</Text>
 
       <TextInput
@@ -88,6 +90,7 @@ export default function EmailLoginScreen({ navigation }) {
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <Text style={{ color: '#fff', marginTop: 10 }}>← Back</Text>
       </TouchableOpacity>
+      </SafeKeyboardView>
     </GradientBackground>
   );
 }

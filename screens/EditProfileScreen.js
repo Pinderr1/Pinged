@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import styles from '../styles';
@@ -47,9 +48,10 @@ const EditProfileScreen = ({ navigation }) => {
   };
 
   return (
-    <LinearGradient colors={['#fff', '#ffe6f0']} style={styles.container}>
-        <Header />
-      <Text style={styles.logoText}>Edit Your Profile</Text>
+    <LinearGradient colors={['#fff', '#ffe6f0']} style={{ flex: 1 }}>
+      <Header />
+      <SafeKeyboardView style={[styles.container, { paddingTop: 60 }]}>
+        <Text style={styles.logoText}>Edit Your Profile</Text>
 
       <TextInput
         style={styles.input}
@@ -103,6 +105,7 @@ const EditProfileScreen = ({ navigation }) => {
       <TouchableOpacity style={styles.emailBtn} onPress={handleSave}>
         <Text style={styles.btnText}>Save Changes</Text>
       </TouchableOpacity>
+      </SafeKeyboardView>
     </LinearGradient>
   );
 };

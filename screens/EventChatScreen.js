@@ -162,6 +162,7 @@ const EventChatScreen = ({ route }) => {
       style={{ flex: 1 }}
     >
       <Header />
+      <SafeKeyboardView style={{ flex: 1, paddingTop: 60 }}>
       <Text style={stylesLocal.eventTitle}>{event.title}</Text>
 
       {messages.filter(m => m.pinned).map((msg) => (
@@ -178,8 +179,7 @@ const EventChatScreen = ({ route }) => {
         contentContainerStyle={{ padding: 16 }}
       />
 
-      <SafeKeyboardView>
-        <View style={stylesLocal.inputRow}>
+      <View style={stylesLocal.inputRow}>
           <TextInput
             value={input}
             onChangeText={setInput}
