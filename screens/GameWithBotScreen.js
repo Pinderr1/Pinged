@@ -18,6 +18,8 @@ import { bots, getRandomBot } from '../ai/bots';
 import { generateReply } from '../ai/chatBot';
 import useTicTacToeBotGame from '../hooks/useTicTacToeBotGame';
 import { Board as TicTacToeBoard } from '../games/tic-tac-toe';
+import useRPSBotGame from '../hooks/useRPSBotGame';
+import { Board as RPSBoard } from '../games/rock-paper-scissors';
 
 export default function GameWithBotScreen({ route }) {
   const botId = route.params?.botId;
@@ -25,7 +27,19 @@ export default function GameWithBotScreen({ route }) {
     bots.find((b) => b.id === botId) || getRandomBot()
   );
   const { theme } = useTheme();
-  const { G, ctx, moves, reset } = useTicTacToeBotGame(handleGameEnd);
+  const ttt = useTicTacToeBotGame((res) => handleGameEnd(res, 'ticTacToe'));
+  const rps = useRPSBotGame((res) => handleGameEnd(res, 'rps'));
+
+  const [game, setGame] = useState('ticTacToe');
+
+  const gameMap = {
+    ticTacToe: { title: 'Tic Tac Toe', board: TicTacToeBoard, state: ttt },
+    rps: { title: 'Rock Paper Scissors', board: RPSBoard, state: rps },
+  };
+
+  const { G, ctx, moves, reset } = gameMap[game].state;
+  const BoardComponent = gameMap[game].board;
+  const title = gameMap[game].title;
 
   const [gameOver, setGameOver] = useState(false);
   const [messages, setMessages] = useState([
@@ -33,8 +47,8 @@ export default function GameWithBotScreen({ route }) {
   ]);
   const [text, setText] = useState('');
 
-  function handleGameEnd(res) {
-    if (!res) return;
+  function handleGameEnd(res, gameId) {
+    if (gameId !== game || !res) return;
     let msg = 'Draw.';
     if (res.winner === '0') msg = 'You win!';
     else if (res.winner === '1') msg = `${bot.name} wins.`;
@@ -88,6 +102,14 @@ export default function GameWithBotScreen({ route }) {
     setGameOver(false);
   };
 
+  const switchGame = (g) => {
+    if (g === game) return;
+    setGame(g);
+    gameMap[g].state.reset();
+    setGameOver(false);
+    addSystemMessage(`Switched to ${gameMap[g].title}.`);
+  };
+
   const renderMessage = ({ item }) => {
     if (item.sender === 'system') {
       return (
@@ -131,11 +153,28 @@ export default function GameWithBotScreen({ route }) {
       <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
         <Header />
         <SafeAreaView style={{ flex: 1, paddingTop: 80, paddingHorizontal: 10, paddingBottom: 20 }}>
+        <View style={styles.gameTabs}>
+          <TouchableOpacity
+            style={[
+              styles.tab,
+              game === 'ticTacToe' ? styles.tabActive : null,
+            ]}
+            onPress={() => switchGame('ticTacToe')}
+          >
+            <Text style={styles.tabText}>Tic Tac Toe</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, game === 'rps' ? styles.tabActive : null]}
+            onPress={() => switchGame('rps')}
+          >
+            <Text style={styles.tabText}>RPS</Text>
+          </TouchableOpacity>
+        </View>
         <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, color: theme.text }}>
-          Playing Tic Tac Toe with {bot.name}
+          Playing {title} with {bot.name}
         </Text>
         <View style={styles.boardWrapper}>
-          <TicTacToeBoard G={G} ctx={ctx} moves={moves} onGameEnd={handleGameEnd} />
+          <BoardComponent G={G} ctx={ctx} moves={moves} onGameEnd={(res) => handleGameEnd(res, game)} />
         </View>
         <TouchableOpacity style={styles.resetBtn} onPress={reset}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Reset</Text>
@@ -263,4 +302,20 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginHorizontal: 6,
   },
+  gameTabs: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  tab: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginHorizontal: 4,
+    borderRadius: 12,
+    backgroundColor: '#eee',
+  },
+  tabActive: {
+    backgroundColor: '#d1c4e9',
+  },
+  tabText: { fontWeight: 'bold' },
 });
