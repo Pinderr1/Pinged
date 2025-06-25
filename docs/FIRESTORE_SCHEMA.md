@@ -22,8 +22,8 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `xp` (number)
 - `streak` (number)
 - `lastPlayedAt` (timestamp)
-- `dailyPlayCount` (number)
-- `lastGamePlayedAt` (timestamp)
+- `dailyPlayCount` (number) – count of games started today for free users
+- `lastGamePlayedAt` (timestamp) – when the last game session began
 - `expoPushToken` (string)
 
 ### Subcollections
