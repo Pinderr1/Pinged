@@ -8,6 +8,8 @@ import {
   StyleSheet,
   Image,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
@@ -148,6 +150,11 @@ export default function GameWithBotScreen({ route }) {
   return (
       <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
         <Header />
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={80}
+        >
         <SafeAreaView style={{ flex: 1, paddingTop: 80, paddingHorizontal: 10, paddingBottom: 20 }}>
         <View style={styles.gameTabs}>
           <TouchableOpacity
@@ -169,67 +176,73 @@ export default function GameWithBotScreen({ route }) {
         <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, color: theme.text }}>
           Playing {title} with {bot.name}
         </Text>
-        {showBoard ? (
-          <>
-            <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={() => setShowBoard(false)}
-            >
-              <Text style={styles.closeBtnText}>X</Text>
-            </TouchableOpacity>
-            <View style={styles.boardWrapper}>
-              <BoardComponent
-                G={G}
-                ctx={ctx}
-                moves={moves}
-                onGameEnd={(res) => handleGameEnd(res, game)}
-              />
-            </View>
-            <TouchableOpacity style={styles.resetBtn} onPress={reset}>
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Reset</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <TouchableOpacity
-            style={styles.showBtn}
-            onPress={() => setShowBoard(true)}
-          >
-            <Text style={styles.showBtnText}>Show Game</Text>
-          </TouchableOpacity>
-        )}
-        {gameOver && (
-          <View style={styles.overButtons}>
-            <TouchableOpacity style={styles.againBtn} onPress={playAgain}>
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Play Again</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.newBotBtn} onPress={switchBot}>
-              <Text style={{ color: '#000', fontWeight: 'bold' }}>New Bot</Text>
-            </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <View style={{ flex: 1 }}>
+            {showBoard ? (
+              <>
+                <TouchableOpacity
+                  style={styles.closeBtn}
+                  onPress={() => setShowBoard(false)}
+                >
+                  <Text style={styles.closeBtnText}>X</Text>
+                </TouchableOpacity>
+                <View style={styles.boardWrapper}>
+                  <BoardComponent
+                    G={G}
+                    ctx={ctx}
+                    moves={moves}
+                    onGameEnd={(res) => handleGameEnd(res, game)}
+                  />
+                </View>
+                <TouchableOpacity style={styles.resetBtn} onPress={reset}>
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>Reset</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <TouchableOpacity
+                style={styles.showBtn}
+                onPress={() => setShowBoard(true)}
+              >
+                <Text style={styles.showBtnText}>Show Game</Text>
+              </TouchableOpacity>
+            )}
+            {gameOver && (
+              <View style={styles.overButtons}>
+                <TouchableOpacity style={styles.againBtn} onPress={playAgain}>
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>Play Again</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.newBotBtn} onPress={switchBot}>
+                  <Text style={{ color: '#000', fontWeight: 'bold' }}>New Bot</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
-        )}
-        <View style={{ flex: 1, marginTop: 30, marginBottom: 10 }}>
-          <FlatList
-            data={messages}
-            keyExtractor={(item) => item.id}
-            renderItem={renderMessage}
-            inverted
-            contentContainerStyle={{ paddingBottom: 40 }}
-          />
-        </View>
-        <SafeKeyboardView>
-          <View style={styles.inputBar}>
-            <TextInput
-              style={styles.input}
-              placeholder="Type a message..."
-              value={text}
-              onChangeText={setText}
+          <View style={{ flex: 1, marginTop: 10 }}>
+            <FlatList
+              style={{ flex: 1 }}
+              data={messages}
+              keyExtractor={(item) => item.id}
+              renderItem={renderMessage}
+              inverted
+              contentContainerStyle={{ paddingBottom: 40 }}
             />
-            <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
-            </TouchableOpacity>
+            <SafeKeyboardView>
+              <View style={styles.inputBar}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Type a message..."
+                  value={text}
+                  onChangeText={setText}
+                />
+                <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
+                </TouchableOpacity>
+              </View>
+            </SafeKeyboardView>
           </View>
-        </SafeKeyboardView>
+        </View>
         </SafeAreaView>
+        </KeyboardAvoidingView>
       </LinearGradient>
   );
 }
@@ -311,9 +324,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   boardWrapper: {
+    flex: 1,
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 20,
+    justifyContent: 'center',
+    marginVertical: 20,
   },
   closeBtn: {
     alignSelf: 'flex-end',
