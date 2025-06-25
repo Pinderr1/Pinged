@@ -22,6 +22,7 @@ import { Board as RPSBoard } from '../games/rock-paper-scissors';
 
 export default function GameWithBotScreen({ route }) {
   const botId = route.params?.botId;
+  const initialGame = route.params?.game || 'ticTacToe';
   const [bot, setBot] = useState(
     bots.find((b) => b.id === botId) || getRandomBot()
   );
@@ -29,7 +30,7 @@ export default function GameWithBotScreen({ route }) {
   const ttt = useTicTacToeBotGame((res) => handleGameEnd(res, 'ticTacToe'));
   const rps = useRPSBotGame((res) => handleGameEnd(res, 'rps'));
 
-  const [game, setGame] = useState('ticTacToe');
+  const [game, setGame] = useState(initialGame);
 
   const gameMap = {
     ticTacToe: { title: 'Tic Tac Toe', board: TicTacToeBoard, state: ttt },
