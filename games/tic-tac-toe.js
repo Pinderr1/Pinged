@@ -83,17 +83,25 @@ const TicTacToeBoard = ({ G, ctx, moves, onGameEnd }) => {
         </Text>
       )}
       <View style={styles.boardContainer}>
-        {G.cells.map((cell, idx) => (
-          <TouchableOpacity
-            key={idx}
-            onPress={() => moves.clickCell(idx)}
-            disabled={disabled}
-            style={styles.cell}
-          >
-            <Text style={[styles.mark, { fontSize: CELL_SIZE * 0.6 }] }>
-              {cell === '0' ? 'X' : cell === '1' ? 'O' : ''}
-            </Text>
-          </TouchableOpacity>
+        {[0, 1, 2].map((row) => (
+          <View key={row} style={styles.row}>
+            {[0, 1, 2].map((col) => {
+              const idx = row * 3 + col;
+              const cell = G.cells[idx];
+              return (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={() => moves.clickCell(idx)}
+                  disabled={disabled}
+                  style={styles.cell}
+                >
+                  <Text style={[styles.mark, { fontSize: CELL_SIZE * 0.6 }] }>
+                    {cell === '0' ? 'X' : cell === '1' ? 'O' : ''}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         ))}
       </View>
       {ctx.gameover && (
@@ -107,8 +115,7 @@ const TicTacToeBoard = ({ G, ctx, moves, onGameEnd }) => {
 
 const styles = StyleSheet.create({
   boardContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     width: BOARD_SIZE,
     height: BOARD_SIZE,
     borderWidth: 2,
@@ -129,6 +136,9 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  row: {
+    flexDirection: 'row',
   },
   mark: {
     fontWeight: 'bold',
