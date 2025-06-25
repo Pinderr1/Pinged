@@ -9,6 +9,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
@@ -122,9 +123,14 @@ export default function GameWithBotScreen({ route }) {
   };
 
   return (
-    <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
-      <Header />
-      <View style={{ flex: 1, paddingTop: 60, paddingHorizontal: 10 }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={60}
+    >
+      <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
+        <Header />
+        <SafeAreaView style={{ flex: 1, paddingTop: 60, paddingHorizontal: 10 }}>
         <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: theme.text }}>
           Playing Tic Tac Toe with {bot.name}
         </Text>
@@ -153,11 +159,7 @@ export default function GameWithBotScreen({ route }) {
             contentContainerStyle={{ paddingBottom: 20 }}
           />
         </View>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={60}
-          style={styles.inputBar}
-        >
+        <View style={styles.inputBar}>
           <TextInput
             style={styles.input}
             placeholder="Type a message..."
@@ -167,9 +169,10 @@ export default function GameWithBotScreen({ route }) {
           <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
             <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
           </TouchableOpacity>
-        </KeyboardAvoidingView>
-      </View>
-    </LinearGradient>
+        </View>
+        </SafeAreaView>
+      </LinearGradient>
+    </KeyboardAvoidingView>
   );
 }
 
