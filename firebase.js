@@ -14,7 +14,9 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-console.log('Firebase config loaded', firebaseConfig);
+if (__DEV__) {
+  console.log('Firebase config loaded', firebaseConfig);
+}
 
 try {
   if (!firebase.apps.length) {
