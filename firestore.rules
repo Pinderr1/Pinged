@@ -10,8 +10,12 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, write: if isUser(userId);
+      allow read: if signedIn();
+      allow write: if isUser(userId);
       match /gameInvites/{inviteId} {
+        allow read, write: if isUser(userId);
+      }
+      match /notifications/{noteId} {
         allow read, write: if isUser(userId);
       }
     }
