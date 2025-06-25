@@ -46,6 +46,7 @@ export default function GameWithBotScreen({ route }) {
     { id: 'start', sender: bot.name, text: `Hi! I'm ${bot.name}. Let's play!` },
   ]);
   const [text, setText] = useState('');
+  const [showBoard, setShowBoard] = useState(true);
 
   function handleGameEnd(res, gameId) {
     if (gameId !== game || !res) return;
@@ -168,12 +169,34 @@ export default function GameWithBotScreen({ route }) {
         <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, color: theme.text }}>
           Playing {title} with {bot.name}
         </Text>
-        <View style={styles.boardWrapper}>
-          <BoardComponent G={G} ctx={ctx} moves={moves} onGameEnd={(res) => handleGameEnd(res, game)} />
-        </View>
-        <TouchableOpacity style={styles.resetBtn} onPress={reset}>
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Reset</Text>
-        </TouchableOpacity>
+        {showBoard ? (
+          <>
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={() => setShowBoard(false)}
+            >
+              <Text style={styles.closeBtnText}>X</Text>
+            </TouchableOpacity>
+            <View style={styles.boardWrapper}>
+              <BoardComponent
+                G={G}
+                ctx={ctx}
+                moves={moves}
+                onGameEnd={(res) => handleGameEnd(res, game)}
+              />
+            </View>
+            <TouchableOpacity style={styles.resetBtn} onPress={reset}>
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Reset</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <TouchableOpacity
+            style={styles.showBtn}
+            onPress={() => setShowBoard(true)}
+          >
+            <Text style={styles.showBtnText}>Show Game</Text>
+          </TouchableOpacity>
+        )}
         {gameOver && (
           <View style={styles.overButtons}>
             <TouchableOpacity style={styles.againBtn} onPress={playAgain}>
@@ -291,6 +314,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 20,
+  },
+  closeBtn: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#d81b60',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  closeBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  showBtn: {
+    backgroundColor: '#607d8b',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  showBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   avatar: {
     width: 32,
