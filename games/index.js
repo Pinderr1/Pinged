@@ -14,6 +14,9 @@ import DotsBoxesClient, { Game as dotsBoxesGame, Board as DotsBoxesBoard, meta a
 import SnakesLaddersClient, { Game as snakesLaddersGame, Board as SnakesLaddersBoard, meta as snakesLaddersMeta } from './snakes-and-ladders';
 import MancalaClient, { Game as mancalaGame, Board as MancalaBoard, meta as mancalaMeta } from './mancala';
 import BlackjackClient, { Game as blackjackGame, Board as BlackjackBoard, meta as blackjackMeta } from './blackjack';
+import NimClient, { Game as nimGame, Board as NimBoard, meta as nimMeta } from './nim';
+import PigClient, { Game as pigGame, Board as PigBoard, meta as pigMeta } from './pig';
+import CoinTossClient, { Game as coinTossGame, Board as CoinTossBoard, meta as coinTossMeta } from './coin-toss';
 
 export const games = {
   [ticTacToeMeta.id]: {
@@ -91,6 +94,24 @@ export const games = {
     Game: blackjackGame,
     Board: BlackjackBoard,
     meta: blackjackMeta,
+  },
+  [nimMeta.id]: {
+    Client: NimClient,
+    Game: nimGame,
+    Board: NimBoard,
+    meta: nimMeta,
+  },
+  [pigMeta.id]: {
+    Client: PigClient,
+    Game: pigGame,
+    Board: PigBoard,
+    meta: pigMeta,
+  },
+  [coinTossMeta.id]: {
+    Client: CoinTossClient,
+    Game: coinTossGame,
+    Board: CoinTossBoard,
+    meta: coinTossMeta,
   },
 };
 
