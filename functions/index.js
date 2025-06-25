@@ -124,3 +124,21 @@ exports.sendPushNotification = functions.https.onCall(async (data, context) => {
     );
   }
 });
+
+exports.syncPresence = functions.database
+  .ref('/status/{uid}')
+  .onWrite(async (change, context) => {
+    const status = change.after.val();
+    if (!status) return null;
+    const uid = context.params.uid;
+    const userRef = admin.firestore().collection('users').doc(uid);
+    try {
+      await userRef.update({
+        online: status.state === 'online',
+        lastSeenAt: admin.firestore.Timestamp.fromMillis(status.last_changed),
+      });
+    } catch (e) {
+      console.error('Failed to sync presence', e);
+    }
+    return null;
+  });

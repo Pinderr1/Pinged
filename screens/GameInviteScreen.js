@@ -45,12 +45,12 @@ const GameInviteScreen = ({ route, navigation }) => {
   const [matches, setMatches] = useState([]);
 
   useEffect(() => {
-    const fetchMatches = async () => {
-      try {
-        const q = currentUser?.uid
-          ? db.collection('users').where('uid', '!=', currentUser.uid)
-          : db.collection('users');
-        const snap = await q.get();
+    if (!currentUser) return;
+    const q = currentUser.uid
+      ? db.collection('users').where('uid', '!=', currentUser.uid)
+      : db.collection('users');
+    const unsub = q.onSnapshot(
+      (snap) => {
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         if (devMode) data = [devUser, ...data];
         setMatches(
@@ -58,14 +58,13 @@ const GameInviteScreen = ({ route, navigation }) => {
             id: u.uid || u.id,
             name: u.displayName || 'User',
             photo: u.photoURL ? { uri: u.photoURL } : require('../assets/user1.jpg'),
-            online: true,
+            online: !!u.online,
           }))
         );
-      } catch (e) {
-        console.warn('Failed to load users', e);
-      }
-    };
-    fetchMatches();
+      },
+      (e) => console.warn('Failed to load users', e)
+    );
+    return unsub;
   }, [currentUser?.uid, devMode]);
 
   const handleInvite = async (user) => {

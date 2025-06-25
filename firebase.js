@@ -4,6 +4,7 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/compat/functions';
+import 'firebase/compat/database';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -35,5 +36,6 @@ try {
 }
 const storage = firebase.storage();
 const functions = firebase.app().functions();
+const database = firebase.database();
 
-export { firebase, auth, db, storage, functions };
+export { firebase, auth, db, storage, functions, database };
