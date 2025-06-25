@@ -14,17 +14,8 @@ const lines = [
   [2, 4, 6],
 ];
 
-const BOARD_MARGIN = 40;
-// Ensure the board width is evenly divisible by 3 so all cells fit without
-// wrapping due to rounding errors on smaller screens. We first calculate an
-// approximate board size based on the available width, then derive an integer
-// cell size and recompute the final board size from that cell size.
-const APPROX_BOARD_SIZE = Math.min(
-  Dimensions.get('window').width - BOARD_MARGIN,
-  300
-);
-const CELL_SIZE = Math.floor(APPROX_BOARD_SIZE / 3);
-const BOARD_SIZE = CELL_SIZE * 3;
+const BOARD_MARGIN = 40;const BOARD_SIZE = Math.min(Dimensions.get('window').width - BOARD_MARGIN, 300);
+const CELL_SIZE = BOARD_SIZE / 3;
 
 const TicTacToeGame = {
   setup: () => ({ cells: Array(9).fill(null) }),
