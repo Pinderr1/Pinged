@@ -51,5 +51,11 @@ service cloud.firestore {
     match /events/{eventId} {
       allow read, write: if signedIn();
     }
+
+    // Community Board posts accessible to all signed-in users
+    match /communityPosts/{postId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
   }
 }

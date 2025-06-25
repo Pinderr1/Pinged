@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { db } from '../firebase';
 import { getRandomBot } from '../ai/bots';
 
 
@@ -31,6 +32,27 @@ const AI_GAMES = [
   { id: 'rps', name: 'Rock Paper Scissors', tier: 1 },
 ];
 
+const DEFAULT_POSTS = [
+  {
+    id: '1',
+    title: 'Speed Dating Night',
+    time: 'Friday @ 8PM',
+    description: 'Meet singles in quick 5 minute chats.',
+  },
+  {
+    id: '2',
+    title: 'App Announcement',
+    time: 'Today',
+    description: 'Check out the newest features rolling out this week.',
+  },
+  {
+    id: '3',
+    title: 'Trivia Tuesday',
+    time: 'Tues @ 7PM',
+    description: 'Join our weekly trivia and win prizes!',
+  },
+];
+
 
 const HomeScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
@@ -39,6 +61,7 @@ const HomeScreen = ({ navigation }) => {
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('stranger');
+  const [posts, setPosts] = useState([]);
 
   const card = (children, style = {}) => (
     <View style={[local.card, { backgroundColor: theme.card }, style]}>
@@ -78,6 +101,15 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate('GameInvite', { game: { title: game.name } });
     }
   };
+
+  useEffect(() => {
+    const q = db.collection('communityPosts').orderBy('createdAt', 'desc');
+    const unsub = q.onSnapshot((snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setPosts(data.length ? data : DEFAULT_POSTS);
+    });
+    return unsub;
+  }, []);
 
   const gradientColors = [theme.gradientStart, theme.gradientEnd];
 
@@ -146,6 +178,16 @@ const HomeScreen = ({ navigation }) => {
             <Text style={styles.btnText}>Play With AI</Text>
           </TouchableOpacity>
         )}
+
+        {/* 📌 Community Board */}
+        <Text style={local.section}>Community Board</Text>
+        {posts.map((p) => (
+          <View key={p.id} style={[local.postCard, { backgroundColor: theme.card }]}>
+            <Text style={local.postTitle}>{p.title}</Text>
+            <Text style={local.postTime}>{p.time}</Text>
+            <Text style={local.postDesc}>{p.description}</Text>
+          </View>
+        ))}
       </ScrollView>
 
       {/* ❤️ Sticky Meet People Button */}
@@ -367,6 +409,31 @@ const local = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3
+  },
+  postCard: {
+    borderRadius: 12,
+    padding: 14,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2
+  },
+  postTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    marginBottom: 2
+  },
+  postTime: {
+    fontSize: 12,
+    color: '#d81b60',
+    marginBottom: 4
+  },
+  postDesc: {
+    fontSize: 13,
+    color: '#666'
   }
 });
 
