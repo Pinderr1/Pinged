@@ -10,6 +10,7 @@ import {
   Keyboard
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import styles from '../styles';
 import Header from '../components/Header';
 import { Ionicons } from '@expo/vector-icons';
@@ -115,6 +116,7 @@ const PlayScreen = ({ navigation }) => {
       style={styles.swipeScreen}
     >
       <Header showLogoOnly />
+      <SafeKeyboardView style={{ flex: 1 }}>
 
       <Text
         style={{
@@ -157,6 +159,7 @@ const PlayScreen = ({ navigation }) => {
         onClose={() => setPreviewGame(null)}
         onStart={handleStartGame}
       />
+      </SafeKeyboardView>
     </LinearGradient>
   );
 };

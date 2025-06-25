@@ -8,9 +8,8 @@ import {
   StyleSheet,
   Modal,
   SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import styles from '../styles';
@@ -287,16 +286,12 @@ export default function ChatScreen({ route }) {
         </View>
       </Modal>
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          style={{ flex: 1, paddingTop: 60 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={60}
-        >
+        <SafeKeyboardView style={{ flex: 1, paddingTop: 60 }}>
           <View style={{ flex: 1 }}>
             {gameSection}
             {chatSection}
           </View>
-        </KeyboardAvoidingView>
+        </SafeKeyboardView>
       </SafeAreaView>
     </LinearGradient>
   );
