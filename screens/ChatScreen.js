@@ -6,10 +6,8 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   Modal,
+  SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
@@ -24,6 +22,7 @@ import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
 import { db, firebase } from '../firebase';
 import Toast from 'react-native-toast-message';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params || {};
@@ -31,14 +30,7 @@ export default function ChatScreen({ route }) {
   const { user: currentUser, addGameXP } = useUser();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { devMode } = useDev();
-  const {
-    setActiveGame,
-    getActiveGame,
-    sendGameInvite,
-    clearGameInvite,
-    acceptGameInvite,
-    getPendingInvite,
-  } = useChats();
+  const { setActiveGame, getActiveGame, getPendingInvite } = useChats();
   const { darkMode, theme } = useTheme();
   const { showNotification } = useNotification();
   if (!user) {
@@ -52,9 +44,7 @@ export default function ChatScreen({ route }) {
     );
   }
   const prevGameIdRef = useRef(null);
-  const isWideScreen = Dimensions.get('window').width > 700;
   const [showGameModal, setShowGameModal] = useState(false);
-  const [activeSection, setActiveSection] = useState('chat');
   const [text, setText] = useState('');
   const [devPlayer, setDevPlayer] = useState('0');
 
@@ -90,7 +80,6 @@ export default function ChatScreen({ route }) {
     if (activeGameId && activeGameId !== prevGameIdRef.current) {
       const title = games[activeGameId].meta.title;
       showNotification(`Game started: ${title}`);
-      setActiveSection('game');
     }
     prevGameIdRef.current = activeGameId;
   }, [activeGameId]);
@@ -136,7 +125,6 @@ export default function ChatScreen({ route }) {
       sendChatMessage('Game over. Draw.', 'system');
     }
     setActiveGame(user.id, null);
-    setActiveSection('chat');
   };
 
   const handleGameSelect = (gameId) => {
@@ -154,7 +142,6 @@ export default function ChatScreen({ route }) {
       recordGamePlayed();
     }
     setActiveGame(user.id, gameId);
-    setActiveSection('game');
     setShowGameModal(false);
   };
 
@@ -203,30 +190,28 @@ export default function ChatScreen({ route }) {
           inverted
         />
       </View>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={60}
-        style={chatStyles.inputBar}
-      >
-        <TouchableOpacity
-          style={activeGameId ? chatStyles.changeButton : chatStyles.playButton}
-          onPress={() => setShowGameModal(true)}
-        >
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-            {activeGameId ? 'Change Game' : 'Play'}
-          </Text>
-        </TouchableOpacity>
-        <TextInput
-          placeholder="Type a message..."
-          style={chatStyles.textInput}
-          value={text}
-          onChangeText={setText}
-          placeholderTextColor="#888"
-        />
-        <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
-        </TouchableOpacity>
-      </KeyboardAvoidingView>
+      <SafeKeyboardView>
+        <View style={chatStyles.inputBar}>
+          <TouchableOpacity
+            style={activeGameId ? chatStyles.changeButton : chatStyles.playButton}
+            onPress={() => setShowGameModal(true)}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+              {activeGameId ? 'Change Game' : 'Play'}
+            </Text>
+          </TouchableOpacity>
+          <TextInput
+            placeholder="Type a message..."
+            style={chatStyles.textInput}
+            value={text}
+            onChangeText={setText}
+            placeholderTextColor="#888"
+          />
+          <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeKeyboardView>
     </View>
   );
 
@@ -234,10 +219,8 @@ export default function ChatScreen({ route }) {
   const gameSection = SelectedGameClient ? (
     <View
       style={{
-        flex: 1,
         padding: 10,
-        borderRightWidth: isWideScreen ? 1 : 0,
-        borderBottomWidth: isWideScreen ? 0 : 1,
+        borderBottomWidth: 1,
         borderColor: darkMode ? '#444' : '#ccc',
         justifyContent: 'center',
         alignItems: 'center',
@@ -280,29 +263,6 @@ export default function ChatScreen({ route }) {
 
   const gradientColors = [theme.gradientStart, theme.gradientEnd];
 
-  const toggleBar = (
-    <View style={chatStyles.toggleBar}>
-      <TouchableOpacity
-        style={[
-          chatStyles.toggleButton,
-          activeSection === 'game' && chatStyles.toggleActive,
-        ]}
-        onPress={() => setActiveSection('game')}
-      >
-        <Text style={chatStyles.toggleText}>Game View</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[
-          chatStyles.toggleButton,
-          activeSection === 'chat' && chatStyles.toggleActive,
-        ]}
-        onPress={() => setActiveSection('chat')}
-      >
-        <Text style={chatStyles.toggleText}>Chat View</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
   return (
     <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
       <Header />
@@ -328,18 +288,10 @@ export default function ChatScreen({ route }) {
           </View>
         </View>
       </Modal>
-      {isWideScreen ? (
-        <View style={{ flex: 1, flexDirection: 'row', paddingTop: 60 }}>
-          {gameSection}
-          {chatSection}
-        </View>
-      ) : (
-        <View style={{ flex: 1, paddingTop: 60 }}>
-          {toggleBar}
-          {activeSection === 'game' && <View style={{ flex: 1 }}>{gameSection}</View>}
-          {activeSection === 'chat' && <View style={{ flex: 1 }}>{chatSection}</View>}
-        </View>
-      )}
+      <SafeAreaView style={{ flex: 1, paddingTop: 60 }}>
+        {gameSection}
+        {chatSection}
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -409,25 +361,6 @@ const chatStyles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     marginRight: 10,
-  },
-  toggleBar: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  toggleButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginHorizontal: 5,
-    borderRadius: 16,
-    backgroundColor: '#ccc',
-  },
-  toggleActive: {
-    backgroundColor: '#009688',
-  },
-  toggleText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
   modalOverlay: {
     flex: 1,
