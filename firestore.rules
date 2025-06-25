@@ -32,7 +32,9 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if signedIn();
-      allow write: if isUser(userId) && canPlayDaily(resource.data, request.resource.data);
+      // Only allow users to update their own document
+      allow update: if isUser(userId) &&
+        canPlayDaily(resource.data, request.resource.data);
       match /gameInvites/{inviteId} {
         allow read, write: if isUser(userId);
       }
