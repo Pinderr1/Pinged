@@ -200,3 +200,60 @@ exports.syncPresence = functions.database
     }
     return null;
   });
+
+exports.autoStartGame = functions.firestore
+  .document('gameInvites/{inviteId}')
+  .onUpdate(async (change, context) => {
+    const beforeStatus = change.before.get('status');
+    const after = change.after.data();
+    if (beforeStatus === 'ready' || after.status !== 'ready') return null;
+
+    const inviteId = context.params.inviteId;
+    const updates = {
+      status: 'active',
+      startedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    const tasks = [change.after.ref.update(updates)];
+
+    if (after.from) {
+      tasks.push(
+        admin
+          .firestore()
+          .collection('users')
+          .doc(after.from)
+          .collection('gameInvites')
+          .doc(inviteId)
+          .update(updates)
+          .catch((e) => console.error('Failed to update sender invite', e))
+      );
+      tasks.push(
+        pushToUser(after.from, 'Game Starting', 'Your game is starting!', {
+          type: 'game',
+          inviteId,
+        }).catch((e) => console.error('Failed to push to sender', e))
+      );
+    }
+
+    if (after.to) {
+      tasks.push(
+        admin
+          .firestore()
+          .collection('users')
+          .doc(after.to)
+          .collection('gameInvites')
+          .doc(inviteId)
+          .update(updates)
+          .catch((e) => console.error('Failed to update recipient invite', e))
+      );
+      tasks.push(
+        pushToUser(after.to, 'Game Starting', 'Your game is starting!', {
+          type: 'game',
+          inviteId,
+        }).catch((e) => console.error('Failed to push to recipient', e))
+      );
+    }
+
+    await Promise.all(tasks);
+    return null;
+  });
