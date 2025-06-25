@@ -26,6 +26,11 @@ const GAMES = [
   { name: 'Rock Paper Scissors', tier: 1 }
 ];
 
+const AI_GAMES = [
+  { id: 'ticTacToe', name: 'Tic Tac Toe', tier: 1 },
+  { id: 'rps', name: 'Rock Paper Scissors', tier: 1 },
+];
+
 
 const HomeScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
@@ -42,7 +47,7 @@ const HomeScreen = ({ navigation }) => {
   );
 
   const openGamePicker = (target) => {
-    if (gamesLeft > 0 || isPremiumUser) {
+    if (target === 'ai' || gamesLeft > 0 || isPremiumUser) {
       setPlayTarget(target);
       setGamePickerVisible(true);
     } else {
@@ -58,9 +63,17 @@ const HomeScreen = ({ navigation }) => {
       return;
     }
     setGamePickerVisible(false);
-    recordGamePlayed();
+    if (playTarget !== 'ai') {
+      recordGamePlayed();
+    }
     if (playTarget === 'stranger') {
       navigation.navigate('Play');
+    } else if (playTarget === 'ai') {
+      const bot = getRandomBot();
+      navigation.navigate('GameWithBot', {
+        botId: bot.id,
+        game: game.id,
+      });
     } else {
       navigation.navigate('GameInvite', { game: { title: game.name } });
     }
@@ -128,10 +141,7 @@ const HomeScreen = ({ navigation }) => {
         {card(
           <TouchableOpacity
             style={[styles.emailBtn, { alignSelf: 'center', backgroundColor: '#6c5ce7' }]}
-            onPress={() => {
-              const bot = getRandomBot();
-              navigation.navigate('GameWithBot', { botId: bot.id });
-            }}
+            onPress={() => openGamePicker('ai')}
           >
             <Text style={styles.btnText}>Play With AI</Text>
           </TouchableOpacity>
@@ -150,7 +160,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={local.modalBackdrop}>
           <View style={local.modalCard}>
             <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 12 }}>Choose a Game</Text>
-            {GAMES.map((game, idx) => {
+            {(playTarget === 'ai' ? AI_GAMES : GAMES).map((game, idx) => {
               const locked = !isPremiumUser && game.tier > 1;
               return (
                 <TouchableOpacity
