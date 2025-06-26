@@ -45,6 +45,12 @@ const GameInviteScreen = ({ route, navigation }) => {
   const [matches, setMatches] = useState([]);
 
   useEffect(() => {
+    if (!currentUser?.isPremium && gamesLeft <= 0 && !devMode) {
+      navigation.replace('PremiumPaywall');
+    }
+  }, [gamesLeft, currentUser?.isPremium, devMode]);
+
+  useEffect(() => {
     if (!currentUser) return;
     const q = currentUser.uid
       ? db.collection('users').where('uid', '!=', currentUser.uid)
