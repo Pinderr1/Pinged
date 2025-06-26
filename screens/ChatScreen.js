@@ -23,6 +23,11 @@ import { useNavigation } from '@react-navigation/native';
 import { games, gameList } from '../games';
 import { db, firebase } from '../firebase';
 import Toast from 'react-native-toast-message';
+import {
+  RTCPeerConnection,
+  RTCIceCandidate,
+  mediaDevices,
+} from 'react-native-webrtc';
 
 export default function ChatScreen({ route }) {
   const { user } = route.params || {};
@@ -54,6 +59,10 @@ export default function ChatScreen({ route }) {
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
   const [messages, setMessages] = useState([]);
+  const [pc, setPc] = useState(null);
+  const [localStream, setLocalStream] = useState(null);
+  const [remoteStream, setRemoteStream] = useState(null);
+  const [callActive, setCallActive] = useState(false);
 
   const sendChatMessage = async (msgText, sender = 'user') => {
     if (!msgText.trim()) return;
@@ -179,6 +188,107 @@ export default function ChatScreen({ route }) {
     setActiveGame(user.id, null);
   };
 
+  const servers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+  const startCall = async () => {
+    if (!user?.id || callActive) return;
+    const callRef = db.collection('calls').doc(user.id);
+    const offerCandidates = callRef.collection('offerCandidates');
+    const answerCandidates = callRef.collection('answerCandidates');
+
+    const newPc = new RTCPeerConnection(servers);
+    setPc(newPc);
+
+    const stream = await mediaDevices.getUserMedia({ audio: true });
+    setLocalStream(stream);
+    stream.getTracks().forEach((track) => newPc.addTrack(track, stream));
+
+    const remote = new MediaStream();
+    setRemoteStream(remote);
+    newPc.ontrack = (event) => {
+      event.streams[0].getTracks().forEach((track) => {
+        remote.addTrack(track);
+      });
+    };
+
+    const callDoc = await callRef.get();
+    if (callDoc.exists && callDoc.data()?.offer && !callDoc.data()?.answer) {
+      await newPc.setRemoteDescription(
+        new RTCSessionDescription(callDoc.data().offer)
+      );
+      const answerDescription = await newPc.createAnswer();
+      await newPc.setLocalDescription(answerDescription);
+      await callRef.update({
+        answer: {
+          type: answerDescription.type,
+          sdp: answerDescription.sdp,
+        },
+      });
+      newPc.onicecandidate = (e) => {
+        if (e.candidate) {
+          answerCandidates.add(e.candidate.toJSON());
+        }
+      };
+      offerCandidates.onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'added') {
+            newPc.addIceCandidate(new RTCIceCandidate(change.doc.data()));
+          }
+        });
+      });
+    } else {
+      const offerDescription = await newPc.createOffer();
+      await newPc.setLocalDescription(offerDescription);
+      await callRef.set({
+        offer: { type: offerDescription.type, sdp: offerDescription.sdp },
+      });
+      newPc.onicecandidate = (e) => {
+        if (e.candidate) {
+          offerCandidates.add(e.candidate.toJSON());
+        }
+      };
+      callRef.onSnapshot((snapshot) => {
+        const data = snapshot.data();
+        if (data?.answer && !newPc.currentRemoteDescription) {
+          newPc.setRemoteDescription(
+            new RTCSessionDescription(data.answer)
+          );
+        }
+      });
+      answerCandidates.onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'added') {
+            newPc.addIceCandidate(new RTCIceCandidate(change.doc.data()));
+          }
+        });
+      });
+    }
+    setCallActive(true);
+  };
+
+  const endCall = async () => {
+    if (!pc) return;
+    pc.close();
+    setPc(null);
+    localStream?.getTracks().forEach((t) => t.stop());
+    setLocalStream(null);
+    setRemoteStream(null);
+    setCallActive(false);
+
+    const callRef = db.collection('calls').doc(user.id);
+    const offerCandidates = await callRef.collection('offerCandidates').get();
+    offerCandidates.forEach((c) => c.ref.delete());
+    const answerCandidates = await callRef.collection('answerCandidates').get();
+    answerCandidates.forEach((c) => c.ref.delete());
+    callRef.delete();
+  };
+
+  useEffect(() => {
+    return () => {
+      endCall();
+    };
+  }, []);
+
   const handleGameSelect = (gameId) => {
     const isPremiumUser = !!currentUser?.isPremium;
     if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
@@ -273,6 +383,23 @@ export default function ChatScreen({ route }) {
         <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
+      </View>
+      <View style={chatStyles.callControls}>
+        {!callActive ? (
+          <TouchableOpacity
+            style={chatStyles.callButton}
+            onPress={startCall}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Start Call</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={chatStyles.endButton}
+            onPress={endCall}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>End Call</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -461,5 +588,22 @@ const chatStyles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginBottom: 4,
+  },
+  callControls: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  callButton: {
+    backgroundColor: '#4caf50',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  endButton: {
+    backgroundColor: '#f44336',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
   },
 });
