@@ -30,6 +30,34 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_HEIGHT = 520;
 const MAX_LIKES = 100;
 
+const computeMatchPercent = (a, b) => {
+  if (!a || !b) return 0;
+  let total = 0;
+  let score = 0;
+  if (a.favoriteGame && b.favoriteGame) {
+    total += 1;
+    if (a.favoriteGame === b.favoriteGame) score += 1;
+  }
+  if (a.skillLevel && b.skillLevel) {
+    total += 1;
+    if (a.skillLevel === b.skillLevel) score += 1;
+  }
+  if (a.location && b.location) {
+    total += 1;
+    if (a.location === b.location) score += 1;
+  }
+  if (a.genderPref) {
+    total += 1;
+    if (a.genderPref === 'Any' || a.genderPref === b.gender) score += 1;
+  }
+  if (b.genderPref) {
+    total += 1;
+    if (b.genderPref === 'Any' || b.genderPref === a.gender) score += 1;
+  }
+  if (total === 0) return 0;
+  return Math.round((score / total) * 100);
+};
+
 
 const SwipeScreen = () => {
   const { darkMode, theme } = useTheme();
@@ -92,6 +120,11 @@ const SwipeScreen = () => {
               age: 99,
               bio: 'Testing swipes',
               photoURL: null,
+              favoriteGame: 'Chess',
+              skillLevel: 'Beginner',
+              gender: 'Other',
+              genderPref: 'Any',
+              location: 'Localhost',
             },
             ...data,
           ];
@@ -108,6 +141,11 @@ const SwipeScreen = () => {
             name: u.displayName || 'User',
             age: u.age || '',
             bio: u.bio || '',
+            favoriteGame: u.favoriteGame || '',
+            skillLevel: u.skillLevel || '',
+            gender: u.gender || '',
+            genderPref: u.genderPref || '',
+            location: u.location || '',
             images,
           };
         });
@@ -275,6 +313,10 @@ const SwipeScreen = () => {
 
   const gradientColors = [theme.gradientStart, theme.gradientEnd];
 
+  const matchPercent = displayUser
+    ? computeMatchPercent(currentUser, displayUser)
+    : 0;
+
   return (
     <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
       <Header />
@@ -318,6 +360,7 @@ const SwipeScreen = () => {
               <Text style={styles.name}>
                 {displayUser.name}, {displayUser.age}
               </Text>
+              <Text style={styles.match}>{matchPercent}% Match</Text>
               <Text style={styles.bio}>{displayUser.bio}</Text>
             </View>
             </Animated.View>
@@ -406,6 +449,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
+  },
+  match: {
+    fontSize: 18,
+    marginTop: 4,
+    fontWeight: 'bold',
+    color: '#d81b60',
   },
   bio: {
     fontSize: 16,
