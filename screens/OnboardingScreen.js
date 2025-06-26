@@ -55,6 +55,32 @@ export default function OnboardingScreen() {
     favoriteGame: '',
     skillLevel: '',
   });
+  const defaultGameOptions = [
+    { label: 'Chess', value: 'Chess' },
+    { label: 'Checkers', value: 'Checkers' },
+    { label: 'Tic Tac Toe', value: 'Tic Tac Toe' },
+  ];
+  const [gameOptions, setGameOptions] = useState(defaultGameOptions);
+
+  useEffect(() => {
+    const unsub = db
+      .collection('games')
+      .orderBy('title')
+      .onSnapshot(
+        (snap) => {
+          if (!snap.empty) {
+            setGameOptions(
+              snap.docs.map((d) => ({
+                label: d.data().title,
+                value: d.data().title,
+              }))
+            );
+          }
+        },
+        (e) => console.warn('Failed to load games', e)
+      );
+    return unsub;
+  }, []);
 
   const currentField = questions[step].key;
   const progress = (step + 1) / questions.length;
@@ -254,11 +280,7 @@ export default function OnboardingScreen() {
         { label: 'Other', value: 'Other' },
         { label: 'Any', value: 'Any' },
       ],
-      favoriteGame: [
-        { label: 'Chess', value: 'Chess' },
-        { label: 'Checkers', value: 'Checkers' },
-        { label: 'Tic Tac Toe', value: 'Tic Tac Toe' },
-      ],
+      favoriteGame: gameOptions,
       skillLevel: [
         { label: 'Beginner', value: 'Beginner' },
         { label: 'Intermediate', value: 'Intermediate' },
