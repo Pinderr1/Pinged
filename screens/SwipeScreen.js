@@ -60,6 +60,11 @@ const SwipeScreen = () => {
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
+  const superLikeOpacity = pan.y.interpolate({
+    inputRange: [-150, 0],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
 
   const [users, setUsers] = useState([]);
   const displayUser = users[currentIndex] ?? null;
@@ -222,7 +227,13 @@ const SwipeScreen = () => {
         useNativeDriver: false,
       }),
       onPanResponderRelease: (_, gesture) => {
-        if (gesture.dx > 120) {
+        if (gesture.dy < -120 && Math.abs(gesture.dx) < 80) {
+          Animated.timing(pan, {
+            toValue: { x: 0, y: -500 },
+            duration: 200,
+            useNativeDriver: false,
+          }).start(() => handleSuperLike());
+        } else if (gesture.dx > 120) {
           Animated.timing(pan, {
             toValue: { x: 500, y: 0 },
             duration: 200,
@@ -283,6 +294,9 @@ const SwipeScreen = () => {
             </Animated.View>
             <Animated.View style={[styles.badge, styles.nopeBadge, { opacity: nopeOpacity }]}>
               <Text style={[styles.badgeText, styles.nopeText]}>NOPE</Text>
+            </Animated.View>
+            <Animated.View style={[styles.badge, styles.superLikeBadge, { opacity: superLikeOpacity }]}>
+              <Text style={[styles.badgeText, styles.superLikeText]}>SUPER{"\n"}LIKE</Text>
             </Animated.View>
             <TouchableOpacity
               onPress={() => setImageIndex((i) => (i + 1) % displayUser.images.length)}
@@ -435,6 +449,16 @@ const styles = StyleSheet.create({
   },
   nopeText: {
     color: '#f87171',
+  },
+  superLikeBadge: {
+    top: CARD_HEIGHT / 2 - 20,
+    left: SCREEN_WIDTH / 2 - 80,
+    borderColor: '#60a5fa',
+    transform: [{ rotate: '0deg' }],
+    backgroundColor: 'rgba(96, 165, 250, 0.2)',
+  },
+  superLikeText: {
+    color: '#60a5fa',
   },
   fireworksOverlay: {
     flex: 1,
