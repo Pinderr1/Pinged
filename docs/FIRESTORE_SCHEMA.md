@@ -52,12 +52,14 @@ A copy of each invite is also stored under `users/{uid}/gameInvites/{inviteId}` 
 ## Matches (`matches/{matchId}`)
 - `users` (array of string) – exactly two user ids
 - `createdAt` (timestamp)
+- `typing` (map) – per-user typing status
 
 ### Subcollections
 - **messages** – chat messages between the matched users.
   - `senderId` (string)
   - `text` (string)
   - `timestamp` (timestamp)
+  - `readBy` (array of string)
 
 ## Game Sessions (`gameSessions/{sessionId}`)
 - `gameId` (string)

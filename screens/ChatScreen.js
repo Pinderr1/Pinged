@@ -47,6 +47,9 @@ export default function ChatScreen({ route }) {
   const [showGameModal, setShowGameModal] = useState(false);
   const [text, setText] = useState('');
   const [devPlayer, setDevPlayer] = useState('0');
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeout = useRef(null);
+  const [otherUserId, setOtherUserId] = useState(null);
 
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
@@ -76,6 +79,21 @@ export default function ChatScreen({ route }) {
     }
   };
 
+  const updateTyping = (state) => {
+    if (!user?.id || !currentUser?.uid) return;
+    db
+      .collection('matches')
+      .doc(user.id)
+      .set({ typing: { [currentUser.uid]: state } }, { merge: true });
+  };
+
+  const handleTextChange = (val) => {
+    setText(val);
+    updateTyping(true);
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => updateTyping(false), 2000);
+  };
+
   useEffect(() => {
     if (activeGameId && activeGameId !== prevGameIdRef.current) {
       const title = games[activeGameId].meta.title;
@@ -85,20 +103,53 @@ export default function ChatScreen({ route }) {
   }, [activeGameId]);
 
   useEffect(() => {
-    if (!user?.id) return;
-    const q = db
+    if (!user?.id || !currentUser?.uid) return;
+    const ref = db.collection('matches').doc(user.id);
+    const unsub = ref.onSnapshot((doc) => {
+      const data = doc.data();
+      if (data?.users && !otherUserId) {
+        const other = data.users.find((u) => u !== currentUser.uid);
+        setOtherUserId(other);
+      }
+      const other = data?.users?.find((u) => u !== currentUser.uid) || otherUserId;
+      if (other && data?.typing) {
+        setIsTyping(!!data.typing[other]);
+      }
+    });
+    return unsub;
+  }, [user?.id, currentUser?.uid, otherUserId]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
+      updateTyping(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!user?.id || !currentUser?.uid) return;
+    const msgRef = db
       .collection('matches')
       .doc(user.id)
       .collection('messages')
       .orderBy('timestamp', 'asc');
-    const unsub = q.onSnapshot((snap) => {
+    const unsub = msgRef.onSnapshot((snap) => {
       const data = snap.docs.map((d) => {
         const val = d.data();
+        if (
+          val.senderId !== currentUser.uid &&
+          !(val.readBy || []).includes(currentUser.uid)
+        ) {
+          d.ref.update({
+            readBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+          });
+        }
         return {
           id: d.id,
           text: val.text,
+          readBy: val.readBy || [],
           sender:
-            val.senderId === currentUser?.uid
+            val.senderId === currentUser.uid
               ? 'you'
               : val.senderId || 'them',
         };
@@ -112,6 +163,7 @@ export default function ChatScreen({ route }) {
     if (text.trim()) {
       sendChatMessage(text);
       setText('');
+      updateTyping(false);
     }
   };
 
@@ -164,6 +216,11 @@ export default function ChatScreen({ route }) {
           : user.name}
       </Text>
       <Text style={chatStyles.messageText}>{item.text}</Text>
+      {item.sender === 'you' && (
+        <Text style={chatStyles.readReceipt}>
+          {item.readBy.includes(otherUserId) ? '✓✓' : '✓'}
+        </Text>
+      )}
     </View>
   );
 
@@ -188,6 +245,9 @@ export default function ChatScreen({ route }) {
         inverted
         keyboardShouldPersistTaps="handled"
       />
+      {isTyping && (
+        <Text style={chatStyles.typingIndicator}>{user.name} is typing...</Text>
+      )}
       <View style={chatStyles.inputBar}>
         <TouchableOpacity
           style={activeGameId ? chatStyles.changeButton : chatStyles.playButton}
@@ -201,7 +261,7 @@ export default function ChatScreen({ route }) {
           placeholder="Type a message..."
           style={chatStyles.textInput}
           value={text}
-          onChangeText={setText}
+          onChangeText={handleTextChange}
           placeholderTextColor="#888"
         />
         <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
@@ -326,6 +386,12 @@ const chatStyles = StyleSheet.create({
     marginBottom: 2,
     color: '#555',
   },
+  readReceipt: {
+    fontSize: 10,
+    color: '#555',
+    alignSelf: 'flex-end',
+    marginTop: 2,
+  },
   inputBar: {
     flexDirection: 'row',
     padding: 10,
@@ -384,5 +450,10 @@ const chatStyles = StyleSheet.create({
   gameOptionText: {
     fontSize: 16,
     color: '#333',
+  },
+  typingIndicator: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
   },
 });
