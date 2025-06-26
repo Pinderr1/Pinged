@@ -251,7 +251,13 @@ export default function ChatScreen({ route }) {
       <View style={chatStyles.inputBar}>
         <TouchableOpacity
           style={activeGameId ? chatStyles.changeButton : chatStyles.playButton}
-          onPress={() => setShowGameModal(true)}
+          onPress={() => {
+            if (!currentUser?.isPremium && gamesLeft <= 0 && !devMode) {
+              navigation.navigate('PremiumPaywall');
+            } else {
+              setShowGameModal(true);
+            }
+          }}
         >
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>
             {activeGameId ? 'Change Game' : 'Play'}
