@@ -79,6 +79,11 @@ service cloud.firestore {
       allow read, write: if signedIn();
     }
 
+    // List of available games for onboarding
+    match /games/{gameId} {
+      allow read: if true;
+    }
+
     // Community Board posts accessible to all signed-in users
     match /communityPosts/{postId} {
       allow read: if true;
