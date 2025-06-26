@@ -1,5 +1,6 @@
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
+import Loader from './Loader';
 import useGameSession from '../hooks/useGameSession';
 import { games } from '../games';
 
@@ -11,7 +12,7 @@ export default function SyncedGame({ sessionId, gameId, opponentId, onGameEnd })
   if (loading || !G) {
     return (
       <View style={{ padding: 20 }}>
-        <ActivityIndicator size="large" color="#d81b60" />
+        <Loader />
       </View>
     );
   }

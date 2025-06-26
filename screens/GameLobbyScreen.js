@@ -3,9 +3,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Image,
-  ActivityIndicator
+  Image
 } from 'react-native';
+import Loader from '../components/Loader';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
@@ -200,11 +200,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
           : 'Waiting for opponent to accept...'}
       </Text>
       {!isReady && countdown === null && (
-        <ActivityIndicator
-          size="small"
-          color="#d81b60"
-          style={{ marginBottom: 20 }}
-        />
+        <Loader size="small" style={{ marginBottom: 20 }} />
       )}
 
       {/* Buttons */}

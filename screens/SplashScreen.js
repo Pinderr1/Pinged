@@ -1,6 +1,7 @@
 // screens/SplashScreen.js
 import React, { useEffect, useRef } from 'react';
 import { Animated, Image, StatusBar, Text } from 'react-native';
+import LottieView from 'lottie-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import styles from '../styles';
@@ -36,6 +37,12 @@ export default function SplashScreen({ onFinish }) {
         <Image source={require('../assets/logo.png')} style={styles.logoImage} />
         <Text style={[styles.logoText, { color: '#fff' }]}>Pinged</Text>
         <Text style={{ color: '#fff', fontSize: 16 }}>Find your next ping...</Text>
+        <LottieView
+          source={require('../assets/hearts.json')}
+          autoPlay
+          loop
+          style={{ width: 200, height: 200, position: 'absolute', bottom: -20 }}
+        />
       </Animated.View>
     </LinearGradient>
   );

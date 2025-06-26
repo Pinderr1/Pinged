@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
+import Loader from '../components/Loader';
 import { auth, db, firebase } from '../firebase';
 import { useDev } from './DevContext';
 import { useOnboarding } from './OnboardingContext';
@@ -114,7 +115,7 @@ export const UserProvider = ({ children }) => {
     <UserContext.Provider value={{ user, updateUser, addGameXP, loading }}>
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#d81b60" />
+          <Loader />
         </View>
       ) : (
         children
