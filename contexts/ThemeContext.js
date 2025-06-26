@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
+import Loader from '../components/Loader';
 import { lightTheme, darkTheme } from '../theme';
 
 const ThemeContext = createContext();
@@ -34,7 +35,7 @@ export const ThemeProvider = ({ children }) => {
         children
       ) : (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#d81b60" />
+          <Loader />
         </View>
       )}
     </ThemeContext.Provider>

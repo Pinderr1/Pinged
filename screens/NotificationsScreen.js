@@ -5,9 +5,9 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator
+  StyleSheet
 } from 'react-native';
+import Loader from '../components/Loader';
 import Header from '../components/Header';
 import styles from '../styles';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -99,7 +99,7 @@ const NotificationsScreen = ({ navigation }) => {
                   disabled={loadingId === inv.id}
                 >
                   {loadingId === inv.id ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <Loader size="small" />
                   ) : (
                     <Text style={styles.btnText}>Accept</Text>
                   )}
@@ -109,7 +109,7 @@ const NotificationsScreen = ({ navigation }) => {
                   disabled={loadingId === inv.id + '_decline'}
                 >
                   {loadingId === inv.id + '_decline' ? (
-                    <ActivityIndicator size="small" color={theme.accent} />
+                    <Loader size="small" />
                   ) : (
                     <Text style={{ color: theme.accent, fontSize: 13 }}>Decline</Text>
                   )}

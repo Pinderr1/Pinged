@@ -423,7 +423,7 @@ const SwipeScreen = () => {
           <Modal visible={showFireworks} transparent animationType="fade">
             <View style={styles.fireworksOverlay}>
               <LottieView
-                source={require('../assets/fireworks.json')}
+                source={require('../assets/confetti.json')}
                 autoPlay
                 loop={false}
                 style={{ width: 300, height: 300 }}

@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
-  Dimensions,
-  ActivityIndicator
+  Dimensions
 } from 'react-native';
+import Loader from '../components/Loader';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
@@ -146,7 +146,7 @@ const GameInviteScreen = ({ route, navigation }) => {
 
           {isInvited && isLoading ? (
             <View style={{ alignItems: 'center', marginTop: 8 }}>
-              <ActivityIndicator size="small" color="#d81b60" />
+              <Loader size="small" />
               <Text style={{ color: theme.textSecondary, fontSize: 12, marginTop: 4 }}>
                 Waiting for {item.name}...
               </Text>
