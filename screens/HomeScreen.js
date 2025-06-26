@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -62,6 +63,9 @@ const HomeScreen = ({ navigation }) => {
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('stranger');
   const [posts, setPosts] = useState([]);
+  const BANNER_KEY = 'hidePremiumBanner';
+  const [showBanner, setShowBanner] = useState(false);
+  const [bannerLoaded, setBannerLoaded] = useState(false);
 
   const card = (children, style = {}) => (
     <View style={[local.card, { backgroundColor: theme.card }, style]}>
@@ -76,6 +80,21 @@ const HomeScreen = ({ navigation }) => {
     } else {
       navigation.navigate('PremiumPaywall');
     }
+  };
+
+  useEffect(() => {
+    AsyncStorage.getItem(BANNER_KEY)
+      .then((val) => setShowBanner(val !== 'true'))
+      .finally(() => setBannerLoaded(true));
+  }, []);
+
+  const dismissBanner = async () => {
+    try {
+      await AsyncStorage.setItem(BANNER_KEY, 'true');
+    } catch (e) {
+      console.warn('Failed to persist banner dismiss', e);
+    }
+    setShowBanner(false);
   };
 
   const selectGame = (game) => {
@@ -139,15 +158,20 @@ const HomeScreen = ({ navigation }) => {
         )}
 
         {/* 💎 Premium Banner */}
-        <View style={local.premiumBanner}>
-          <View style={{ flex: 1 }}>
-            <Text style={local.premiumTitle}>💎 Try Premium</Text>
-            <Text style={local.premiumSubtitle}>Unlimited games, boosts, and more</Text>
+        {bannerLoaded && showBanner && (
+          <View style={local.premiumBanner}>
+            <TouchableOpacity style={local.bannerClose} onPress={dismissBanner}>
+              <Text style={local.bannerCloseText}>✕</Text>
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={local.premiumTitle}>💎 Try Premium</Text>
+              <Text style={local.premiumSubtitle}>Unlimited games, boosts, and more</Text>
+            </View>
+            <TouchableOpacity style={local.upgradeBtn} onPress={() => navigation.navigate('PremiumPaywall')}>
+              <Text style={local.upgradeText}>Upgrade</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={local.upgradeBtn} onPress={() => navigation.navigate('PremiumPaywall')}>
-            <Text style={local.upgradeText}>Upgrade</Text>
-          </TouchableOpacity>
-        </View>
+        )}
 
         {/* 👥 Invite a Match */}
         {card(
@@ -346,6 +370,17 @@ const local = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 13
+  },
+  bannerClose: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    padding: 4,
+    zIndex: 2
+  },
+  bannerCloseText: {
+    color: '#0288d1',
+    fontWeight: 'bold'
   },
   bottomTitle: {
     fontSize: 15,
