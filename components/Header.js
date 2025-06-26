@@ -1,13 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
+import { db } from '../firebase';
+import { useUser } from '../contexts/UserContext';
 
 const Header = () => {
   const navigation = useNavigation();
   const { darkMode, theme } = useTheme();
+  const { user } = useUser();
 
-  const notificationCount = 5; // 🔥 Replace with dynamic logic later
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const q = db
+      .collection('users')
+      .doc(user.uid)
+      .collection('notifications')
+      .where('read', '==', false);
+    const unsub = q.onSnapshot((snap) => {
+      setNotificationCount(snap.size);
+    });
+    return () => unsub();
+  }, [user?.uid]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.headerBackground }]}>
