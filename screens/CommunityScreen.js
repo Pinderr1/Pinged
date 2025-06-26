@@ -58,6 +58,28 @@ const ALL_EVENTS = [
   }
 ];
 
+// Default posts used if Firestore has none
+const DEFAULT_POSTS = [
+  {
+    id: '1',
+    title: 'Speed Dating Night',
+    time: 'Friday @ 8PM',
+    description: 'Meet singles in quick 5 minute chats.',
+  },
+  {
+    id: '2',
+    title: 'App Announcement',
+    time: 'Today',
+    description: 'Check out the newest features rolling out this week.',
+  },
+  {
+    id: '3',
+    title: 'Trivia Tuesday',
+    time: 'Tues @ 7PM',
+    description: 'Join our weekly trivia and win prizes!',
+  },
+];
+
 const FILTERS = ['All', 'Tonight', 'Flirty', 'Tournaments'];
 
 const CommunityScreen = () => {
@@ -68,16 +90,29 @@ const CommunityScreen = () => {
   const [joinedEvents, setJoinedEvents] = useState([]);
   const [activeFilter, setActiveFilter] = useState('All');
   const [showHostModal, setShowHostModal] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
   const [firstJoin, setFirstJoin] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newTime, setNewTime] = useState('');
   const [newDesc, setNewDesc] = useState('');
+  const [posts, setPosts] = useState([]);
+  const [postTitle, setPostTitle] = useState('');
+  const [postDesc, setPostDesc] = useState('');
 
   useEffect(() => {
     const q = db.collection('events').orderBy('createdAt', 'desc');
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setEvents(data.length ? data : ALL_EVENTS);
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const q = db.collection('communityPosts').orderBy('createdAt', 'desc');
+    const unsub = q.onSnapshot((snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setPosts(data.length ? data : DEFAULT_POSTS);
     });
     return unsub;
   }, []);
@@ -181,6 +216,20 @@ const CommunityScreen = () => {
           <Text style={styles.btnText}>🎤 Host Your Own Event</Text>
         </TouchableOpacity>
 
+        {/* Create Post */}
+        <TouchableOpacity onPress={() => setShowPostModal(true)} style={local.hostBtn}>
+          <Text style={styles.btnText}>✏️ New Post</Text>
+        </TouchableOpacity>
+
+        {/* Posts */}
+        {posts.map((p) => (
+          <View key={p.id} style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
+            <Text style={local.postTitle}>{p.title}</Text>
+            <Text style={local.postTime}>{p.time}</Text>
+            <Text style={local.postDesc}>{p.description}</Text>
+          </View>
+        ))}
+
         {/* First Join Badge */}
         {firstJoin && (
           <View style={local.badgePopup}>
@@ -239,6 +288,51 @@ const CommunityScreen = () => {
               <Text style={styles.btnText}>Submit Event</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowHostModal(false)} style={{ marginTop: 10 }}>
+              <Text style={{ color: '#d81b60' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Post Modal */}
+      <Modal visible={showPostModal} transparent animationType="fade">
+        <View style={local.modalBackdrop}>
+          <View style={local.modalCard}>
+            <Text style={local.modalTitle}>Create Post</Text>
+            <TextInput
+              placeholder="Title"
+              value={postTitle}
+              onChangeText={setPostTitle}
+              style={local.input}
+              placeholderTextColor="#888"
+            />
+            <TextInput
+              placeholder="Details..."
+              value={postDesc}
+              onChangeText={setPostDesc}
+              style={[local.input, { height: 60 }]}
+              multiline
+              placeholderTextColor="#888"
+            />
+            <TouchableOpacity onPress={async () => {
+              try {
+                await db.collection('communityPosts').add({
+                  title: postTitle,
+                  time: 'Just now',
+                  description: postDesc,
+                  userId: user?.uid || null,
+                  createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                });
+                setShowPostModal(false);
+                setPostTitle('');
+                setPostDesc('');
+              } catch (e) {
+                Alert.alert('Error', 'Failed to create post');
+              }
+            }} style={[styles.emailBtn, { marginTop: 14 }]}>
+              <Text style={styles.btnText}>Submit Post</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowPostModal(false)} style={{ marginTop: 10 }}>
               <Text style={{ color: '#d81b60' }}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -344,6 +438,31 @@ const local = StyleSheet.create({
   hostBtn: {
     marginTop: 20,
     marginHorizontal: 16
+  },
+  postCard: {
+    borderRadius: 12,
+    padding: 14,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2
+  },
+  postTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    marginBottom: 2
+  },
+  postTime: {
+    fontSize: 12,
+    color: '#d81b60',
+    marginBottom: 4
+  },
+  postDesc: {
+    fontSize: 13,
+    color: '#666'
   },
   filterBtn: {
     marginRight: 10,
