@@ -5,7 +5,8 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  StyleSheet
+  StyleSheet,
+  ActivityIndicator
 } from 'react-native';
 import Header from '../components/Header';
 import styles from '../styles';
@@ -93,13 +94,25 @@ const NotificationsScreen = ({ navigation }) => {
               </Text>
               <View style={local.actions}>
                 <TouchableOpacity
-                  style={[styles.emailBtn, { marginRight: 10 }]}
+                  style={[styles.emailBtn, { marginRight: 10, flexDirection: 'row', justifyContent: 'center' }]}
                   onPress={() => handleAccept(inv)}
+                  disabled={loadingId === inv.id}
                 >
-                  <Text style={styles.btnText}>Accept</Text>
+                  {loadingId === inv.id ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.btnText}>Accept</Text>
+                  )}
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDecline(inv)}>
-                  <Text style={{ color: theme.accent, fontSize: 13 }}>Decline</Text>
+                <TouchableOpacity
+                  onPress={() => handleDecline(inv)}
+                  disabled={loadingId === inv.id + '_decline'}
+                >
+                  {loadingId === inv.id + '_decline' ? (
+                    <ActivityIndicator size="small" color={theme.accent} />
+                  ) : (
+                    <Text style={{ color: theme.accent, fontSize: 13 }}>Decline</Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
