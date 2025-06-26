@@ -15,7 +15,8 @@ import { useUser } from '../contexts/UserContext';
 import { db, firebase } from '../firebase';
 import Toast from 'react-native-toast-message';
 
-const REACTIONS = ['🔥', '❤️', '😂'];
+// Available emoji reactions
+const REACTIONS = ['🔥', '😂', '❤️'];
 
 const EventChatScreen = ({ route }) => {
   const { event } = route.params;
@@ -122,9 +123,12 @@ const EventChatScreen = ({ route }) => {
         item.userId === user?.uid ? stylesLocal.userBubble : stylesLocal.otherBubble
       ]}
     >
-      <Text style={stylesLocal.sender}>
-        {item.userId === user?.uid ? 'You' : item.user}
-      </Text>
+      <View style={stylesLocal.senderRow}>
+        <Text style={stylesLocal.sender}>
+          {item.userId === user?.uid ? 'You' : item.user}
+        </Text>
+        {item.pinned && <Text style={stylesLocal.pinIcon}>📌</Text>}
+      </View>
       <Text style={stylesLocal.text}>{item.text}</Text>
       <Text style={stylesLocal.time}>{item.time}</Text>
 
@@ -267,6 +271,16 @@ const stylesLocal = StyleSheet.create({
     borderRadius: 12,
     padding: 6,
     marginTop: 6
+  },
+  senderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2
+  },
+  pinIcon: {
+    marginLeft: 4,
+    fontSize: 12,
+    color: '#fff'
   },
   pinnedBanner: {
     backgroundColor: '#fff3cd',
