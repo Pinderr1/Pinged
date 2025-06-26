@@ -164,6 +164,26 @@ exports.onGameInviteCreated = functions.firestore
     } catch (e) {
       console.error('Failed to send invite notification', e);
     }
+  return null;
+});
+
+exports.resetFreeGameUsage = functions.pubsub
+  .schedule('0 0 * * *')
+  .timeZone('UTC')
+  .onRun(async () => {
+    const snap = await admin
+      .firestore()
+      .collection('users')
+      .where('freeGameUsed', '==', true)
+      .get();
+
+    const tasks = [];
+    snap.forEach((doc) => {
+      tasks.push(doc.ref.update({ freeGameUsed: false }));
+    });
+
+    await Promise.all(tasks);
+    console.log(`Reset freeGameUsed for ${tasks.length} users`);
     return null;
   });
 
