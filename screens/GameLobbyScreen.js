@@ -20,6 +20,7 @@ import SyncedGame from '../components/SyncedGame';
 import GameOverModal from '../components/GameOverModal';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { snapshotExists } from '../utils/firestore';
+import Toast from 'react-native-toast-message';
 
 const GameLobbyScreen = ({ route, navigation }) => {
   const { darkMode, theme } = useTheme();
@@ -123,6 +124,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
     }
 
     const newId = await sendGameInvite(opponent.id, game.id);
+    Toast.show({ type: 'success', text1: 'Invite sent!' });
     setGameResult(null);
     navigation.replace('GameLobby', {
       game,

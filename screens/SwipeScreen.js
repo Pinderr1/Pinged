@@ -11,6 +11,7 @@ import {
   StyleSheet,
   ToastAndroid,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
@@ -205,6 +206,7 @@ const SwipeScreen = () => {
             });
 
             setMatchedUser(displayUser);
+            Toast.show({ type: 'success', text1: "It's a match!" });
             setShowFireworks(true);
             setTimeout(() => setShowFireworks(false), 2000);
           }
@@ -224,6 +226,7 @@ const SwipeScreen = () => {
           pendingInvite: null,
         });
         setMatchedUser(displayUser);
+        Toast.show({ type: 'success', text1: "It's a match!" });
         setShowFireworks(true);
         setTimeout(() => setShowFireworks(false), 2000);
       }

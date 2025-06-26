@@ -57,6 +57,7 @@ const ProfileScreen = ({ navigation }) => {
         photoURL = await uploadAvatarAsync(avatar, user.uid);
       } catch (e) {
         console.warn('Avatar upload failed', e);
+        Toast.show({ type: 'error', text1: 'Failed to upload photo' });
       }
     }
 
