@@ -8,6 +8,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';
 import { avatarSource } from '../utils/avatar';
+import ProgressBar from '../components/ProgressBar';
 
 const StatsScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -90,6 +91,10 @@ const StatsScreen = ({ navigation }) => {
     loadStats();
   }, [user]);
 
+  const level = Math.floor(stats.xp / 100);
+  const xpProgress = stats.xp % 100;
+  const streakProgress = Math.min(stats.streak % 7, 7);
+
   return (
     <LinearGradient
       colors={[theme.gradientStart, theme.gradientEnd]}
@@ -119,8 +124,9 @@ const StatsScreen = ({ navigation }) => {
           <Text style={styles.statValue}>{stats.favoriteGame}</Text>
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>XP</Text>
-          <Text style={styles.statValue}>{stats.xp}</Text>
+          <Text style={styles.statLabel}>{`XP Level ${level}`}</Text>
+          <ProgressBar value={xpProgress} max={100} color={theme.accent} />
+          <Text style={styles.statSub}>{stats.xp} XP</Text>
         </View>
 
         {/* Social Stats */}
@@ -142,7 +148,8 @@ const StatsScreen = ({ navigation }) => {
         <Text style={styles.sectionTitle}>🔥 Activity</Text>
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>Daily Streak</Text>
-          <Text style={styles.statValue}>{stats.streak} days</Text>
+          <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
+          <Text style={styles.statSub}>{stats.streak} days</Text>
         </View>
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>Badge</Text>
@@ -218,6 +225,11 @@ const getStyles = (theme) => StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: theme.text
+  },
+  statSub: {
+    fontSize: 12,
+    color: theme.textSecondary,
+    marginTop: 4,
   },
   premiumButton: {
     marginTop: 20,

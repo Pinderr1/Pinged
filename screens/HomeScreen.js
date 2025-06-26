@@ -1,77 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
-  Image,
+  FlatList,
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
   Modal,
-  FlatList
+  Image,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
-import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
-import { LinearGradient } from 'expo-linear-gradient';
-import { db } from '../firebase';
+import { useChats } from '../contexts/ChatContext';
+import { allGames } from '../data/games';
 import { getRandomBot } from '../ai/bots';
-
-
-const GAMES = [
-  { name: 'Tic Tac Toe', tier: 1 },
-  { name: 'Checkers', tier: 2 },
-  { name: 'Truth or Dare', tier: 1 },
-  { name: 'Rock Paper Scissors', tier: 1 }
-];
-
-const AI_GAMES = [
-  { id: 'ticTacToe', name: 'Tic Tac Toe', tier: 1 },
-  { id: 'rps', name: 'Rock Paper Scissors', tier: 1 },
-];
-
-const DEFAULT_POSTS = [
-  {
-    id: '1',
-    title: 'Speed Dating Night',
-    time: 'Friday @ 8PM',
-    description: 'Meet singles in quick 5 minute chats.',
-  },
-  {
-    id: '2',
-    title: 'App Announcement',
-    time: 'Today',
-    description: 'Check out the newest features rolling out this week.',
-  },
-  {
-    id: '3',
-    title: 'Trivia Tuesday',
-    time: 'Tues @ 7PM',
-    description: 'Join our weekly trivia and win prizes!',
-  },
-];
-
+import ProgressBar from '../components/ProgressBar';
 
 const HomeScreen = ({ navigation }) => {
-  const { darkMode, theme } = useTheme();
+  const { theme } = useTheme();
   const { user } = useUser();
+  const { matches } = useChats();
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('stranger');
-  const [posts, setPosts] = useState([]);
-  const BANNER_KEY = 'hidePremiumBanner';
-  const [showBanner, setShowBanner] = useState(false);
-  const [bannerLoaded, setBannerLoaded] = useState(false);
 
-  const card = (children, style = {}) => (
-    <View style={[local.card, { backgroundColor: theme.card }, style]}>
-      {children}
-    </View>
-  );
+  const quickPlayOptions = [
+    { key: 'match', title: 'Invite Match', emoji: '👥' },
+    { key: 'stranger', title: 'Stranger', emoji: '🎮' },
+    { key: 'ai', title: 'Play AI', emoji: '🤖' },
+  ];
 
   const openGamePicker = (target) => {
     if (target === 'ai' || gamesLeft > 0 || isPremiumUser) {
@@ -82,23 +44,8 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    AsyncStorage.getItem(BANNER_KEY)
-      .then((val) => setShowBanner(val !== 'true'))
-      .finally(() => setBannerLoaded(true));
-  }, []);
-
-  const dismissBanner = async () => {
-    try {
-      await AsyncStorage.setItem(BANNER_KEY, 'true');
-    } catch (e) {
-      console.warn('Failed to persist banner dismiss', e);
-    }
-    setShowBanner(false);
-  };
-
   const selectGame = (game) => {
-    const isLocked = !isPremiumUser && game.tier > 1;
+    const isLocked = !isPremiumUser && game.premium;
     if (isLocked) {
       setGamePickerVisible(false);
       navigation.navigate('PremiumPaywall');
@@ -112,364 +59,233 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate('Play');
     } else if (playTarget === 'ai') {
       const bot = getRandomBot();
-      navigation.navigate('GameWithBot', {
-        botId: bot.id,
-        game: game.id,
-      });
+      navigation.navigate('GameWithBot', { botId: bot.id, game: game.id });
     } else {
-      navigation.navigate('GameInvite', { game: { title: game.name } });
+      navigation.navigate('GameInvite', { game: { id: game.id, title: game.title } });
     }
   };
 
-  useEffect(() => {
-    const q = db.collection('communityPosts').orderBy('createdAt', 'desc');
-    const unsub = q.onSnapshot((snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setPosts(data.length ? data : DEFAULT_POSTS);
-    });
-    return unsub;
-  }, []);
+  const level = Math.floor((user?.xp || 0) / 100);
+  const xpProgress = (user?.xp || 0) % 100;
+  const streakProgress = Math.min((user?.streak || 0) % 7, 7);
 
   const gradientColors = [theme.gradientStart, theme.gradientEnd];
 
   return (
     <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ position: 'relative' }}>
         <Header showLogoOnly />
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Notifications')}
-          style={{ position: 'absolute', top: 14, right: 20 }}
-        >
-          <Text style={{ fontSize: 22 }}>🔔</Text>
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView contentContainerStyle={{ paddingBottom: 200, paddingTop: 80 }}>
-        <Text style={local.section}>
-          {`Welcome${user?.displayName ? `, ${user.displayName}` : ''}!`}
-        </Text>
-        {card(
-          <Text style={local.subText}>
-            {gamesLeft === Infinity
-              ? 'Unlimited games today'
-              : `${gamesLeft} game${gamesLeft === 1 ? '' : 's'} left today`}
-          </Text>
-        )}
-
-        {/* 💎 Premium Banner */}
-        {bannerLoaded && showBanner && (
-          <View style={local.premiumBanner}>
-            <TouchableOpacity style={local.bannerClose} onPress={dismissBanner}>
-              <Text style={local.bannerCloseText}>✕</Text>
-            </TouchableOpacity>
-            <View style={{ flex: 1 }}>
-              <Text style={local.premiumTitle}>💎 Try Premium</Text>
-              <Text style={local.premiumSubtitle}>Unlimited games, boosts, and more</Text>
-            </View>
-            <TouchableOpacity style={local.upgradeBtn} onPress={() => navigation.navigate('PremiumPaywall')}>
-              <Text style={local.upgradeText}>Upgrade</Text>
-            </TouchableOpacity>
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+          <Text style={[local.welcome, { color: theme.text }]}>\
+{`Welcome${user?.displayName ? `, ${user.displayName}` : ''}!`}</Text>
+          <View style={[local.progressCard, { backgroundColor: theme.card }]}>
+            <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
+            <ProgressBar value={xpProgress} max={100} color={theme.accent} />
+            <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
+            <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
           </View>
-        )}
 
-        {/* 👥 Invite a Match */}
-        {card(
-          <TouchableOpacity
-            style={[styles.emailBtn, { backgroundColor: '#4287f5', alignSelf: 'center' }]}
-            onPress={() => openGamePicker('match')}
-          >
-            <Text style={styles.btnText}>Invite a Match</Text>
-          </TouchableOpacity>
-        )}
+          <Text style={local.section}>Quick Play</Text>
+          <FlatList
+            data={quickPlayOptions}
+            keyExtractor={(item) => item.key}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={local.carousel}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[local.tile, { backgroundColor: theme.card }]}
+                onPress={() => openGamePicker(item.key)}
+              >
+                <Text style={local.tileEmoji}>{item.emoji}</Text>
+                <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
+              </TouchableOpacity>
+            )}
+          />
 
-        {/* 🎮 Play With Stranger */}
-        {card(
-          <TouchableOpacity
-            style={[styles.emailBtn, { alignSelf: 'center' }]}
-            onPress={() => openGamePicker('stranger')}
-          >
-            <Text style={styles.btnText}>Play With Stranger</Text>
-          </TouchableOpacity>
-        )}
+          <Text style={local.section}>Your Matches</Text>
+          <FlatList
+            data={matches}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={local.carousel}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[local.matchTile, { backgroundColor: theme.card }]}
+                onPress={() => navigation.navigate('Chat', { user: item })}
+              >
+                <Image source={item.image} style={local.matchAvatar} />
+                <Text style={[local.matchName, { color: theme.text }]}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+          />
 
-        {/* 🤖 Play With AI */}
-        {card(
-          <TouchableOpacity
-            style={[styles.emailBtn, { alignSelf: 'center', backgroundColor: '#6c5ce7' }]}
-            onPress={() => openGamePicker('ai')}
-          >
-            <Text style={styles.btnText}>Play With AI</Text>
-          </TouchableOpacity>
-        )}
+          <Text style={local.section}>Suggested Games</Text>
+          <FlatList
+            data={allGames.slice(0, 10)}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[local.carousel, { paddingBottom: 20 }]}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[local.gameTile, { backgroundColor: theme.card }]}
+                onPress={() => {
+                  setPlayTarget('match');
+                  selectGame(item);
+                }}
+              >
+                <View style={{ marginBottom: 8 }}>{item.icon}</View>
+                <Text style={[local.gameTitle, { color: theme.text }]}>{item.title}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </ScrollView>
 
-        {/* 📌 Community Board */}
-        <Text style={local.section}>Community Board</Text>
-        {posts.map((p) => (
-          <View key={p.id} style={[local.postCard, { backgroundColor: theme.card }]}>
-            <Text style={local.postTitle}>{p.title}</Text>
-            <Text style={local.postTime}>{p.time}</Text>
-            <Text style={local.postDesc}>{p.description}</Text>
-          </View>
-        ))}
-      </ScrollView>
-
-      {/* ❤️ Sticky Meet People Button */}
-      <View style={local.stickyBtnContainer}>
-        <TouchableOpacity style={styles.emailBtn} onPress={() => navigation.navigate('Explore')}>
-          <Text style={styles.btnText}>❤️ Meet People</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* 🎮 Game Picker Modal */}
-      <Modal visible={gamePickerVisible} transparent animationType="fade">
-        <View style={local.modalBackdrop}>
-          <View style={local.modalCard}>
-            <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 12 }}>Choose a Game</Text>
-            {(playTarget === 'ai' ? AI_GAMES : GAMES).map((game, idx) => {
-              const locked = !isPremiumUser && game.tier > 1;
-              return (
+        <Modal visible={gamePickerVisible} transparent animationType="fade">
+          <View style={local.modalBackdrop}>
+            <View style={local.modalCard}>
+              <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 12 }}>Choose a Game</Text>
+              {allGames.slice(0, 6).map((game) => (
                 <TouchableOpacity
-                  key={idx}
+                  key={game.id}
                   style={local.gameOption}
                   onPress={() => selectGame(game)}
                 >
-                  <Text style={{ fontSize: 15 }}>
-                    {locked ? '🔒 ' : ''}{game.name}
-                  </Text>
+                  <Text style={{ fontSize: 15 }}>{game.title}</Text>
                 </TouchableOpacity>
-              );
-            })}
-            <TouchableOpacity onPress={() => setGamePickerVisible(false)} style={{ marginTop: 16 }}>
-              <Text style={{ color: '#d81b60' }}>Cancel</Text>
-            </TouchableOpacity>
+              ))}
+              <TouchableOpacity onPress={() => setGamePickerVisible(false)} style={{ marginTop: 16 }}>
+                <Text style={{ color: '#d81b60' }}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
     </LinearGradient>
   );
 };
 
 const local = StyleSheet.create({
-  section: {
+  welcome: {
     fontSize: 18,
     fontWeight: 'bold',
     marginHorizontal: 16,
-    marginBottom: 8
+    marginTop: 20,
+    marginBottom: 8,
   },
-  card: {
+  section: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginHorizontal: 16,
+    marginBottom: 8,
+    color: '#ff4081',
+  },
+  progressCard: {
     borderRadius: 16,
-    padding: 14,
+    padding: 16,
     marginHorizontal: 16,
     marginBottom: 16,
-    elevation: 2
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  suggestedImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    marginRight: 16
-  },
-  name: {
-    fontWeight: 'bold',
+  levelText: {
     fontSize: 16,
-    marginBottom: 2
+    fontWeight: '600',
+    marginBottom: 4,
   },
-  subText: {
-    color: '#888',
-    fontSize: 13
-  },
-  inviteBtn: {
+  streakLabel: {
+    fontSize: 12,
     marginTop: 8,
-    backgroundColor: '#d81b60',
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+    marginBottom: 2,
+  },
+  carousel: {
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  tile: {
+    width: 120,
+    height: 100,
     borderRadius: 16,
-    alignSelf: 'flex-start'
-  },
-  inviteText: {
-    color: '#fff',
-    fontSize: 13
-  },
-  gameRow: {
-    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10
+    marginRight: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
-  avatarSmall: {
-    width: 48,
-    height: 48,
-    borderRadius: 24
+  tileEmoji: {
+    fontSize: 28,
+    marginBottom: 6,
   },
-  avatarRound: {
+  tileText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  matchTile: {
+    width: 120,
+    height: 140,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  matchAvatar: {
     width: 60,
     height: 60,
-    borderRadius: 30
+    borderRadius: 30,
+    marginBottom: 6,
   },
-  nameSmall: {
-    marginTop: 6,
+  matchName: {
     fontSize: 13,
-    fontWeight: '500'
+    fontWeight: '600',
   },
-  inviteMiniBtn: {
-    backgroundColor: '#d81b60',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginTop: 4
-  },
-  inviteMiniText: {
-    color: '#fff',
-    fontSize: 11
-  },
-  progressBar: {
-    width: '100%',
-    height: 10,
-    backgroundColor: '#ddd',
-    borderRadius: 5,
-    overflow: 'hidden',
-    marginTop: 6
-  },
-  progressFill: {
-    width: '60%',
-    height: '100%',
-    backgroundColor: '#28c76f'
-  },
-  premiumBanner: {
-    backgroundColor: '#e1f5fe',
-    marginHorizontal: 16,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
-    flexDirection: 'row',
+  gameTile: {
+    width: 120,
+    height: 120,
+    borderRadius: 16,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    marginRight: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
-  premiumTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#0277bd'
-  },
-  premiumSubtitle: {
+  gameTitle: {
     fontSize: 13,
-    color: '#0288d1',
-    marginTop: 2
-  },
-  upgradeBtn: {
-    backgroundColor: '#0288d1',
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 20
-  },
-  upgradeText: {
-    color: '#fff',
     fontWeight: '600',
-    fontSize: 13
-  },
-  bannerClose: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    padding: 4,
-    zIndex: 2
-  },
-  bannerCloseText: {
-    color: '#0288d1',
-    fontWeight: 'bold'
-  },
-  bottomTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 2
+    textAlign: 'center',
   },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   modalCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 20,
     width: '80%',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   gameOption: {
     paddingVertical: 10,
     width: '100%',
     alignItems: 'center',
     borderBottomColor: '#eee',
-    borderBottomWidth: 1
+    borderBottomWidth: 1,
   },
-  filterBadge: {
-    backgroundColor: '#fce4ec',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20
-  },
-  badgeText: {
-    color: '#d81b60',
-    fontWeight: '500',
-    fontSize: 13
-  },
-  stickyBtnContainer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 16,
-    right: 16,
-    zIndex: 10,
-    backgroundColor: '#fff',
-    padding: 8,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4
-  },
-  activeGameCard: {
-    padding: 12,
-    borderRadius: 16,
-    width: 140,
-    marginRight: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3
-  },
-  postCard: {
-    borderRadius: 12,
-    padding: 14,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2
-  },
-  postTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    marginBottom: 2
-  },
-  postTime: {
-    fontSize: 12,
-    color: '#d81b60',
-    marginBottom: 4
-  },
-  postDesc: {
-    fontSize: 13,
-    color: '#666'
-  }
 });
 
 export default HomeScreen;
