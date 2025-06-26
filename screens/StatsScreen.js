@@ -1,11 +1,12 @@
 // /screens/StatsScreen.js
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import { db } from '../firebase';
 import { avatarSource } from '../utils/avatar';
 
 const StatsScreen = ({ navigation }) => {
@@ -14,20 +15,80 @@ const StatsScreen = ({ navigation }) => {
   const { user } = useUser();
   const isPremium = !!user?.isPremium;
 
-  // Placeholder values were previously hard coded here for development.
-  // Default to zero or empty strings so real data can populate these fields
-  // when available from Firestore.
-  const stats = {
+  const [stats, setStats] = useState({
     gamesPlayed: 0,
     gamesWon: 0,
-    favoriteGame: user?.favoriteGame || 'N/A',
+    favoriteGame: '',
     matches: 0,
     swipes: 0,
     messagesSent: 0,
-    xp: user?.xp || 0,
-    streak: user?.streak || 0,
+    xp: 0,
+    streak: 0,
     badge: '',
-  };
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      if (!user?.uid) return;
+      try {
+        const sessionsSnap = await db
+          .collection('gameSessions')
+          .where('players', 'array-contains', user.uid)
+          .get();
+        const gamesPlayed = sessionsSnap.size;
+        let gamesWon = 0;
+        sessionsSnap.forEach((doc) => {
+          const data = doc.data();
+          const idx = Array.isArray(data.players)
+            ? data.players.indexOf(user.uid)
+            : -1;
+          if (
+            idx !== -1 &&
+            data.gameover &&
+            data.gameover.winner === String(idx)
+          ) {
+            gamesWon += 1;
+          }
+        });
+
+        const matchSnap = await db
+          .collection('matches')
+          .where('users', 'array-contains', user.uid)
+          .get();
+        const matches = matchSnap.size;
+
+        let messagesSent = 0;
+        for (const matchDoc of matchSnap.docs) {
+          const msgSnap = await db
+            .collection('matches')
+            .doc(matchDoc.id)
+            .collection('messages')
+            .where('senderId', '==', user.uid)
+            .get();
+          messagesSent += msgSnap.size;
+        }
+
+        const userSnap = await db.collection('users').doc(user.uid).get();
+        const data = userSnap.data() || {};
+
+        setStats({
+          gamesPlayed,
+          gamesWon,
+          favoriteGame: data.favoriteGame || 'N/A',
+          matches,
+          swipes: 0,
+          messagesSent,
+          xp: data.xp || 0,
+          streak: data.streak || 0,
+          badge: '',
+        });
+      } catch (e) {
+        console.warn('Failed to load stats', e);
+      }
+    };
+
+    loadStats();
+  }, [user]);
 
   return (
     <LinearGradient
