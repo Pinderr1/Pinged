@@ -3,7 +3,8 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Image
+  Image,
+  ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
@@ -198,6 +199,13 @@ const GameLobbyScreen = ({ route, navigation }) => {
           ? 'Both players are ready!'
           : 'Waiting for opponent to accept...'}
       </Text>
+      {!isReady && countdown === null && (
+        <ActivityIndicator
+          size="small"
+          color="#d81b60"
+          style={{ marginBottom: 20 }}
+        />
+      )}
 
       {/* Buttons */}
       <View style={{ paddingHorizontal: 20 }}>
