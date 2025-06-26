@@ -9,7 +9,8 @@ import { useUser } from '../contexts/UserContext';
 import { avatarSource } from '../utils/avatar';
 
 const StatsScreen = ({ navigation }) => {
-  const { darkMode, theme } = useTheme();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { user } = useUser();
   const isPremium = !!user?.isPremium;
 
@@ -97,7 +98,7 @@ const StatsScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     paddingBottom: 80,
     paddingTop: 60,
@@ -115,12 +116,13 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 20,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    color: theme.text
   },
   premiumBadge: {
     marginTop: 6,
     color: '#fff',
-    backgroundColor: '#d81b60',
+    backgroundColor: theme.accent,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -130,10 +132,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     marginTop: 20,
-    marginBottom: 8
+    marginBottom: 8,
+    color: theme.text
   },
   statBox: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
@@ -145,16 +148,16 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 14,
-    color: '#666'
+    color: theme.textSecondary
   },
   statValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111'
+    color: theme.text
   },
   premiumButton: {
     marginTop: 20,
-    backgroundColor: '#d81b60',
+    backgroundColor: theme.accent,
     paddingVertical: 12,
     borderRadius: 14,
     alignItems: 'center'
@@ -164,6 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15
   }
+
 });
 
 export default StatsScreen;
