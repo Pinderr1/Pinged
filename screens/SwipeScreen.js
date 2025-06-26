@@ -35,26 +35,31 @@ const computeMatchPercent = (a, b) => {
   if (!a || !b) return 0;
   let total = 0;
   let score = 0;
+
+  // Shared favorite game
   if (a.favoriteGame && b.favoriteGame) {
     total += 1;
     if (a.favoriteGame === b.favoriteGame) score += 1;
   }
-  if (a.skillLevel && b.skillLevel) {
-    total += 1;
-    if (a.skillLevel === b.skillLevel) score += 1;
-  }
-  if (a.location && b.location) {
-    total += 1;
-    if (a.location === b.location) score += 1;
-  }
-  if (a.genderPref) {
+
+  // User A's gender preference towards B
+  if (a.genderPref && b.gender) {
     total += 1;
     if (a.genderPref === 'Any' || a.genderPref === b.gender) score += 1;
   }
-  if (b.genderPref) {
+
+  // User B's gender preference towards A
+  if (b.genderPref && a.gender) {
     total += 1;
     if (b.genderPref === 'Any' || b.genderPref === a.gender) score += 1;
   }
+
+  // Similar age (within 3 years)
+  if (a.age && b.age) {
+    total += 1;
+    if (Math.abs(a.age - b.age) <= 3) score += 1;
+  }
+
   if (total === 0) return 0;
   return Math.round((score / total) * 100);
 };
@@ -363,7 +368,7 @@ const SwipeScreen = () => {
               <Text style={styles.name}>
                 {displayUser.name}, {displayUser.age}
               </Text>
-              <Text style={styles.match}>{matchPercent}% Match</Text>
+              <Text style={styles.match}>Match: {matchPercent}%</Text>
               <Text style={styles.bio}>{displayUser.bio}</Text>
             </View>
             </Animated.View>
