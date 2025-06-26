@@ -14,16 +14,19 @@ const StatsScreen = ({ navigation }) => {
   const { user } = useUser();
   const isPremium = !!user?.isPremium;
 
+  // Placeholder values were previously hard coded here for development.
+  // Default to zero or empty strings so real data can populate these fields
+  // when available from Firestore.
   const stats = {
-    gamesPlayed: 87,
-    gamesWon: 52,
-    favoriteGame: user?.favoriteGame || 'Chess',
-    matches: 120,
-    swipes: 421,
-    messagesSent: 198,
+    gamesPlayed: 0,
+    gamesWon: 0,
+    favoriteGame: user?.favoriteGame || 'N/A',
+    matches: 0,
+    swipes: 0,
+    messagesSent: 0,
     xp: user?.xp || 0,
     streak: user?.streak || 0,
-    badge: 'Top 5% Swipers',
+    badge: '',
   };
 
   return (
