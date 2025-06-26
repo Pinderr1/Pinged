@@ -12,6 +12,7 @@ import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadAvatarAsync } from '../utils/upload';
 import { avatarSource } from '../utils/avatar';
+import { sanitizeText } from '../utils/sanitize';
 
 const ProfileScreen = ({ navigation }) => {
   const { user, updateUser } = useUser();
@@ -62,11 +63,11 @@ const ProfileScreen = ({ navigation }) => {
     }
 
     const clean = {
-      displayName: name.trim(),
+      displayName: sanitizeText(name.trim()),
       age: parseInt(age, 10) || null,
-      gender,
-      bio: bio.trim(),
-      location,
+      gender: sanitizeText(gender),
+      bio: sanitizeText(bio.trim()),
+      location: sanitizeText(location),
       photoURL,
     };
     try {

@@ -8,6 +8,7 @@ import Header from '../components/Header';
 import styles from '../styles';
 import { db, firebase } from '../firebase';
 import { useUser } from '../contexts/UserContext';
+import { sanitizeText } from '../utils/sanitize';
 
 
 const EditProfileScreen = ({ navigation }) => {
@@ -29,11 +30,11 @@ const EditProfileScreen = ({ navigation }) => {
   const handleSave = async () => {
     if (!user) return;
     const clean = {
-      displayName: name.trim(),
+      displayName: sanitizeText(name.trim()),
       age: parseInt(age, 10) || null,
-      gender,
-      bio: bio.trim(),
-      location,
+      gender: sanitizeText(gender),
+      bio: sanitizeText(bio.trim()),
+      location: sanitizeText(location),
     };
     try {
       await db

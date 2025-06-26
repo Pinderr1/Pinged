@@ -7,10 +7,12 @@ import { snapshotExists } from '../utils/firestore';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import styles from '../styles';
+import { useOnboarding } from '../contexts/OnboardingContext';
 
 export default function EmailLoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { markOnboarded } = useOnboarding();
 
   const ensureUserDoc = async (fbUser) => {
     try {
@@ -40,6 +42,10 @@ export default function EmailLoginScreen({ navigation }) {
       );
       console.log('✅ Logged in:', userCred.user.uid);
       await ensureUserDoc(userCred.user);
+      const snap = await db.collection('users').doc(userCred.user.uid).get();
+      if (snapshotExists(snap) && snap.data().onboardingComplete) {
+        markOnboarded();
+      }
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
         Alert.alert(
