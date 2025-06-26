@@ -19,6 +19,7 @@ import { useGameLimit } from '../contexts/GameLimitContext';
 import styles from '../styles';
 import { db } from '../firebase';
 import { useUser } from '../contexts/UserContext';
+import Toast from 'react-native-toast-message';
 
 const devUser = {
   id: '__devUser',
@@ -84,6 +85,7 @@ const GameInviteScreen = ({ route, navigation }) => {
     setLoadingId(user.id);
 
     const inviteId = await sendGameInvite(user.id, gameId);
+    Toast.show({ type: 'success', text1: 'Invite sent!' });
 
     const toLobby = () =>
       navigation.navigate('GameLobby', {
