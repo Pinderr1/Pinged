@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { imageSource } from '../utils/avatar';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_HEIGHT = 520;
@@ -95,13 +96,21 @@ const SwipeScreen = () => {
             ...data,
           ];
         }
-        const formatted = data.map((u) => ({
-          id: u.uid || u.id,
-          name: u.displayName || 'User',
-          age: u.age || '',
-          bio: u.bio || '',
-          images: [u.photoURL || require('../assets/user1.jpg')],
-        }));
+        const formatted = data.map((u) => {
+          const imgs = Array.isArray(u.photos) && u.photos.length
+            ? u.photos
+            : [u.photoURL];
+          const images = imgs.map((img) =>
+            imageSource(img, require('../assets/user1.jpg'))
+          );
+          return {
+            id: u.uid || u.id,
+            name: u.displayName || 'User',
+            age: u.age || '',
+            bio: u.bio || '',
+            images,
+          };
+        });
         setUsers(formatted);
       } catch (e) {
         console.warn('Failed to load users', e);
@@ -271,24 +280,30 @@ const SwipeScreen = () => {
       <Header />
       <View style={styles.container}>
         {displayUser ? (
-          <Animated.View
-            {...panResponder.panHandlers}
-            style={[
-              {
-                transform: [
-                  { translateX: pan.x },
-                  { translateY: pan.y },
-                  {
-                    rotate: pan.x.interpolate({
-                      inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
-                      outputRange: ['-15deg', '0deg', '15deg'],
-                    }),
-                  },
-                ],
-              },
-              styles.card,
-            ]}
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() =>
+              setImageIndex((i) => (i + 1) % displayUser.images.length)
+            }
           >
+            <Animated.View
+              {...panResponder.panHandlers}
+              style={[
+                {
+                  transform: [
+                    { translateX: pan.x },
+                    { translateY: pan.y },
+                    {
+                      rotate: pan.x.interpolate({
+                        inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+                        outputRange: ['-15deg', '0deg', '15deg'],
+                      }),
+                    },
+                  ],
+                },
+                styles.card,
+              ]}
+            >
             <Animated.View style={[styles.badge, styles.likeBadge, { opacity: likeOpacity }]}>
               <Text style={[styles.badgeText, styles.likeText]}>LIKE</Text>
             </Animated.View>
@@ -298,18 +313,15 @@ const SwipeScreen = () => {
             <Animated.View style={[styles.badge, styles.superLikeBadge, { opacity: superLikeOpacity }]}>
               <Text style={[styles.badgeText, styles.superLikeText]}>SUPER{"\n"}LIKE</Text>
             </Animated.View>
-            <TouchableOpacity
-              onPress={() => setImageIndex((i) => (i + 1) % displayUser.images.length)}
-            >
-              <Image source={displayUser.images[imageIndex]} style={styles.image} />
-            </TouchableOpacity>
+            <Image source={displayUser.images[imageIndex]} style={styles.image} />
             <View style={styles.info}>
               <Text style={styles.name}>
                 {displayUser.name}, {displayUser.age}
               </Text>
               <Text style={styles.bio}>{displayUser.bio}</Text>
             </View>
-          </Animated.View>
+            </Animated.View>
+          </TouchableOpacity>
         ) : (
           <Text style={styles.noMoreText}>No more users</Text>
         )}
