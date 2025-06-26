@@ -297,3 +297,33 @@ exports.autoStartLobby = functions.firestore
     await Promise.all(tasks);
     return null;
   });
+
+exports.onChatMessageCreated = functions.firestore
+  .document('matches/{matchId}/messages/{messageId}')
+  .onCreate(async (snap, context) => {
+    const data = snap.data() || {};
+    const senderId = data.senderId;
+    const matchId = context.params.matchId;
+    if (!senderId) return null;
+
+    try {
+      const matchSnap = await admin
+        .firestore()
+        .collection('matches')
+        .doc(matchId)
+        .get();
+      const matchData = matchSnap.data();
+      const users = (matchData && matchData.users) || [];
+      const recipientId = users.find((u) => u !== senderId);
+      if (!recipientId) return null;
+
+      await pushToUser(recipientId, 'New Message', data.text || 'You have a new message', {
+        type: 'chat',
+        matchId,
+      });
+    } catch (e) {
+      console.error('Failed to send chat notification', e);
+    }
+
+    return null;
+  });
