@@ -47,8 +47,7 @@
     "react-native-url-polyfill": "^2.0.0",
     "react-native-vector-icons": "^10.2.0",
     "expo-notifications": "~0.31.3",
-    "expo-device": "~7.1.4",
-    "react-native-webrtc": "^1.108.0"
+    "expo-device": "~7.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
