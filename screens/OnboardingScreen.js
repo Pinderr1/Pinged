@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import { db, auth, firebase } from '../firebase';
 import { uploadAvatarAsync } from '../utils/upload';
+import { sanitizeText } from '../utils/sanitize';
 import { snapshotExists } from '../utils/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
@@ -152,14 +153,14 @@ export default function OnboardingScreen() {
           email: user.email,
           displayName: user.displayName || '',
           photoURL,
-          name: answers.name.trim(),
+          name: sanitizeText(answers.name.trim()),
           age: parseInt(answers.age, 10) || null,
-          gender: answers.gender,
-          genderPref: answers.genderPref,
-          location: answers.location,
-          favoriteGame: answers.favoriteGame,
-          skillLevel: answers.skillLevel,
-          bio: answers.bio.trim(),
+          gender: sanitizeText(answers.gender),
+          genderPref: sanitizeText(answers.genderPref),
+          location: sanitizeText(answers.location),
+          favoriteGame: sanitizeText(answers.favoriteGame),
+          skillLevel: sanitizeText(answers.skillLevel),
+          bio: sanitizeText(answers.bio.trim()),
           onboardingComplete: true,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         };
