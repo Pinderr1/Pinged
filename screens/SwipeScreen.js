@@ -277,6 +277,7 @@ const SwipeScreen = () => {
 
   const panResponder = useRef(
     PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
         useNativeDriver: false,
@@ -332,12 +333,12 @@ const SwipeScreen = () => {
         {displayUser ? (
           <TouchableOpacity
             activeOpacity={1}
+            {...panResponder.panHandlers}
             onPress={() =>
               setImageIndex((i) => (i + 1) % displayUser.images.length)
             }
           >
             <Animated.View
-              {...panResponder.panHandlers}
               style={[
                 {
                   transform: [
@@ -364,6 +365,10 @@ const SwipeScreen = () => {
               <Text style={[styles.badgeText, styles.superLikeText]}>SUPER{"\n"}LIKE</Text>
             </Animated.View>
             <Image source={displayUser.images[imageIndex]} style={styles.image} />
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.5)']}
+              style={styles.imageOverlay}
+            />
             <View style={styles.info}>
               <Text style={styles.name}>
                 {displayUser.name}, {displayUser.age}
@@ -444,11 +449,23 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#eee',
     elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
   },
   image: {
     width: '100%',
     height: '75%',
+  },
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: '40%',
   },
   info: {
     padding: 15,
