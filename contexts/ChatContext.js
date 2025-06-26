@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDev } from './DevContext';
 import { useUser } from './UserContext';
@@ -27,6 +27,7 @@ export const ChatProvider = ({ children }) => {
       { id: 'dev1', text: 'Dev chat ready.', sender: 'system' },
     ],
     matchedAt: 'now',
+    online: true,
     activeGameId: null,
     pendingInvite: null,
   };
@@ -51,27 +52,84 @@ export const ChatProvider = ({ children }) => {
   }, []);
 
   // Subscribe to Firestore matches for the current user
+  const userUnsubs = useRef({});
   useEffect(() => {
     if (!user?.uid) return;
     const q = db.collection('matches').where('users', 'array-contains', user.uid);
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
       setMatches((prev) => {
         const others = prev.filter((m) => !data.find((d) => d.id === m.id));
-        const converted = data.map((m) => ({
-          id: m.id,
-          name: m.name || 'Match',
-          age: m.age || 0,
-          image: m.image ? { uri: m.image } : require('../assets/user1.jpg'),
-          messages: [],
-          matchedAt: m.createdAt ? m.createdAt.toDate?.().toISOString() : 'now',
-          activeGameId: null,
-          pendingInvite: null,
-        }));
+        const converted = data.map((m) => {
+          const otherId = Array.isArray(m.users)
+            ? m.users.find((u) => u !== user.uid)
+            : null;
+          const prevMatch = prev.find((p) => p.id === m.id) || {};
+          return {
+            id: m.id,
+            otherUserId: otherId,
+            name: prevMatch.name || 'Match',
+            age: prevMatch.age || 0,
+            image: prevMatch.image || require('../assets/user1.jpg'),
+            online: prevMatch.online || false,
+            messages: prevMatch.messages || [],
+            matchedAt: m.createdAt
+              ? m.createdAt.toDate?.().toISOString()
+              : 'now',
+            activeGameId: prevMatch.activeGameId || null,
+            pendingInvite: prevMatch.pendingInvite || null,
+          };
+        });
         return [...others, ...converted];
       });
+
+      const userIds = data
+        .map((m) =>
+          Array.isArray(m.users) ? m.users.find((u) => u !== user.uid) : null
+        )
+        .filter(Boolean);
+
+      // Cleanup listeners for removed users
+      Object.keys(userUnsubs.current).forEach((uid) => {
+        if (!userIds.includes(uid)) {
+          userUnsubs.current[uid]();
+          delete userUnsubs.current[uid];
+        }
+      });
+
+      // Subscribe to each user's profile for presence
+      userIds.forEach((uid) => {
+        if (!userUnsubs.current[uid]) {
+          userUnsubs.current[uid] = db
+            .collection('users')
+            .doc(uid)
+            .onSnapshot((doc) => {
+              const info = doc.data() || {};
+              setMatches((prev) =>
+                prev.map((m) =>
+                  m.otherUserId === uid
+                    ? {
+                        ...m,
+                        name: info.displayName || info.name || 'User',
+                        age: info.age || 0,
+                        image: info.photoURL
+                          ? { uri: info.photoURL }
+                          : require('../assets/user1.jpg'),
+                        online: !!info.online,
+                      }
+                    : m
+                )
+              );
+            });
+        }
+      });
     });
-    return unsub;
+    return () => {
+      unsub();
+      Object.values(userUnsubs.current).forEach((fn) => fn && fn());
+      userUnsubs.current = {};
+    };
   }, [user?.uid]);
 
   useEffect(() => {

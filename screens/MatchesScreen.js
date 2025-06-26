@@ -15,7 +15,17 @@ const MatchesScreen = ({ navigation }) => {
       onPress={() => navigation.navigate('Chat', { user: item })}
     >
       <Image source={item.image} style={styles.avatar} />
-      <Text style={[styles.name, { color: theme.text }]}>{item.name}</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.name, { color: theme.text }]}>{item.name}</Text>
+        <Text
+          style={[
+            styles.status,
+            { color: item.online ? '#2ecc71' : '#999' },
+          ]}
+        >
+          {item.online ? 'Online' : 'Offline'}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 
@@ -69,6 +79,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
+  },
+  status: {
+    fontSize: 12,
+    marginTop: 2,
   },
 });
 
