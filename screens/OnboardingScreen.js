@@ -38,10 +38,10 @@ const questions = [
 
 export default function OnboardingScreen() {
   const navigation = useNavigation();
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
   const { updateUser } = useUser();
   const { markOnboarded, hasOnboarded } = useOnboarding();
-  const styles = getStyles(darkMode);
+  const styles = getStyles(theme);
 
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({
@@ -356,14 +356,14 @@ export default function OnboardingScreen() {
   );
 }
 
-const getStyles = (darkMode) => {
-  const background = darkMode ? '#333' : '#FFFFFF';
-  const cardBg = darkMode ? '#444' : '#FFFFFF';
-  const textColor = darkMode ? '#EEE' : '#222';
-  const accent = '#FF75B5';
+const getStyles = (theme) => {
+  const background = theme.background;
+  const cardBg = theme.card;
+  const textColor = theme.text;
+  const accent = theme.accent;
 
   return StyleSheet.create({
-    container: { flex: 1, padding: 20 },
+    container: { flex: 1, padding: 20, backgroundColor: background },
     inner: { flex: 1, justifyContent: 'center' },
     progressText: {
       color: textColor,
@@ -374,7 +374,7 @@ const getStyles = (darkMode) => {
     progressContainer: {
       height: 8,
       width: '100%',
-      backgroundColor: darkMode ? '#333' : '#eee',
+      backgroundColor: theme.card,
       borderRadius: 4,
       overflow: 'hidden',
       marginBottom: 20,
@@ -418,7 +418,7 @@ const getStyles = (darkMode) => {
       width: 150,
       height: 150,
       borderRadius: 75,
-      backgroundColor: darkMode ? '#333' : '#eee',
+      backgroundColor: theme.card,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -467,7 +467,7 @@ const getStyles = (darkMode) => {
       color: '#fff',
       fontSize: 16,
     },
-    gradientStart: '#FF75B5',
-    gradientEnd: '#FF9A75',
+    gradientStart: theme.gradientStart,
+    gradientEnd: theme.gradientEnd,
   });
 };

@@ -15,8 +15,8 @@ export const darkTheme = {
   text: '#E0E0E0',
   textSecondary: '#AAAAAA',
   accent: '#BB86FC',
-  gradientStart: '#2a2a2a',
-  gradientEnd: '#000000',
+  gradientStart: '#5a189a',
+  gradientEnd: '#240046',
   headerBackground: '#1E1E1E',
 };
 
