@@ -14,6 +14,8 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `location` (string)
 - `favoriteGame` (string)
 - `skillLevel` (string)
+- `loveLanguage` (string)
+- `idealDate` (string)
 - `bio` (string)
 - `onboardingComplete` (boolean)
 - `createdAt` (timestamp)

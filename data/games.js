@@ -377,5 +377,16 @@ export const allGames = [
     description: 'Guess the secret number with hints each turn.',
     mode: 'solo',
     speed: 'quick'
+  },
+  {
+    id: '34',
+    title: 'Flirty Questions',
+    icon: <MaterialCommunityIcons name="heart" size={30} />,
+    route: 'flirtyQuestions',
+    premium: false,
+    category: 'Party',
+    description: 'Take turns answering cute questions and spark conversation.',
+    mode: 'co-op',
+    speed: 'quick'
   }
 ];

@@ -27,11 +27,14 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
+  // TODO: allow recording a short voice or video intro and store URL in profile
   { key: 'name', label: 'What’s your name?' },
   { key: 'age', label: 'How old are you?' },
   { key: 'gender', label: 'Select your gender' },
   { key: 'genderPref', label: 'Preferred teammate gender' },
   { key: 'bio', label: 'Write a short bio' },
+  { key: 'loveLanguage', label: 'Your love language?' },
+  { key: 'idealDate', label: 'Describe your ideal date' },
   { key: 'location', label: 'Where are you located?' },
   { key: 'favoriteGame', label: 'Pick your favorite game' },
   { key: 'skillLevel', label: 'Your skill level?' },
@@ -52,6 +55,8 @@ export default function OnboardingScreen() {
     gender: '',
     genderPref: '',
     bio: '',
+    loveLanguage: '',
+    idealDate: '',
     location: '',
     favoriteGame: '',
     skillLevel: '',
@@ -156,11 +161,13 @@ export default function OnboardingScreen() {
           name: sanitizeText(answers.name.trim()),
           age: parseInt(answers.age, 10) || null,
           gender: sanitizeText(answers.gender),
-          genderPref: sanitizeText(answers.genderPref),
-          location: sanitizeText(answers.location),
-          favoriteGame: sanitizeText(answers.favoriteGame),
-          skillLevel: sanitizeText(answers.skillLevel),
-          bio: sanitizeText(answers.bio.trim()),
+        genderPref: sanitizeText(answers.genderPref),
+        location: sanitizeText(answers.location),
+        loveLanguage: sanitizeText(answers.loveLanguage),
+        idealDate: sanitizeText(answers.idealDate),
+        favoriteGame: sanitizeText(answers.favoriteGame),
+        skillLevel: sanitizeText(answers.skillLevel),
+        bio: sanitizeText(answers.bio.trim()),
           onboardingComplete: true,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         };
@@ -286,6 +293,13 @@ export default function OnboardingScreen() {
         { label: 'Beginner', value: 'Beginner' },
         { label: 'Intermediate', value: 'Intermediate' },
         { label: 'Expert', value: 'Expert' },
+      ],
+      loveLanguage: [
+        { label: 'Words of Affirmation', value: 'Words' },
+        { label: 'Acts of Service', value: 'Acts' },
+        { label: 'Gifts', value: 'Gifts' },
+        { label: 'Quality Time', value: 'Time' },
+        { label: 'Physical Touch', value: 'Touch' },
       ],
     };
 
