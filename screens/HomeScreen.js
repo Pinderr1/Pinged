@@ -19,6 +19,7 @@ import { useChats } from '../contexts/ChatContext';
 import { allGames } from '../data/games';
 import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
+import EventBanner from '../components/EventBanner';
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -84,6 +85,8 @@ const HomeScreen = ({ navigation }) => {
             <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
             <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
           </View>
+
+          <EventBanner />
 
           <Text style={local.section}>Quick Play</Text>
           <FlatList
