@@ -88,7 +88,7 @@ const GameInviteScreen = ({ route, navigation }) => {
     Toast.show({ type: 'success', text1: 'Invite sent!' });
 
     const toLobby = () =>
-      navigation.navigate('GameLobby', {
+      navigation.navigate('GameSession', {
         game: { id: gameId, title: gameTitle },
         opponent: { id: user.id, name: user.name, photo: user.photo },
         inviteId,

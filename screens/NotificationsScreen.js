@@ -37,7 +37,7 @@ const NotificationsScreen = ({ navigation }) => {
         .update({ status: 'accepted' });
       const snap = await db.collection('users').doc(invite.from).get();
       const opp = snap.data() || {};
-      navigation.navigate('GameLobby', {
+      navigation.navigate('GameSession', {
         game: {
           id: invite.gameId,
           title: games[invite.gameId]?.meta?.title || 'Game',

@@ -24,7 +24,7 @@ export default function AppStack() {
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="GameInvite" component={GameInviteScreen} />
-      <Stack.Screen name="GameLobby" component={GameSessionScreen} />
+      <Stack.Screen name="GameSession" component={GameSessionScreen} />
       <Stack.Screen name="Community" component={CommunityScreen} />
       <Stack.Screen name="EventChat" component={EventChatScreen} />
       <Stack.Screen name="Premium" component={PremiumScreen} />
