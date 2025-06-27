@@ -18,67 +18,11 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../contexts/UserContext';
 import { db, firebase } from '../firebase';
+import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = (screenWidth - 48) / 2;
 
-// Default events used if Firestore is empty
-const ALL_EVENTS = [
-  {
-    id: 1,
-    title: 'Truth or Dare Night',
-    time: 'Friday @ 9PM',
-    category: 'Flirty',
-    description: 'Wild dares, real connections.',
-    image: require('../assets/user2.jpg')
-  },
-  {
-    id: 2,
-    title: 'Checkers Blitz',
-    time: 'Saturday @ 7PM',
-    category: 'Tournaments',
-    description: 'Fast 1v1 matches + Boosts.',
-    image: require('../assets/user3.jpg')
-  },
-  {
-    id: 3,
-    title: 'Strip RPS',
-    time: 'Sunday Night',
-    category: 'Flirty',
-    description: 'Spicy, bold, fun.',
-    image: require('../assets/user4.jpg')
-  },
-  {
-    id: 4,
-    title: 'Tic Tac Chill',
-    time: 'Tonight @ 11PM',
-    category: 'Tonight',
-    description: 'Relax & connect.',
-    image: require('../assets/user1.jpg')
-  }
-];
-
-// Default posts used if Firestore has none
-const DEFAULT_POSTS = [
-  {
-    id: '1',
-    title: 'Speed Dating Night',
-    time: 'Friday @ 8PM',
-    description: 'Meet singles in quick 5 minute chats.',
-  },
-  {
-    id: '2',
-    title: 'App Announcement',
-    time: 'Today',
-    description: 'Check out the newest features rolling out this week.',
-  },
-  {
-    id: '3',
-    title: 'Trivia Tuesday',
-    time: 'Tues @ 7PM',
-    description: 'Join our weekly trivia and win prizes!',
-  },
-];
 
 const FILTERS = ['All', 'Tonight', 'Flirty', 'Tournaments'];
 
@@ -103,7 +47,7 @@ const CommunityScreen = () => {
     const q = db.collection('events').orderBy('createdAt', 'desc');
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setEvents(data.length ? data : ALL_EVENTS);
+      setEvents(data.length ? data : SAMPLE_EVENTS);
     });
     return unsub;
   }, []);
@@ -112,7 +56,7 @@ const CommunityScreen = () => {
     const q = db.collection('communityPosts').orderBy('createdAt', 'desc');
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setPosts(data.length ? data : DEFAULT_POSTS);
+      setPosts(data.length ? data : SAMPLE_POSTS);
     });
     return unsub;
   }, []);

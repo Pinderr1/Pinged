@@ -77,7 +77,7 @@ export default function GameCard({ item, scale, onPress, toggleFavorite, isFavor
           />
         )}
 
-        <View style={{ marginBottom: 10 }}>{item.icon}</View>
+        <View style={{ marginBottom: 10, alignItems: 'center', justifyContent: 'center' }}>{item.icon}</View>
         <Text style={{ fontSize: 15, fontWeight: '600', textAlign: 'center' }}>
           {item.title}
         </Text>

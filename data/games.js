@@ -10,7 +10,7 @@ export const allGames = [
   {
     id: '1',
     title: 'Tic Tac Toe',
-    icon: <Entypo name="cross" size={32} />,
+    icon: <Entypo name="cross" size={30} />,
     route: 'TicTacToe',
     premium: false,
     category: 'Board',
@@ -65,7 +65,7 @@ export const allGames = [
   {
     id: '6',
     title: 'Memory Match',
-    icon: <Ionicons name="images-outline" size={30} />,
+    icon: <MaterialCommunityIcons name="cards-outline" size={30} />,
     route: 'MemoryMatch',
     premium: false,
     category: 'Memory',
@@ -76,7 +76,7 @@ export const allGames = [
   {
     id: '7',
     title: 'Hangman',
-    icon: <MaterialCommunityIcons name="human-male-female" size={30} />,
+    icon: <MaterialCommunityIcons name="skull-outline" size={30} />,
     route: 'Hangman',
     premium: false,
     category: 'Word',
@@ -87,7 +87,7 @@ export const allGames = [
   {
     id: '8',
     title: 'Dots and Boxes',
-    icon: <FontAwesome5 name="braille" size={28} />,
+    icon: <FontAwesome5 name="braille" size={30} />,
     route: null,
     premium: false,
     category: 'Board',
@@ -98,7 +98,7 @@ export const allGames = [
   {
     id: '9',
     title: 'Gomoku',
-    icon: <MaterialCommunityIcons name="grid-large" size={28} />,
+    icon: <MaterialCommunityIcons name="grid-large" size={30} />,
     route: 'Gomoku',
     premium: false,
     category: 'Board',
@@ -109,7 +109,7 @@ export const allGames = [
   {
     id: '10',
     title: 'Mancala',
-    icon: <MaterialCommunityIcons name="dots-circle" size={28} />,
+    icon: <MaterialCommunityIcons name="dots-circle" size={30} />,
     route: null,
     premium: false,
     category: 'Board',
@@ -263,7 +263,7 @@ export const allGames = [
   {
     id: '24',
     title: 'Dominoes',
-    icon: <MaterialCommunityIcons name="dice-multiple" size={30} />,
+    icon: <MaterialCommunityIcons name="dots-horizontal" size={30} />,
     route: null,
     premium: true,
     category: 'Board',
@@ -358,7 +358,7 @@ export const allGames = [
   {
     id: '32',
     title: 'Snakes & Ladders',
-    icon: <MaterialCommunityIcons name="stairs" size={30} />,
+    icon: <MaterialCommunityIcons name="snake" size={30} />,
     route: null,
     premium: false,
     category: 'International',

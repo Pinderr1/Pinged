@@ -24,20 +24,18 @@ import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SafeKeyboardView from '../components/SafeKeyboardView';
+import MultiSelectList from '../components/MultiSelectList';
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
   // TODO: allow recording a short voice or video intro and store URL in profile
   { key: 'name', label: 'What’s your name?' },
   { key: 'age', label: 'How old are you?' },
-  { key: 'gender', label: 'Select your gender' },
-  { key: 'genderPref', label: 'Preferred teammate gender' },
+  { key: 'genderInfo', label: 'Gender & preference' },
   { key: 'bio', label: 'Write a short bio' },
-  { key: 'loveLanguage', label: 'Your love language?' },
-  { key: 'idealDate', label: 'Describe your ideal date' },
+  { key: 'loveInfo', label: 'Love language & ideal date' },
   { key: 'location', label: 'Where are you located?' },
-  { key: 'favoriteGame', label: 'Pick your favorite game' },
-  { key: 'skillLevel', label: 'Your skill level?' },
+  { key: 'favoriteGames', label: 'Select your favorite games' },
 ];
 
 export default function OnboardingScreen() {
@@ -58,13 +56,61 @@ export default function OnboardingScreen() {
     loveLanguage: '',
     idealDate: '',
     location: '',
-    favoriteGame: '',
-    skillLevel: '',
+    favoriteGames: [],
   });
   const defaultGameOptions = [
-    { label: 'Chess', value: 'Chess' },
-    { label: 'Checkers', value: 'Checkers' },
     { label: 'Tic Tac Toe', value: 'Tic Tac Toe' },
+    { label: 'Chess', value: 'Chess' },
+    { label: 'Rock Paper Scissors', value: 'Rock Paper Scissors' },
+    { label: 'Connect Four', value: 'Connect Four' },
+    { label: 'Checkers', value: 'Checkers' },
+    { label: 'Memory Match', value: 'Memory Match' },
+    { label: 'Hangman', value: 'Hangman' },
+    { label: 'Dots and Boxes', value: 'Dots and Boxes' },
+    { label: 'Gomoku', value: 'Gomoku' },
+    { label: 'Mancala', value: 'Mancala' },
+    { label: 'Uno', value: 'Uno' },
+    { label: 'Battleship', value: 'Battleship' },
+    { label: '4-in-a-Row Advanced', value: '4-in-a-Row Advanced' },
+    { label: 'Reversi', value: 'Reversi' },
+    { label: 'Speed Card Game', value: 'Speed Card Game' },
+    { label: 'Word Duel', value: 'Word Duel' },
+    { label: 'Pictionary', value: 'Pictionary' },
+    { label: 'Blackjack', value: 'Blackjack' },
+    { label: 'Poker Duel', value: 'Poker Duel' },
+    { label: 'Truth or Dare', value: 'Truth or Dare' },
+    { label: 'Sudoku', value: 'Sudoku' },
+    { label: 'Minesweeper', value: 'Minesweeper' },
+    { label: 'Word Search', value: 'Word Search' },
+    { label: 'Dominoes', value: 'Dominoes' },
+    { label: 'Mahjong', value: 'Mahjong' },
+    { label: 'Go', value: 'Go' },
+    { label: 'Xiangqi', value: 'Xiangqi' },
+    { label: 'Shogi', value: 'Shogi' },
+    { label: 'Ludo', value: 'Ludo' },
+    { label: 'Carrom', value: 'Carrom' },
+    { label: 'Backgammon', value: 'Backgammon' },
+    { label: 'Snakes & Ladders', value: 'Snakes & Ladders' },
+    { label: 'Guess Number', value: 'Guess Number' },
+    { label: 'Flirty Questions', value: 'Flirty Questions' },
+    { label: 'Game 35', value: 'Game 35' },
+    { label: 'Game 36', value: 'Game 36' },
+    { label: 'Game 37', value: 'Game 37' },
+    { label: 'Game 38', value: 'Game 38' },
+    { label: 'Game 39', value: 'Game 39' },
+    { label: 'Game 40', value: 'Game 40' },
+    { label: 'Game 41', value: 'Game 41' },
+    { label: 'Game 42', value: 'Game 42' },
+    { label: 'Game 43', value: 'Game 43' },
+    { label: 'Game 44', value: 'Game 44' },
+    { label: 'Game 45', value: 'Game 45' },
+    { label: 'Game 46', value: 'Game 46' },
+    { label: 'Game 47', value: 'Game 47' },
+    { label: 'Game 48', value: 'Game 48' },
+    { label: 'Game 49', value: 'Game 49' },
+    { label: 'Game 50', value: 'Game 50' },
+    { label: 'Game 51', value: 'Game 51' },
+    { label: 'Game 52', value: 'Game 52' },
   ];
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
 
@@ -96,6 +142,9 @@ export default function OnboardingScreen() {
     if (currentField === 'age') return /^\d+$/.test(value) && parseInt(value, 10) >= 18;
     if (currentField === 'avatar') return !!value;
     if (currentField === 'location') return value && value.length > 3;
+    if (currentField === 'favoriteGames') return Array.isArray(value) && value.length > 0;
+    if (currentField === 'genderInfo') return answers.gender && answers.genderPref;
+    if (currentField === 'loveInfo') return answers.loveLanguage && answers.idealDate.trim().length > 0;
     return value && value.toString().trim().length > 0;
   };
 
@@ -165,8 +214,7 @@ export default function OnboardingScreen() {
         location: sanitizeText(answers.location),
         loveLanguage: sanitizeText(answers.loveLanguage),
         idealDate: sanitizeText(answers.idealDate),
-        favoriteGame: sanitizeText(answers.favoriteGame),
-        skillLevel: sanitizeText(answers.skillLevel),
+        favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
         bio: sanitizeText(answers.bio.trim()),
           onboardingComplete: true,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -225,11 +273,33 @@ export default function OnboardingScreen() {
   }, [step]);
 
   const renderInput = () => {
+    const pickerFields = {
+      gender: [
+        { label: 'Male', value: 'Male' },
+        { label: 'Female', value: 'Female' },
+        { label: 'Other', value: 'Other' },
+      ],
+      genderPref: [
+        { label: 'Male', value: 'Male' },
+        { label: 'Female', value: 'Female' },
+        { label: 'Other', value: 'Other' },
+        { label: 'Any', value: 'Any' },
+      ],
+      loveLanguage: [
+        { label: 'Words of Affirmation', value: 'Words' },
+        { label: 'Acts of Service', value: 'Acts' },
+        { label: 'Gifts', value: 'Gifts' },
+        { label: 'Quality Time', value: 'Time' },
+        { label: 'Physical Touch', value: 'Touch' },
+      ],
+    };
+
     if (currentField === 'avatar') {
       return (
         <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-          <Image source={avatarSource(answers.avatar)} style={styles.avatar} />
-          {!answers.avatar && (
+          {answers.avatar ? (
+            <Image source={avatarSource(answers.avatar)} style={styles.avatar} />
+          ) : (
             <View style={styles.placeholder}>
               <Text style={{ color: '#999' }}>Tap to select image</Text>
             </View>
@@ -276,32 +346,84 @@ export default function OnboardingScreen() {
       );
     }
 
-    const pickerFields = {
-      gender: [
-        { label: 'Male', value: 'Male' },
-        { label: 'Female', value: 'Female' },
-        { label: 'Other', value: 'Other' },
-      ],
-      genderPref: [
-        { label: 'Male', value: 'Male' },
-        { label: 'Female', value: 'Female' },
-        { label: 'Other', value: 'Other' },
-        { label: 'Any', value: 'Any' },
-      ],
-      favoriteGame: gameOptions,
-      skillLevel: [
-        { label: 'Beginner', value: 'Beginner' },
-        { label: 'Intermediate', value: 'Intermediate' },
-        { label: 'Expert', value: 'Expert' },
-      ],
-      loveLanguage: [
-        { label: 'Words of Affirmation', value: 'Words' },
-        { label: 'Acts of Service', value: 'Acts' },
-        { label: 'Gifts', value: 'Gifts' },
-        { label: 'Quality Time', value: 'Time' },
-        { label: 'Physical Touch', value: 'Touch' },
-      ],
-    };
+    if (currentField === 'genderInfo') {
+      return (
+        <View>
+          <RNPickerSelect
+            onValueChange={(val) =>
+              setAnswers((prev) => ({ ...prev, gender: val }))
+            }
+            value={answers.gender}
+            placeholder={{ label: 'Select gender', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: styles.input,
+              inputAndroid: styles.input,
+              placeholder: { color: darkMode ? '#999' : '#aaa' },
+            }}
+            items={pickerFields.gender}
+          />
+          <RNPickerSelect
+            onValueChange={(val) =>
+              setAnswers((prev) => ({ ...prev, genderPref: val }))
+            }
+            value={answers.genderPref}
+            placeholder={{ label: 'Preferred teammate gender', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: [styles.input, { marginTop: 20 }],
+              inputAndroid: [styles.input, { marginTop: 20 }],
+              placeholder: { color: darkMode ? '#999' : '#aaa' },
+            }}
+            items={pickerFields.genderPref}
+          />
+        </View>
+      );
+    }
+
+
+    if (currentField === 'favoriteGames') {
+      return (
+        <MultiSelectList
+          options={gameOptions}
+          selected={answers.favoriteGames}
+          onChange={(vals) =>
+            setAnswers((prev) => ({ ...prev, favoriteGames: vals }))
+          }
+          theme={theme}
+        />
+      );
+    }
+
+    if (currentField === 'loveInfo') {
+      return (
+        <View>
+          <RNPickerSelect
+            onValueChange={(val) =>
+              setAnswers((prev) => ({ ...prev, loveLanguage: val }))
+            }
+            value={answers.loveLanguage}
+            placeholder={{ label: 'Select love language', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: styles.input,
+              inputAndroid: styles.input,
+              placeholder: { color: darkMode ? '#999' : '#aaa' },
+            }}
+            items={pickerFields.loveLanguage}
+          />
+          <TextInput
+            style={[styles.input, { marginTop: 20 }]}
+            value={answers.idealDate}
+            onChangeText={(text) =>
+              setAnswers((prev) => ({ ...prev, idealDate: text }))
+            }
+            placeholder="Describe your ideal date"
+            placeholderTextColor={darkMode ? '#999' : '#aaa'}
+          />
+        </View>
+      );
+    }
 
     if (pickerFields[currentField]) {
       return (
@@ -318,6 +440,22 @@ export default function OnboardingScreen() {
             placeholder: { color: darkMode ? '#999' : '#aaa' },
           }}
           items={pickerFields[currentField]}
+        />
+      );
+    }
+
+    if (currentField === 'bio') {
+      return (
+        <TextInput
+          style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+          value={answers.bio}
+          onChangeText={(text) =>
+            setAnswers((prev) => ({ ...prev, bio: text }))
+          }
+          placeholder={questions[step].label}
+          placeholderTextColor={darkMode ? '#999' : '#aaa'}
+          multiline
+          numberOfLines={4}
         />
       );
     }

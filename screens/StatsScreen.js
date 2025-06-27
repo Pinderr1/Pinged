@@ -19,7 +19,7 @@ const StatsScreen = ({ navigation }) => {
   const [stats, setStats] = useState({
     gamesPlayed: 0,
     gamesWon: 0,
-    favoriteGame: '',
+    favoriteGames: [],
     matches: 0,
     swipes: 0,
     messagesSent: 0,
@@ -75,7 +75,7 @@ const StatsScreen = ({ navigation }) => {
         setStats({
           gamesPlayed,
           gamesWon,
-          favoriteGame: data.favoriteGame || 'N/A',
+          favoriteGames: data.favoriteGames || [],
           matches,
           swipes: 0,
           messagesSent,
@@ -120,8 +120,10 @@ const StatsScreen = ({ navigation }) => {
           <Text style={styles.statValue}>{stats.gamesWon}</Text>
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>Favorite Game</Text>
-          <Text style={styles.statValue}>{stats.favoriteGame}</Text>
+          <Text style={styles.statLabel}>Favorite Games</Text>
+          <Text style={styles.statValue}>
+            {stats.favoriteGames.length > 0 ? stats.favoriteGames.join(', ') : 'N/A'}
+          </Text>
         </View>
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>{`XP Level ${level}`}</Text>

@@ -17,16 +17,9 @@ import { useDev } from '../contexts/DevContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import styles from '../styles';
-import { db } from '../firebase';
+import { useChats } from '../contexts/ChatContext';
 import { useUser } from '../contexts/UserContext';
 import Toast from 'react-native-toast-message';
-
-const devUser = {
-  id: '__devUser',
-  name: 'Dev Tester',
-  photo: require('../assets/user1.jpg'),
-  online: true,
-};
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH / 2 - 24;
@@ -38,6 +31,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   const { darkMode, theme } = useTheme();
   const { devMode } = useDev();
   const { user: currentUser } = useUser();
+  const { matches: chatMatches } = useChats();
   const { sendGameInvite } = useMatchmaking();
   const { gamesLeft } = useGameLimit();
   const [search, setSearch] = useState('');
@@ -52,27 +46,15 @@ const GameInviteScreen = ({ route, navigation }) => {
   }, [gamesLeft, currentUser?.isPremium, devMode]);
 
   useEffect(() => {
-    if (!currentUser) return;
-    const q = currentUser.uid
-      ? db.collection('users').where('uid', '!=', currentUser.uid)
-      : db.collection('users');
-    const unsub = q.onSnapshot(
-      (snap) => {
-        let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        if (devMode) data = [devUser, ...data];
-        setMatches(
-          data.map((u) => ({
-            id: u.uid || u.id,
-            name: u.displayName || 'User',
-            photo: u.photoURL ? { uri: u.photoURL } : require('../assets/user1.jpg'),
-            online: !!u.online,
-          }))
-        );
-      },
-      (e) => console.warn('Failed to load users', e)
+    setMatches(
+      chatMatches.map((m) => ({
+        id: m.otherUserId,
+        name: m.name,
+        photo: m.image,
+        online: m.online,
+      }))
     );
-    return unsub;
-  }, [currentUser?.uid, devMode]);
+  }, [chatMatches]);
 
   const handleInvite = async (user) => {
     const isPremiumUser = !!currentUser?.isPremium;

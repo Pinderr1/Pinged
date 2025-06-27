@@ -16,7 +16,6 @@ import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import styles from '../styles';
 import { games, gameList } from '../games';
-import { icebreakers } from '../data/prompts';
 import { db, firebase } from '../firebase';
 import { uploadVoiceAsync } from '../utils/upload';
 import { useTheme } from '../contexts/ThemeContext';
@@ -178,11 +177,6 @@ function PrivateChat({ user }) {
     }
   };
 
-  const handleIcebreaker = () => {
-    const prompt =
-      icebreakers[Math.floor(Math.random() * icebreakers.length)];
-    sendChatMessage(prompt, 'system');
-  };
 
   const handleVoiceFinish = async () => {
     const result = await stopRecording();
@@ -272,7 +266,6 @@ function PrivateChat({ user }) {
 
   const chatSection = (
     <View style={{ flex: 1, padding: 10 }}>
-      <Text style={[styles.logoText, { marginBottom: 10 }]}>Chat with {user.name}</Text>
       <FlatList
         style={{ flex: 1 }}
         data={messages}
@@ -283,6 +276,22 @@ function PrivateChat({ user }) {
         keyboardShouldPersistTaps="handled"
       />
       {isTyping && <Text style={privateStyles.typingIndicator}>{user.name} is typing...</Text>}
+      <View style={privateStyles.gameBar}>
+        <TouchableOpacity
+          style={activeGameId ? privateStyles.changeButton : privateStyles.playButton}
+          onPress={() => {
+            if (!currentUser?.isPremium && gamesLeft <= 0 && !devMode) {
+              navigation.navigate('Premium', { context: 'paywall' });
+            } else {
+              setShowGameModal(true);
+            }
+          }}
+        >
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+            {activeGameId ? 'Change Game' : 'Invite Game'}
+          </Text>
+        </TouchableOpacity>
+      </View>
       <View style={privateStyles.inputBar}>
         <TouchableOpacity
           onLongPress={startRecording}
@@ -305,26 +314,6 @@ function PrivateChat({ user }) {
         <TouchableOpacity style={privateStyles.sendButton} onPress={handleSend}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={privateStyles.promptButton}
-          onPress={handleIcebreaker}
-        >
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Icebreaker</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={activeGameId ? privateStyles.changeButton : privateStyles.playButton}
-          onPress={() => {
-            if (!currentUser?.isPremium && gamesLeft <= 0 && !devMode) {
-              navigation.navigate('Premium', { context: 'paywall' });
-            } else {
-              setShowGameModal(true);
-            }
-          }}
-        >
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-            {activeGameId ? 'Change Game' : 'Invite Game'}
-          </Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -335,7 +324,7 @@ function PrivateChat({ user }) {
       style={{
         flex: 1,
         padding: 10,
-        borderBottomWidth: 1,
+        borderTopWidth: 1,
         borderColor: darkMode ? '#444' : '#ccc',
         justifyContent: 'center',
         alignItems: 'center',
@@ -398,8 +387,8 @@ function PrivateChat({ user }) {
       <SafeAreaView style={{ flex: 1 }}>
         <SafeKeyboardView style={{ flex: 1, paddingTop: 60 }}>
           <View style={{ flex: 1 }}>
-            {gameSection}
             {chatSection}
+            {gameSection}
           </View>
         </SafeKeyboardView>
       </SafeAreaView>
@@ -466,13 +455,6 @@ const privateStyles = StyleSheet.create({
     borderRadius: 20,
     marginLeft: 8,
   },
-  promptButton: {
-    backgroundColor: '#8e24aa',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginLeft: 8,
-  },
   playButton: {
     backgroundColor: '#009688',
     paddingVertical: 6,
@@ -513,6 +495,11 @@ const privateStyles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginBottom: 4,
+  },
+  gameBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 6,
   },
 });
 
@@ -789,7 +776,26 @@ const groupStyles = StyleSheet.create({
  * Exported chat wrapper  *
  *************************/
 export default function ChatScreen({ route }) {
-  const { user, event } = route.params || {};
+  const { user: paramUser, event } = route.params || {};
+  const { matches } = useChats();
+  const { theme } = useTheme();
+
   if (event) return <GroupChat event={event} />;
-  return <PrivateChat user={user} />;
+
+  const match = matches.find(
+    (m) => m.id === paramUser?.id || m.otherUserId === paramUser?.id
+  );
+
+  if (!match) {
+    return (
+      <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
+        <Header />
+        <Text style={{ marginTop: 80, textAlign: 'center', color: theme.text }}>
+          No match found.
+        </Text>
+      </LinearGradient>
+    );
+  }
+
+  return <PrivateChat user={match} />;
 }
