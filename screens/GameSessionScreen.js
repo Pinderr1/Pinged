@@ -148,7 +148,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
     const newId = await sendGameInvite(opponent.id, game.id);
     Toast.show({ type: 'success', text1: 'Invite sent!' });
     setGameResult(null);
-    navigation.replace('GameLobby', {
+    navigation.replace('GameSession', {
       game,
       opponent,
       inviteId: newId,
