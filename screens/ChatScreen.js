@@ -789,7 +789,26 @@ const groupStyles = StyleSheet.create({
  * Exported chat wrapper  *
  *************************/
 export default function ChatScreen({ route }) {
-  const { user, event } = route.params || {};
+  const { user: paramUser, event } = route.params || {};
+  const { matches } = useChats();
+  const { theme } = useTheme();
+
   if (event) return <GroupChat event={event} />;
-  return <PrivateChat user={user} />;
+
+  const match = matches.find(
+    (m) => m.id === paramUser?.id || m.otherUserId === paramUser?.id
+  );
+
+  if (!match) {
+    return (
+      <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
+        <Header />
+        <Text style={{ marginTop: 80, textAlign: 'center', color: theme.text }}>
+          No match found.
+        </Text>
+      </LinearGradient>
+    );
+  }
+
+  return <PrivateChat user={match} />;
 }
