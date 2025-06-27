@@ -149,6 +149,8 @@ const SwipeScreen = () => {
             name: u.displayName || 'User',
             age: u.age || '',
             bio: u.bio || '',
+            loveLanguage: u.loveLanguage || '',
+            idealDate: u.idealDate || '',
             favoriteGame: u.favoriteGame || '',
             skillLevel: u.skillLevel || '',
             gender: u.gender || '',
@@ -379,6 +381,12 @@ const SwipeScreen = () => {
               </Text>
               <Text style={styles.match}>Match: {matchPercent}%</Text>
               <Text style={styles.bio}>{displayUser.bio}</Text>
+              {displayUser.loveLanguage ? (
+                <Text style={styles.extra}>❤️ {displayUser.loveLanguage}</Text>
+              ) : null}
+              {displayUser.idealDate ? (
+                <Text style={styles.extra}>🎯 {displayUser.idealDate}</Text>
+              ) : null}
             </View>
             </Animated.View>
           </TouchableOpacity>
@@ -497,6 +505,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 6,
     color: '#666',
+  },
+  extra: {
+    fontSize: 14,
+    marginTop: 4,
+    color: '#555',
   },
   noMoreText: {
     fontSize: 20,

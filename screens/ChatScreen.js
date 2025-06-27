@@ -15,6 +15,7 @@ import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import styles from '../styles';
 import { games, gameList } from '../games';
+import { icebreakers } from '../data/prompts';
 import { db, firebase } from '../firebase';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -22,6 +23,7 @@ import { useChats } from '../contexts/ChatContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
+// TODO: add support for sending short voice or video intro clips in chat
 import Toast from 'react-native-toast-message';
 
 // Available emoji reactions for group chats
@@ -167,6 +169,12 @@ function PrivateChat({ user }) {
     }
   };
 
+  const handleIcebreaker = () => {
+    const prompt =
+      icebreakers[Math.floor(Math.random() * icebreakers.length)];
+    sendChatMessage(prompt, 'system');
+  };
+
   const handleGameEnd = (result) => {
     if (!result) return;
     addGameXP();
@@ -249,6 +257,12 @@ function PrivateChat({ user }) {
         />
         <TouchableOpacity style={privateStyles.sendButton} onPress={handleSend}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={privateStyles.promptButton}
+          onPress={handleIcebreaker}
+        >
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Icebreaker</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={activeGameId ? privateStyles.changeButton : privateStyles.playButton}
@@ -402,6 +416,13 @@ const privateStyles = StyleSheet.create({
     backgroundColor: '#ff4081',
     paddingVertical: 10,
     paddingHorizontal: 16,
+    borderRadius: 20,
+    marginLeft: 8,
+  },
+  promptButton: {
+    backgroundColor: '#8e24aa',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 20,
     marginLeft: 8,
   },

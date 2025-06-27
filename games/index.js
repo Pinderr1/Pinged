@@ -17,6 +17,7 @@ import BlackjackClient, { Game as blackjackGame, Board as BlackjackBoard, meta a
 import NimClient, { Game as nimGame, Board as NimBoard, meta as nimMeta } from './nim';
 import PigClient, { Game as pigGame, Board as PigBoard, meta as pigMeta } from './pig';
 import CoinTossClient, { Game as coinTossGame, Board as CoinTossBoard, meta as coinTossMeta } from './coin-toss';
+import FlirtyQuestionsClient, { Game as flirtyQuestionsGame, Board as FlirtyQuestionsBoard, meta as flirtyQuestionsMeta } from './flirty-questions';
 
 export const games = {
   [ticTacToeMeta.id]: {
@@ -106,6 +107,12 @@ export const games = {
     Game: pigGame,
     Board: PigBoard,
     meta: pigMeta,
+  },
+  [flirtyQuestionsMeta.id]: {
+    Client: FlirtyQuestionsClient,
+    Game: flirtyQuestionsGame,
+    Board: FlirtyQuestionsBoard,
+    meta: flirtyQuestionsMeta,
   },
   [coinTossMeta.id]: {
     Client: CoinTossClient,
