@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
@@ -9,22 +17,37 @@ const MatchesScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
   const { matches } = useChats();
 
-  const renderItem = ({ item }) => (
+  const newMatches = matches.filter((m) => (m.messages || []).length === 0);
+  const activeChats = matches.filter((m) => (m.messages || []).length > 0);
+
+  const renderNewMatch = ({ item }) => (
     <TouchableOpacity
-      style={[styles.item, { backgroundColor: theme.card }]}
+      style={styles.newMatch}
       onPress={() => navigation.navigate('Chat', { user: item })}
     >
-      <Image source={item.image} style={styles.avatar} />
+      <Image source={item.image} style={styles.newAvatar} />
+      <Text style={[styles.newName, { color: theme.text }]} numberOfLines={1}>
+        {item.name}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const renderChat = ({ item }) => (
+    <TouchableOpacity
+      style={[styles.chatItem, { backgroundColor: theme.card }]}
+      onPress={() => navigation.navigate('Chat', { user: item })}
+    >
+      <Image source={item.image} style={styles.chatAvatar} />
       <View style={{ flex: 1 }}>
-        <Text style={[styles.name, { color: theme.text }]}>{item.name}</Text>
-        <Text
-          style={[
-            styles.status,
-            { color: item.online ? '#2ecc71' : '#999' },
-          ]}
-        >
-          {item.online ? 'Online' : 'Offline'}
-        </Text>
+        <Text style={[styles.chatName, { color: theme.text }]}>{item.name}</Text>
+        {item.messages?.length ? (
+          <Text
+            style={[styles.chatPreview, { color: theme.textSecondary }]}
+            numberOfLines={1}
+          >
+            {item.messages[item.messages.length - 1].text}
+          </Text>
+        ) : null}
       </View>
     </TouchableOpacity>
   );
@@ -33,14 +56,26 @@ const MatchesScreen = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
         <Header />
-        <Text style={styles.title}>Your Matches</Text>
+        {newMatches.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>New Matches</Text>
+            <FlatList
+              data={newMatches}
+              keyExtractor={(item) => item.id}
+              renderItem={renderNewMatch}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.newList}
+            />
+          </>
+        )}
+        <Text style={styles.sectionTitle}>Active Chats</Text>
         <FlatList
-          data={matches}
+          data={activeChats}
           keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
+          renderItem={renderChat}
+          contentContainerStyle={{ paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}
-          horizontal={false}
         />
       </LinearGradient>
     </SafeAreaView>
@@ -48,39 +83,57 @@ const MatchesScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 22,
+  sectionTitle: {
+    fontSize: 16,
     fontWeight: '700',
-    textAlign: 'center',
-    marginVertical: 16,
+    marginHorizontal: 16,
+    marginBottom: 8,
     color: '#ff4081',
   },
-  item: {
+  newList: {
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  newMatch: {
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  newAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    marginBottom: 6,
+  },
+  newName: {
+    fontSize: 13,
+    fontWeight: '600',
+    maxWidth: 72,
+    textAlign: 'center',
+  },
+  chatItem: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
-    backgroundColor: '#fff',
     padding: 12,
-    borderRadius: 12,
-    marginHorizontal: 20,
+    marginHorizontal: 16,
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 3,
     elevation: 2,
   },
-  avatar: {
+  chatAvatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
     marginRight: 12,
   },
-  name: {
+  chatName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
   },
-  status: {
+  chatPreview: {
     fontSize: 12,
     marginTop: 2,
   },
