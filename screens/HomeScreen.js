@@ -82,8 +82,15 @@ const HomeScreen = ({ navigation }) => {
             <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
             <ProgressBar value={xpProgress} max={100} color={theme.accent} />
             <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
-            <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
-          </View>
+          <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
+        </View>
+
+        <View style={[local.gettingStartedCard, { backgroundColor: theme.card }]}>
+          <Text style={[local.gettingStartedTitle, { color: theme.text }]}>Getting Started</Text>
+          <Text style={[local.gettingStartedText, { color: theme.textSecondary }]}>• Swipe on the Play tab to find matches</Text>
+          <Text style={[local.gettingStartedText, { color: theme.textSecondary }]}>• Invite friends to any game from the Play screen</Text>
+          <Text style={[local.gettingStartedText, { color: theme.textSecondary }]}>• Join community events from the Community tab</Text>
+        </View>
 
           <Text style={local.section}>Quick Play</Text>
           <FlatList
@@ -187,6 +194,21 @@ const local = StyleSheet.create({
     padding: 16,
     marginHorizontal: 16,
     marginBottom: 16,
+  },
+  gettingStartedCard: {
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  gettingStartedTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  gettingStartedText: {
+    fontSize: 13,
+    marginBottom: 2,
   },
   levelText: {
     fontSize: 16,
