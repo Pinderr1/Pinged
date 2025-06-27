@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
+  Animated,
   TouchableOpacity,
   Image,
   TextInput,
@@ -18,10 +19,8 @@ import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useUser } from '../contexts/UserContext';
 import { db, firebase } from '../firebase';
-import { avatarSource } from '../utils/avatar';
 import styles from '../styles';
 import { games } from '../games';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SyncedGame from '../components/SyncedGame';
 import GameOverModal from '../components/GameOverModal';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
@@ -62,6 +61,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
 
   const GameComponent = game?.id ? games[game.id]?.Client : null;
   const isReady = devMode || inviteStatus === 'ready';
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   // Listen for Firestore invite status
   useEffect(() => {
@@ -84,6 +84,13 @@ const LiveSessionScreen = ({ route, navigation }) => {
       setCountdown(3);
     }
   }, [isReady]);
+
+  useEffect(() => {
+    if (countdown !== null) {
+      scaleAnim.setValue(1.5);
+      Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
+    }
+  }, [countdown]);
 
   // Countdown logic
   useEffect(() => {
@@ -177,153 +184,61 @@ const LiveSessionScreen = ({ route, navigation }) => {
     >
       <Header showLogoOnly />
 
-      {/* Game Info */}
-      <View style={{ alignItems: 'center', marginTop: 70, marginBottom: 20 }}>
-        <MaterialCommunityIcons name="controller-classic" size={34} color={theme.text} />
-        <Text style={{ fontSize: 20, fontWeight: '700', color: theme.text }}>
-          {game.title}
-        </Text>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        {GameComponent && showGame && (
+          <View style={{ alignItems: 'center' }}>
+            {devMode ? (
+              <>
+                <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                  <TouchableOpacity
+                    onPress={() => setDevPlayer('0')}
+                    style={{
+                      backgroundColor: devPlayer === '0' ? '#d81b60' : '#ccc',
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 10,
+                      marginRight: 8,
+                    }}
+                  >
+                    <Text style={{ color: '#fff' }}>Player 1</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setDevPlayer('1')}
+                    style={{
+                      backgroundColor: devPlayer === '1' ? '#d81b60' : '#ccc',
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 10,
+                    }}
+                  >
+                    <Text style={{ color: '#fff' }}>Player 2</Text>
+                  </TouchableOpacity>
+                </View>
+                <GameComponent playerID={devPlayer} matchID="dev" />
+              </>
+            ) : (
+              <SyncedGame
+                sessionId={inviteId}
+                gameId={game.id}
+                opponentId={opponent.id}
+                onGameEnd={handleGameEnd}
+              />
+            )}
+          </View>
+        )}
+        {!showGame && (
+          <View style={local.overlay}>
+            {countdown === null ? (
+              <>
+                <Text style={[local.waitText, { color: theme.text }]}>Waiting for opponent...</Text>
+                <Loader size="small" style={{ marginTop: 20 }} />
+              </>
+            ) : (
+              <Animated.Text style={[local.countText, { transform: [{ scale: scaleAnim }] }]}>{countdown}</Animated.Text>
+            )}
+          </View>
+        )}
       </View>
-
-      {/* Players Row */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', marginBottom: 30 }}>
-        {/* You */}
-        <View style={{ alignItems: 'center' }}>
-          <Image
-            source={avatarSource(user?.photoURL)}
-            style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 6 }}
-          />
-          <Text style={{ fontSize: 14, fontWeight: '600', color: theme.text }}>
-            You
-          </Text>
-        </View>
-
-        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#d81b60' }}>VS</Text>
-
-        {/* Opponent */}
-        <View style={{ alignItems: 'center' }}>
-          <Image
-            source={avatarSource(opponent?.photo)}
-            style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 6 }}
-          />
-          <Text style={{ fontSize: 14, fontWeight: '600', color: theme.text }}>
-            {opponent?.name || 'Unknown'}
-          </Text>
-        </View>
-      </View>
-
-      {/* Status Message */}
-      <Text style={{ textAlign: 'center', color: theme.textSecondary, marginBottom: 30 }}>
-        {countdown !== null
-          ? `Starting in ${countdown}...`
-          : isReady
-          ? 'Both players are ready!'
-          : 'Waiting for opponent to accept...'}
-      </Text>
-      {!isReady && countdown === null && (
-        <Loader size="small" style={{ marginBottom: 20 }} />
-      )}
-
-      {/* Buttons */}
-      <View style={{ paddingHorizontal: 20 }}>
-        <TouchableOpacity
-          style={{
-            backgroundColor: isReady ? '#28c76f' : '#ccc',
-            paddingVertical: 14,
-            borderRadius: 14,
-            alignItems: 'center',
-            marginBottom: 12
-          }}
-          disabled={!isReady || countdown !== null}
-          onPress={() => {
-            if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-              navigation.navigate('PremiumPaywall');
-              return;
-            }
-            setShowGame(true);
-            recordGamePlayed();
-          }}
-        >
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Play Now</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#facc15',
-            paddingVertical: 12,
-            borderRadius: 14,
-            alignItems: 'center',
-            marginBottom: 12
-          }}
-          onPress={() =>
-            navigation.navigate('Chat', {
-              user: {
-                id: opponent?.id,
-                name: opponent?.name,
-                image: opponent?.photo,
-              },
-              gameId: game.id,
-            })
-          }
-        >
-          <Text style={{ color: '#000', fontWeight: '600' }}>Chat</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#d81b60',
-            paddingVertical: 12,
-            borderRadius: 14,
-            alignItems: 'center'
-          }}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={{ color: '#fff', fontWeight: '600' }}>Cancel Invite</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Game Component */}
-      {showGame && GameComponent && (
-        <View style={{ alignItems: 'center', marginTop: 20 }}>
-          {devMode ? (
-            <>
-              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-                <TouchableOpacity
-                  onPress={() => setDevPlayer('0')}
-                  style={{
-                    backgroundColor: devPlayer === '0' ? '#d81b60' : '#ccc',
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 10,
-                    marginRight: 8,
-                  }}
-                >
-                  <Text style={{ color: '#fff' }}>Player 1</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setDevPlayer('1')}
-                  style={{
-                    backgroundColor: devPlayer === '1' ? '#d81b60' : '#ccc',
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 10,
-                  }}
-                >
-                  <Text style={{ color: '#fff' }}>Player 2</Text>
-                </TouchableOpacity>
-              </View>
-              <GameComponent playerID={devPlayer} matchID="dev" />
-            </>
-          ) : (
-            <SyncedGame
-              sessionId={inviteId}
-              gameId={game.id}
-              opponentId={opponent.id}
-              onGameEnd={handleGameEnd}
-            />
-          )}
-        </View>
-      )}
 
       {/* Game Over Modal */}
       <GameOverModal
@@ -700,6 +615,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#d1c4e9',
   },
   tabText: { fontWeight: 'bold' },
+});
+
+const local = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0007',
+  },
+  countText: {
+    fontSize: 80,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  waitText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 });
 
 export default GameSessionScreen;
