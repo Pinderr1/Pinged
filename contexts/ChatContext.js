@@ -10,10 +10,6 @@ const ChatContext = createContext();
 
 const STORAGE_KEY = 'chatMatches';
 
-// Default to an empty match list; real matches are loaded from Firestore or
-// AsyncStorage. Dummy entries were previously used here for demo purposes.
-const initialMatches = [];
-
 export const ChatProvider = ({ children }) => {
   const { devMode } = useDev();
   const { user } = useUser();
@@ -32,9 +28,8 @@ export const ChatProvider = ({ children }) => {
     pendingInvite: null,
   };
 
-  const [matches, setMatches] = useState(
-    devMode ? [...initialMatches, devMatch] : initialMatches
-  );
+  // Start with no matches and inject a tester match when dev mode is enabled.
+  const [matches, setMatches] = useState(devMode ? [devMatch] : []);
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((data) => {
