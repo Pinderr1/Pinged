@@ -97,7 +97,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
     if (countdown === null) return;
     const handleStart = async () => {
       if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-        navigation.navigate('PremiumPaywall');
+        navigation.navigate('Premium', { context: 'paywall' });
         return;
       }
       setShowGame(true);
@@ -130,7 +130,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
 
   const handleRematch = async () => {
     if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
     if (inviteId && user?.uid) {

@@ -40,7 +40,7 @@ const HomeScreen = ({ navigation }) => {
       setPlayTarget(target);
       setGamePickerVisible(true);
     } else {
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'paywall' });
     }
   };
 
@@ -48,7 +48,7 @@ const HomeScreen = ({ navigation }) => {
     const isLocked = !isPremiumUser && game.premium;
     if (isLocked) {
       setGamePickerVisible(false);
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
     setGamePickerVisible(false);
