@@ -73,7 +73,12 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate('Play');
     } else if (playTarget === 'ai') {
       const bot = getRandomBot();
-      navigation.navigate('GameWithBot', { botId: bot.id, game: game.id });
+      const aiGames = { '1': 'ticTacToe', '3': 'rockPaperScissors' };
+      const gameKey = aiGames[game.id];
+      navigation.navigate('GameWithBot', {
+        botId: bot.id,
+        game: gameKey || 'ticTacToe',
+      });
     } else {
       navigation.navigate('GameInvite', { game: { id: game.id, title: game.title } });
     }
