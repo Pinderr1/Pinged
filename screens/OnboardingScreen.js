@@ -30,8 +30,7 @@ const questions = [
   // TODO: allow recording a short voice or video intro and store URL in profile
   { key: 'name', label: 'What’s your name?' },
   { key: 'age', label: 'How old are you?' },
-  { key: 'gender', label: 'Select your gender' },
-  { key: 'genderPref', label: 'Preferred teammate gender' },
+  { key: 'gender', label: 'Tell us your gender and who you are interested in' },
   { key: 'bio', label: 'Write a short bio' },
   { key: 'loveLanguage', label: 'Your love language?' },
   { key: 'idealDate', label: 'Describe your ideal date' },
@@ -96,6 +95,7 @@ export default function OnboardingScreen() {
     if (currentField === 'age') return /^\d+$/.test(value) && parseInt(value, 10) >= 18;
     if (currentField === 'avatar') return !!value;
     if (currentField === 'location') return value && value.length > 3;
+    if (currentField === 'gender') return answers.gender && answers.genderPref;
     return value && value.toString().trim().length > 0;
   };
 
@@ -276,18 +276,51 @@ export default function OnboardingScreen() {
       );
     }
 
+    if (currentField === 'gender') {
+      return (
+        <View>
+          <RNPickerSelect
+            onValueChange={(val) =>
+              setAnswers((prev) => ({ ...prev, gender: val }))
+            }
+            value={answers.gender}
+            placeholder={{ label: 'Select gender', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: styles.input,
+              inputAndroid: styles.input,
+              placeholder: { color: darkMode ? '#999' : '#aaa' },
+            }}
+            items={[
+              { label: 'Male', value: 'Male' },
+              { label: 'Female', value: 'Female' },
+              { label: 'Other', value: 'Other' },
+            ]}
+          />
+          <RNPickerSelect
+            onValueChange={(val) =>
+              setAnswers((prev) => ({ ...prev, genderPref: val }))
+            }
+            value={answers.genderPref}
+            placeholder={{ label: 'Interested in', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: styles.input,
+              inputAndroid: styles.input,
+              placeholder: { color: darkMode ? '#999' : '#aaa' },
+            }}
+            items={[
+              { label: 'Male', value: 'Male' },
+              { label: 'Female', value: 'Female' },
+              { label: 'Other', value: 'Other' },
+              { label: 'Any', value: 'Any' },
+            ]}
+          />
+        </View>
+      );
+    }
+
     const pickerFields = {
-      gender: [
-        { label: 'Male', value: 'Male' },
-        { label: 'Female', value: 'Female' },
-        { label: 'Other', value: 'Other' },
-      ],
-      genderPref: [
-        { label: 'Male', value: 'Male' },
-        { label: 'Female', value: 'Female' },
-        { label: 'Other', value: 'Other' },
-        { label: 'Any', value: 'Any' },
-      ],
       favoriteGame: gameOptions,
       skillLevel: [
         { label: 'Beginner', value: 'Beginner' },
