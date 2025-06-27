@@ -324,7 +324,7 @@ function PrivateChat({ user }) {
       style={{
         flex: 1,
         padding: 10,
-        borderBottomWidth: 1,
+        borderTopWidth: 1,
         borderColor: darkMode ? '#444' : '#ccc',
         justifyContent: 'center',
         alignItems: 'center',
@@ -387,8 +387,8 @@ function PrivateChat({ user }) {
       <SafeAreaView style={{ flex: 1 }}>
         <SafeKeyboardView style={{ flex: 1, paddingTop: 60 }}>
           <View style={{ flex: 1 }}>
-            {gameSection}
             {chatSection}
+            {gameSection}
           </View>
         </SafeKeyboardView>
       </SafeAreaView>
