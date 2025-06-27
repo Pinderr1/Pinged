@@ -47,7 +47,7 @@ const GameInviteScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     if (!currentUser?.isPremium && gamesLeft <= 0 && !devMode) {
-      navigation.replace('PremiumPaywall');
+      navigation.replace('Premium', { context: 'paywall' });
     }
   }, [gamesLeft, currentUser?.isPremium, devMode]);
 
@@ -77,7 +77,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   const handleInvite = async (user) => {
     const isPremiumUser = !!currentUser?.isPremium;
     if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
 

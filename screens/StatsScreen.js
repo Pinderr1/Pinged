@@ -158,7 +158,7 @@ const StatsScreen = ({ navigation }) => {
 
         {!isPremium && (
           <TouchableOpacity
-            onPress={() => navigation.navigate('PremiumPaywall')}
+            onPress={() => navigation.navigate('Premium', { context: 'paywall' })}
             style={styles.premiumButton}
           >
             <Text style={styles.premiumText}>Upgrade to Premium</Text>

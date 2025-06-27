@@ -26,7 +26,6 @@ export default function AppStack() {
       <Stack.Screen name="Community" component={CommunityScreen} />
       <Stack.Screen name="EventChat" component={EventChatScreen} />
       <Stack.Screen name="Premium" component={PremiumScreen} />
-      <Stack.Screen name="PremiumPaywall" component={PremiumScreen} />
       <Stack.Screen name="Stats" component={StatsScreen} />
       <Stack.Screen name="GameWithBot" component={GameSessionScreen} />
     </Stack.Navigator>

@@ -19,7 +19,7 @@ const SettingsScreen = ({ navigation }) => {
     await auth.signOut();
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
-  const handleGoPremium = () => navigation.navigate('PremiumPaywall');
+  const handleGoPremium = () => navigation.navigate('Premium', { context: 'paywall' });
 
   return (
     <LinearGradient

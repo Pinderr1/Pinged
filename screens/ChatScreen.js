@@ -184,7 +184,7 @@ export default function ChatScreen({ route }) {
     const isPremiumUser = !!currentUser?.isPremium;
     if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
       setShowGameModal(false);
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
     const title = games[gameId].meta.title;
@@ -254,7 +254,7 @@ export default function ChatScreen({ route }) {
           style={activeGameId ? chatStyles.changeButton : chatStyles.playButton}
           onPress={() => {
             if (!currentUser?.isPremium && gamesLeft <= 0 && !devMode) {
-              navigation.navigate('PremiumPaywall');
+              navigation.navigate('Premium', { context: 'paywall' });
             } else {
               setShowGameModal(true);
             }

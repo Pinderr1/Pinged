@@ -80,11 +80,11 @@ const PlayScreen = ({ navigation }) => {
     if (!previewGame) return;
     setPreviewGame(null);
     if (previewGame.premium && !isPremiumUser && !devMode) {
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
     if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
     const { id, title, category, description } = previewGame;
