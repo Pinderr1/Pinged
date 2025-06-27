@@ -16,7 +16,6 @@ import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import styles from '../styles';
 import { games, gameList } from '../games';
-import { icebreakers } from '../data/prompts';
 import { db, firebase } from '../firebase';
 import { uploadVoiceAsync } from '../utils/upload';
 import { useTheme } from '../contexts/ThemeContext';
@@ -178,11 +177,6 @@ function PrivateChat({ user }) {
     }
   };
 
-  const handleIcebreaker = () => {
-    const prompt =
-      icebreakers[Math.floor(Math.random() * icebreakers.length)];
-    sendChatMessage(prompt, 'system');
-  };
 
   const handleVoiceFinish = async () => {
     const result = await stopRecording();
@@ -283,6 +277,22 @@ function PrivateChat({ user }) {
         keyboardShouldPersistTaps="handled"
       />
       {isTyping && <Text style={privateStyles.typingIndicator}>{user.name} is typing...</Text>}
+      <View style={privateStyles.gameBar}>
+        <TouchableOpacity
+          style={activeGameId ? privateStyles.changeButton : privateStyles.playButton}
+          onPress={() => {
+            if (!currentUser?.isPremium && gamesLeft <= 0 && !devMode) {
+              navigation.navigate('Premium', { context: 'paywall' });
+            } else {
+              setShowGameModal(true);
+            }
+          }}
+        >
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+            {activeGameId ? 'Change Game' : 'Invite Game'}
+          </Text>
+        </TouchableOpacity>
+      </View>
       <View style={privateStyles.inputBar}>
         <TouchableOpacity
           onLongPress={startRecording}
@@ -304,26 +314,6 @@ function PrivateChat({ user }) {
         />
         <TouchableOpacity style={privateStyles.sendButton} onPress={handleSend}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={privateStyles.promptButton}
-          onPress={handleIcebreaker}
-        >
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Icebreaker</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={activeGameId ? privateStyles.changeButton : privateStyles.playButton}
-          onPress={() => {
-            if (!currentUser?.isPremium && gamesLeft <= 0 && !devMode) {
-              navigation.navigate('Premium', { context: 'paywall' });
-            } else {
-              setShowGameModal(true);
-            }
-          }}
-        >
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-            {activeGameId ? 'Change Game' : 'Invite Game'}
-          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -466,13 +456,6 @@ const privateStyles = StyleSheet.create({
     borderRadius: 20,
     marginLeft: 8,
   },
-  promptButton: {
-    backgroundColor: '#8e24aa',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginLeft: 8,
-  },
   playButton: {
     backgroundColor: '#009688',
     paddingVertical: 6,
@@ -513,6 +496,11 @@ const privateStyles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginBottom: 4,
+  },
+  gameBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 6,
   },
 });
 
