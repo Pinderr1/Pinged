@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TextInput, TouchableOpacity, Text, Keyboard } from 'react-native';
 
-export default function GameFilters({ search, setSearch, filter, setFilter, category, setCategory, categories }) {
+export default function GameFilters({ search, setSearch, filter, setFilter }) {
   return (
     <>
       <View
@@ -53,30 +53,6 @@ export default function GameFilters({ search, setSearch, filter, setFilter, cate
         ))}
       </View>
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginBottom: 6 }}>
-        {categories.map((cat) => (
-          <TouchableOpacity
-            key={cat}
-            onPress={() => setCategory(cat)}
-            style={{
-              paddingVertical: 3,
-              paddingHorizontal: 8,
-              borderRadius: 16,
-              backgroundColor: category === cat ? '#ff80ab' : '#eee',
-              margin: 2
-            }}
-          >
-            <Text
-              style={{
-                color: category === cat ? '#fff' : '#444',
-                fontSize: 11
-              }}
-            >
-              {cat}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
     </>
   );
 }

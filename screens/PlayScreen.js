@@ -27,10 +27,6 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH * 0.42;
 
 
-const getAllCategories = () => {
-  const cats = [...new Set(allGames.map((g) => g.category))];
-  return ['All', ...cats];
-};
 
 const PlayScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
@@ -40,7 +36,6 @@ const PlayScreen = ({ navigation }) => {
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const isPremiumUser = !!user?.isPremium;
   const [filter, setFilter] = useState('All');
-  const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
   const [favorites, setFavorites] = useState([]);
   const [previewGame, setPreviewGame] = useState(null);
@@ -60,8 +55,7 @@ const PlayScreen = ({ navigation }) => {
       (filter === 'Premium' && game.premium) ||
       (filter === 'Favorites' && favorites.includes(game.id));
     const matchSearch = game.title.toLowerCase().includes(search.toLowerCase());
-    const matchTag = category === 'All' || game.category === category;
-    return matchCategory && matchSearch && matchTag;
+    return matchCategory && matchSearch;
   });
 
 
@@ -135,9 +129,6 @@ const PlayScreen = ({ navigation }) => {
         setSearch={setSearch}
         filter={filter}
         setFilter={setFilter}
-        category={category}
-        setCategory={setCategory}
-        categories={getAllCategories()}
       />
 
 
