@@ -69,7 +69,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
     if (countdown === null) return;
     const handleStart = async () => {
       if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-        navigation.navigate('PremiumPaywall');
+        navigation.navigate('Premium', { context: 'locked' });
         return;
       }
       setShowGame(true);
@@ -102,7 +102,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
 
   const handleRematch = async () => {
     if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'locked' });
       return;
     }
     if (inviteId && user?.uid) {
@@ -216,7 +216,7 @@ const GameLobbyScreen = ({ route, navigation }) => {
           disabled={!isReady || countdown !== null}
           onPress={() => {
             if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-              navigation.navigate('PremiumPaywall');
+              navigation.navigate('Premium', { context: 'locked' });
               return;
             }
             setShowGame(true);

@@ -168,7 +168,7 @@ const SwipeScreen = () => {
 
     if (direction === 'right') {
       if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
-        navigation.navigate('PremiumPaywall');
+        navigation.navigate('Premium', { context: 'locked' });
         return;
       }
 
@@ -245,7 +245,7 @@ const SwipeScreen = () => {
 
   const rewind = () => {
     if (!isPremiumUser && !devMode) {
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'locked' });
       return;
     }
     if (history.length === 0) return;
@@ -258,7 +258,7 @@ const SwipeScreen = () => {
 
   const handleSuperLike = () => {
     if (!isPremiumUser && !devMode) {
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'locked' });
       return;
     }
     handleSwipe('right');
@@ -267,7 +267,7 @@ const SwipeScreen = () => {
 
   const handleBoost = () => {
     if (!isPremiumUser && !devMode) {
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'locked' });
       return;
     }
     setBoostActive(true);
@@ -314,7 +314,7 @@ const SwipeScreen = () => {
   const handleGameInvite = () => {
     if (!displayUser) return;
     if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-      navigation.navigate('PremiumPaywall');
+      navigation.navigate('Premium', { context: 'locked' });
       return;
     }
     navigation.navigate('GameInvite', { user: displayUser });
