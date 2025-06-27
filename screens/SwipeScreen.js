@@ -390,7 +390,7 @@ const SwipeScreen = () => {
             </View>
             </Animated.View>
           </TouchableOpacity>
-          {showSuperLikeAnim && (
+          {showSuperLikeAnim ? (
             <View style={styles.superLikeOverlay} pointerEvents="none">
               <LottieView
                 source={require('../assets/hearts.json')}
@@ -399,7 +399,7 @@ const SwipeScreen = () => {
                 style={{ width: 200, height: 200 }}
               />
             </View>
-          )}
+          ) : null}
         ) : (
           <Text style={styles.noMoreText}>No more users</Text>
         )}
