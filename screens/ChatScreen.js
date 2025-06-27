@@ -240,6 +240,16 @@ function PrivateChat({ user }) {
       />
       {isTyping && <Text style={privateStyles.typingIndicator}>{user.name} is typing...</Text>}
       <View style={privateStyles.inputBar}>
+        <TextInput
+          placeholder="Type a message..."
+          style={privateStyles.textInput}
+          value={text}
+          onChangeText={handleTextChange}
+          placeholderTextColor="#888"
+        />
+        <TouchableOpacity style={privateStyles.sendButton} onPress={handleSend}>
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={activeGameId ? privateStyles.changeButton : privateStyles.playButton}
           onPress={() => {
@@ -251,18 +261,8 @@ function PrivateChat({ user }) {
           }}
         >
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-            {activeGameId ? 'Change Game' : 'Play'}
+            {activeGameId ? 'Change Game' : 'Invite Game'}
           </Text>
-        </TouchableOpacity>
-        <TextInput
-          placeholder="Type a message..."
-          style={privateStyles.textInput}
-          value={text}
-          onChangeText={handleTextChange}
-          placeholderTextColor="#888"
-        />
-        <TouchableOpacity style={privateStyles.sendButton} onPress={handleSend}>
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -403,20 +403,21 @@ const privateStyles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
+    marginLeft: 8,
   },
   playButton: {
     backgroundColor: '#009688',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 20,
-    marginRight: 10,
+    marginLeft: 8,
   },
   changeButton: {
     backgroundColor: '#607d8b',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 20,
-    marginRight: 10,
+    marginLeft: 8,
   },
   modalOverlay: {
     flex: 1,
