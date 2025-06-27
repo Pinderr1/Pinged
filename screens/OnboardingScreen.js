@@ -31,6 +31,7 @@ const questions = [
   { key: 'age', label: 'How old are you?' },
   { key: 'gender', label: 'Select your gender' },
   { key: 'genderPref', label: 'Preferred teammate gender' },
+  { key: 'loveLanguage', label: 'Primary love language?' },
   { key: 'bio', label: 'Write a short bio' },
   { key: 'location', label: 'Where are you located?' },
   { key: 'favoriteGame', label: 'Pick your favorite game' },
@@ -51,11 +52,13 @@ export default function OnboardingScreen() {
     age: '',
     gender: '',
     genderPref: '',
+    loveLanguage: '',
     bio: '',
     location: '',
     favoriteGame: '',
     skillLevel: '',
   });
+  // TODO: support short video intro during onboarding
   const defaultGameOptions = [
     { label: 'Chess', value: 'Chess' },
     { label: 'Checkers', value: 'Checkers' },
@@ -157,6 +160,7 @@ export default function OnboardingScreen() {
           age: parseInt(answers.age, 10) || null,
           gender: sanitizeText(answers.gender),
           genderPref: sanitizeText(answers.genderPref),
+          loveLanguage: sanitizeText(answers.loveLanguage),
           location: sanitizeText(answers.location),
           favoriteGame: sanitizeText(answers.favoriteGame),
           skillLevel: sanitizeText(answers.skillLevel),
@@ -280,6 +284,13 @@ export default function OnboardingScreen() {
         { label: 'Female', value: 'Female' },
         { label: 'Other', value: 'Other' },
         { label: 'Any', value: 'Any' },
+      ],
+      loveLanguage: [
+        { label: 'Words of Affirmation', value: 'Words of Affirmation' },
+        { label: 'Quality Time', value: 'Quality Time' },
+        { label: 'Acts of Service', value: 'Acts of Service' },
+        { label: 'Physical Touch', value: 'Physical Touch' },
+        { label: 'Receiving Gifts', value: 'Receiving Gifts' },
       ],
       favoriteGame: gameOptions,
       skillLevel: [

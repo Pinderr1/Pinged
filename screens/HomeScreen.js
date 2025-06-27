@@ -20,6 +20,7 @@ import { allGames } from '../data/games';
 import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
 import EventBanner from '../components/EventBanner';
+import GradientButton from '../components/GradientButton';
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -124,43 +125,45 @@ const HomeScreen = ({ navigation }) => {
           )}
         />
 
-          <EventBanner />
+        <GradientButton text="Keep Swiping" onPress={() => navigation.navigate('Explore')} />
 
-          <Text style={local.section}>Quick Play</Text>
-          <FlatList
-            data={quickPlayOptions}
-            keyExtractor={(item) => item.key}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={local.carousel}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[local.tile, { backgroundColor: theme.card }]}
-                onPress={() => openGamePicker(item.key)}
-              >
-                <Text style={local.tileEmoji}>{item.emoji}</Text>
-                <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
-              </TouchableOpacity>
-            )}
-          />
+        <EventBanner />
 
-          <Text style={local.section}>Your Matches</Text>
-          <FlatList
-            data={matches}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={local.carousel}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[local.matchTile, { backgroundColor: theme.card }]}
-                onPress={() => navigation.navigate('Chat', { user: item })}
-              >
-                <Image source={item.image} style={local.matchAvatar} />
-                <Text style={[local.matchName, { color: theme.text }]}>{item.name}</Text>
-              </TouchableOpacity>
-            )}
-          />
+        <Text style={local.section}>Your Matches</Text>
+        <FlatList
+          data={matches}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={local.carousel}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[local.matchTile, { backgroundColor: theme.card }]}
+              onPress={() => navigation.navigate('Chat', { user: item })}
+            >
+              <Image source={item.image} style={local.matchAvatar} />
+              <Text style={[local.matchName, { color: theme.text }]}>{item.name}</Text>
+            </TouchableOpacity>
+          )}
+        />
+
+        <Text style={local.section}>Play a Game</Text>
+        <FlatList
+          data={quickPlayOptions}
+          keyExtractor={(item) => item.key}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={local.carousel}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[local.tile, { backgroundColor: theme.card }]}
+              onPress={() => openGamePicker(item.key)}
+            >
+              <Text style={local.tileEmoji}>{item.emoji}</Text>
+              <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
+            </TouchableOpacity>
+          )}
+        />
 
           <Text style={local.section}>Suggested Games</Text>
           <FlatList

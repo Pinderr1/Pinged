@@ -77,6 +77,9 @@ export const ChatProvider = ({ children }) => {
             matchedAt: m.createdAt
               ? m.createdAt.toDate?.().toISOString()
               : 'now',
+            isNew:
+              m.createdAt &&
+              Date.now() - m.createdAt.toDate?.().getTime() < 259200000,
             activeGameId: prevMatch.activeGameId || null,
             pendingInvite: prevMatch.pendingInvite || null,
           };

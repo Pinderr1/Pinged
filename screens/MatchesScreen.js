@@ -25,6 +25,11 @@ const MatchesScreen = ({ navigation }) => {
         >
           {item.online ? 'Online' : 'Offline'}
         </Text>
+        {item.isNew && (
+          <View style={styles.newBadge}>
+            <Text style={styles.badgeText}>NEW</Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -83,6 +88,19 @@ const styles = StyleSheet.create({
   status: {
     fontSize: 12,
     marginTop: 2,
+  },
+  newBadge: {
+    backgroundColor: '#ff4081',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
   },
 });
 

@@ -13,6 +13,15 @@ import * as ImagePicker from 'expo-image-picker';
 import { uploadAvatarAsync } from '../utils/upload';
 import { avatarSource } from '../utils/avatar';
 import { sanitizeText } from '../utils/sanitize';
+import RNPickerSelect from 'react-native-picker-select';
+
+const LOVE_LANGUAGES = [
+  'Words of Affirmation',
+  'Quality Time',
+  'Acts of Service',
+  'Physical Touch',
+  'Receiving Gifts',
+];
 
 const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
@@ -20,16 +29,17 @@ const ProfileScreen = ({ navigation, route }) => {
   const [name, setName] = useState(user?.displayName || '');
   const [age, setAge] = useState(user?.age ? String(user.age) : '');
   const [gender, setGender] = useState(user?.gender || '');
+  const [loveLanguage, setLoveLanguage] = useState(user?.loveLanguage || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [location, setLocation] = useState(user?.location || '');
   const [avatar, setAvatar] = useState(user?.photoURL || '');
 
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Toast.show({ type: 'error', text1: 'Permission denied' });
-      return;
-    }
+const pickImage = async () => {
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (status !== 'granted') {
+    Toast.show({ type: 'error', text1: 'Permission denied' });
+    return;
+  }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -37,15 +47,18 @@ const ProfileScreen = ({ navigation, route }) => {
       quality: 0.7,
     });
 
-    if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
-    }
-  };
+  if (!result.canceled) {
+    setAvatar(result.assets[0].uri);
+  }
+};
+
+// TODO: allow recording and uploading a short voice intro
 
   useEffect(() => {
     setName(user?.displayName || '');
     setAge(user?.age ? String(user.age) : '');
     setGender(user?.gender || '');
+    setLoveLanguage(user?.loveLanguage || '');
     setBio(user?.bio || '');
     setLocation(user?.location || '');
     setAvatar(user?.photoURL || '');
@@ -71,6 +84,7 @@ const ProfileScreen = ({ navigation, route }) => {
       displayName: sanitizeText(name.trim()),
       age: parseInt(age, 10) || null,
       gender: sanitizeText(gender),
+      loveLanguage: sanitizeText(loveLanguage),
       bio: sanitizeText(bio.trim()),
       location: sanitizeText(location),
       photoURL,
@@ -139,6 +153,19 @@ const ProfileScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         ))}
       </View>
+
+      <RNPickerSelect
+        onValueChange={(val) => setLoveLanguage(val)}
+        value={loveLanguage}
+        placeholder={{ label: 'Love Language', value: null }}
+        useNativeAndroidPickerStyle={false}
+        style={{
+          inputIOS: styles.input,
+          inputAndroid: styles.input,
+          placeholder: { color: '#999' },
+        }}
+        items={LOVE_LANGUAGES.map((l) => ({ label: l, value: l }))}
+      />
 
       <TextInput
         style={[styles.input, { height: 100, textAlignVertical: 'top' }]}

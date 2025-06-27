@@ -15,6 +15,7 @@ import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import styles from '../styles';
 import { games, gameList } from '../games';
+import { icebreakers } from '../data/icebreakers';
 import { db, firebase } from '../firebase';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -167,6 +168,11 @@ function PrivateChat({ user }) {
     }
   };
 
+  const handlePrompt = () => {
+    const random = icebreakers[Math.floor(Math.random() * icebreakers.length)];
+    setText(random);
+  };
+
   const handleGameEnd = (result) => {
     if (!result) return;
     addGameXP();
@@ -251,8 +257,14 @@ function PrivateChat({ user }) {
           }}
         >
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-            {activeGameId ? 'Change Game' : 'Play'}
+            {activeGameId ? 'Change Game' : 'Invite Game'}
           </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={privateStyles.promptButton}
+          onPress={handlePrompt}
+        >
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Prompt</Text>
         </TouchableOpacity>
         <TextInput
           placeholder="Type a message..."
@@ -404,17 +416,24 @@ const privateStyles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
   },
+  promptButton: {
+    backgroundColor: '#8e44ad',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginRight: 10,
+  },
   playButton: {
     backgroundColor: '#009688',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 20,
     marginRight: 10,
   },
   changeButton: {
     backgroundColor: '#607d8b',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 20,
     marginRight: 10,
   },
