@@ -376,6 +376,24 @@ export default function OnboardingScreen() {
       );
     }
 
+    if (currentField === 'bio') {
+      return (
+        <TextInput
+          style={[styles.input, styles.bioInput]}
+          value={answers.bio}
+          onChangeText={(text) =>
+            setAnswers((prev) => ({ ...prev, bio: text.slice(0, 200) }))
+          }
+          placeholder={questions[step].label}
+          placeholderTextColor={darkMode ? '#999' : '#aaa'}
+          multiline
+          numberOfLines={4}
+          maxLength={200}
+          textAlignVertical="top"
+        />
+      );
+    }
+
     return (
       <TextInput
         style={styles.input}
@@ -473,6 +491,10 @@ const getStyles = (theme) => {
       color: textColor,
       fontSize: 18,
       paddingVertical: 8,
+    },
+    bioInput: {
+      height: 100,
+      textAlignVertical: 'top',
     },
     imagePicker: {
       alignSelf: 'center',
