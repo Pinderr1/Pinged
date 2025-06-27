@@ -30,6 +30,9 @@ const HomeScreen = ({ navigation }) => {
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('stranger');
 
+  const aiGameIdMap = { '1': 'ticTacToe', '3': 'rockPaperScissors' };
+  const aiGames = allGames.filter((g) => aiGameIdMap[g.id]);
+
   const shortcutActions = [
     { key: 'startChat', title: 'Start Chat', emoji: '💬' },
     { key: 'editProfile', title: 'Edit Profile', emoji: '📝' },
@@ -71,7 +74,11 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate('Play');
     } else if (playTarget === 'ai') {
       const bot = getRandomBot();
-      navigation.navigate('GameWithBot', { botId: bot.id, game: game.id });
+      const key = aiGameIdMap[game.id];
+      navigation.navigate('GameWithBot', {
+        botId: bot.id,
+        game: key || 'ticTacToe',
+      });
     } else {
       navigation.navigate('GameInvite', { game: { id: game.id, title: game.title } });
     }
@@ -193,7 +200,7 @@ const HomeScreen = ({ navigation }) => {
           <View style={local.modalBackdrop}>
             <View style={local.modalCard}>
               <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 12 }}>Choose a Game</Text>
-              {allGames.slice(0, 6).map((game) => (
+              {(playTarget === 'ai' ? aiGames : allGames.slice(0, 6)).map((game) => (
                 <TouchableOpacity
                   key={game.id}
                   style={local.gameOption}
