@@ -274,8 +274,9 @@ export default function OnboardingScreen() {
     if (currentField === 'avatar') {
       return (
         <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-          <Image source={avatarSource(answers.avatar)} style={styles.avatar} />
-          {!answers.avatar && (
+          {answers.avatar ? (
+            <Image source={avatarSource(answers.avatar)} style={styles.avatar} />
+          ) : (
             <View style={styles.placeholder}>
               <Text style={{ color: '#999' }}>Tap to select image</Text>
             </View>
