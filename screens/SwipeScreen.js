@@ -289,21 +289,15 @@ const SwipeScreen = () => {
         useNativeDriver: false,
       }),
       onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy < -120 && Math.abs(gesture.dx) < 80) {
+        if (gesture.dx > 120) {
           Animated.timing(pan, {
-            toValue: { x: 0, y: -500 },
-            duration: 200,
-            useNativeDriver: false,
-          }).start(() => handleSuperLike());
-        } else if (gesture.dx > 120) {
-          Animated.timing(pan, {
-            toValue: { x: 500, y: 0 },
+            toValue: { x: SCREEN_WIDTH, y: 0 },
             duration: 200,
             useNativeDriver: false,
           }).start(() => handleSwipe('right'));
         } else if (gesture.dx < -120) {
           Animated.timing(pan, {
-            toValue: { x: -500, y: 0 },
+            toValue: { x: -SCREEN_WIDTH, y: 0 },
             duration: 200,
             useNativeDriver: false,
           }).start(() => handleSwipe('left'));
@@ -337,29 +331,30 @@ const SwipeScreen = () => {
       <Header />
       <View style={styles.container}>
         {displayUser ? (
-          <TouchableOpacity
-            activeOpacity={1}
+          <Animated.View
             {...panResponder.panHandlers}
-            onPress={() =>
-              setImageIndex((i) => (i + 1) % displayUser.images.length)
-            }
+            style={[
+              styles.card,
+              {
+                transform: [
+                  { translateX: pan.x },
+                  { translateY: pan.y },
+                  {
+                    rotate: pan.x.interpolate({
+                      inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+                      outputRange: ['-15deg', '0deg', '15deg'],
+                    }),
+                  },
+                ],
+              },
+            ]}
           >
-            <Animated.View
-              style={[
-                {
-                  transform: [
-                    { translateX: pan.x },
-                    { translateY: pan.y },
-                    {
-                      rotate: pan.x.interpolate({
-                        inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
-                        outputRange: ['-15deg', '0deg', '15deg'],
-                      }),
-                    },
-                  ],
-                },
-                styles.card,
-              ]}
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() =>
+                setImageIndex((i) => (i + 1) % displayUser.images.length)
+              }
+              style={{ flex: 1 }}
             >
             <Animated.View style={[styles.badge, styles.likeBadge, { opacity: likeOpacity }]}>
               <Text style={[styles.badgeText, styles.likeText]}>LIKE</Text>
@@ -388,8 +383,8 @@ const SwipeScreen = () => {
                 <Text style={styles.extra}>🎯 {displayUser.idealDate}</Text>
               ) : null}
             </View>
-            </Animated.View>
           </TouchableOpacity>
+          </Animated.View>
           {showSuperLikeAnim ? (
             <View style={styles.superLikeOverlay} pointerEvents="none">
               <LottieView
@@ -463,10 +458,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 80,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   card: {
-    width: '100%',
+    position: 'absolute',
+    width: SCREEN_WIDTH * 0.9,
     height: CARD_HEIGHT,
     borderRadius: 20,
     overflow: 'hidden',
