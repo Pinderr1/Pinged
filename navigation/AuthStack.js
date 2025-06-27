@@ -2,8 +2,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/LoginScreen';
-import EmailLoginScreen from '../screens/EmailLoginScreen';
-import SignUpScreen from '../screens/SignUpScreen';
+import EmailAuthScreen from '../screens/EmailAuthScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -11,8 +10,16 @@ export default function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="EmailLogin" component={EmailLoginScreen} />
-      <Stack.Screen name="Signup" component={SignUpScreen} />
+      <Stack.Screen
+        name="EmailLogin"
+        component={EmailAuthScreen}
+        initialParams={{ mode: 'login' }}
+      />
+      <Stack.Screen
+        name="Signup"
+        component={EmailAuthScreen}
+        initialParams={{ mode: 'signup' }}
+      />
     </Stack.Navigator>
   );
 }
