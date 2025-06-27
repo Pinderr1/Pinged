@@ -10,6 +10,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
@@ -17,12 +18,15 @@ import styles from '../styles';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
 import { db, firebase } from '../firebase';
+import { uploadVoiceAsync } from '../utils/upload';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useChats } from '../contexts/ChatContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
+import VoiceMessageBubble from '../components/VoiceMessageBubble';
+import useVoiceRecorder from '../hooks/useVoiceRecorder';
 // TODO: add support for sending short voice or video intro clips in chat
 import Toast from 'react-native-toast-message';
 
@@ -59,13 +63,14 @@ function PrivateChat({ user }) {
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeout = useRef(null);
   const [otherUserId, setOtherUserId] = useState(null);
+  const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
 
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
   const [messages, setMessages] = useState([]);
 
-  const sendChatMessage = async (msgText, sender = 'user') => {
-    if (!msgText.trim()) return;
+  const sendChatMessage = async (msgText = '', sender = 'user', extras = {}) => {
+    if (!msgText.trim() && !extras.voice) return;
     if (!user?.id) return;
     try {
       await db
@@ -75,6 +80,7 @@ function PrivateChat({ user }) {
         .add({
           senderId: sender === 'system' ? 'system' : currentUser?.uid,
           text: msgText.trim(),
+          ...extras,
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
       if (sender === 'user') {
@@ -154,6 +160,9 @@ function PrivateChat({ user }) {
           text: val.text,
           readBy: val.readBy || [],
           sender: val.senderId === currentUser.uid ? 'you' : val.senderId || 'them',
+          voice: !!val.voice,
+          url: val.url,
+          duration: val.duration,
         };
       });
       setMessages(data.reverse());
@@ -173,6 +182,22 @@ function PrivateChat({ user }) {
     const prompt =
       icebreakers[Math.floor(Math.random() * icebreakers.length)];
     sendChatMessage(prompt, 'system');
+  };
+
+  const handleVoiceFinish = async () => {
+    const result = await stopRecording();
+    if (!result) return;
+    try {
+      const url = await uploadVoiceAsync(result.uri, currentUser.uid);
+      await sendChatMessage('', 'user', {
+        voice: true,
+        url,
+        duration: result.duration,
+      });
+    } catch (e) {
+      console.warn('Failed to send voice message', e);
+      Toast.show({ type: 'error', text1: 'Failed to send voice message' });
+    }
   };
 
   const handleGameEnd = (result) => {
@@ -205,28 +230,39 @@ function PrivateChat({ user }) {
     setShowGameModal(false);
   };
 
-  const renderMessage = ({ item }) => (
-    <View
-      style={[
-        privateStyles.messageBubble,
-        item.sender === 'you'
-          ? privateStyles.messageRight
-          : item.sender === 'system'
-          ? privateStyles.messageSystem
-          : privateStyles.messageLeft,
-      ]}
-    >
-      <Text style={privateStyles.sender}>
-        {item.sender === 'you' ? 'You' : item.sender === 'system' ? 'System' : user.name}
-      </Text>
-      <Text style={privateStyles.messageText}>{item.text}</Text>
-      {item.sender === 'you' && (
-        <Text style={privateStyles.readReceipt}>
-          {item.readBy.includes(otherUserId) ? '✓✓' : '✓'}
+  const renderMessage = ({ item }) => {
+    if (item.voice) {
+      return (
+        <VoiceMessageBubble
+          message={item}
+          userName={user.name}
+          otherUserId={otherUserId}
+        />
+      );
+    }
+    return (
+      <View
+        style={[
+          privateStyles.messageBubble,
+          item.sender === 'you'
+            ? privateStyles.messageRight
+            : item.sender === 'system'
+            ? privateStyles.messageSystem
+            : privateStyles.messageLeft,
+        ]}
+      >
+        <Text style={privateStyles.sender}>
+          {item.sender === 'you' ? 'You' : item.sender === 'system' ? 'System' : user.name}
         </Text>
-      )}
-    </View>
-  );
+        <Text style={privateStyles.messageText}>{item.text}</Text>
+        {item.sender === 'you' && (
+          <Text style={privateStyles.readReceipt}>
+            {item.readBy.includes(otherUserId) ? '✓✓' : '✓'}
+          </Text>
+        )}
+      </View>
+    );
+  };
 
   const renderGameOption = ({ item }) => (
     <TouchableOpacity style={privateStyles.gameOption} onPress={() => handleGameSelect(item.id)}>
@@ -248,6 +284,17 @@ function PrivateChat({ user }) {
       />
       {isTyping && <Text style={privateStyles.typingIndicator}>{user.name} is typing...</Text>}
       <View style={privateStyles.inputBar}>
+        <TouchableOpacity
+          onLongPress={startRecording}
+          onPressOut={handleVoiceFinish}
+          style={{ marginRight: 6 }}
+        >
+          <Ionicons
+            name={isRecording ? 'mic' : 'mic-outline'}
+            size={22}
+            color={theme.text}
+          />
+        </TouchableOpacity>
         <TextInput
           placeholder="Type a message..."
           style={privateStyles.textInput}
