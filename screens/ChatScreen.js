@@ -266,7 +266,6 @@ function PrivateChat({ user }) {
 
   const chatSection = (
     <View style={{ flex: 1, padding: 10 }}>
-      <Text style={[styles.logoText, { marginBottom: 10 }]}>Chat with {user.name}</Text>
       <FlatList
         style={{ flex: 1 }}
         data={messages}
