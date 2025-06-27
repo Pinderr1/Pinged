@@ -73,7 +73,8 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate('Play');
     } else if (playTarget === 'ai') {
       const bot = getRandomBot();
-      const aiGames = { '1': 'ticTacToe', '3': 'rockPaperScissors' };
+      // Map game IDs to bot-supported game keys
+      const aiGames = { '1': 'ticTacToe', '3': 'rps' };
       const gameKey = aiGames[game.id];
       navigation.navigate('GameWithBot', {
         botId: bot.id,
