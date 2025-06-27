@@ -20,6 +20,8 @@ import { allGames } from '../data/games';
 import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
 import EventBanner from '../components/EventBanner';
+import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
+import { eventImageSource } from '../utils/avatar';
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -187,6 +189,33 @@ const HomeScreen = ({ navigation }) => {
               </TouchableOpacity>
             )}
           />
+
+          <Text style={local.section}>Community</Text>
+          {SAMPLE_EVENTS.map((event) => (
+            <View
+              key={`e-${event.id}`}
+              style={[local.eventCard, { backgroundColor: theme.card }]}
+            >
+              <Image source={eventImageSource(event.image)} style={local.eventImage} />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={[local.eventTitle, { color: theme.text }]}>{event.title}</Text>
+                <Text style={local.eventTime}>{event.time}</Text>
+                <Text style={[local.eventDesc, { color: theme.textSecondary }]}>
+                  {event.description}
+                </Text>
+              </View>
+            </View>
+          ))}
+          {SAMPLE_POSTS.map((post) => (
+            <View
+              key={`p-${post.id}`}
+              style={[local.postCardPreview, { backgroundColor: theme.card }]}
+            >
+              <Text style={[local.postTitle, { color: theme.text }]}>{post.title}</Text>
+              <Text style={local.postTime}>{post.time}</Text>
+              <Text style={[local.postDesc, { color: theme.textSecondary }]}>{post.description}</Text>
+            </View>
+          ))}
         </ScrollView>
 
         <Modal visible={gamePickerVisible} transparent animationType="fade">
@@ -331,6 +360,59 @@ const local = StyleSheet.create({
     alignItems: 'center',
     borderBottomColor: '#eee',
     borderBottomWidth: 1,
+  },
+  eventCard: {
+    flexDirection: 'row',
+    borderRadius: 12,
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  eventImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+  },
+  eventTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  eventTime: {
+    fontSize: 12,
+    color: '#d81b60',
+    marginBottom: 2,
+  },
+  eventDesc: {
+    fontSize: 12,
+  },
+  postCardPreview: {
+    borderRadius: 12,
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  postTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  postTime: {
+    fontSize: 12,
+    color: '#d81b60',
+    marginBottom: 2,
+  },
+  postDesc: {
+    fontSize: 12,
   },
 });
 
