@@ -28,7 +28,8 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const CARD_HEIGHT = 520;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const CARD_HEIGHT = SCREEN_HEIGHT * 0.75;
 const MAX_LIKES = 100;
 
 const computeMatchPercent = (a, b) => {
@@ -82,6 +83,7 @@ const SwipeScreen = () => {
   const [imageIndex, setImageIndex] = useState(0);
   const [history, setHistory] = useState([]);
   const [boostActive, setBoostActive] = useState(false);
+  const [showSuperLikeAnim, setShowSuperLikeAnim] = useState(false);
 
   const pan = useRef(new Animated.ValueXY()).current;
   const scaleRefs = useRef(Array(6).fill(null).map(() => new Animated.Value(1))).current;
@@ -261,8 +263,10 @@ const SwipeScreen = () => {
       navigation.navigate('PremiumPaywall');
       return;
     }
+    setShowSuperLikeAnim(true);
     handleSwipe('right');
     ToastAndroid.show('🌟 Superliked!', ToastAndroid.SHORT);
+    setTimeout(() => setShowSuperLikeAnim(false), 1500);
   };
 
   const handleBoost = () => {
@@ -378,6 +382,16 @@ const SwipeScreen = () => {
             </View>
             </Animated.View>
           </TouchableOpacity>
+          {showSuperLikeAnim && (
+            <View style={styles.superLikeOverlay} pointerEvents="none">
+              <LottieView
+                source={require('../assets/hearts.json')}
+                autoPlay
+                loop={false}
+                style={{ width: 200, height: 200 }}
+              />
+            </View>
+          )}
         ) : (
           <Text style={styles.noMoreText}>No more users</Text>
         )}
@@ -444,17 +458,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    width: SCREEN_WIDTH - 40,
+    width: '100%',
     height: CARD_HEIGHT,
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#eee',
-    elevation: 4,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
   image: {
@@ -545,6 +557,15 @@ const styles = StyleSheet.create({
   },
   superLikeText: {
     color: '#60a5fa',
+  },
+  superLikeOverlay: {
+    position: 'absolute',
+    top: CARD_HEIGHT / 2 - 100,
+    left: SCREEN_WIDTH / 2 - 100,
+    width: 200,
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   fireworksOverlay: {
     flex: 1,
