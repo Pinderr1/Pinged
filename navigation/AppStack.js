@@ -5,7 +5,6 @@ import MainTabs from './MainTabs';
 import ProfileScreen from '../screens/ProfileScreen';
 import ChatScreen from '../screens/ChatScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
-import EditProfileScreen from '../screens/EditProfileScreen';
 import GameInviteScreen from '../screens/GameInviteScreen';
 import GameSessionScreen from '../screens/GameSessionScreen';
 import CommunityScreen from '../screens/CommunityScreen';
@@ -22,7 +21,6 @@ export default function AppStack() {
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
-      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="GameInvite" component={GameInviteScreen} />
       <Stack.Screen name="GameLobby" component={GameSessionScreen} />
       <Stack.Screen name="Community" component={CommunityScreen} />

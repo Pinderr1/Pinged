@@ -14,8 +14,9 @@ import { uploadAvatarAsync } from '../utils/upload';
 import { avatarSource } from '../utils/avatar';
 import { sanitizeText } from '../utils/sanitize';
 
-const ProfileScreen = ({ navigation }) => {
+const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
+  const [editMode, setEditMode] = useState(route?.params?.editMode || false);
   const [name, setName] = useState(user?.displayName || '');
   const [age, setAge] = useState(user?.age ? String(user.age) : '');
   const [gender, setGender] = useState(user?.gender || '');
@@ -50,6 +51,10 @@ const ProfileScreen = ({ navigation }) => {
     setAvatar(user?.photoURL || '');
   }, [user]);
 
+  useEffect(() => {
+    setEditMode(route?.params?.editMode || false);
+  }, [route?.params?.editMode]);
+
   const handleSave = async () => {
     if (!user) return;
     let photoURL = avatar;
@@ -78,18 +83,25 @@ const ProfileScreen = ({ navigation }) => {
       updateUser(clean);
       setAvatar(photoURL);
       Toast.show({ type: 'success', text1: 'Profile updated!' });
-      navigation.navigate('Main', { screen: 'Home' });
+      navigation.navigate('Main');
     } catch (e) {
       console.warn('Failed to update profile', e);
       Toast.show({ type: 'error', text1: 'Update failed' });
     }
   };
 
+  const gradientColors = editMode ? ['#fff', '#ffe6f0'] : ['#fff', '#fce4ec'];
+  const title = editMode ? 'Edit Your Profile' : 'Set Up Your Profile';
+  const saveLabel = editMode ? 'Save Changes' : 'Save';
+
   return (
-    <LinearGradient colors={['#fff', '#fce4ec']} style={{ flex: 1 }}>
+    <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
       <Header />
       <SafeKeyboardView style={[styles.container, { paddingTop: 60 }]}>
-      <Text style={styles.logoText}>Set Up Your Profile</Text>
+      <TouchableOpacity onPress={() => setEditMode(!editMode)} style={{ alignSelf: 'flex-end', marginBottom: 10 }}>
+        <Text style={styles.navBtnText}>{editMode ? 'Setup Mode' : 'Edit Mode'}</Text>
+      </TouchableOpacity>
+      <Text style={styles.logoText}>{title}</Text>
       <TouchableOpacity onPress={pickImage} style={{ alignSelf: 'center', marginBottom: 10 }}>
         <Image source={avatarSource(avatar)} style={{ width: 100, height: 100, borderRadius: 50 }} />
       </TouchableOpacity>
@@ -143,7 +155,7 @@ const ProfileScreen = ({ navigation }) => {
         onChangeText={setLocation}
       />
       <TouchableOpacity style={styles.emailBtn} onPress={handleSave}>
-        <Text style={styles.btnText}>Save</Text>
+        <Text style={styles.btnText}>{saveLabel}</Text>
       </TouchableOpacity>
       </SafeKeyboardView>
     </LinearGradient>

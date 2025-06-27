@@ -14,7 +14,7 @@ const SettingsScreen = ({ navigation }) => {
   const isPremium = !!user?.isPremium;
   const { devMode, toggleDevMode } = useDev();
 
-  const handleEditProfile = () => navigation.navigate('EditProfile');
+  const handleEditProfile = () => navigation.navigate('Profile', { editMode: true });
   const handleLogout = async () => {
     await auth.signOut();
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
