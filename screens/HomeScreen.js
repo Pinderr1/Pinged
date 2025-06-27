@@ -40,9 +40,14 @@ const HomeScreen = ({ navigation }) => {
     { key: 'match', title: 'Invite Match', emoji: '👥' },
     { key: 'stranger', title: 'Stranger', emoji: '🎮' },
     { key: 'ai', title: 'Play AI', emoji: '🤖' },
+    { key: 'browse', title: 'Browse Games', emoji: '🕹️' },
   ];
 
   const openGamePicker = (target) => {
+    if (target === 'browse') {
+      navigation.navigate('Play');
+      return;
+    }
     if (target === 'ai' || gamesLeft > 0 || isPremiumUser) {
       setPlayTarget(target);
       setGamePickerVisible(true);
