@@ -9,23 +9,28 @@ import {
   Modal,
   SafeAreaView,
 } from 'react-native';
-import SafeKeyboardView from '../components/SafeKeyboardView';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
 import Header from '../components/Header';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import styles from '../styles';
+import { games, gameList } from '../games';
+import { db, firebase } from '../firebase';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useChats } from '../contexts/ChatContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
-import { useNavigation } from '@react-navigation/native';
-import { games, gameList } from '../games';
-import { db, firebase } from '../firebase';
 import Toast from 'react-native-toast-message';
 
-export default function ChatScreen({ route }) {
-  const { user } = route.params || {};
+// Available emoji reactions for group chats
+const REACTIONS = ['🔥', '😂', '❤️'];
+
+/*******************************
+ * Private one-on-one chat UI *
+ *******************************/
+function PrivateChat({ user }) {
   const navigation = useNavigation();
   const { user: currentUser, addGameXP } = useUser();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
@@ -33,6 +38,7 @@ export default function ChatScreen({ route }) {
   const { setActiveGame, getActiveGame, getPendingInvite } = useChats();
   const { darkMode, theme } = useTheme();
   const { showNotification } = useNotification();
+
   if (!user) {
     return (
       <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
@@ -43,6 +49,7 @@ export default function ChatScreen({ route }) {
       </LinearGradient>
     );
   }
+
   const prevGameIdRef = useRef(null);
   const [showGameModal, setShowGameModal] = useState(false);
   const [text, setText] = useState('');
@@ -81,8 +88,7 @@ export default function ChatScreen({ route }) {
 
   const updateTyping = (state) => {
     if (!user?.id || !currentUser?.uid) return;
-    db
-      .collection('matches')
+    db.collection('matches')
       .doc(user.id)
       .set({ typing: { [currentUser.uid]: state } }, { merge: true });
   };
@@ -136,10 +142,7 @@ export default function ChatScreen({ route }) {
     const unsub = msgRef.onSnapshot((snap) => {
       const data = snap.docs.map((d) => {
         const val = d.data();
-        if (
-          val.senderId !== currentUser.uid &&
-          !(val.readBy || []).includes(currentUser.uid)
-        ) {
+        if (val.senderId !== currentUser.uid && !(val.readBy || []).includes(currentUser.uid)) {
           d.ref.update({
             readBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
           });
@@ -148,10 +151,7 @@ export default function ChatScreen({ route }) {
           id: d.id,
           text: val.text,
           readBy: val.readBy || [],
-          sender:
-            val.senderId === currentUser.uid
-              ? 'you'
-              : val.senderId || 'them',
+          sender: val.senderId === currentUser.uid ? 'you' : val.senderId || 'them',
         };
       });
       setMessages(data.reverse());
@@ -179,7 +179,6 @@ export default function ChatScreen({ route }) {
     setActiveGame(user.id, null);
   };
 
-
   const handleGameSelect = (gameId) => {
     const isPremiumUser = !!currentUser?.isPremium;
     if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
@@ -201,24 +200,20 @@ export default function ChatScreen({ route }) {
   const renderMessage = ({ item }) => (
     <View
       style={[
-        chatStyles.messageBubble,
+        privateStyles.messageBubble,
         item.sender === 'you'
-          ? chatStyles.messageRight
+          ? privateStyles.messageRight
           : item.sender === 'system'
-          ? chatStyles.messageSystem
-          : chatStyles.messageLeft,
+          ? privateStyles.messageSystem
+          : privateStyles.messageLeft,
       ]}
     >
-      <Text style={chatStyles.sender}>
-        {item.sender === 'you'
-          ? 'You'
-          : item.sender === 'system'
-          ? 'System'
-          : user.name}
+      <Text style={privateStyles.sender}>
+        {item.sender === 'you' ? 'You' : item.sender === 'system' ? 'System' : user.name}
       </Text>
-      <Text style={chatStyles.messageText}>{item.text}</Text>
+      <Text style={privateStyles.messageText}>{item.text}</Text>
       {item.sender === 'you' && (
-        <Text style={chatStyles.readReceipt}>
+        <Text style={privateStyles.readReceipt}>
           {item.readBy.includes(otherUserId) ? '✓✓' : '✓'}
         </Text>
       )}
@@ -226,11 +221,8 @@ export default function ChatScreen({ route }) {
   );
 
   const renderGameOption = ({ item }) => (
-    <TouchableOpacity
-      style={chatStyles.gameOption}
-      onPress={() => handleGameSelect(item.id)}
-    >
-      <Text style={chatStyles.gameOptionText}>{item.title}</Text>
+    <TouchableOpacity style={privateStyles.gameOption} onPress={() => handleGameSelect(item.id)}>
+      <Text style={privateStyles.gameOptionText}>{item.title}</Text>
     </TouchableOpacity>
   );
 
@@ -246,12 +238,10 @@ export default function ChatScreen({ route }) {
         inverted
         keyboardShouldPersistTaps="handled"
       />
-      {isTyping && (
-        <Text style={chatStyles.typingIndicator}>{user.name} is typing...</Text>
-      )}
-      <View style={chatStyles.inputBar}>
+      {isTyping && <Text style={privateStyles.typingIndicator}>{user.name} is typing...</Text>}
+      <View style={privateStyles.inputBar}>
         <TouchableOpacity
-          style={activeGameId ? chatStyles.changeButton : chatStyles.playButton}
+          style={activeGameId ? privateStyles.changeButton : privateStyles.playButton}
           onPress={() => {
             if (!currentUser?.isPremium && gamesLeft <= 0 && !devMode) {
               navigation.navigate('Premium', { context: 'paywall' });
@@ -266,12 +256,12 @@ export default function ChatScreen({ route }) {
         </TouchableOpacity>
         <TextInput
           placeholder="Type a message..."
-          style={chatStyles.textInput}
+          style={privateStyles.textInput}
           value={text}
           onChangeText={handleTextChange}
           placeholderTextColor="#888"
         />
-        <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
+        <TouchableOpacity style={privateStyles.sendButton} onPress={handleSend}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
       </View>
@@ -317,11 +307,7 @@ export default function ChatScreen({ route }) {
           </TouchableOpacity>
         </View>
       )}
-      <SelectedGameClient
-        matchID={user.id}
-        playerID={devMode ? devPlayer : '0'}
-        onGameEnd={handleGameEnd}
-      />
+      <SelectedGameClient matchID={user.id} playerID={devMode ? devPlayer : '0'} onGameEnd={handleGameEnd} />
     </View>
   ) : null;
 
@@ -336,15 +322,11 @@ export default function ChatScreen({ route }) {
         animationType="slide"
         onRequestClose={() => setShowGameModal(false)}
       >
-        <View style={chatStyles.modalOverlay}>
-          <View style={chatStyles.modalContent}>
-            <FlatList
-              data={gameList}
-              keyExtractor={(item) => item.id}
-              renderItem={renderGameOption}
-            />
+        <View style={privateStyles.modalOverlay}>
+          <View style={privateStyles.modalContent}>
+            <FlatList data={gameList} keyExtractor={(item) => item.id} renderItem={renderGameOption} />
             <TouchableOpacity
-              style={[chatStyles.sendButton, { marginTop: 10 }]}
+              style={[privateStyles.sendButton, { marginTop: 10 }]}
               onPress={() => setShowGameModal(false)}
             >
               <Text style={{ color: '#fff', fontWeight: 'bold' }}>Close</Text>
@@ -364,7 +346,7 @@ export default function ChatScreen({ route }) {
   );
 }
 
-const chatStyles = StyleSheet.create({
+const privateStyles = StyleSheet.create({
   messageBubble: {
     padding: 10,
     borderRadius: 10,
@@ -464,3 +446,281 @@ const chatStyles = StyleSheet.create({
     marginBottom: 4,
   },
 });
+
+/********************
+ * Group chat view *
+ *******************/
+function GroupChat({ event }) {
+  const flatListRef = useRef();
+  const { theme } = useTheme();
+  const { user } = useUser();
+
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [reactionTarget, setReactionTarget] = useState(null);
+
+  useEffect(() => {
+    const q = db
+      .collection('events')
+      .doc(event.id)
+      .collection('messages')
+      .orderBy('timestamp', 'asc');
+    const unsub = q.onSnapshot((snap) => {
+      const data = snap.docs.map((d) => {
+        const val = d.data();
+        return {
+          id: d.id,
+          user: val.user,
+          userId: val.userId,
+          reactions: val.reactions || [],
+          pinned: !!val.pinned,
+          time: val.timestamp?.toDate?.().toLocaleTimeString([], {
+            hour: 'numeric',
+            minute: '2-digit',
+          }),
+          text: val.text,
+        };
+      });
+      setMessages(data);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
+    });
+    return unsub;
+  }, [event.id]);
+
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+    try {
+      await db
+        .collection('events')
+        .doc(event.id)
+        .collection('messages')
+        .add({
+          user: user?.displayName || 'You',
+          userId: user?.uid || null,
+          text: input.trim(),
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          reactions: [],
+          pinned: false,
+        });
+      setInput('');
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
+      Toast.show({ type: 'success', text1: 'Message sent' });
+    } catch (e) {
+      console.warn('Failed to send message', e);
+      Toast.show({ type: 'error', text1: 'Failed to send message' });
+    }
+  };
+
+  const addReaction = async (msgId, emoji) => {
+    try {
+      await db
+        .collection('events')
+        .doc(event.id)
+        .collection('messages')
+        .doc(msgId)
+        .update({ reactions: firebase.firestore.FieldValue.arrayUnion(emoji) });
+    } catch (e) {
+      console.warn('Failed to add reaction', e);
+    }
+    setReactionTarget(null);
+  };
+
+  const pinMessage = async (msgId) => {
+    const msg = messages.find((m) => m.id === msgId);
+    if (!msg) return;
+    try {
+      await db
+        .collection('events')
+        .doc(event.id)
+        .collection('messages')
+        .doc(msgId)
+        .update({ pinned: !msg.pinned });
+    } catch (e) {
+      console.warn('Failed to pin message', e);
+    }
+  };
+
+  const renderMessage = ({ item }) => (
+    <TouchableOpacity
+      onLongPress={() => setReactionTarget(item.id)}
+      style={[
+        groupStyles.messageBubble,
+        item.userId === user?.uid ? groupStyles.userBubble : groupStyles.otherBubble,
+      ]}
+    >
+      <View style={groupStyles.senderRow}>
+        <Text style={groupStyles.sender}>{item.userId === user?.uid ? 'You' : item.user}</Text>
+        {item.pinned && <Text style={groupStyles.pinIcon}>📌</Text>}
+      </View>
+      <Text style={groupStyles.text}>{item.text}</Text>
+      <Text style={groupStyles.time}>{item.time}</Text>
+
+      {item.reactions.length > 0 && (
+        <View style={groupStyles.reactionRow}>
+          {item.reactions.map((emoji, i) => (
+            <Text key={i} style={groupStyles.reactionEmoji}>
+              {emoji}
+            </Text>
+          ))}
+        </View>
+      )}
+
+      {reactionTarget === item.id && (
+        <View style={groupStyles.reactionBar}>
+          {REACTIONS.map((emoji, i) => (
+            <TouchableOpacity key={i} onPress={() => addReaction(item.id, emoji)}>
+              <Text style={groupStyles.reactionEmoji}>{emoji}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+      {item.user === 'Host' && (
+        <TouchableOpacity onPress={() => pinMessage(item.id)}>
+          <Text style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
+            {item.pinned ? '📌 Unpin' : '📍 Pin Message'}
+          </Text>
+        </TouchableOpacity>
+      )}
+    </TouchableOpacity>
+  );
+
+  return (
+    <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
+      <Header />
+      <SafeKeyboardView style={{ flex: 1, paddingTop: 60 }}>
+        <Text style={groupStyles.eventTitle}>{event.title}</Text>
+
+        {messages.filter((m) => m.pinned).map((msg) => (
+          <View key={msg.id} style={groupStyles.pinnedBanner}>
+            <Text style={groupStyles.pinnedText}>📌 {msg.text}</Text>
+          </View>
+        ))}
+
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          keyExtractor={(item) => item.id}
+          renderItem={renderMessage}
+          contentContainerStyle={{ padding: 16 }}
+        />
+
+        <View style={groupStyles.inputRow}>
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder="Type a message..."
+            placeholderTextColor="#999"
+            style={groupStyles.input}
+          />
+          <TouchableOpacity onPress={sendMessage} style={groupStyles.sendBtn}>
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeKeyboardView>
+    </LinearGradient>
+  );
+}
+
+const groupStyles = StyleSheet.create({
+  eventTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    paddingTop: 80,
+    paddingBottom: 10,
+  },
+  messageBubble: {
+    maxWidth: '80%',
+    padding: 10,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  userBubble: {
+    backgroundColor: '#d81b60',
+    alignSelf: 'flex-end',
+  },
+  otherBubble: {
+    backgroundColor: '#ccc',
+    alignSelf: 'flex-start',
+  },
+  sender: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  text: {
+    fontSize: 14,
+    color: '#fff',
+  },
+  time: {
+    fontSize: 11,
+    color: '#eee',
+    marginTop: 4,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    padding: 12,
+    backgroundColor: '#f1f1f1',
+    alignItems: 'center',
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    fontSize: 14,
+    marginRight: 10,
+  },
+  sendBtn: {
+    backgroundColor: '#d81b60',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  reactionRow: {
+    flexDirection: 'row',
+    marginTop: 6,
+  },
+  reactionEmoji: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  reactionBar: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 6,
+    marginTop: 6,
+  },
+  senderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  pinIcon: {
+    marginLeft: 4,
+    fontSize: 12,
+    color: '#fff',
+  },
+  pinnedBanner: {
+    backgroundColor: '#fff3cd',
+    padding: 10,
+    margin: 10,
+    borderRadius: 8,
+  },
+  pinnedText: {
+    fontSize: 13,
+    color: '#8a6d3b',
+  },
+});
+
+/**************************
+ * Exported chat wrapper  *
+ *************************/
+export default function ChatScreen({ route }) {
+  const { user, event } = route.params || {};
+  if (event) return <GroupChat event={event} />;
+  return <PrivateChat user={user} />;
+}

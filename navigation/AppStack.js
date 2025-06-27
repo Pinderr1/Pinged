@@ -8,7 +8,6 @@ import NotificationsScreen from '../screens/NotificationsScreen';
 import GameInviteScreen from '../screens/GameInviteScreen';
 import GameSessionScreen from '../screens/GameSessionScreen';
 import CommunityScreen from '../screens/CommunityScreen';
-import EventChatScreen from '../screens/EventChatScreen';
 import PremiumScreen from '../screens/PremiumScreen';
 import StatsScreen from '../screens/StatsScreen';
 
@@ -24,7 +23,7 @@ export default function AppStack() {
       <Stack.Screen name="GameInvite" component={GameInviteScreen} />
       <Stack.Screen name="GameSession" component={GameSessionScreen} />
       <Stack.Screen name="Community" component={CommunityScreen} />
-      <Stack.Screen name="EventChat" component={EventChatScreen} />
+      <Stack.Screen name="EventChat" component={ChatScreen} />
       <Stack.Screen name="Premium" component={PremiumScreen} />
       <Stack.Screen name="Stats" component={StatsScreen} />
       <Stack.Screen name="GameWithBot" component={GameSessionScreen} />
