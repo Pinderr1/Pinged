@@ -357,10 +357,10 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const renderMessage = ({ item }) => {
     if (item.sender === 'system') {
       return (
-        <View style={[styles.messageRow, styles.rowCenter]}>
-          <View style={[styles.message, styles.system]}>
-            <Text style={styles.sender}>System</Text>
-            <Text style={styles.text}>{item.text}</Text>
+        <View style={[botStyles.messageRow, botStyles.rowCenter]}>
+          <View style={[botStyles.message, botStyles.system]}>
+            <Text style={botStyles.sender}>System</Text>
+            <Text style={botStyles.text}>{item.text}</Text>
           </View>
         </View>
       );
@@ -370,19 +370,19 @@ const LiveSessionScreen = ({ route, navigation }) => {
     return (
       <View
         style={[
-          styles.messageRow,
-          isUser ? styles.rowRight : styles.rowLeft,
+          botStyles.messageRow,
+          isUser ? botStyles.rowRight : botStyles.rowLeft,
         ]}
       >
-        {!isUser && <Image source={bot.image} style={styles.avatar} />}
+        {!isUser && <Image source={bot.image} style={botStyles.avatar} />}
         <View
           style={[
-            styles.message,
-            isUser ? styles.right : styles.left,
+            botStyles.message,
+            isUser ? botStyles.right : botStyles.left,
           ]}
         >
-          <Text style={styles.sender}>{isUser ? 'You' : bot.name}</Text>
-          <Text style={styles.text}>{item.text}</Text>
+          <Text style={botStyles.sender}>{isUser ? 'You' : bot.name}</Text>
+          <Text style={botStyles.text}>{item.text}</Text>
         </View>
       </View>
     );
@@ -397,21 +397,21 @@ const LiveSessionScreen = ({ route, navigation }) => {
           keyboardVerticalOffset={80}
         >
         <SafeAreaView style={{ flex: 1, paddingTop: 80, paddingHorizontal: 10, paddingBottom: 20 }}>
-        <View style={styles.gameTabs}>
+        <View style={botStyles.gameTabs}>
           <TouchableOpacity
             style={[
-              styles.tab,
-              game === 'ticTacToe' ? styles.tabActive : null,
+              botStyles.tab,
+              game === 'ticTacToe' ? botStyles.tabActive : null,
             ]}
             onPress={() => switchGame('ticTacToe')}
           >
-            <Text style={styles.tabText}>Tic Tac Toe</Text>
+            <Text style={botStyles.tabText}>Tic Tac Toe</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.tab, game === 'rps' ? styles.tabActive : null]}
+            style={[botStyles.tab, game === 'rps' ? botStyles.tabActive : null]}
             onPress={() => switchGame('rps')}
           >
-            <Text style={styles.tabText}>RPS</Text>
+            <Text style={botStyles.tabText}>RPS</Text>
           </TouchableOpacity>
         </View>
         <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, color: theme.text }}>
@@ -422,12 +422,12 @@ const LiveSessionScreen = ({ route, navigation }) => {
             {showBoard ? (
               <>
                 <TouchableOpacity
-                  style={styles.closeBtn}
+                  style={botStyles.closeBtn}
                   onPress={() => setShowBoard(false)}
                 >
-                  <Text style={styles.closeBtnText}>X</Text>
+                  <Text style={botStyles.closeBtnText}>X</Text>
                 </TouchableOpacity>
-                <View style={styles.boardWrapper}>
+                <View style={botStyles.boardWrapper}>
                   <BoardComponent
                     G={G}
                     ctx={ctx}
@@ -435,24 +435,24 @@ const LiveSessionScreen = ({ route, navigation }) => {
                     onGameEnd={(res) => handleGameEnd(res, game)}
                   />
                 </View>
-                <TouchableOpacity style={styles.resetBtn} onPress={reset}>
+                <TouchableOpacity style={botStyles.resetBtn} onPress={reset}>
                   <Text style={{ color: '#fff', fontWeight: 'bold' }}>Reset</Text>
                 </TouchableOpacity>
               </>
             ) : (
               <TouchableOpacity
-                style={styles.showBtn}
+                style={botStyles.showBtn}
                 onPress={() => setShowBoard(true)}
               >
-                <Text style={styles.showBtnText}>Show Game</Text>
+                <Text style={botStyles.showBtnText}>Show Game</Text>
               </TouchableOpacity>
             )}
             {gameOver && (
-              <View style={styles.overButtons}>
-                <TouchableOpacity style={styles.againBtn} onPress={playAgain}>
+              <View style={botStyles.overButtons}>
+                <TouchableOpacity style={botStyles.againBtn} onPress={playAgain}>
                   <Text style={{ color: '#fff', fontWeight: 'bold' }}>Play Again</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.newBotBtn} onPress={switchBot}>
+                <TouchableOpacity style={botStyles.newBotBtn} onPress={switchBot}>
                   <Text style={{ color: '#000', fontWeight: 'bold' }}>New Bot</Text>
                 </TouchableOpacity>
               </View>
@@ -468,14 +468,14 @@ const LiveSessionScreen = ({ route, navigation }) => {
               contentContainerStyle={{ paddingBottom: 40 }}
             />
             <SafeKeyboardView>
-              <View style={styles.inputBar}>
+              <View style={botStyles.inputBar}>
                 <TextInput
-                  style={styles.input}
+                  style={botStyles.input}
                   placeholder="Type a message..."
                   value={text}
                   onChangeText={setText}
                 />
-                <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
+                <TouchableOpacity style={botStyles.sendBtn} onPress={handleSend}>
                   <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
                 </TouchableOpacity>
               </View>
@@ -488,7 +488,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   );
 }
 
-const styles = StyleSheet.create({
+const botStyles = StyleSheet.create({
   messageRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
