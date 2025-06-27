@@ -31,11 +31,9 @@ const questions = [
   // TODO: allow recording a short voice or video intro and store URL in profile
   { key: 'name', label: 'What’s your name?' },
   { key: 'age', label: 'How old are you?' },
-  { key: 'gender', label: 'Select your gender' },
-  { key: 'genderPref', label: 'Preferred teammate gender' },
+  { key: 'genderInfo', label: 'Gender & preference' },
   { key: 'bio', label: 'Write a short bio' },
-  { key: 'loveLanguage', label: 'Your love language?' },
-  { key: 'idealDate', label: 'Describe your ideal date' },
+  { key: 'loveInfo', label: 'Love language & ideal date' },
   { key: 'location', label: 'Where are you located?' },
   { key: 'favoriteGames', label: 'Select your favorite games' },
 ];
@@ -111,6 +109,8 @@ export default function OnboardingScreen() {
     { label: 'Game 48', value: 'Game 48' },
     { label: 'Game 49', value: 'Game 49' },
     { label: 'Game 50', value: 'Game 50' },
+    { label: 'Game 51', value: 'Game 51' },
+    { label: 'Game 52', value: 'Game 52' },
   ];
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
 
@@ -143,6 +143,8 @@ export default function OnboardingScreen() {
     if (currentField === 'avatar') return !!value;
     if (currentField === 'location') return value && value.length > 3;
     if (currentField === 'favoriteGames') return Array.isArray(value) && value.length > 0;
+    if (currentField === 'genderInfo') return answers.gender && answers.genderPref;
+    if (currentField === 'loveInfo') return answers.loveLanguage && answers.idealDate.trim().length > 0;
     return value && value.toString().trim().length > 0;
   };
 
@@ -271,6 +273,27 @@ export default function OnboardingScreen() {
   }, [step]);
 
   const renderInput = () => {
+    const pickerFields = {
+      gender: [
+        { label: 'Male', value: 'Male' },
+        { label: 'Female', value: 'Female' },
+        { label: 'Other', value: 'Other' },
+      ],
+      genderPref: [
+        { label: 'Male', value: 'Male' },
+        { label: 'Female', value: 'Female' },
+        { label: 'Other', value: 'Other' },
+        { label: 'Any', value: 'Any' },
+      ],
+      loveLanguage: [
+        { label: 'Words of Affirmation', value: 'Words' },
+        { label: 'Acts of Service', value: 'Acts' },
+        { label: 'Gifts', value: 'Gifts' },
+        { label: 'Quality Time', value: 'Time' },
+        { label: 'Physical Touch', value: 'Touch' },
+      ],
+    };
+
     if (currentField === 'avatar') {
       return (
         <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
@@ -323,26 +346,41 @@ export default function OnboardingScreen() {
       );
     }
 
-    const pickerFields = {
-      gender: [
-        { label: 'Male', value: 'Male' },
-        { label: 'Female', value: 'Female' },
-        { label: 'Other', value: 'Other' },
-      ],
-      genderPref: [
-        { label: 'Male', value: 'Male' },
-        { label: 'Female', value: 'Female' },
-        { label: 'Other', value: 'Other' },
-        { label: 'Any', value: 'Any' },
-      ],
-      loveLanguage: [
-        { label: 'Words of Affirmation', value: 'Words' },
-        { label: 'Acts of Service', value: 'Acts' },
-        { label: 'Gifts', value: 'Gifts' },
-        { label: 'Quality Time', value: 'Time' },
-        { label: 'Physical Touch', value: 'Touch' },
-      ],
-    };
+    if (currentField === 'genderInfo') {
+      return (
+        <View>
+          <RNPickerSelect
+            onValueChange={(val) =>
+              setAnswers((prev) => ({ ...prev, gender: val }))
+            }
+            value={answers.gender}
+            placeholder={{ label: 'Select gender', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: styles.input,
+              inputAndroid: styles.input,
+              placeholder: { color: darkMode ? '#999' : '#aaa' },
+            }}
+            items={pickerFields.gender}
+          />
+          <RNPickerSelect
+            onValueChange={(val) =>
+              setAnswers((prev) => ({ ...prev, genderPref: val }))
+            }
+            value={answers.genderPref}
+            placeholder={{ label: 'Preferred teammate gender', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: [styles.input, { marginTop: 20 }],
+              inputAndroid: [styles.input, { marginTop: 20 }],
+              placeholder: { color: darkMode ? '#999' : '#aaa' },
+            }}
+            items={pickerFields.genderPref}
+          />
+        </View>
+      );
+    }
+
 
     if (currentField === 'favoriteGames') {
       return (
@@ -354,6 +392,36 @@ export default function OnboardingScreen() {
           }
           theme={theme}
         />
+      );
+    }
+
+    if (currentField === 'loveInfo') {
+      return (
+        <View>
+          <RNPickerSelect
+            onValueChange={(val) =>
+              setAnswers((prev) => ({ ...prev, loveLanguage: val }))
+            }
+            value={answers.loveLanguage}
+            placeholder={{ label: 'Select love language', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: styles.input,
+              inputAndroid: styles.input,
+              placeholder: { color: darkMode ? '#999' : '#aaa' },
+            }}
+            items={pickerFields.loveLanguage}
+          />
+          <TextInput
+            style={[styles.input, { marginTop: 20 }]}
+            value={answers.idealDate}
+            onChangeText={(text) =>
+              setAnswers((prev) => ({ ...prev, idealDate: text }))
+            }
+            placeholder="Describe your ideal date"
+            placeholderTextColor={darkMode ? '#999' : '#aaa'}
+          />
+        </View>
       );
     }
 
@@ -372,6 +440,22 @@ export default function OnboardingScreen() {
             placeholder: { color: darkMode ? '#999' : '#aaa' },
           }}
           items={pickerFields[currentField]}
+        />
+      );
+    }
+
+    if (currentField === 'bio') {
+      return (
+        <TextInput
+          style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+          value={answers.bio}
+          onChangeText={(text) =>
+            setAnswers((prev) => ({ ...prev, bio: text }))
+          }
+          placeholder={questions[step].label}
+          placeholderTextColor={darkMode ? '#999' : '#aaa'}
+          multiline
+          numberOfLines={4}
         />
       );
     }
