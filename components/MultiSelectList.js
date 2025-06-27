@@ -1,0 +1,37 @@
+import React from 'react';
+import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+export default function MultiSelectList({ options = [], selected = [], onChange, theme }) {
+  const toggle = (val) => {
+    if (!onChange) return;
+    if (selected.includes(val)) {
+      onChange(selected.filter((v) => v !== val));
+    } else {
+      onChange([...selected, val]);
+    }
+  };
+
+  const styles = getStyles(theme);
+  return (
+    <ScrollView style={styles.container}>
+      {options.map((opt) => (
+        <TouchableOpacity key={opt.value} style={styles.option} onPress={() => toggle(opt.value)}>
+          <MaterialCommunityIcons
+            name={selected.includes(opt.value) ? 'checkbox-marked' : 'checkbox-blank-outline'}
+            size={24}
+            color={theme?.accent || '#d81b60'}
+          />
+          <Text style={styles.label}>{opt.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+}
+
+const getStyles = (theme) =>
+  StyleSheet.create({
+    container: { maxHeight: 250 },
+    option: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6 },
+    label: { marginLeft: 8, color: theme?.text || '#000', fontSize: 16 },
+  });

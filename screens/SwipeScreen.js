@@ -37,10 +37,10 @@ const computeMatchPercent = (a, b) => {
   let total = 0;
   let score = 0;
 
-  // Shared favorite game
-  if (a.favoriteGame && b.favoriteGame) {
+  // Shared favorite games
+  if (Array.isArray(a.favoriteGames) && Array.isArray(b.favoriteGames)) {
     total += 1;
-    if (a.favoriteGame === b.favoriteGame) score += 1;
+    if (a.favoriteGames.some((g) => b.favoriteGames.includes(g))) score += 1;
   }
 
   // User A's gender preference towards B
@@ -128,8 +128,7 @@ const SwipeScreen = () => {
               age: 99,
               bio: 'Testing swipes',
               photoURL: null,
-              favoriteGame: 'Chess',
-              skillLevel: 'Beginner',
+              favoriteGames: ['Chess'],
               gender: 'Other',
               genderPref: 'Any',
               location: 'Localhost',
@@ -151,8 +150,7 @@ const SwipeScreen = () => {
             bio: u.bio || '',
             loveLanguage: u.loveLanguage || '',
             idealDate: u.idealDate || '',
-            favoriteGame: u.favoriteGame || '',
-            skillLevel: u.skillLevel || '',
+            favoriteGames: Array.isArray(u.favoriteGames) ? u.favoriteGames : [],
             gender: u.gender || '',
             genderPref: u.genderPref || '',
             location: u.location || '',
