@@ -29,6 +29,12 @@ const HomeScreen = ({ navigation }) => {
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('stranger');
 
+  const shortcutActions = [
+    { key: 'startChat', title: 'Start Chat', emoji: '💬' },
+    { key: 'editProfile', title: 'Edit Profile', emoji: '📝' },
+    { key: 'viewMatches', title: 'View Matches', emoji: '👥' },
+  ];
+
   const quickPlayOptions = [
     { key: 'match', title: 'Invite Match', emoji: '👥' },
     { key: 'stranger', title: 'Stranger', emoji: '🎮' },
@@ -65,6 +71,20 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const handleShortcut = (key) => {
+    if (key === 'startChat') {
+      if (matches?.length) {
+        navigation.navigate('Chat', { user: matches[0] });
+      } else {
+        navigation.navigate('Matches');
+      }
+    } else if (key === 'editProfile') {
+      navigation.navigate('Profile', { editMode: true });
+    } else if (key === 'viewMatches') {
+      navigation.navigate('Matches');
+    }
+  };
+
   const level = Math.floor((user?.xp || 0) / 100);
   const xpProgress = (user?.xp || 0) % 100;
   const streakProgress = Math.min((user?.streak || 0) % 7, 7);
@@ -82,8 +102,26 @@ const HomeScreen = ({ navigation }) => {
             <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
             <ProgressBar value={xpProgress} max={100} color={theme.accent} />
             <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
-            <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
-          </View>
+          <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
+        </View>
+
+        <Text style={local.section}>Shortcuts</Text>
+        <FlatList
+          data={shortcutActions}
+          keyExtractor={(item) => item.key}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={local.carousel}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[local.tile, { backgroundColor: theme.card }]}
+              onPress={() => handleShortcut(item.key)}
+            >
+              <Text style={local.tileEmoji}>{item.emoji}</Text>
+              <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
+            </TouchableOpacity>
+          )}
+        />
 
           <Text style={local.section}>Quick Play</Text>
           <FlatList
