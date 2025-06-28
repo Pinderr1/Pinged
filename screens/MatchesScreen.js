@@ -56,7 +56,7 @@ const MatchesScreen = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
         <Header />
-        <View style={{ flex: 1, paddingTop: 60 }}>
+        <View style={{ flex: 1, paddingTop: 80 }}>
           {newMatches.length > 0 && (
             <>
               <Text style={styles.sectionTitle}>New Matches</Text>
