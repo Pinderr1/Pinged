@@ -73,7 +73,18 @@ const HomeScreen = ({ navigation }) => {
     } else if (playTarget === 'ai') {
       const bot = getRandomBot();
       // Map game IDs to bot-supported game keys
-      const aiGames = { '1': 'ticTacToe', '3': 'rps' };
+      const aiGames = {
+        '1': 'ticTacToe',
+        '3': 'rps',
+        '4': 'connectFour',
+        '5': 'checkers',
+        '9': 'gomoku',
+        '10': 'mancala',
+        '12': 'battleship',
+        '18': 'blackjack',
+        '24': 'dominoes',
+        '32': 'snakesAndLadders',
+      };
       const gameKey = aiGames[game.id];
       navigation.navigate('GameWithBot', {
         botId: bot.id,
