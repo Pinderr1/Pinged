@@ -271,106 +271,18 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const { theme } = useTheme();
   const [game, setGame] = useState(initialGame);
 
-  const gameMap = {
-    ticTacToe: {
-      title: 'Tic Tac Toe',
-      board: games['ticTacToe'].Board,
-      state: useBotGame(games['ticTacToe'].Game, botMoves.ticTacToe, (res) =>
-        handleGameEnd(res, 'ticTacToe')
-      ),
-    },
-    rps: {
-      title: 'Rock Paper Scissors',
-      board: games['rockPaperScissors'].Board,
-      state: useBotGame(games['rockPaperScissors'].Game, botMoves.rps, (res) =>
-        handleGameEnd(res, 'rps')
-      ),
-    },
-    connectFour: {
-      title: 'Connect Four',
-      board: games['connectFour'].Board,
-      state: useBotGame(games['connectFour'].Game, botMoves.connectFour, (res) =>
-        handleGameEnd(res, 'connectFour')
-      ),
-    },
-    gomoku: {
-      title: 'Gomoku',
-      board: games['gomoku'].Board,
-      state: useBotGame(games['gomoku'].Game, botMoves.gomoku, (res) =>
-        handleGameEnd(res, 'gomoku')
-      ),
-    },
-    battleship: {
-      title: 'Battleship',
-      board: games['battleship'].Board,
-      state: useBotGame(games['battleship'].Game, botMoves.battleship, (res) =>
-        handleGameEnd(res, 'battleship')
-      ),
-    },
-    checkers: {
-      title: 'Checkers',
-      board: games['checkers'].Board,
-      state: useBotGame(games['checkers'].Game, botMoves.checkers, (res) =>
-        handleGameEnd(res, 'checkers')
-      ),
-    },
-    dominoes: {
-      title: 'Dominoes',
-      board: games['dominoes'].Board,
-      state: useBotGame(games['dominoes'].Game, botMoves.dominoes, (res) =>
-        handleGameEnd(res, 'dominoes')
-      ),
-    },
-    dotsAndBoxes: {
-      title: 'Dots and Boxes',
-      board: games['dotsAndBoxes'].Board,
-      state: useBotGame(games['dotsAndBoxes'].Game, botMoves.dotsAndBoxes, (res) =>
-        handleGameEnd(res, 'dotsAndBoxes')
-      ),
-    },
-    snakesAndLadders: {
-      title: 'Snakes & Ladders',
-      board: games['snakesAndLadders'].Board,
-      state: useBotGame(games['snakesAndLadders'].Game, botMoves.snakesAndLadders, (res) =>
-        handleGameEnd(res, 'snakesAndLadders')
-      ),
-    },
-    mancala: {
-      title: 'Mancala',
-      board: games['mancala'].Board,
-      state: useBotGame(games['mancala'].Game, botMoves.mancala, (res) =>
-        handleGameEnd(res, 'mancala')
-      ),
-    },
-    blackjack: {
-      title: 'Blackjack',
-      board: games['blackjack'].Board,
-      state: useBotGame(games['blackjack'].Game, botMoves.blackjack, (res) =>
-        handleGameEnd(res, 'blackjack')
-      ),
-    },
-    nim: {
-      title: 'Nim',
-      board: games['nim'].Board,
-      state: useBotGame(games['nim'].Game, botMoves.nim, (res) =>
-        handleGameEnd(res, 'nim')
-      ),
-    },
-    pig: {
-      title: 'Pig Dice',
-      board: games['pig'].Board,
-      state: useBotGame(games['pig'].Game, botMoves.pig, (res) =>
-        handleGameEnd(res, 'pig')
-      ),
-    },
-    coinToss: {
-      title: 'Coin Toss',
-      board: games['coinToss'].Board,
-      state: useBotGame(games['coinToss'].Game, botMoves.coinToss, (res) =>
-        handleGameEnd(res, 'coinToss')
-      ),
-    },
-  };
+  const keyMap = { rps: 'rockPaperScissors' };
+  const gameMap = Object.keys(botMoves).reduce((acc, key) => {
+    const gameKey = keyMap[key] || key;
+    const info = games[gameKey];
+    if (!info) return acc;
+    acc[key] = {
+      title: info.meta?.title || info.name,
+      board: info.Board,
+      state: useBotGame(info.Game, botMoves[key], (res) => handleGameEnd(res, key)),
+    };
+    return acc;
+  }, {});
 
   const { G, ctx, moves, reset } = gameMap[game].state;
   const BoardComponent = gameMap[game].board;
