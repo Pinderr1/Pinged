@@ -1,5 +1,61 @@
 import { getBotMove as tttBot } from './ticTacToeBot';
 import { getBotMove as rpsBot } from './rockPaperScissorsBot';
+import { INVALID_MOVE } from 'boardgame.io/core';
+
+function fallbackBot(G, player, game) {
+  if (!game?.moves) return null;
+  const base = JSON.parse(JSON.stringify(G));
+
+  const numberPool = [];
+  Object.values(G).forEach((val) => {
+    if (Array.isArray(val)) {
+      for (let i = 0; i < Math.min(val.length, 10); i++) {
+        if (!numberPool.includes(i)) numberPool.push(i);
+      }
+    }
+  });
+  for (let i = 0; i < 10; i++) if (!numberPool.includes(i)) numberPool.push(i);
+
+  const stringPool = [
+    'left',
+    'right',
+    'up',
+    'down',
+    'a',
+    'b',
+    'c',
+    'Heads',
+    'Tails',
+  ];
+
+  const randFrom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  const valid = [];
+
+  for (const [name, move] of Object.entries(game.moves)) {
+    const arity = Math.max(0, move.length - 1);
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const args = [];
+      for (let i = 0; i < arity; i++) {
+        args.push(Math.random() < 0.5 ? randFrom(numberPool) : randFrom(stringPool));
+      }
+      const copy = JSON.parse(JSON.stringify(base));
+      const ctx = {
+        currentPlayer: String(player ?? '0'),
+        random: { D6: () => Math.ceil(Math.random() * 6) },
+        events: { endTurn: () => {} },
+      };
+      const res = move({ G: copy, ctx }, ...args);
+      if (res !== INVALID_MOVE) {
+        valid.push({ move: name, args });
+        break;
+      }
+    }
+  }
+
+  if (!valid.length) return null;
+  return valid[Math.floor(Math.random() * valid.length)];
+}
 
 export const bots = {
   ticTacToe: (G) => ({ move: 'clickCell', args: [tttBot(G.cells)] }),
@@ -117,3 +173,8 @@ export const bots = {
     return { move: 'choose', args: [choice] };
   },
 };
+
+export function getBotMove(key, G, player, game) {
+  const bot = bots[key] || fallbackBot;
+  return bot(G, player, game);
+}
