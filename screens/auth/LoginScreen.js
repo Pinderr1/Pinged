@@ -7,6 +7,7 @@ import GradientButton from '../../components/GradientButton';
 import styles from '../../styles';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import * as AuthSession from 'expo-auth-session';
 import { auth, db, firebase } from '../../firebase';
 import { snapshotExists } from '../../utils/firestore';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -20,8 +21,11 @@ export default function LoginScreen() {
   const { markOnboarded } = useOnboarding();
   const { toggleDevMode } = useDev();
 
+  const redirectUri = AuthSession.makeRedirectUri({ scheme: 'pinged' });
+
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
+    redirectUri,
   });
 
   useEffect(() => {
@@ -68,7 +72,7 @@ export default function LoginScreen() {
 
       <GradientButton
         text="Sign in with Google"
-        onPress={() => promptAsync({ prompt: 'select_account' })}
+        onPress={() => promptAsync({ useProxy: false, prompt: 'select_account' })}
       />
 
       <GradientButton
