@@ -3,6 +3,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import { auth, db, firebase } from '../firebase';
 import { snapshotExists } from '../utils/firestore';
+import { isAllowedDomain } from '../utils/email';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -39,10 +40,17 @@ export const AuthProvider = ({ children }) => {
       email.trim(),
       password,
     );
+    if (!userCred.user.emailVerified) {
+      await auth.signOut();
+      throw new Error('Email not verified');
+    }
     await ensureUserDoc(userCred.user);
   };
 
   const signUpWithEmail = async (email, password) => {
+    if (!isAllowedDomain(email)) {
+      throw new Error('Email domain not supported');
+    }
     const userCred = await auth.createUserWithEmailAndPassword(
       email.trim(),
       password,
@@ -55,6 +63,8 @@ export const AuthProvider = ({ children }) => {
       onboardingComplete: false,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
+    await userCred.user.sendEmailVerification();
+    await auth.signOut();
   };
 
   const loginWithGoogle = () => promptAsync({ prompt: 'select_account' });
