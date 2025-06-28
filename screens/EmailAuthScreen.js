@@ -36,11 +36,6 @@ export default function EmailAuthScreen({ route, navigation }) {
   const handleLogin = async () => {
     try {
       const userCred = await auth.signInWithEmailAndPassword(email, password);
-      if (!userCred.user.emailVerified) {
-        Alert.alert('Email Not Verified', 'Please verify your email before logging in.');
-        await auth.signOut();
-        return;
-      }
       await ensureUserDoc(userCred.user);
       const snap = await db.collection('users').doc(userCred.user.uid).get();
       if (snapshotExists(snap) && snap.data().onboardingComplete) {
@@ -77,9 +72,7 @@ export default function EmailAuthScreen({ route, navigation }) {
         onboardingComplete: false,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
-      await userCred.user.sendEmailVerification();
-      Alert.alert('Verify Email', 'Check your inbox and verify your email before logging in.');
-      await auth.signOut();
+      Alert.alert('Signup Successful', 'Your account has been created.');
     } catch (error) {
       Alert.alert('Signup Failed', error.message);
     }
