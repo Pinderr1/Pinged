@@ -120,6 +120,9 @@ const SwipeScreen = () => {
           .where('uid', '!=', currentUser.uid);
         const snap = await q.get();
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        if (currentUser.location) {
+          data = data.filter((u) => u.location === currentUser.location);
+        }
         if (devMode) {
           data = [
             {
