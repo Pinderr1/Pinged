@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth, db, firebase } from '../firebase';
 import { snapshotExists } from '../utils/firestore';
 import { isAllowedDomain } from '../utils/email';
@@ -55,6 +56,13 @@ export const AuthProvider = ({ children }) => {
       email.trim(),
       password,
     );
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const matchKeys = keys.filter((k) => k.startsWith('chatMatches'));
+      if (matchKeys.length) await AsyncStorage.multiRemove(matchKeys);
+    } catch (e) {
+      console.warn('Failed to clear stored matches', e);
+    }
     await db.collection('users').doc(userCred.user.uid).set({
       uid: userCred.user.uid,
       email: userCred.user.email,

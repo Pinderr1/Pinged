@@ -8,7 +8,9 @@ import Toast from 'react-native-toast-message';
 
 const ChatContext = createContext();
 
-const STORAGE_KEY = 'chatMatches';
+const STORAGE_PREFIX = 'chatMatches_';
+
+const getStorageKey = (uid) => `${STORAGE_PREFIX}${uid}`;
 
 export const ChatProvider = ({ children }) => {
   const { devMode } = useDev();
@@ -32,19 +34,28 @@ export const ChatProvider = ({ children }) => {
   const [matches, setMatches] = useState(devMode ? [devMatch] : []);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((data) => {
+    if (!user?.uid) {
+      setMatches(devMode ? [devMatch] : []);
+      return;
+    }
+    AsyncStorage.getItem(getStorageKey(user.uid)).then((data) => {
       if (data) {
         try {
           const parsed = JSON.parse(data);
           if (Array.isArray(parsed)) {
-            setMatches(parsed);
+            setMatches(devMode ? [...parsed, devMatch].filter((v, i, a) => a.findIndex(x => x.id === v.id) === i) : parsed);
+          } else {
+            setMatches(devMode ? [devMatch] : []);
           }
         } catch (e) {
           console.warn('Failed to parse matches from storage', e);
+          setMatches(devMode ? [devMatch] : []);
         }
+      } else {
+        setMatches(devMode ? [devMatch] : []);
       }
     });
-  }, []);
+  }, [user?.uid, devMode]);
 
   // Subscribe to Firestore matches for the current user
   const userUnsubs = useRef({});
@@ -141,10 +152,12 @@ export const ChatProvider = ({ children }) => {
   }, [devMode]);
 
   useEffect(() => {
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(matches)).catch((err) => {
+    if (!user?.uid) return;
+    const data = matches.filter((m) => m.id !== devMatch.id);
+    AsyncStorage.setItem(getStorageKey(user.uid), JSON.stringify(data)).catch((err) => {
       console.warn('Failed to save matches to storage', err);
     });
-  }, [matches]);
+  }, [matches, user?.uid]);
 
 
   const sendMessage = async (matchId, text, sender = 'you') => {
