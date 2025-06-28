@@ -7,6 +7,7 @@ import {
   Image,
   TextInput,
   FlatList,
+  ScrollView,
   StyleSheet,
   SafeAreaView,
   KeyboardAvoidingView,
@@ -28,11 +29,9 @@ import { snapshotExists } from '../utils/firestore';
 import Toast from 'react-native-toast-message';
 import { bots, getRandomBot } from "../ai/bots";
 import { generateReply } from "../ai/chatBot";
-import useTicTacToeBotGame from "../hooks/useTicTacToeBotGame";
-import { Board as TicTacToeBoard } from "../games/tic-tac-toe";
+import useBotGame from "../hooks/useBotGame";
+import { bots as botMoves } from "../ai/botMoves";
 import SafeKeyboardView from "../components/SafeKeyboardView";
-import useRPSBotGame from "../hooks/useRPSBotGame";
-import { Board as RPSBoard } from "../games/rock-paper-scissors";
 const GameSessionScreen = ({ route, navigation, sessionType }) => {
   const type = sessionType || route.params?.sessionType || (route.params?.botId ? "bot" : "live");
   return type === "bot" ? (
@@ -270,14 +269,107 @@ const LiveSessionScreen = ({ route, navigation }) => {
     bots.find((b) => b.id === botId) || getRandomBot()
   );
   const { theme } = useTheme();
-  const ttt = useTicTacToeBotGame((res) => handleGameEnd(res, 'ticTacToe'));
-  const rps = useRPSBotGame((res) => handleGameEnd(res, 'rps'));
-
   const [game, setGame] = useState(initialGame);
 
   const gameMap = {
-    ticTacToe: { title: 'Tic Tac Toe', board: TicTacToeBoard, state: ttt },
-    rps: { title: 'Rock Paper Scissors', board: RPSBoard, state: rps },
+    ticTacToe: {
+      title: 'Tic Tac Toe',
+      board: games['ticTacToe'].Board,
+      state: useBotGame(games['ticTacToe'].Game, botMoves.ticTacToe, (res) =>
+        handleGameEnd(res, 'ticTacToe')
+      ),
+    },
+    rps: {
+      title: 'Rock Paper Scissors',
+      board: games['rockPaperScissors'].Board,
+      state: useBotGame(games['rockPaperScissors'].Game, botMoves.rps, (res) =>
+        handleGameEnd(res, 'rps')
+      ),
+    },
+    connectFour: {
+      title: 'Connect Four',
+      board: games['connectFour'].Board,
+      state: useBotGame(games['connectFour'].Game, botMoves.connectFour, (res) =>
+        handleGameEnd(res, 'connectFour')
+      ),
+    },
+    gomoku: {
+      title: 'Gomoku',
+      board: games['gomoku'].Board,
+      state: useBotGame(games['gomoku'].Game, botMoves.gomoku, (res) =>
+        handleGameEnd(res, 'gomoku')
+      ),
+    },
+    battleship: {
+      title: 'Battleship',
+      board: games['battleship'].Board,
+      state: useBotGame(games['battleship'].Game, botMoves.battleship, (res) =>
+        handleGameEnd(res, 'battleship')
+      ),
+    },
+    checkers: {
+      title: 'Checkers',
+      board: games['checkers'].Board,
+      state: useBotGame(games['checkers'].Game, botMoves.checkers, (res) =>
+        handleGameEnd(res, 'checkers')
+      ),
+    },
+    dominoes: {
+      title: 'Dominoes',
+      board: games['dominoes'].Board,
+      state: useBotGame(games['dominoes'].Game, botMoves.dominoes, (res) =>
+        handleGameEnd(res, 'dominoes')
+      ),
+    },
+    dotsAndBoxes: {
+      title: 'Dots and Boxes',
+      board: games['dotsAndBoxes'].Board,
+      state: useBotGame(games['dotsAndBoxes'].Game, botMoves.dotsAndBoxes, (res) =>
+        handleGameEnd(res, 'dotsAndBoxes')
+      ),
+    },
+    snakesAndLadders: {
+      title: 'Snakes & Ladders',
+      board: games['snakesAndLadders'].Board,
+      state: useBotGame(games['snakesAndLadders'].Game, botMoves.snakesAndLadders, (res) =>
+        handleGameEnd(res, 'snakesAndLadders')
+      ),
+    },
+    mancala: {
+      title: 'Mancala',
+      board: games['mancala'].Board,
+      state: useBotGame(games['mancala'].Game, botMoves.mancala, (res) =>
+        handleGameEnd(res, 'mancala')
+      ),
+    },
+    blackjack: {
+      title: 'Blackjack',
+      board: games['blackjack'].Board,
+      state: useBotGame(games['blackjack'].Game, botMoves.blackjack, (res) =>
+        handleGameEnd(res, 'blackjack')
+      ),
+    },
+    nim: {
+      title: 'Nim',
+      board: games['nim'].Board,
+      state: useBotGame(games['nim'].Game, botMoves.nim, (res) =>
+        handleGameEnd(res, 'nim')
+      ),
+    },
+    pig: {
+      title: 'Pig Dice',
+      board: games['pig'].Board,
+      state: useBotGame(games['pig'].Game, botMoves.pig, (res) =>
+        handleGameEnd(res, 'pig')
+      ),
+    },
+    coinToss: {
+      title: 'Coin Toss',
+      board: games['coinToss'].Board,
+      state: useBotGame(games['coinToss'].Game, botMoves.coinToss, (res) =>
+        handleGameEnd(res, 'coinToss')
+      ),
+    },
   };
 
   const { G, ctx, moves, reset } = gameMap[game].state;
@@ -398,21 +490,17 @@ const LiveSessionScreen = ({ route, navigation }) => {
         >
         <SafeAreaView style={{ flex: 1, paddingTop: 80, paddingHorizontal: 10, paddingBottom: 20 }}>
         <View style={botStyles.gameTabs}>
-          <TouchableOpacity
-            style={[
-              botStyles.tab,
-              game === 'ticTacToe' ? botStyles.tabActive : null,
-            ]}
-            onPress={() => switchGame('ticTacToe')}
-          >
-            <Text style={botStyles.tabText}>Tic Tac Toe</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[botStyles.tab, game === 'rps' ? botStyles.tabActive : null]}
-            onPress={() => switchGame('rps')}
-          >
-            <Text style={botStyles.tabText}>RPS</Text>
-          </TouchableOpacity>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {Object.entries(gameMap).map(([key, val]) => (
+              <TouchableOpacity
+                key={key}
+                style={[botStyles.tab, game === key ? botStyles.tabActive : null]}
+                onPress={() => switchGame(key)}
+              >
+                <Text style={botStyles.tabText}>{val.title}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
         <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, color: theme.text }}>
           Playing {title} with {bot.name}
