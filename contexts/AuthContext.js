@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import * as AuthSession from 'expo-auth-session';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth, db, firebase } from '../firebase';
 import { snapshotExists } from '../utils/firestore';
@@ -13,8 +14,11 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const redirectUri = AuthSession.makeRedirectUri({ scheme: 'pinged' });
+
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
+    redirectUri,
   });
 
   const ensureUserDoc = async (fbUser) => {
@@ -75,7 +79,8 @@ export const AuthProvider = ({ children }) => {
     await auth.signOut();
   };
 
-  const loginWithGoogle = () => promptAsync({ prompt: 'select_account' });
+  const loginWithGoogle = () =>
+    promptAsync({ useProxy: false, prompt: 'select_account' });
 
   const logout = () => auth.signOut();
 
