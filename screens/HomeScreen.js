@@ -19,7 +19,6 @@ import { useChats } from '../contexts/ChatContext';
 import { allGames } from '../data/games';
 import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
-import EventBanner from '../components/EventBanner';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { eventImageSource } from '../utils/avatar';
 
@@ -136,8 +135,6 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
           )}
         />
-
-          <EventBanner />
 
           <Text style={local.section}>Quick Play</Text>
           <FlatList
