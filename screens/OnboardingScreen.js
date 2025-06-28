@@ -33,7 +33,6 @@ const questions = [
   { key: 'age', label: 'How old are you?' },
   { key: 'genderInfo', label: 'Gender & preference' },
   { key: 'bio', label: 'Write a short bio' },
-  { key: 'loveInfo', label: 'Love language & ideal date' },
   { key: 'location', label: 'Where are you located?' },
   { key: 'favoriteGames', label: 'Select your favorite games' },
 ];
@@ -53,8 +52,6 @@ export default function OnboardingScreen() {
     gender: '',
     genderPref: '',
     bio: '',
-    loveLanguage: '',
-    idealDate: '',
     location: '',
     favoriteGames: [],
   });
@@ -144,7 +141,6 @@ export default function OnboardingScreen() {
     if (currentField === 'location') return value && value.length > 3;
     if (currentField === 'favoriteGames') return Array.isArray(value) && value.length > 0;
     if (currentField === 'genderInfo') return answers.gender && answers.genderPref;
-    if (currentField === 'loveInfo') return answers.loveLanguage && answers.idealDate.trim().length > 0;
     return value && value.toString().trim().length > 0;
   };
 
@@ -212,8 +208,6 @@ export default function OnboardingScreen() {
           gender: sanitizeText(answers.gender),
         genderPref: sanitizeText(answers.genderPref),
         location: sanitizeText(answers.location),
-        loveLanguage: sanitizeText(answers.loveLanguage),
-        idealDate: sanitizeText(answers.idealDate),
         favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
         bio: sanitizeText(answers.bio.trim()),
           onboardingComplete: true,
@@ -284,13 +278,6 @@ export default function OnboardingScreen() {
         { label: 'Female', value: 'Female' },
         { label: 'Other', value: 'Other' },
         { label: 'Any', value: 'Any' },
-      ],
-      loveLanguage: [
-        { label: 'Words of Affirmation', value: 'Words' },
-        { label: 'Acts of Service', value: 'Acts' },
-        { label: 'Gifts', value: 'Gifts' },
-        { label: 'Quality Time', value: 'Time' },
-        { label: 'Physical Touch', value: 'Touch' },
       ],
     };
 
@@ -395,35 +382,6 @@ export default function OnboardingScreen() {
       );
     }
 
-    if (currentField === 'loveInfo') {
-      return (
-        <View>
-          <RNPickerSelect
-            onValueChange={(val) =>
-              setAnswers((prev) => ({ ...prev, loveLanguage: val }))
-            }
-            value={answers.loveLanguage}
-            placeholder={{ label: 'Select love language', value: null }}
-            useNativeAndroidPickerStyle={false}
-            style={{
-              inputIOS: styles.input,
-              inputAndroid: styles.input,
-              placeholder: { color: darkMode ? '#999' : '#aaa' },
-            }}
-            items={pickerFields.loveLanguage}
-          />
-          <TextInput
-            style={[styles.input, { marginTop: 20 }]}
-            value={answers.idealDate}
-            onChangeText={(text) =>
-              setAnswers((prev) => ({ ...prev, idealDate: text }))
-            }
-            placeholder="Describe your ideal date"
-            placeholderTextColor={darkMode ? '#999' : '#aaa'}
-          />
-        </View>
-      );
-    }
 
     if (pickerFields[currentField]) {
       return (

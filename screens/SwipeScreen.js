@@ -148,8 +148,6 @@ const SwipeScreen = () => {
             name: u.displayName || 'User',
             age: u.age || '',
             bio: u.bio || '',
-            loveLanguage: u.loveLanguage || '',
-            idealDate: u.idealDate || '',
             favoriteGames: Array.isArray(u.favoriteGames) ? u.favoriteGames : [],
             gender: u.gender || '',
             genderPref: u.genderPref || '',
@@ -374,12 +372,6 @@ const SwipeScreen = () => {
               </Text>
               <Text style={styles.match}>Match: {matchPercent}%</Text>
               <Text style={styles.bio}>{displayUser.bio}</Text>
-              {displayUser.loveLanguage ? (
-                <Text style={styles.extra}>❤️ {displayUser.loveLanguage}</Text>
-              ) : null}
-              {displayUser.idealDate ? (
-                <Text style={styles.extra}>🎯 {displayUser.idealDate}</Text>
-              ) : null}
             </View>
           </TouchableOpacity>
         ) : null}
