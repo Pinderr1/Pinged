@@ -168,6 +168,11 @@ const SwipeScreen = () => {
     fetchUsers();
   }, [currentUser?.uid, devMode]);
 
+  // Reset card position whenever the index changes
+  useEffect(() => {
+    pan.setValue({ x: 0, y: 0 });
+  }, [currentIndex]);
+
   const handleSwipe = async (direction) => {
     if (!displayUser) return;
 
@@ -270,6 +275,24 @@ const SwipeScreen = () => {
     handleSwipe('right');
     ToastAndroid.show('🌟 Superliked!', ToastAndroid.SHORT);
     setTimeout(() => setShowSuperLikeAnim(false), 1500);
+  };
+
+  const swipeLeft = () => {
+    if (!displayUser) return;
+    Animated.timing(pan, {
+      toValue: { x: -SCREEN_WIDTH, y: 0 },
+      duration: 200,
+      useNativeDriver: false,
+    }).start(() => handleSwipe('left'));
+  };
+
+  const swipeRight = () => {
+    if (!displayUser) return;
+    Animated.timing(pan, {
+      toValue: { x: SCREEN_WIDTH, y: 0 },
+      duration: 200,
+      useNativeDriver: false,
+    }).start(() => handleSwipe('right'));
   };
 
 
@@ -409,16 +432,16 @@ const SwipeScreen = () => {
           </View>
         ) : null}
         {!displayUser && (
-          <Text style={styles.noMoreText}>No more users</Text>
+          <Text style={styles.noMoreText}>No more swipes</Text>
         )}
 
         <View style={styles.buttonRow}>
           {[
             { icon: 'refresh', color: '#facc15', action: rewind },
-            { icon: 'close', color: '#f87171', action: () => handleSwipe('left') },
+            { icon: 'close', color: '#f87171', action: swipeLeft },
             { icon: 'star', color: '#60a5fa', action: handleSuperLike },
             { icon: 'game-controller', color: '#a78bfa', action: handleGameInvite },
-            { icon: 'heart', color: '#ff75b5', action: () => handleSwipe('right') },
+            { icon: 'heart', color: '#ff75b5', action: swipeRight },
           ].map((btn, i) => (
             <Animated.View key={i} style={{ transform: [{ scale: scaleRefs[i] }] }}>
               <TouchableOpacity
