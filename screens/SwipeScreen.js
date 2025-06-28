@@ -396,6 +396,7 @@ const SwipeScreen = () => {
               <Text style={styles.bio}>{displayUser.bio}</Text>
             </View>
           </TouchableOpacity>
+          </Animated.View>
         ) : null}
         {showSuperLikeAnim ? (
           <View style={styles.superLikeOverlay} pointerEvents="none">
