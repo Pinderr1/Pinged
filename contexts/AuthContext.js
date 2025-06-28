@@ -45,10 +45,6 @@ export const AuthProvider = ({ children }) => {
       email.trim(),
       password,
     );
-    if (!userCred.user.emailVerified) {
-      await auth.signOut();
-      throw new Error('Email not verified');
-    }
     await ensureUserDoc(userCred.user);
   };
 
@@ -75,8 +71,6 @@ export const AuthProvider = ({ children }) => {
       onboardingComplete: false,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
-    await userCred.user.sendEmailVerification();
-    await auth.signOut();
   };
 
   const loginWithGoogle = () =>
