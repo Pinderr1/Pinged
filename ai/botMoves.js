@@ -172,6 +172,62 @@ export const bots = {
     const choice = Math.random() < 0.5 ? 'Heads' : 'Tails';
     return { move: 'choose', args: [choice] };
   },
+  memoryMatch: (G) => {
+    const available = G.flipped
+      .map((f, i) => (!f && !G.matched[i] ? i : null))
+      .filter((v) => v !== null);
+    if (!available.length) return null;
+    if (G.selected.length === 1) {
+      const first = G.selected[0];
+      const match = G.deck.findIndex(
+        (v, i) =>
+          i !== first &&
+          v === G.deck[first] &&
+          !G.flipped[i] &&
+          !G.matched[i]
+      );
+      if (match !== -1) return { move: 'flip', args: [match] };
+    }
+    const idx = available[Math.floor(Math.random() * available.length)];
+    return { move: 'flip', args: [idx] };
+  },
+  hangman: (G) => {
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    const remaining = alphabet.filter((l) => !G.guesses.includes(l));
+    if (!remaining.length) return null;
+    const letter = remaining[Math.floor(Math.random() * remaining.length)];
+    return { move: 'guess', args: [letter] };
+  },
+  minesweeper: (G) => {
+    const unrevealed = G.revealed
+      .map((v, i) => (!v && !G.flagged[i] ? i : null))
+      .filter((v) => v !== null);
+    if (!unrevealed.length) return null;
+    if (Math.random() < 0.2) {
+      const idx = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+      return { move: 'toggleFlag', args: [idx] };
+    }
+    const idx = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+    return { move: 'reveal', args: [idx] };
+  },
+  sudoku: (G) => {
+    const choices = [];
+    for (let i = 0; i < G.board.length; i++) {
+      if (!G.fixed[i] && G.board[i] !== G.solution[i]) choices.push(i);
+    }
+    if (!choices.length) return null;
+    const idx = choices[Math.floor(Math.random() * choices.length)];
+    return { move: 'increment', args: [idx] };
+  },
+  guessNumber: (G) => {
+    const guessed = new Set(G.guesses.map((n) => String(n)));
+    const options = [];
+    for (let i = 1; i <= 100; i++) if (!guessed.has(String(i))) options.push(i);
+    if (!options.length) return null;
+    const val = options[Math.floor(Math.random() * options.length)];
+    return { move: 'guess', args: [val] };
+  },
+  flirtyQuestions: () => ({ move: 'next', args: [] }),
 };
 
 export function getBotMove(key, G, player, game) {
