@@ -19,10 +19,11 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
+import { useMatchmaking } from '../contexts/MatchmakingContext';
+import { allGames } from '../data/games';
 import { useChats } from '../contexts/ChatContext';
 import { db, firebase } from '../firebase';
 import { useNavigation } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
@@ -31,6 +32,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const CARD_HEIGHT = SCREEN_HEIGHT * 0.75;
 const MAX_LIKES = 100;
+const BUTTON_ROW_BOTTOM = SCREEN_HEIGHT * 0.05;
 
 const computeMatchPercent = (a, b) => {
   if (!a || !b) return 0;
@@ -67,13 +69,14 @@ const computeMatchPercent = (a, b) => {
 
 
 const SwipeScreen = () => {
-  const { darkMode, theme } = useTheme();
+  const { theme } = useTheme();
   const navigation = useNavigation();
   const { showNotification } = useNotification();
   const { user: currentUser } = useUser();
   const { devMode } = useDev();
   const { addMatch } = useChats();
-  const { gamesLeft } = useGameLimit();
+  const { gamesLeft, recordGamePlayed } = useGameLimit();
+  const { sendGameInvite } = useMatchmaking();
   const isPremiumUser = !!currentUser?.isPremium;
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -82,11 +85,10 @@ const SwipeScreen = () => {
   const [showFireworks, setShowFireworks] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [history, setHistory] = useState([]);
-  const [boostActive, setBoostActive] = useState(false);
   const [showSuperLikeAnim, setShowSuperLikeAnim] = useState(false);
 
   const pan = useRef(new Animated.ValueXY()).current;
-  const scaleRefs = useRef(Array(6).fill(null).map(() => new Animated.Value(1))).current;
+  const scaleRefs = useRef(Array(5).fill(null).map(() => new Animated.Value(1))).current;
   const likeOpacity = pan.x.interpolate({
     inputRange: [0, 150],
     outputRange: [0, 1],
@@ -269,15 +271,6 @@ const SwipeScreen = () => {
     setTimeout(() => setShowSuperLikeAnim(false), 1500);
   };
 
-  const handleBoost = () => {
-    if (!isPremiumUser && !devMode) {
-      navigation.navigate('Premium', { context: 'paywall' });
-      return;
-    }
-    setBoostActive(true);
-    ToastAndroid.show('Boost activated!', ToastAndroid.SHORT);
-    setTimeout(() => setBoostActive(false), 5000);
-  };
 
   const panResponder = useRef(
     PanResponder.create({
@@ -309,13 +302,39 @@ const SwipeScreen = () => {
     })
   ).current;
 
-  const handleGameInvite = () => {
+  const handleGameInvite = async () => {
     if (!displayUser) return;
     if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
       navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
-    navigation.navigate('GameInvite', { user: displayUser });
+    try {
+      const inviteId = await sendGameInvite(displayUser.id, '1');
+      Toast.show({ type: 'success', text1: 'Invite sent!' });
+      recordGamePlayed();
+
+      const gameTitle = allGames.find((g) => g.id === '1')?.title || 'Game';
+      const toLobby = () =>
+        navigation.navigate('GameSession', {
+          game: { id: '1', title: gameTitle },
+          opponent: {
+            id: displayUser.id,
+            name: displayUser.name,
+            photo: displayUser.images[0],
+          },
+          inviteId,
+          status: devMode ? 'ready' : 'waiting',
+        });
+
+      if (devMode) {
+        toLobby();
+      } else {
+        setTimeout(toLobby, 2000);
+      }
+    } catch (e) {
+      console.warn('Failed to send game invite', e);
+      Toast.show({ type: 'error', text1: 'Failed to send invite' });
+    }
   };
 
   const gradientColors = [theme.gradientStart, theme.gradientEnd];
@@ -404,7 +423,6 @@ const SwipeScreen = () => {
             { icon: 'star', color: '#60a5fa', action: handleSuperLike },
             { icon: 'game-controller', color: '#a78bfa', action: handleGameInvite },
             { icon: 'heart', color: '#ff75b5', action: () => handleSwipe('right') },
-            { icon: 'flash', color: '#d81b60', action: handleBoost },
           ].map((btn, i) => (
             <Animated.View key={i} style={{ transform: [{ scale: scaleRefs[i] }] }}>
               <TouchableOpacity
@@ -513,10 +531,11 @@ const styles = StyleSheet.create({
     marginTop: 60,
   },
   buttonRow: {
+    position: 'absolute',
+    bottom: BUTTON_ROW_BOTTOM,
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    marginTop: 20,
   },
   circleButton: {
     width: 60,
