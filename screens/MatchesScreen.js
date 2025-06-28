@@ -56,27 +56,29 @@ const MatchesScreen = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
         <Header />
-        {newMatches.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>New Matches</Text>
-            <FlatList
-              data={newMatches}
-              keyExtractor={(item) => item.id}
-              renderItem={renderNewMatch}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.newList}
-            />
-          </>
-        )}
-        <Text style={styles.sectionTitle}>Active Chats</Text>
-        <FlatList
-          data={activeChats}
-          keyExtractor={(item) => item.id}
-          renderItem={renderChat}
-          contentContainerStyle={{ paddingBottom: 120 }}
-          showsVerticalScrollIndicator={false}
-        />
+        <View style={{ flex: 1, paddingTop: 60 }}>
+          {newMatches.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>New Matches</Text>
+              <FlatList
+                data={newMatches}
+                keyExtractor={(item) => item.id}
+                renderItem={renderNewMatch}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.newList}
+              />
+            </>
+          )}
+          <Text style={styles.sectionTitle}>Active Chats</Text>
+          <FlatList
+            data={activeChats}
+            keyExtractor={(item) => item.id}
+            renderItem={renderChat}
+            contentContainerStyle={{ paddingBottom: 120 }}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
       </LinearGradient>
     </SafeAreaView>
   );
