@@ -17,10 +17,19 @@ import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useChats } from '../contexts/ChatContext';
 import { allGames } from '../data/games';
+import { games as gameRegistry } from '../games';
+import { bots as botMoves } from '../ai/botMoves';
 import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { eventImageSource } from '../utils/avatar';
+
+const games = allGames.map((g) => {
+  const key = Object.keys(gameRegistry).find(
+    (k) => gameRegistry[k].meta.title === g.title
+  );
+  return { id: g.id, key };
+});
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -72,19 +81,9 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate('Play');
     } else if (playTarget === 'ai') {
       const bot = getRandomBot();
-      // Map game IDs to bot-supported game keys
-      const aiGames = {
-        '1': 'ticTacToe',
-        '3': 'rps',
-        '4': 'connectFour',
-        '5': 'checkers',
-        '9': 'gomoku',
-        '10': 'mancala',
-        '12': 'battleship',
-        '18': 'blackjack',
-        '24': 'dominoes',
-        '32': 'snakesAndLadders',
-      };
+      const aiGames = games
+        .filter((g) => Object.keys(botMoves).includes(g.key))
+        .reduce((m, g) => ({ ...m, [g.id]: g.key }), {});
       const gameKey = aiGames[game.id];
       navigation.navigate('GameWithBot', {
         botId: bot.id,
