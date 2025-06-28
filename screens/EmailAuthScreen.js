@@ -5,6 +5,7 @@ import AuthForm from '../components/AuthForm';
 import { auth, db, firebase } from '../firebase';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import { snapshotExists } from '../utils/firestore';
+import { isAllowedDomain } from '../utils/email';
 import styles from '../styles';
 
 export default function EmailAuthScreen({ route, navigation }) {
@@ -35,6 +36,11 @@ export default function EmailAuthScreen({ route, navigation }) {
   const handleLogin = async () => {
     try {
       const userCred = await auth.signInWithEmailAndPassword(email, password);
+      if (!userCred.user.emailVerified) {
+        Alert.alert('Email Not Verified', 'Please verify your email before logging in.');
+        await auth.signOut();
+        return;
+      }
       await ensureUserDoc(userCred.user);
       const snap = await db.collection('users').doc(userCred.user.uid).get();
       if (snapshotExists(snap) && snap.data().onboardingComplete) {
@@ -57,6 +63,10 @@ export default function EmailAuthScreen({ route, navigation }) {
       Alert.alert('Missing Fields', 'Enter both email and password.');
       return;
     }
+    if (!isAllowedDomain(email)) {
+      Alert.alert('Invalid Email', 'Please use a supported email provider (e.g. gmail.com).');
+      return;
+    }
     try {
       const userCred = await auth.createUserWithEmailAndPassword(email.trim(), password);
       await db.collection('users').doc(userCred.user.uid).set({
@@ -67,6 +77,9 @@ export default function EmailAuthScreen({ route, navigation }) {
         onboardingComplete: false,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
+      await userCred.user.sendEmailVerification();
+      Alert.alert('Verify Email', 'Check your inbox and verify your email before logging in.');
+      await auth.signOut();
     } catch (error) {
       Alert.alert('Signup Failed', error.message);
     }

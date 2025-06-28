@@ -11,12 +11,14 @@ import { auth, db, firebase } from '../../firebase';
 import { snapshotExists } from '../../utils/firestore';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { useNavigation } from '@react-navigation/native';
+import { useDev } from '../../contexts/DevContext';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const navigation = useNavigation();
   const { markOnboarded } = useOnboarding();
+  const { toggleDevMode } = useDev();
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
@@ -42,6 +44,23 @@ export default function LoginScreen() {
     }
   }, [response]);
 
+  const handleDevLogin = async () => {
+    toggleDevMode();
+    try {
+      const cred = await auth.signInAnonymously();
+      await db.collection('users').doc(cred.user.uid).set({
+        uid: cred.user.uid,
+        email: '',
+        displayName: 'Dev Tester',
+        photoURL: '',
+        onboardingComplete: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      console.warn('Dev login failed', e);
+    }
+  };
+
   return (
     <GradientBackground>
       <Image source={require('../../assets/logo.png')} style={styles.logoImage} />
@@ -57,10 +76,15 @@ export default function LoginScreen() {
         onPress={() => navigation.navigate('EmailLogin')}
       />
 
-      <GradientButton
-        text="Sign Up"
-        onPress={() => navigation.navigate('Signup')}
-      />
-    </GradientBackground>
-  );
-}
+        <GradientButton
+          text="Sign Up"
+          onPress={() => navigation.navigate('Signup')}
+        />
+
+        <GradientButton
+          text="Dev Onboarding"
+          onPress={handleDevLogin}
+        />
+      </GradientBackground>
+    );
+  }
