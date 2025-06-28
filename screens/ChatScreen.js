@@ -265,7 +265,7 @@ function PrivateChat({ user }) {
   );
 
   const chatSection = (
-    <View style={{ flex: 3, padding: 10 }}>
+    <View style={{ flex: 4, padding: 10 }}>
       <FlatList
         style={{ flex: 1 }}
         data={messages}
@@ -322,7 +322,7 @@ function PrivateChat({ user }) {
   const gameSection = SelectedGameClient ? (
     <View
       style={{
-        flex: 0.8,
+        flex: 0.6,
         padding: 10,
         borderTopWidth: 1,
         borderColor: darkMode ? '#444' : '#ccc',
