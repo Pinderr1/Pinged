@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
 import SafeKeyboardView from '../components/SafeKeyboardView';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import styles from '../styles';
 import Header from '../components/Header';
 import { useUser } from '../contexts/UserContext';
@@ -95,7 +95,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const saveLabel = editMode ? 'Save Changes' : 'Save';
 
   return (
-    <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
+    <GradientBackground colors={gradientColors} style={{ flex: 1 }}>
       <Header />
       <SafeKeyboardView style={[styles.container, { paddingTop: 60 }]}>
       <TouchableOpacity onPress={() => setEditMode(!editMode)} style={{ alignSelf: 'flex-end', marginBottom: 10 }}>
@@ -158,7 +158,7 @@ const ProfileScreen = ({ navigation, route }) => {
         <Text style={styles.btnText}>{saveLabel}</Text>
       </TouchableOpacity>
       </SafeKeyboardView>
-    </LinearGradient>
+    </GradientBackground>
   );
 };
 

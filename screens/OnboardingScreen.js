@@ -9,7 +9,7 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import { db, auth, firebase } from '../firebase';
 import { uploadAvatarAsync } from '../utils/upload';
@@ -433,7 +433,7 @@ export default function OnboardingScreen() {
     );
   };
   return (
-    <LinearGradient colors={[styles.gradientStart, styles.gradientEnd]} style={styles.container}>
+    <GradientBackground colors={[styles.gradientStart, styles.gradientEnd]} style={styles.container}>
       <SafeKeyboardView style={styles.inner}>
         <Text style={styles.progressText}>{`Step ${step + 1} of ${questions.length}`}</Text>
 
@@ -463,7 +463,7 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
         </View>
       </SafeKeyboardView>
-    </LinearGradient>
+    </GradientBackground>
   );
 }
 

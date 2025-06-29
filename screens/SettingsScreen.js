@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import GradientButton from '../components/GradientButton';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import styles from '../styles';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
@@ -24,10 +24,7 @@ const SettingsScreen = ({ navigation }) => {
   const handleGoPremium = () => navigation.navigate('Premium', { context: 'paywall' });
 
   return (
-    <LinearGradient
-      colors={[theme.gradientStart, theme.gradientEnd]}
-      style={styles.container}
-    >
+    <GradientBackground style={styles.container}>
       <Header />
 
       <Text style={[styles.logoText, { color: theme.text, marginBottom: 10 }]}>
@@ -69,7 +66,7 @@ const SettingsScreen = ({ navigation }) => {
       />
 
       <GradientButton text="Log Out" onPress={handleLogout} />
-    </LinearGradient>
+    </GradientBackground>
   );
 };
 
