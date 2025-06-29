@@ -26,6 +26,7 @@ import SyncedGame from '../components/SyncedGame';
 import GameOverModal from '../components/GameOverModal';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { snapshotExists } from '../utils/firestore';
+import { createMatchIfMissing } from '../utils/matches';
 import Toast from 'react-native-toast-message';
 import { bots, getRandomBot } from "../ai/bots";
 import { generateReply } from "../ai/chatBot";
@@ -101,6 +102,9 @@ const LiveSessionScreen = ({ route, navigation }) => {
       }
       setShowGame(true);
       recordGamePlayed();
+      if (opponent?.id && user?.uid) {
+        await createMatchIfMissing(user.uid, opponent.id);
+      }
       if (inviteId && user?.uid) {
         const ref = db.collection('gameInvites').doc(inviteId);
         const snap = await ref.get();
