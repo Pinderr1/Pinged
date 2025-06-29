@@ -3,6 +3,7 @@ import { db, firebase } from '../firebase';
 import { useUser } from './UserContext';
 import { useListeners } from './ListenerContext';
 import { snapshotExists } from '../utils/firestore';
+import { createMatchIfMissing } from '../utils/matches';
 
 const MatchmakingContext = createContext();
 
@@ -102,6 +103,8 @@ export const MatchmakingProvider = ({ children }) => {
     } catch (e) {
       console.warn('Failed to update invite status', e);
     }
+
+    await createMatchIfMissing(user.uid, data.from === user.uid ? data.to : data.from);
   };
 
   const cancelGameInvite = async (id) => {
