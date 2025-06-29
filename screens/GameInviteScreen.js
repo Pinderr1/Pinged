@@ -63,8 +63,17 @@ const GameInviteScreen = ({ route, navigation }) => {
     setInvited((prev) => ({ ...prev, [user.id]: true }));
     setLoadingId(user.id);
 
-    const inviteId = await sendGameInvite(user.id, gameId);
-    Toast.show({ type: 'success', text1: 'Invite sent!' });
+    let inviteId;
+    try {
+      inviteId = await sendGameInvite(user.id, gameId);
+      Toast.show({ type: 'success', text1: 'Invite sent!' });
+    } catch (e) {
+      console.warn('Failed to send game invite', e);
+      Toast.show({ type: 'error', text1: 'Failed to send invite' });
+      setInvited((prev) => ({ ...prev, [user.id]: false }));
+      setLoadingId(null);
+      return;
+    }
 
     const toLobby = () =>
       navigation.navigate('GameSession', {
