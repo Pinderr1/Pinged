@@ -11,6 +11,7 @@ import {
   TextInput,
   Dimensions
 } from 'react-native';
+import GradientButton from '../components/GradientButton';
 import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
 import styles from '../styles';
@@ -102,18 +103,11 @@ const CommunityScreen = () => {
         {isJoined && (
           <Text style={local.badge}>🎯 Joined • +10 XP</Text>
         )}
-        <TouchableOpacity
-          style={[
-            styles.emailBtn,
-            {
-              marginTop: 8,
-              backgroundColor: isJoined ? '#aaa' : '#d81b60'
-            }
-          ]}
+        <GradientButton
+          text={isJoined ? 'Cancel RSVP' : 'Join Event'}
           onPress={() => toggleJoin(event.id)}
-        >
-          <Text style={styles.btnText}>{isJoined ? 'Cancel RSVP' : 'Join Event'}</Text>
-        </TouchableOpacity>
+          marginVertical={8}
+        />
       </View>
     );
   };
@@ -156,14 +150,22 @@ const CommunityScreen = () => {
         </View>
 
         {/* Host your own */}
-        <TouchableOpacity onPress={() => setShowHostModal(true)} style={local.hostBtn}>
-          <Text style={styles.btnText}>🎤 Host Your Own Event</Text>
-        </TouchableOpacity>
+        <GradientButton
+          text="Host Your Own Event"
+          onPress={() => setShowHostModal(true)}
+          marginVertical={20}
+          icon={<Text style={{ fontSize: 16 }}>🎤</Text>}
+          style={{ marginHorizontal: 16 }}
+        />
 
         {/* Create Post */}
-        <TouchableOpacity onPress={() => setShowPostModal(true)} style={local.hostBtn}>
-          <Text style={styles.btnText}>✏️ New Post</Text>
-        </TouchableOpacity>
+        <GradientButton
+          text="New Post"
+          onPress={() => setShowPostModal(true)}
+          marginVertical={20}
+          icon={<Text style={{ fontSize: 16 }}>✏️</Text>}
+          style={{ marginHorizontal: 16 }}
+        />
 
         {/* Posts */}
         {posts.map((p) => (
@@ -211,26 +213,28 @@ const CommunityScreen = () => {
               multiline
               placeholderTextColor="#888"
             />
-            <TouchableOpacity onPress={async () => {
-              try {
-                await db.collection('events').add({
-                  title: newTitle,
-                  time: newTime,
-                  description: newDesc,
-                  category: 'Tonight',
-                  hostId: user?.uid || null,
-                  createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                });
-                setShowHostModal(false);
-                setNewTitle('');
-                setNewTime('');
-                setNewDesc('');
-              } catch (e) {
-                Alert.alert('Error', 'Failed to create event');
-              }
-            }} style={[styles.emailBtn, { marginTop: 14 }]}>
-              <Text style={styles.btnText}>Submit Event</Text>
-            </TouchableOpacity>
+            <GradientButton
+              text="Submit Event"
+              onPress={async () => {
+                try {
+                  await db.collection('events').add({
+                    title: newTitle,
+                    time: newTime,
+                    description: newDesc,
+                    category: 'Tonight',
+                    hostId: user?.uid || null,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                  });
+                  setShowHostModal(false);
+                  setNewTitle('');
+                  setNewTime('');
+                  setNewDesc('');
+                } catch (e) {
+                  Alert.alert('Error', 'Failed to create event');
+                }
+              }}
+              marginVertical={14}
+            />
             <TouchableOpacity onPress={() => setShowHostModal(false)} style={{ marginTop: 10 }}>
               <Text style={{ color: '#d81b60' }}>Cancel</Text>
             </TouchableOpacity>
@@ -258,24 +262,26 @@ const CommunityScreen = () => {
               multiline
               placeholderTextColor="#888"
             />
-            <TouchableOpacity onPress={async () => {
-              try {
-                await db.collection('communityPosts').add({
-                  title: postTitle,
-                  time: 'Just now',
-                  description: postDesc,
-                  userId: user?.uid || null,
-                  createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                });
-                setShowPostModal(false);
-                setPostTitle('');
-                setPostDesc('');
-              } catch (e) {
-                Alert.alert('Error', 'Failed to create post');
-              }
-            }} style={[styles.emailBtn, { marginTop: 14 }]}>
-              <Text style={styles.btnText}>Submit Post</Text>
-            </TouchableOpacity>
+            <GradientButton
+              text="Submit Post"
+              onPress={async () => {
+                try {
+                  await db.collection('communityPosts').add({
+                    title: postTitle,
+                    time: 'Just now',
+                    description: postDesc,
+                    userId: user?.uid || null,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                  });
+                  setShowPostModal(false);
+                  setPostTitle('');
+                  setPostDesc('');
+                } catch (e) {
+                  Alert.alert('Error', 'Failed to create post');
+                }
+              }}
+              marginVertical={14}
+            />
             <TouchableOpacity onPress={() => setShowPostModal(false)} style={{ marginTop: 10 }}>
               <Text style={{ color: '#d81b60' }}>Cancel</Text>
             </TouchableOpacity>
@@ -378,10 +384,6 @@ const local = StyleSheet.create({
   badgeText: {
     fontSize: 13,
     color: '#666'
-  },
-  hostBtn: {
-    marginTop: 20,
-    marginHorizontal: 16
   },
   postCard: {
     borderRadius: 12,

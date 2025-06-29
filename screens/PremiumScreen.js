@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Image
 } from 'react-native';
+import GradientButton from '../components/GradientButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as WebBrowser from 'expo-web-browser';
 import Header from '../components/Header';
@@ -69,9 +70,11 @@ const PremiumScreen = ({ navigation, route }) => {
                 </View>
               ))}
             </View>
-            <TouchableOpacity style={styles.emailBtn} onPress={startCheckout}>
-              <Text style={styles.btnText}>💎 Upgrade Now</Text>
-            </TouchableOpacity>
+            <GradientButton
+              text="Upgrade Now"
+              icon={<Text style={{ fontSize: 16 }}>💎</Text>}
+              onPress={startCheckout}
+            />
             <Text style={upgradeStyles.legal}>
               1 free game/day included on free plan. Cancel anytime. All prices in CAD.
             </Text>
@@ -98,9 +101,11 @@ const PremiumScreen = ({ navigation, route }) => {
             </View>
           )}
         />
-        <TouchableOpacity style={paywallStyles.upgradeBtn} onPress={startCheckout}>
-          <Text style={paywallStyles.upgradeText}>Upgrade Now</Text>
-        </TouchableOpacity>
+        <GradientButton
+          text="Upgrade Now"
+          onPress={startCheckout}
+          marginVertical={40}
+        />
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={paywallStyles.cancel}>Maybe Later</Text>
         </TouchableOpacity>
@@ -183,22 +188,6 @@ const paywallStyles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     flexShrink: 1,
-  },
-  upgradeBtn: {
-    backgroundColor: '#d81b60',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 30,
-    marginTop: 40,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  upgradeText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   cancel: {
     marginTop: 16,
