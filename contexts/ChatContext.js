@@ -193,7 +193,9 @@ export const ChatProvider = ({ children }) => {
     );
   };
 
-  const sendGameInvite = (matchId, gameId, from = 'you') => {
+  // Start a local game against the other user. This only updates the local
+  // matches state and does not create an online invite.
+  const startLocalGame = (matchId, gameId, from = 'you') => {
     setMatches((prev) =>
       prev.map((m) =>
         m.id === matchId
@@ -260,7 +262,7 @@ export const ChatProvider = ({ children }) => {
         removeMatch,
         setActiveGame,
         getActiveGame,
-        sendGameInvite,
+        startLocalGame,
         clearGameInvite,
         acceptGameInvite,
         getPendingInvite,

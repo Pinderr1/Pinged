@@ -42,7 +42,7 @@ function PrivateChat({ user }) {
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { devMode } = useDev();
   const requireCredits = useRequireGameCredits();
-  const { setActiveGame, getActiveGame, getPendingInvite } = useChats();
+  const { setActiveGame, getActiveGame, getPendingInvite, startLocalGame } = useChats();
   const { darkMode, theme } = useTheme();
   const { showNotification } = useNotification();
 
