@@ -28,6 +28,7 @@ import VoiceMessageBubble from '../components/VoiceMessageBubble';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
 // TODO: add support for sending short voice or video intro clips in chat
 import Toast from 'react-native-toast-message';
+import useRequireGameCredits from '../hooks/useRequireGameCredits';
 
 // Available emoji reactions for group chats
 const REACTIONS = ['🔥', '😂', '❤️'];
@@ -40,6 +41,7 @@ function PrivateChat({ user }) {
   const { user: currentUser, addGameXP } = useUser();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { devMode } = useDev();
+  const requireCredits = useRequireGameCredits();
   const { setActiveGame, getActiveGame, getPendingInvite } = useChats();
   const { darkMode, theme } = useTheme();
   const { showNotification } = useNotification();
@@ -208,9 +210,8 @@ function PrivateChat({ user }) {
 
   const handleGameSelect = (gameId) => {
     const isPremiumUser = !!currentUser?.isPremium;
-    if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
+    if (!requireCredits()) {
       setShowGameModal(false);
-      navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
     const title = games[gameId].meta.title;
@@ -280,11 +281,10 @@ function PrivateChat({ user }) {
         <TouchableOpacity
           style={activeGameId ? privateStyles.changeButton : privateStyles.playButton}
           onPress={() => {
-            if (!currentUser?.isPremium && gamesLeft <= 0 && !devMode) {
-              navigation.navigate('Premium', { context: 'paywall' });
-            } else {
-              setShowGameModal(true);
+            if (!requireCredits()) {
+              return;
             }
+            setShowGameModal(true);
           }}
         >
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>

@@ -32,6 +32,7 @@ import { generateReply } from "../ai/chatBot";
 import useBotGame from "../hooks/useBotGame";
 import { getBotMove } from "../ai/botMoves";
 import SafeKeyboardView from "../components/SafeKeyboardView";
+import useRequireGameCredits from '../hooks/useRequireGameCredits';
 const GameSessionScreen = ({ route, navigation, sessionType }) => {
   const type = sessionType || route.params?.sessionType || (route.params?.botId ? "bot" : "live");
   return type === "bot" ? (
@@ -48,6 +49,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { user, addGameXP } = useUser();
   const isPremiumUser = !!user?.isPremium;
+  const requireCredits = useRequireGameCredits();
   const { sendGameInvite } = useMatchmaking();
 
   const { game, opponent, status = 'waiting', inviteId } = route.params || {};
@@ -95,10 +97,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   useEffect(() => {
     if (countdown === null) return;
     const handleStart = async () => {
-      if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-        navigation.navigate('Premium', { context: 'paywall' });
-        return;
-      }
+      if (!requireCredits()) return;
       setShowGame(true);
       recordGamePlayed();
       if (inviteId && user?.uid) {
@@ -128,10 +127,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   };
 
   const handleRematch = async () => {
-    if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-      navigation.navigate('Premium', { context: 'paywall' });
-      return;
-    }
+    if (!requireCredits()) return;
     if (inviteId && user?.uid) {
       const ref = db.collection('gameInvites').doc(inviteId);
         const snap = await ref.get();

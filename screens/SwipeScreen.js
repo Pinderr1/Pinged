@@ -27,6 +27,7 @@ import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
+import useRequireGameCredits from '../hooks/useRequireGameCredits';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -78,6 +79,7 @@ const SwipeScreen = () => {
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { sendGameInvite } = useMatchmaking();
   const isPremiumUser = !!currentUser?.isPremium;
+  const requireCredits = useRequireGameCredits();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likesUsed, setLikesUsed] = useState(0);
@@ -328,10 +330,7 @@ const SwipeScreen = () => {
 
   const handleGameInvite = async () => {
     if (!displayUser) return;
-    if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-      navigation.navigate('Premium', { context: 'paywall' });
-      return;
-    }
+    if (!requireCredits()) return;
     try {
       const inviteId = await sendGameInvite(displayUser.id, '1');
       Toast.show({ type: 'success', text1: 'Invite sent!' });
