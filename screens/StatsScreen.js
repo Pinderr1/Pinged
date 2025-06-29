@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
@@ -91,10 +91,7 @@ const StatsScreen = ({ navigation }) => {
   const streakProgress = Math.min(stats.streak % 7, 7);
 
   return (
-    <LinearGradient
-      colors={[theme.gradientStart, theme.gradientEnd]}
-      style={{ flex: 1 }}
-    >
+    <GradientBackground style={{ flex: 1 }}>
       <Header showLogoOnly />
       <ScrollView contentContainerStyle={styles.container}>
         {/* Profile Summary */}
@@ -162,7 +159,7 @@ const StatsScreen = ({ navigation }) => {
           </TouchableOpacity>
         )}
       </ScrollView>
-    </LinearGradient>
+    </GradientBackground>
   );
 };
 

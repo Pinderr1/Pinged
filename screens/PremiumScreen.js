@@ -9,7 +9,7 @@ import {
   Image
 } from 'react-native';
 import GradientButton from '../components/GradientButton';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import * as WebBrowser from 'expo-web-browser';
 import Header from '../components/Header';
 import styles from '../styles';
@@ -54,7 +54,7 @@ const PremiumScreen = ({ navigation, route }) => {
 
   if (context === 'upgrade') {
     return (
-      <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
+      <GradientBackground style={{ flex: 1 }}>
         <Header />
         <ScrollView contentContainerStyle={{ paddingTop: 80, paddingBottom: 100 }}>
           <View style={upgradeStyles.container}>
@@ -80,12 +80,12 @@ const PremiumScreen = ({ navigation, route }) => {
             </Text>
           </View>
         </ScrollView>
-      </LinearGradient>
+      </GradientBackground>
     );
   }
 
   return (
-    <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
+    <GradientBackground style={{ flex: 1 }}>
       <Header />
       <View style={paywallStyles.container}>
         <Text style={paywallStyles.title}>Upgrade to Premium</Text>
@@ -110,7 +110,7 @@ const PremiumScreen = ({ navigation, route }) => {
           <Text style={paywallStyles.cancel}>Maybe Later</Text>
         </TouchableOpacity>
       </View>
-    </LinearGradient>
+    </GradientBackground>
   );
 };
 

@@ -10,7 +10,7 @@ import {
   Modal,
   Image,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
@@ -108,10 +108,8 @@ const HomeScreen = ({ navigation }) => {
   const xpProgress = (user?.xp || 0) % 100;
   const streakProgress = Math.min((user?.streak || 0) % 7, 7);
 
-  const gradientColors = [theme.gradientStart, theme.gradientEnd];
-
   return (
-    <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
+    <GradientBackground style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Header showLogoOnly />
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
@@ -247,7 +245,7 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </Modal>
       </SafeAreaView>
-    </LinearGradient>
+    </GradientBackground>
   );
 };
 

@@ -10,7 +10,7 @@ import {
 import Loader from '../components/Loader';
 import Header from '../components/Header';
 import styles from '../styles';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { useUser } from '../contexts/UserContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -70,10 +70,7 @@ const NotificationsScreen = ({ navigation }) => {
   };
 
   return (
-    <LinearGradient
-      colors={[theme.gradientStart, theme.gradientEnd]}
-      style={styles.container}
-    >
+    <GradientBackground style={styles.container}>
       <Header navigation={navigation} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
         <Text style={[local.title, { color: theme.text }]}>Game Invites</Text>
@@ -119,7 +116,7 @@ const NotificationsScreen = ({ navigation }) => {
           ))
         )}
       </ScrollView>
-    </LinearGradient>
+    </GradientBackground>
   );
 };
 
