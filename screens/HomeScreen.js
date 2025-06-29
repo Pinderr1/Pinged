@@ -18,7 +18,6 @@ import { useGameLimit } from '../contexts/GameLimitContext';
 import { useChats } from '../contexts/ChatContext';
 import { allGames } from '../data/games';
 import { games as gameRegistry } from '../games';
-import { bots as botMoves } from '../ai/botMoves';
 import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
@@ -81,9 +80,10 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate('Play');
     } else if (playTarget === 'ai') {
       const bot = getRandomBot();
+      const aiKeyMap = { rockPaperScissors: 'rps' };
       const aiGames = games
-        .filter((g) => Object.keys(botMoves).includes(g.key))
-        .reduce((m, g) => ({ ...m, [g.id]: g.key }), {});
+        .filter((g) => g.key && gameRegistry[g.key])
+        .reduce((m, g) => ({ ...m, [g.id]: aiKeyMap[g.key] || g.key }), {});
       const gameKey = aiGames[game.id];
       navigation.navigate('GameWithBot', {
         botId: bot.id,
