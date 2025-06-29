@@ -8,7 +8,7 @@ import { useOnboarding } from '../contexts/OnboardingContext';
 import SplashScreen from '../screens/SplashScreen';
 import AuthStack from './AuthStack';
 import AppStack from './AppStack';
-import OnboardingStack from './OnboardingStack';
+import OnboardingScreen from '../screens/OnboardingScreen';
 
 
 const splashDuration = 2000;
@@ -50,7 +50,7 @@ export default function RootNavigator() {
   }
 
   if (!onboarded) {
-    return <OnboardingStack />;
+    return <OnboardingScreen />;
   }
 
   return <AppStack />;
