@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const GuessNumberGame = {
-  setup: () => ({ target: Math.ceil(Math.random() * 100), guesses: [] }),
+  setup: (ctx) => ({ target: ctx.random.D100(), guesses: [] }),
   moves: {
     guess: ({ G }, value) => {
       const num = parseInt(value, 10);
@@ -21,13 +22,7 @@ const GuessNumberGame = {
 
 const GuessNumberBoard = ({ G, ctx, moves, onGameEnd }) => {
   const [input, setInput] = useState('');
-  const endRef = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !endRef.current) {
-      endRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const last = G.guesses[G.guesses.length - 1];
   let hint = '';

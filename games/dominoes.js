@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
-function initTiles() {
+function initTiles(random) {
   const tiles = [];
   for (let i = 0; i <= 6; i++) {
     for (let j = i; j <= 6; j++) {
@@ -11,7 +12,7 @@ function initTiles() {
     }
   }
   for (let i = tiles.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = random.Shuffle([...Array(i + 1).keys()])[0];
     const tmp = tiles[i];
     tiles[i] = tiles[j];
     tiles[j] = tmp;
@@ -20,8 +21,8 @@ function initTiles() {
 }
 
 const DominoesGame = {
-  setup: () => {
-    const tiles = initTiles();
+  setup: (ctx) => {
+    const tiles = initTiles(ctx.random);
     const hands = {
       '0': tiles.slice(0, 7),
       '1': tiles.slice(7, 14),
@@ -98,13 +99,7 @@ const DominoTile = ({ values, selected, onPress }) => (
 
 const DominoesBoard = ({ G, ctx, moves, onGameEnd }) => {
   const [selected, setSelected] = useState(null);
-  const endRef = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !endRef.current) {
-      endRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const myHand = G.hands[ctx.currentPlayer];
   const disabled = !!ctx.gameover;

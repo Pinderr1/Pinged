@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const PITS = 6;
 const INIT_STONES = 4;
@@ -94,13 +95,7 @@ const Pit = ({ stones, onPress }) => (
 );
 
 const MancalaBoard = ({ G, ctx, moves, onGameEnd }) => {
-  const ended = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !ended.current) {
-      ended.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const disabled = !!ctx.gameover;
 

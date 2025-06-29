@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const SIZE = 8;
 
@@ -117,13 +118,7 @@ const Square = ({ dark, piece, selected, onPress }) => {
 
 const CheckersBoard = ({ G, ctx, moves, onGameEnd }) => {
   const [selected, setSelected] = useState(null);
-  const endRef = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !endRef.current) {
-      endRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const handlePress = (idx) => {
     const piece = G.board[idx];
