@@ -2,12 +2,14 @@
 import React from 'react';
 import { Text, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function GradientButton({ text, onPress }) {
+  const { theme } = useTheme();
   return (
     <Pressable onPress={onPress}>
       <LinearGradient
-        colors={['#FF75B5', '#FF9A75']}
+        colors={[theme.gradientStart, theme.gradientEnd]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={{

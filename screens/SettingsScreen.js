@@ -42,7 +42,7 @@ const SettingsScreen = ({ navigation }) => {
       </View>
 
       {!isPremium && (
-        <TouchableOpacity style={[styles.emailBtn, { backgroundColor: '#d81b60' }]} onPress={handleGoPremium}>
+        <TouchableOpacity style={[styles.emailBtn, { backgroundColor: theme.accent }]} onPress={handleGoPremium}>
           <Text style={styles.btnText}>Go Premium</Text>
         </TouchableOpacity>
       )}
@@ -61,7 +61,7 @@ const SettingsScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.navBtn, { backgroundColor: '#d81b60' }]}
+        style={[styles.navBtn, { backgroundColor: theme.accent }]}
         onPress={() => navigation.navigate('Stats')}
       >
         <Text style={styles.navBtnText}>View My Stats</Text>

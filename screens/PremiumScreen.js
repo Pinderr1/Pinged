@@ -85,7 +85,7 @@ const PremiumScreen = ({ navigation, route }) => {
     <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
       <Header />
       <View style={paywallStyles.container}>
-        <Text style={paywallStyles.title}>Upgrade to Premium</Text>
+        <Text style={[paywallStyles.title, { color: theme.accent }]}>Upgrade to Premium</Text>
         <Text style={paywallStyles.subtitle}>More features. More matches. More fun.</Text>
         <FlatList
           data={paywallFeatures}
@@ -98,7 +98,7 @@ const PremiumScreen = ({ navigation, route }) => {
             </View>
           )}
         />
-        <TouchableOpacity style={paywallStyles.upgradeBtn} onPress={startCheckout}>
+        <TouchableOpacity style={[paywallStyles.upgradeBtn, { backgroundColor: theme.accent }]} onPress={startCheckout}>
           <Text style={paywallStyles.upgradeText}>Upgrade Now</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -160,7 +160,6 @@ const paywallStyles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#d81b60',
   },
   subtitle: {
     fontSize: 14,
@@ -185,7 +184,6 @@ const paywallStyles = StyleSheet.create({
     flexShrink: 1,
   },
   upgradeBtn: {
-    backgroundColor: '#d81b60',
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 30,

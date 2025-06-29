@@ -415,7 +415,7 @@ const SwipeScreen = () => {
               <Text style={styles.name}>
                 {displayUser.name}, {displayUser.age}
               </Text>
-              <Text style={styles.match}>Match: {matchPercent}%</Text>
+              <Text style={[styles.match, { color: theme.accent }]}>Match: {matchPercent}%</Text>
               <Text style={styles.bio}>{displayUser.bio}</Text>
             </View>
           </TouchableOpacity>
@@ -531,7 +531,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 4,
     fontWeight: 'bold',
-    color: '#d81b60',
   },
   bio: {
     fontSize: 16,

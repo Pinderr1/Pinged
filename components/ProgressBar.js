@@ -1,7 +1,10 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
-export default function ProgressBar({ label, value = 0, max = 100, color = '#d81b60' }) {
+export default function ProgressBar({ label, value = 0, max = 100, color }) {
+  const { theme } = useTheme();
+  const barColor = color || theme.accent;
   const pct = Math.min(value / max, 1);
   return (
     <View style={{ marginVertical: 4 }}>
@@ -21,7 +24,7 @@ export default function ProgressBar({ label, value = 0, max = 100, color = '#d81
           style={{
             height: '100%',
             width: `${pct * 100}%`,
-            backgroundColor: color,
+            backgroundColor: barColor,
           }}
         />
       </View>

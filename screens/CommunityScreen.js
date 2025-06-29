@@ -91,7 +91,7 @@ const CommunityScreen = () => {
       >
         <Image source={eventImageSource(event.image)} style={local.image} />
         <Text style={local.title}>{event.title}</Text>
-        <Text style={local.time}>{event.time}</Text>
+        <Text style={[local.time, { color: theme.accent }]}>{event.time}</Text>
         <Text style={local.desc}>{event.description}</Text>
         <TouchableOpacity
           style={local.chatBtn}
@@ -107,7 +107,7 @@ const CommunityScreen = () => {
             styles.emailBtn,
             {
               marginTop: 8,
-              backgroundColor: isJoined ? '#aaa' : '#d81b60'
+              backgroundColor: isJoined ? '#aaa' : theme.accent
             }
           ]}
           onPress={() => toggleJoin(event.id)}
@@ -134,7 +134,7 @@ const CommunityScreen = () => {
               style={[
                 local.filterBtn,
                 {
-                  backgroundColor: f === activeFilter ? '#d81b60' : '#ccc'
+                  backgroundColor: f === activeFilter ? theme.accent : '#ccc'
                 }
               ]}
             >
@@ -146,7 +146,7 @@ const CommunityScreen = () => {
         {/* Featured */}
         <View style={[local.banner, { backgroundColor: darkMode ? '#333' : '#fff' }]}>
           <Image source={eventImageSource(require('../assets/user2.jpg'))} style={local.bannerImage} />
-          <Text style={local.bannerTitle}>🔥 Featured</Text>
+          <Text style={[local.bannerTitle, { color: theme.accent }]}>🔥 Featured</Text>
           <Text style={local.bannerText}>Truth or Dare Night — Friday @ 9PM</Text>
         </View>
 
@@ -169,7 +169,7 @@ const CommunityScreen = () => {
         {posts.map((p) => (
           <View key={p.id} style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
             <Text style={local.postTitle}>{p.title}</Text>
-            <Text style={local.postTime}>{p.time}</Text>
+            <Text style={[local.postTime, { color: theme.accent }]}>{p.time}</Text>
             <Text style={local.postDesc}>{p.description}</Text>
           </View>
         ))}
@@ -232,7 +232,7 @@ const CommunityScreen = () => {
               <Text style={styles.btnText}>Submit Event</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowHostModal(false)} style={{ marginTop: 10 }}>
-              <Text style={{ color: '#d81b60' }}>Cancel</Text>
+              <Text style={{ color: theme.accent }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -277,7 +277,7 @@ const CommunityScreen = () => {
               <Text style={styles.btnText}>Submit Post</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowPostModal(false)} style={{ marginTop: 10 }}>
-              <Text style={{ color: '#d81b60' }}>Cancel</Text>
+              <Text style={{ color: theme.accent }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -307,7 +307,6 @@ const local = StyleSheet.create({
     marginBottom: 10
   },
   bannerTitle: {
-    color: '#d81b60',
     fontWeight: 'bold',
     fontSize: 16
   },
@@ -340,7 +339,6 @@ const local = StyleSheet.create({
   },
   time: {
     fontSize: 12,
-    color: '#d81b60',
     marginBottom: 2
   },
   desc: {
@@ -401,7 +399,6 @@ const local = StyleSheet.create({
   },
   postTime: {
     fontSize: 12,
-    color: '#d81b60',
     marginBottom: 4
   },
   postDesc: {

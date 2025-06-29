@@ -136,7 +136,7 @@ const GameInviteScreen = ({ route, navigation }) => {
           ) : (
             <TouchableOpacity
               style={{
-                backgroundColor: '#d81b60',
+                backgroundColor: theme.accent,
                 borderRadius: 20,
                 paddingHorizontal: 12,
                 paddingVertical: 6,

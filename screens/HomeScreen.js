@@ -212,7 +212,7 @@ const HomeScreen = ({ navigation }) => {
               <Image source={eventImageSource(event.image)} style={local.eventImage} />
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={[local.eventTitle, { color: theme.text }]}>{event.title}</Text>
-                <Text style={local.eventTime}>{event.time}</Text>
+                <Text style={[local.eventTime, { color: theme.accent }]}>{event.time}</Text>
                 <Text style={[local.eventDesc, { color: theme.textSecondary }]}>
                   {event.description}
                 </Text>
@@ -225,7 +225,7 @@ const HomeScreen = ({ navigation }) => {
               style={[local.postCardPreview, { backgroundColor: theme.card }]}
             >
               <Text style={[local.postTitle, { color: theme.text }]}>{post.title}</Text>
-              <Text style={local.postTime}>{post.time}</Text>
+              <Text style={[local.postTime, { color: theme.accent }]}>{post.time}</Text>
               <Text style={[local.postDesc, { color: theme.textSecondary }]}>{post.description}</Text>
             </View>
           ))}
@@ -245,7 +245,7 @@ const HomeScreen = ({ navigation }) => {
                 </TouchableOpacity>
               ))}
               <TouchableOpacity onPress={() => setGamePickerVisible(false)} style={{ marginTop: 16 }}>
-                <Text style={{ color: '#d81b60' }}>Cancel</Text>
+                <Text style={{ color: theme.accent }}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -398,7 +398,6 @@ const local = StyleSheet.create({
   },
   eventTime: {
     fontSize: 12,
-    color: '#d81b60',
     marginBottom: 2,
   },
   eventDesc: {
@@ -421,7 +420,6 @@ const local = StyleSheet.create({
   },
   postTime: {
     fontSize: 12,
-    color: '#d81b60',
     marginBottom: 2,
   },
   postDesc: {

@@ -335,7 +335,7 @@ function PrivateChat({ user }) {
           <TouchableOpacity
             onPress={() => setDevPlayer('0')}
             style={{
-              backgroundColor: devPlayer === '0' ? '#d81b60' : '#ccc',
+              backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
               paddingHorizontal: 10,
               paddingVertical: 6,
               borderRadius: 8,
@@ -347,7 +347,7 @@ function PrivateChat({ user }) {
           <TouchableOpacity
             onPress={() => setDevPlayer('1')}
             style={{
-              backgroundColor: devPlayer === '1' ? '#d81b60' : '#ccc',
+              backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
               paddingHorizontal: 10,
               paddingVertical: 6,
               borderRadius: 8,
@@ -601,7 +601,9 @@ function GroupChat({ event }) {
       onLongPress={() => setReactionTarget(item.id)}
       style={[
         groupStyles.messageBubble,
-        item.userId === user?.uid ? groupStyles.userBubble : groupStyles.otherBubble,
+        item.userId === user?.uid
+          ? [groupStyles.userBubble, { backgroundColor: theme.accent }]
+          : groupStyles.otherBubble,
       ]}
     >
       <View style={groupStyles.senderRow}>
@@ -669,7 +671,7 @@ function GroupChat({ event }) {
             placeholderTextColor="#999"
             style={groupStyles.input}
           />
-          <TouchableOpacity onPress={sendMessage} style={groupStyles.sendBtn}>
+          <TouchableOpacity onPress={sendMessage} style={[groupStyles.sendBtn, { backgroundColor: theme.accent }]}>
             <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
           </TouchableOpacity>
         </View>
@@ -693,7 +695,6 @@ const groupStyles = StyleSheet.create({
     marginBottom: 10,
   },
   userBubble: {
-    backgroundColor: '#d81b60',
     alignSelf: 'flex-end',
   },
   otherBubble: {
@@ -730,7 +731,6 @@ const groupStyles = StyleSheet.create({
     marginRight: 10,
   },
   sendBtn: {
-    backgroundColor: '#d81b60',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,

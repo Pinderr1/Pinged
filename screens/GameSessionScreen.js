@@ -192,7 +192,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
                   <TouchableOpacity
                     onPress={() => setDevPlayer('0')}
                     style={{
-                      backgroundColor: devPlayer === '0' ? '#d81b60' : '#ccc',
+                      backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
                       paddingHorizontal: 12,
                       paddingVertical: 6,
                       borderRadius: 10,
@@ -204,7 +204,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
                   <TouchableOpacity
                     onPress={() => setDevPlayer('1')}
                     style={{
-                      backgroundColor: devPlayer === '1' ? '#d81b60' : '#ccc',
+                      backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
                       paddingHorizontal: 12,
                       paddingVertical: 6,
                       borderRadius: 10,
@@ -425,7 +425,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
             {showBoard ? (
               <>
                 <TouchableOpacity
-                  style={botStyles.closeBtn}
+                  style={[botStyles.closeBtn, { backgroundColor: theme.accent }]}
                   onPress={() => setShowBoard(false)}
                 >
                   <Text style={botStyles.closeBtnText}>X</Text>
@@ -478,7 +478,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
                   value={text}
                   onChangeText={setText}
                 />
-                <TouchableOpacity style={botStyles.sendBtn} onPress={handleSend}>
+                <TouchableOpacity style={[botStyles.sendBtn, { backgroundColor: theme.accent }]} onPress={handleSend}>
                   <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
                 </TouchableOpacity>
               </View>
@@ -537,7 +537,6 @@ const botStyles = StyleSheet.create({
     marginRight: 8,
   },
   sendBtn: {
-    backgroundColor: '#d81b60',
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
@@ -575,7 +574,6 @@ const botStyles = StyleSheet.create({
   },
   closeBtn: {
     alignSelf: 'flex-end',
-    backgroundColor: '#d81b60',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,

@@ -22,7 +22,7 @@ export default function MainTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#FF75B5',
+        tabBarActiveTintColor: theme.gradientStart,
         tabBarInactiveTintColor: '#888',
         tabBarLabelStyle: { fontSize: 12, paddingBottom: 2 },
         tabBarStyle: {

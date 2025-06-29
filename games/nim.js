@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 const NimGame = {
   setup: () => ({ remaining: 21 }),
@@ -20,6 +21,7 @@ const NimGame = {
 };
 
 const NimBoard = ({ G, ctx, moves, onGameEnd }) => {
+  const { theme } = useTheme();
   const endRef = useRef(false);
   useEffect(() => {
     if (ctx.gameover && !endRef.current) {
@@ -43,7 +45,7 @@ const NimBoard = ({ G, ctx, moves, onGameEnd }) => {
               margin: 5,
               paddingHorizontal: 12,
               paddingVertical: 8,
-              backgroundColor: '#d81b60',
+              backgroundColor: theme.accent,
               borderRadius: 6,
             }}
           >

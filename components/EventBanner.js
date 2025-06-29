@@ -13,7 +13,7 @@ const NEXT_EVENT = {
 
 export default function EventBanner() {
   const navigation = useNavigation();
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
 
   return (
     <View
@@ -25,7 +25,7 @@ export default function EventBanner() {
       <Image source={eventImageSource(NEXT_EVENT.image)} style={local.image} />
       <View style={{ flex: 1 }}>
         <Text style={local.title}>{NEXT_EVENT.title}</Text>
-        <Text style={local.time}>{NEXT_EVENT.time}</Text>
+        <Text style={[local.time, { color: theme.accent }]}>{NEXT_EVENT.time}</Text>
       </View>
       <TouchableOpacity
         style={[styles.emailBtn, { marginLeft: 10 }]}
@@ -63,7 +63,6 @@ const local = StyleSheet.create({
   },
   time: {
     fontSize: 13,
-    color: '#d81b60',
     marginTop: 2,
   },
 });
