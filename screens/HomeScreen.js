@@ -35,7 +35,7 @@ const HomeScreen = ({ navigation }) => {
   const { user } = useUser();
   const { matches } = useChats();
   const isPremiumUser = !!user?.isPremium;
-  const { gamesLeft, recordGamePlayed } = useGameLimit();
+  const { gamesLeft } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('stranger');
 
@@ -73,9 +73,6 @@ const HomeScreen = ({ navigation }) => {
       return;
     }
     setGamePickerVisible(false);
-    if (playTarget !== 'ai') {
-      recordGamePlayed();
-    }
     if (playTarget === 'stranger') {
       navigation.navigate('Play');
     } else if (playTarget === 'ai') {

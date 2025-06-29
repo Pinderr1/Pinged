@@ -37,7 +37,7 @@ const PlayScreen = ({ navigation }) => {
   const gradientColors = [theme.gradientStart, theme.gradientEnd];
   const { user } = useUser();
   const { devMode } = useDev();
-  const { gamesLeft, recordGamePlayed } = useGameLimit();
+  const { gamesLeft } = useGameLimit();
   const isPremiumUser = !!user?.isPremium;
   const [filter, setFilter] = useState('All');
   const [category, setCategory] = useState('All');
@@ -91,7 +91,6 @@ const PlayScreen = ({ navigation }) => {
     navigation.navigate('GameInvite', {
       game: { id, title, category, description }
     });
-    recordGamePlayed();
   };
 
   const renderItem = ({ item }) => {
