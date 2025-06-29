@@ -110,11 +110,26 @@ exports.handleStripeWebhook = functions.https.onRequest(async (req, res) => {
 });
 
 exports.sendPushNotification = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'User must be authenticated'
+    );
+  }
+
   const { uid, title, message, extra } = data || {};
   if (!uid || !message) {
     throw new functions.https.HttpsError(
       'invalid-argument',
       'uid and message are required'
+    );
+  }
+
+  // Ensure the caller is targeting themselves or has elevated privileges
+  if (context.auth.uid !== uid && !context.auth.token?.admin) {
+    throw new functions.https.HttpsError(
+      'permission-denied',
+      'Not authorized to send push notification to this user'
     );
   }
 
