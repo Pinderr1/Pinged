@@ -17,7 +17,8 @@ const SettingsScreen = ({ navigation }) => {
   const handleEditProfile = () => navigation.navigate('Profile', { editMode: true });
   const handleLogout = async () => {
     await auth.signOut();
-    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+    // RootNavigator will detect the auth change and present the AuthStack
+    // so no manual navigation reset is required here.
   };
   const handleGoPremium = () => navigation.navigate('Premium', { context: 'paywall' });
 
