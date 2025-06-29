@@ -37,7 +37,7 @@ const HomeScreen = ({ navigation }) => {
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
-  const [playTarget, setPlayTarget] = useState('stranger');
+  const [playTarget, setPlayTarget] = useState('match');
 
   const shortcutActions = [
     { key: 'startChat', title: 'Start Chat', emoji: '💬' },
@@ -47,7 +47,6 @@ const HomeScreen = ({ navigation }) => {
 
   const quickPlayOptions = [
     { key: 'match', title: 'Invite Match', emoji: '👥' },
-    { key: 'stranger', title: 'Stranger', emoji: '🎮' },
     { key: 'ai', title: 'Play AI', emoji: '🤖' },
     { key: 'browse', title: 'Browse Games', emoji: '🕹️' },
   ];
@@ -76,9 +75,7 @@ const HomeScreen = ({ navigation }) => {
     if (playTarget !== 'ai') {
       recordGamePlayed();
     }
-    if (playTarget === 'stranger') {
-      navigation.navigate('Play');
-    } else if (playTarget === 'ai') {
+    if (playTarget === 'ai') {
       const bot = getRandomBot();
       const aiKeyMap = { rockPaperScissors: 'rps' };
       const aiGames = games
