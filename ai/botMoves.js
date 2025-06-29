@@ -1,64 +1,10 @@
 import { getBotMove as tttBot } from './ticTacToeBot';
 import { getBotMove as rpsBot } from './rockPaperScissorsBot';
-import { INVALID_MOVE } from 'boardgame.io/core';
+import { randomItem, fallbackBot, safeBot, indicesOf } from './botUtils';
 
-function fallbackBot(G, player, game) {
-  if (!game?.moves) return null;
-  const base = JSON.parse(JSON.stringify(G));
-
-  const numberPool = [];
-  Object.values(G).forEach((val) => {
-    if (Array.isArray(val)) {
-      for (let i = 0; i < Math.min(val.length, 10); i++) {
-        if (!numberPool.includes(i)) numberPool.push(i);
-      }
-    }
-  });
-  for (let i = 0; i < 10; i++) if (!numberPool.includes(i)) numberPool.push(i);
-
-  const stringPool = [
-    'left',
-    'right',
-    'up',
-    'down',
-    'a',
-    'b',
-    'c',
-    'Heads',
-    'Tails',
-  ];
-
-  const randFrom = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-  const valid = [];
-
-  for (const [name, move] of Object.entries(game.moves)) {
-    const arity = Math.max(0, move.length - 1);
-    for (let attempt = 0; attempt < 20; attempt++) {
-      const args = [];
-      for (let i = 0; i < arity; i++) {
-        args.push(Math.random() < 0.5 ? randFrom(numberPool) : randFrom(stringPool));
-      }
-      const copy = JSON.parse(JSON.stringify(base));
-      const ctx = {
-        currentPlayer: String(player ?? '0'),
-        random: { D6: () => Math.ceil(Math.random() * 6) },
-        events: { endTurn: () => {} },
-      };
-      const res = move({ G: copy, ctx }, ...args);
-      if (res !== INVALID_MOVE) {
-        valid.push({ move: name, args });
-        break;
-      }
-    }
-  }
-
-  if (!valid.length) return null;
-  return valid[Math.floor(Math.random() * valid.length)];
-}
 
 export const bots = {
-  ticTacToe: (G) => ({ move: 'clickCell', args: [tttBot(G.cells)] }),
+  ticTacToe: (G, player) => ({ move: 'clickCell', args: [tttBot(G.cells, player)] }),
   rps: () => ({ move: 'choose', args: [rpsBot()] }),
   connectFour: (G) => {
     const ROWS = 6;
@@ -73,24 +19,20 @@ export const bots = {
       }
     }
     if (!valid.length) return null;
-    const col = valid[Math.floor(Math.random() * valid.length)];
+    const col = randomItem(valid);
     return { move: 'drop', args: [col] };
   },
   gomoku: (G) => {
-    const valid = G.cells
-      .map((v, i) => (v === null ? i : null))
-      .filter((v) => v !== null);
+    const valid = indicesOf(G.cells, (v) => v === null);
     if (!valid.length) return null;
-    const idx = valid[Math.floor(Math.random() * valid.length)];
+    const idx = randomItem(valid);
     return { move: 'place', args: [idx] };
   },
   battleship: (G, player) => {
     const hits = G.hits[Number(player)];
-    const valid = hits
-      .map((v, i) => (v === null ? i : null))
-      .filter((v) => v !== null);
+    const valid = indicesOf(hits, (v) => v === null);
     if (!valid.length) return null;
-    const idx = valid[Math.floor(Math.random() * valid.length)];
+    const idx = randomItem(valid);
     return { move: 'fire', args: [idx] };
   },
   checkers: (G, player, game) => {
@@ -109,7 +51,7 @@ export const bots = {
       }
     }
     if (!moves.length) return null;
-    return moves[Math.floor(Math.random() * moves.length)];
+    return randomItem(moves);
   },
   dominoes: (G, player, game) => {
     const moves = [];
@@ -124,7 +66,7 @@ export const bots = {
     }
     if (G.drawPile.length > 0) moves.push({ move: 'drawTile', args: [] });
     if (!moves.length) return null;
-    return moves[Math.floor(Math.random() * moves.length)];
+    return randomItem(moves);
   },
   dotsAndBoxes: (G) => {
     const SIZE = 2;
@@ -142,7 +84,7 @@ export const bots = {
       }
     }
     if (!moves.length) return null;
-    return moves[Math.floor(Math.random() * moves.length)];
+    return randomItem(moves);
   },
   snakesAndLadders: () => ({ move: 'roll', args: [] }),
   mancala: (G, player) => {
@@ -154,7 +96,7 @@ export const bots = {
       for (let i = 0; i < PITS; i++) if (G.board[PITS + 1 + i] > 0) moves.push({ move: 'sow', args: [i] });
     }
     if (!moves.length) return null;
-    return moves[Math.floor(Math.random() * moves.length)];
+    return randomItem(moves);
   },
   blackjack: (G, player) => {
     if (G.stand[Number(player)]) return null;
@@ -169,7 +111,7 @@ export const bots = {
     return Math.random() < 0.5 ? { move: 'roll', args: [] } : { move: 'hold', args: [] };
   },
   coinToss: () => {
-    const choice = Math.random() < 0.5 ? 'Heads' : 'Tails';
+    const choice = randomItem(['Heads', 'Tails']);
     return { move: 'choose', args: [choice] };
   },
   memoryMatch: (G) => {
@@ -188,14 +130,14 @@ export const bots = {
       );
       if (match !== -1) return { move: 'flip', args: [match] };
     }
-    const idx = available[Math.floor(Math.random() * available.length)];
+    const idx = randomItem(available);
     return { move: 'flip', args: [idx] };
   },
   hangman: (G) => {
     const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
     const remaining = alphabet.filter((l) => !G.guesses.includes(l));
     if (!remaining.length) return null;
-    const letter = remaining[Math.floor(Math.random() * remaining.length)];
+    const letter = randomItem(remaining);
     return { move: 'guess', args: [letter] };
   },
   minesweeper: (G) => {
@@ -204,10 +146,10 @@ export const bots = {
       .filter((v) => v !== null);
     if (!unrevealed.length) return null;
     if (Math.random() < 0.2) {
-      const idx = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+      const idx = randomItem(unrevealed);
       return { move: 'toggleFlag', args: [idx] };
     }
-    const idx = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+    const idx = randomItem(unrevealed);
     return { move: 'reveal', args: [idx] };
   },
   sudoku: (G) => {
@@ -216,7 +158,7 @@ export const bots = {
       if (!G.fixed[i] && G.board[i] !== G.solution[i]) choices.push(i);
     }
     if (!choices.length) return null;
-    const idx = choices[Math.floor(Math.random() * choices.length)];
+    const idx = randomItem(choices);
     return { move: 'increment', args: [idx] };
   },
   guessNumber: (G) => {
@@ -224,13 +166,13 @@ export const bots = {
     const options = [];
     for (let i = 1; i <= 100; i++) if (!guessed.has(String(i))) options.push(i);
     if (!options.length) return null;
-    const val = options[Math.floor(Math.random() * options.length)];
+    const val = randomItem(options);
     return { move: 'guess', args: [val] };
   },
   flirtyQuestions: () => ({ move: 'next', args: [] }),
 };
 
 export function getBotMove(key, G, player, game) {
-  const bot = bots[key] || fallbackBot;
+  const bot = safeBot(bots[key] || fallbackBot, fallbackBot);
   return bot(G, player, game);
 }

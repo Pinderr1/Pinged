@@ -1,3 +1,5 @@
+import { randomItem } from './botUtils';
+
 export function getBotMove() {
-  return Math.floor(Math.random() * 3); // 0 rock, 1 paper, 2 scissors
+  return randomItem([0, 1, 2]); // 0 rock, 1 paper, 2 scissors
 }

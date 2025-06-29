@@ -19,8 +19,10 @@ const sarcastic = [
   "Maybe you'll get me next time." 
 ];
 
+import { randomItem } from './botUtils';
+
 export function generateReply(personality = 'friendly') {
   const pools = { friendly, competitive, sarcastic };
   const list = pools[personality] || friendly;
-  return list[Math.floor(Math.random() * list.length)];
+  return randomItem(list);
 }

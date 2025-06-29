@@ -45,7 +45,7 @@ export default function useTicTacToeBotGame(onGameEnd) {
 
   useEffect(() => {
     if (currentPlayer === '1' && !gameover) {
-      const idx = getBotMove(G.cells);
+      const idx = getBotMove(G.cells, '1');
       if (idx !== null && idx !== undefined) {
         const t = setTimeout(() => moves.clickCell(idx), 600);
         return () => clearTimeout(t);

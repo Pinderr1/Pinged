@@ -1,3 +1,5 @@
+import { indicesOf, randomItem } from './botUtils';
+
 const lines = [
   [0, 1, 2],
   [3, 4, 5],
@@ -15,23 +17,20 @@ function checkWinner(cells, player) {
   );
 }
 
-export function getBotMove(cells) {
-  const available = cells
-    .map((c, i) => (c === null ? i : null))
-    .filter((v) => v !== null);
-  if (available.length === 0) return null;
-  // win if possible
+export function getBotMove(cells, player = '1') {
+  const opponent = player === '0' ? '1' : '0';
+  const available = indicesOf(cells, (c) => c === null);
+  if (!available.length) return null;
   for (const idx of available) {
     const copy = [...cells];
-    copy[idx] = '1';
-    if (checkWinner(copy, '1')) return idx;
+    copy[idx] = player;
+    if (checkWinner(copy, player)) return idx;
   }
-  // block opponent win
   for (const idx of available) {
     const copy = [...cells];
-    copy[idx] = '0';
-    if (checkWinner(copy, '0')) return idx;
+    copy[idx] = opponent;
+    if (checkWinner(copy, opponent)) return idx;
   }
   if (available.includes(4)) return 4;
-  return available[Math.floor(Math.random() * available.length)];
+  return randomItem(available);
 }
