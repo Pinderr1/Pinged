@@ -12,6 +12,7 @@ import Loader from '../components/Loader';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
+import Card from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
@@ -94,9 +95,8 @@ const GameInviteScreen = ({ route, navigation }) => {
     const isLoading = loadingId === item.id;
 
     return (
-      <View
+      <Card
         style={{
-          backgroundColor: theme.card,
           borderRadius: 16,
           borderWidth: 1,
           borderColor: darkMode ? '#333' : '#eee',
@@ -106,7 +106,7 @@ const GameInviteScreen = ({ route, navigation }) => {
           shadowColor: '#000',
           shadowOpacity: 0.06,
           shadowRadius: 4,
-          elevation: 3
+          elevation: 3,
         }}
       >
         <View style={{ alignItems: 'center' }}>
@@ -148,7 +148,7 @@ const GameInviteScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </Card>
     );
   };
 

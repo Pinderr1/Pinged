@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
+import Card from '../components/Card';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
@@ -78,15 +79,15 @@ const CommunityScreen = () => {
   const renderEventCard = (event, idx) => {
     const isJoined = joinedEvents.includes(event.id);
     return (
-      <View
+      <Card
         key={event.id}
         style={[
           local.card,
           {
             backgroundColor: darkMode ? '#444' : '#fff',
             marginRight: idx % 2 === 0 ? 8 : 0,
-            marginLeft: idx % 2 !== 0 ? 8 : 0
-          }
+            marginLeft: idx % 2 !== 0 ? 8 : 0,
+          },
         ]}
       >
         <Image source={eventImageSource(event.image)} style={local.image} />
@@ -114,7 +115,7 @@ const CommunityScreen = () => {
         >
           <Text style={styles.btnText}>{isJoined ? 'Cancel RSVP' : 'Join Event'}</Text>
         </TouchableOpacity>
-      </View>
+      </Card>
     );
   };
 
@@ -144,11 +145,11 @@ const CommunityScreen = () => {
         </ScrollView>
 
         {/* Featured */}
-        <View style={[local.banner, { backgroundColor: darkMode ? '#333' : '#fff' }]}>
+        <Card style={[local.banner, { backgroundColor: darkMode ? '#333' : '#fff' }]}>
           <Image source={eventImageSource(require('../assets/user2.jpg'))} style={local.bannerImage} />
           <Text style={local.bannerTitle}>🔥 Featured</Text>
           <Text style={local.bannerText}>Truth or Dare Night — Friday @ 9PM</Text>
-        </View>
+        </Card>
 
         {/* Event grid */}
         <View style={local.grid}>
@@ -167,11 +168,11 @@ const CommunityScreen = () => {
 
         {/* Posts */}
         {posts.map((p) => (
-          <View key={p.id} style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
+          <Card key={p.id} style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
             <Text style={local.postTitle}>{p.title}</Text>
             <Text style={local.postTime}>{p.time}</Text>
             <Text style={local.postDesc}>{p.description}</Text>
-          </View>
+          </Card>
         ))}
 
         {/* First Join Badge */}

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
+import Card from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
@@ -121,12 +122,12 @@ const HomeScreen = ({ navigation }) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           <Text style={[local.welcome, { color: theme.text }]}>\
 {`Welcome${user?.displayName ? `, ${user.displayName}` : ''}!`}</Text>
-          <View style={[local.progressCard, { backgroundColor: theme.card }]}>
+          <Card style={local.progressCard}>
             <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
             <ProgressBar value={xpProgress} max={100} color={theme.accent} />
             <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
-          <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
-        </View>
+            <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
+          </Card>
 
         <Text style={local.section}>Shortcuts</Text>
         <FlatList
@@ -136,13 +137,14 @@ const HomeScreen = ({ navigation }) => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={local.carousel}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[local.tile, { backgroundColor: theme.card }]}
+            <Card
+              Component={TouchableOpacity}
+              style={local.tile}
               onPress={() => handleShortcut(item.key)}
             >
               <Text style={local.tileEmoji}>{item.emoji}</Text>
               <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
-            </TouchableOpacity>
+            </Card>
           )}
         />
 
@@ -153,14 +155,15 @@ const HomeScreen = ({ navigation }) => {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={local.carousel}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[local.tile, { backgroundColor: theme.card }]}
+          renderItem={({ item }) => (
+              <Card
+                Component={TouchableOpacity}
+                style={local.tile}
                 onPress={() => openGamePicker(item.key)}
               >
                 <Text style={local.tileEmoji}>{item.emoji}</Text>
                 <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
-              </TouchableOpacity>
+              </Card>
             )}
           />
 
@@ -172,13 +175,14 @@ const HomeScreen = ({ navigation }) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={local.carousel}
             renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[local.matchTile, { backgroundColor: theme.card }]}
+              <Card
+                Component={TouchableOpacity}
+                style={local.matchTile}
                 onPress={() => navigation.navigate('Chat', { user: item })}
               >
                 <Image source={item.image} style={local.matchAvatar} />
                 <Text style={[local.matchName, { color: theme.text }]}>{item.name}</Text>
-              </TouchableOpacity>
+              </Card>
             )}
           />
 
@@ -190,8 +194,9 @@ const HomeScreen = ({ navigation }) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={[local.carousel, { paddingBottom: 20 }]}
             renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[local.gameTile, { backgroundColor: theme.card }]}
+              <Card
+                Component={TouchableOpacity}
+                style={local.gameTile}
                 onPress={() => {
                   setPlayTarget('match');
                   selectGame(item);
@@ -199,16 +204,13 @@ const HomeScreen = ({ navigation }) => {
               >
                 <View style={{ marginBottom: 8 }}>{item.icon}</View>
                 <Text style={[local.gameTitle, { color: theme.text }]}>{item.title}</Text>
-              </TouchableOpacity>
+              </Card>
             )}
           />
 
           <Text style={local.section}>Community</Text>
           {SAMPLE_EVENTS.map((event) => (
-            <View
-              key={`e-${event.id}`}
-              style={[local.eventCard, { backgroundColor: theme.card }]}
-            >
+            <Card key={`e-${event.id}`} style={local.eventCard}>
               <Image source={eventImageSource(event.image)} style={local.eventImage} />
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={[local.eventTitle, { color: theme.text }]}>{event.title}</Text>
@@ -217,17 +219,14 @@ const HomeScreen = ({ navigation }) => {
                   {event.description}
                 </Text>
               </View>
-            </View>
+            </Card>
           ))}
           {SAMPLE_POSTS.map((post) => (
-            <View
-              key={`p-${post.id}`}
-              style={[local.postCardPreview, { backgroundColor: theme.card }]}
-            >
+            <Card key={`p-${post.id}`} style={local.postCardPreview}>
               <Text style={[local.postTitle, { color: theme.text }]}>{post.title}</Text>
               <Text style={local.postTime}>{post.time}</Text>
               <Text style={[local.postDesc, { color: theme.textSecondary }]}>{post.description}</Text>
-            </View>
+            </Card>
           ))}
         </ScrollView>
 
