@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
+import GradientButton from '../components/GradientButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import styles from '../styles';
 import Header from '../components/Header';
@@ -43,46 +44,31 @@ const SettingsScreen = ({ navigation }) => {
       </View>
 
       {!isPremium && (
-        <TouchableOpacity style={[styles.emailBtn, { backgroundColor: '#d81b60' }]} onPress={handleGoPremium}>
-          <Text style={styles.btnText}>Go Premium</Text>
-        </TouchableOpacity>
+        <GradientButton
+          text="Go Premium"
+          onPress={handleGoPremium}
+          icon={<Text style={{ fontSize: 16 }}>💎</Text>}
+        />
       )}
 
-      <TouchableOpacity style={styles.emailBtn} onPress={handleEditProfile}>
-        <Text style={styles.btnText}>Edit Profile</Text>
-      </TouchableOpacity>
+      <GradientButton text="Edit Profile" onPress={handleEditProfile} />
 
-      <TouchableOpacity
-        style={[styles.navBtn, { backgroundColor: '#666' }]}
+      <GradientButton
+        text={`Toggle ${darkMode ? 'Light' : 'Dark'} Mode`}
         onPress={toggleTheme}
-      >
-        <Text style={styles.navBtnText}>
-          Toggle {darkMode ? 'Light' : 'Dark'} Mode
-        </Text>
-      </TouchableOpacity>
+      />
 
-      <TouchableOpacity
-        style={[styles.navBtn, { backgroundColor: '#d81b60' }]}
+      <GradientButton
+        text="View My Stats"
         onPress={() => navigation.navigate('Stats')}
-      >
-        <Text style={styles.navBtnText}>View My Stats</Text>
-      </TouchableOpacity>
+      />
 
-      <TouchableOpacity
-        style={[styles.navBtn, { backgroundColor: '#e11d48' }]}
+      <GradientButton
+        text={devMode ? 'Disable Dev Mode' : 'Enable Dev Mode'}
         onPress={toggleDevMode}
-      >
-        <Text style={styles.navBtnText}>
-          {devMode ? 'Disable Dev Mode' : 'Enable Dev Mode'}
-        </Text>
-      </TouchableOpacity>
+      />
 
-      <TouchableOpacity
-        style={[styles.navBtn, { backgroundColor: '#999' }]}
-        onPress={handleLogout}
-      >
-        <Text style={styles.navBtnText}>Log Out</Text>
-      </TouchableOpacity>
+      <GradientButton text="Log Out" onPress={handleLogout} />
     </LinearGradient>
   );
 };
