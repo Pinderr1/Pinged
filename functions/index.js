@@ -327,6 +327,12 @@ exports.onChatMessageCreated = functions.firestore
     if (!senderId) return null;
 
     try {
+      const matchRef = admin.firestore().collection('matches').doc(matchId);
+      await matchRef.set(
+        { messageCounts: { [senderId]: admin.firestore.FieldValue.increment(1) } },
+        { merge: true }
+      );
+
       const matchSnap = await admin
         .firestore()
         .collection('matches')

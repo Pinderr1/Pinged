@@ -52,6 +52,7 @@ A copy of each invite is also stored under `users/{uid}/gameInvites/{inviteId}` 
 - `users` (array of string) – exactly two user ids
 - `createdAt` (timestamp)
 - `typing` (map) – per-user typing status
+- `messageCounts` (map) – per-user sent message totals
 
 ### Subcollections
 - **messages** – chat messages between the matched users.

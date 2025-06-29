@@ -59,15 +59,10 @@ const StatsScreen = ({ navigation }) => {
         const matches = matchSnap.size;
 
         let messagesSent = 0;
-        for (const matchDoc of matchSnap.docs) {
-          const msgSnap = await db
-            .collection('matches')
-            .doc(matchDoc.id)
-            .collection('messages')
-            .where('senderId', '==', user.uid)
-            .get();
-          messagesSent += msgSnap.size;
-        }
+        matchSnap.forEach((doc) => {
+          const counts = doc.get('messageCounts') || {};
+          messagesSent += counts[user.uid] || 0;
+        });
 
         const userSnap = await db.collection('users').doc(user.uid).get();
         const data = userSnap.data() || {};
