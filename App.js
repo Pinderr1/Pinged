@@ -7,6 +7,12 @@ import DevBanner from './components/DevBanner';
 import Toast from 'react-native-toast-message';
 import usePushNotifications from './hooks/usePushNotifications';
 import RootNavigator from './navigation/RootNavigator';
+import { useTheme } from './contexts/ThemeContext';
+
+const ThemedNotificationCenter = () => {
+  const { theme } = useTheme();
+  return <NotificationCenter color={theme.accent} />;
+};
 
 export default function App() {
   usePushNotifications();
@@ -22,7 +28,7 @@ export default function App() {
             <RootNavigator />
             <DevBanner />
           </NavigationContainer>
-          <NotificationCenter />
+          <ThemedNotificationCenter />
           <Toast />
         </Providers>
       </KeyboardAvoidingView>

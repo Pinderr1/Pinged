@@ -2,11 +2,13 @@ import React, { useContext, useEffect, useRef } from 'react';
 import { Animated, Text, StyleSheet, Dimensions, View } from 'react-native';
 import { NotificationContext } from '../contexts/NotificationContext';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../contexts/ThemeContext';
 
 const screenWidth = Dimensions.get('window').width;
 
-const NotificationCenter = () => {
+const NotificationCenter = ({ color }) => {
   const { visible, notification } = useContext(NotificationContext);
+  const { theme } = useTheme();
   const slideAnim = useRef(new Animated.Value(-100)).current;
 
   useEffect(() => {
@@ -29,9 +31,13 @@ const NotificationCenter = () => {
 
   if (!visible || !notification) return null;
 
+  const bannerColor = color || theme.accent;
+
   return (
-    <Animated.View style={[styles.banner, { transform: [{ translateY: slideAnim }] }]}>
-      <View style={styles.inner}>
+    <Animated.View
+      style={[styles.banner, { transform: [{ translateY: slideAnim }] }]}
+    >
+      <View style={[styles.inner, { backgroundColor: bannerColor }]}>
         <Ionicons name="notifications" size={18} color="#fff" style={{ marginRight: 6 }} />
         <Text style={styles.text}>{notification}</Text>
       </View>
@@ -50,7 +56,6 @@ const styles = StyleSheet.create({
   inner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF75B5',
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 20,
@@ -58,7 +63,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 6,
-    elevation: 6
+    elevation: 6,
   },
   text: {
     color: '#fff',
