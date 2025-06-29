@@ -1,16 +1,17 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
-function createDeck() {
+function createDeck(random) {
   const values = [2,3,4,5,6,7,8,9,10,10,10,10,11];
   const deck = [];
   for (let i = 0; i < 4; i++) {
     deck.push(...values);
   }
   for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = random.Shuffle([...Array(i + 1).keys()])[0];
     [deck[i], deck[j]] = [deck[j], deck[i]];
   }
   return deck;
@@ -21,8 +22,8 @@ function handValue(hand) {
 }
 
 const BlackjackGame = {
-  setup: () => {
-    const deck = createDeck();
+  setup: (ctx) => {
+    const deck = createDeck(ctx.random);
     return {
       deck,
       hands: [ [deck.pop(), deck.pop()], [deck.pop(), deck.pop()] ],
@@ -63,13 +64,7 @@ const BlackjackGame = {
 };
 
 const BlackjackBoard = ({ G, ctx, moves, playerID, onGameEnd }) => {
-  const endRef = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !endRef.current) {
-      endRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const me = Number(playerID || '0');
   const opponent = 1 - me;

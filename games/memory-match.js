@@ -1,22 +1,16 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const PAIRS = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'];
 const SIZE = 4; // 4x4 grid
 
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
 
 const MemoryMatchGame = {
-  setup: () => ({
-    deck: shuffle([...PAIRS, ...PAIRS]),
+  setup: (ctx) => ({
+    deck: ctx.random.Shuffle([...PAIRS, ...PAIRS]),
     flipped: Array(16).fill(false),
     matched: Array(16).fill(false),
     selected: [],
@@ -45,13 +39,7 @@ const MemoryMatchGame = {
 };
 
 const MemoryMatchBoard = ({ G, ctx, moves, onGameEnd }) => {
-  const endRef = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !endRef.current) {
-      endRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   return (
     <View style={{ alignItems: 'center' }}>

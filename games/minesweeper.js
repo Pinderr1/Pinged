@@ -1,17 +1,18 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const ROWS = 5;
 const COLS = 5;
 const MINES = 5;
 
-function createBoard() {
+function createBoard(random) {
   const board = Array(ROWS * COLS).fill(0);
   let mines = 0;
   while (mines < MINES) {
-    const idx = Math.floor(Math.random() * board.length);
+    const idx = random.Shuffle([...Array(board.length).keys()])[0];
     if (board[idx] === -1) continue;
     board[idx] = -1;
     mines++;
@@ -37,8 +38,8 @@ function createBoard() {
 }
 
 const MinesweeperGame = {
-  setup: () => ({
-    board: createBoard(),
+  setup: (ctx) => ({
+    board: createBoard(ctx.random),
     revealed: Array(ROWS * COLS).fill(false),
     flagged: Array(ROWS * COLS).fill(false),
   }),
@@ -106,13 +107,7 @@ const Cell = ({ value, revealed, flagged, onReveal, onFlag }) => {
 };
 
 const MinesweeperBoard = ({ G, ctx, moves, onGameEnd }) => {
-  const endRef = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !endRef.current) {
-      endRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const rows = [];
   for (let r = 0; r < ROWS; r++) {

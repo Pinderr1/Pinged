@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const PigGame = {
   setup: () => ({ scores: [0, 0], turnTotal: 0, lastRoll: null }),
@@ -36,13 +37,7 @@ const PigGame = {
 };
 
 const PigBoard = ({ G, ctx, moves, onGameEnd }) => {
-  const endRef = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !endRef.current) {
-      endRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const disabled = !!ctx.gameover;
   const status = ctx.gameover

@@ -2,6 +2,7 @@ import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const choices = ['Rock', 'Paper', 'Scissors'];
 
@@ -31,14 +32,7 @@ const RPSGame = {
 };
 
 const RPSBoard = ({ G, ctx, moves, onGameEnd }) => {
-  const endedRef = React.useRef(false);
-
-  React.useEffect(() => {
-    if (ctx.gameover && !endedRef.current) {
-      endedRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const disabled = !!ctx.gameover;
   const yourChoice = G.moves[0];

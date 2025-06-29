@@ -1,19 +1,24 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const SIZE = 5;
 const SHIPS = [3, 2];
 
-function placeShips() {
+function placeShips(random) {
   const board = Array(SIZE * SIZE).fill(0);
   for (const len of SHIPS) {
     let placed = false;
     while (!placed) {
-      const vertical = Math.random() < 0.5;
-      const row = Math.floor(Math.random() * (vertical ? SIZE - len + 1 : SIZE));
-      const col = Math.floor(Math.random() * (vertical ? SIZE : SIZE - len + 1));
+      const vertical = random.Shuffle([true, false])[0];
+      const row = random.Shuffle(
+        [...Array(vertical ? SIZE - len + 1 : SIZE).keys()]
+      )[0];
+      const col = random.Shuffle(
+        [...Array(vertical ? SIZE : SIZE - len + 1).keys()]
+      )[0];
       let canPlace = true;
       for (let i = 0; i < len; i++) {
         const r = row + (vertical ? i : 0);
@@ -37,8 +42,8 @@ function placeShips() {
 }
 
 const BattleshipGame = {
-  setup: () => ({
-    boards: [placeShips(), placeShips()],
+  setup: (ctx) => ({
+    boards: [placeShips(ctx.random), placeShips(ctx.random)],
     hits: [Array(SIZE * SIZE).fill(null), Array(SIZE * SIZE).fill(null)],
   }),
   turn: { moveLimit: 1 },
@@ -101,13 +106,7 @@ const OwnCell = ({ ship, hit }) => {
 };
 
 const BattleshipBoard = ({ G, ctx, moves, playerID, onGameEnd }) => {
-  const endRef = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !endRef.current) {
-      endRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const player = Number(playerID || '0');
   const opponent = 1 - player;

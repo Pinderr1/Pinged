@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const lines = [
   [0, 1, 2],
@@ -48,14 +49,7 @@ const TicTacToeGame = {
 };
 
 const TicTacToeBoard = ({ G, ctx, moves, onGameEnd }) => {
-  const endedRef = useRef(false);
-
-  useEffect(() => {
-    if (ctx.gameover && !endedRef.current) {
-      endedRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const disabled = !!ctx.gameover;
 

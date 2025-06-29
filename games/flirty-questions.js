@@ -1,6 +1,7 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const QUESTIONS = [
   'What first attracted you to me?',
@@ -30,13 +31,7 @@ const FlirtyGame = {
 };
 
 const FlirtyBoard = ({ G, ctx, moves, onGameEnd }) => {
-  const endRef = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !endRef.current) {
-      endRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   return (
     <View style={{ alignItems: 'center', padding: 20 }}>

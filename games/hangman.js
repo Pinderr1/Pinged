@@ -1,13 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const WORDS = ['react', 'native', 'expo', 'javascript', 'hangman'];
 
 const HangmanGame = {
-  setup: () => {
-    const word = WORDS[Math.floor(Math.random() * WORDS.length)].toLowerCase();
+  setup: (ctx) => {
+    const idx = ctx.random.Shuffle([...Array(WORDS.length).keys()])[0];
+    const word = WORDS[idx].toLowerCase();
     return { word, guesses: [], wrong: 0 };
   },
   moves: {
@@ -28,13 +30,7 @@ const HangmanGame = {
 const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
 const HangmanBoard = ({ G, ctx, moves, onGameEnd }) => {
-  const endRef = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !endRef.current) {
-      endRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const display = G.word
     .split('')

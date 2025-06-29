@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import useOnGameOver from '../hooks/useOnGameOver';
 
 const CoinTossGame = {
   setup: () => ({ choice: null, result: null }),
@@ -10,7 +11,7 @@ const CoinTossGame = {
     choose: ({ G }, guess) => {
       if (G.choice) return INVALID_MOVE;
       G.choice = guess;
-      G.result = Math.random() < 0.5 ? 'Heads' : 'Tails';
+      G.result = ctx.random.D2() === 1 ? 'Heads' : 'Tails';
     },
   },
   endIf: ({ G }) => {
@@ -21,13 +22,7 @@ const CoinTossGame = {
 };
 
 const CoinTossBoard = ({ G, ctx, moves, onGameEnd }) => {
-  const endRef = useRef(false);
-  useEffect(() => {
-    if (ctx.gameover && !endRef.current) {
-      endRef.current = true;
-      onGameEnd && onGameEnd(ctx.gameover);
-    }
-  }, [ctx.gameover, onGameEnd]);
+  useOnGameOver(ctx.gameover, onGameEnd);
 
   const disabled = !!G.choice;
 
