@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
+import Card from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
 
@@ -33,9 +34,9 @@ const MatchesScreen = ({ navigation }) => {
   );
 
   const renderChat = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.chatItem, { backgroundColor: theme.card }]}
+    <Card
       onPress={() => navigation.navigate('Chat', { user: item })}
+      style={[styles.chatItem, { backgroundColor: theme.card }]}
     >
       <Image source={item.image} style={styles.chatAvatar} />
       <View style={{ flex: 1 }}>
@@ -49,7 +50,7 @@ const MatchesScreen = ({ navigation }) => {
           </Text>
         ) : null}
       </View>
-    </TouchableOpacity>
+    </Card>
   );
 
   return (
@@ -119,11 +120,6 @@ const styles = StyleSheet.create({
     padding: 12,
     marginHorizontal: 16,
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 3,
-    elevation: 2,
   },
   chatAvatar: {
     width: 56,

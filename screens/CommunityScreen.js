@@ -12,6 +12,7 @@ import {
   Dimensions
 } from 'react-native';
 import GradientButton from '../components/GradientButton';
+import Card from '../components/Card';
 import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
 import styles from '../styles';
@@ -79,7 +80,7 @@ const CommunityScreen = () => {
   const renderEventCard = (event, idx) => {
     const isJoined = joinedEvents.includes(event.id);
     return (
-      <View
+      <Card
         key={event.id}
         style={[
           local.card,
@@ -108,7 +109,7 @@ const CommunityScreen = () => {
           onPress={() => toggleJoin(event.id)}
           marginVertical={8}
         />
-      </View>
+      </Card>
     );
   };
 
@@ -138,11 +139,11 @@ const CommunityScreen = () => {
         </ScrollView>
 
         {/* Featured */}
-        <View style={[local.banner, { backgroundColor: darkMode ? '#333' : '#fff' }]}>
+        <Card style={[local.banner, { backgroundColor: darkMode ? '#333' : '#fff' }]}>
           <Image source={eventImageSource(require('../assets/user2.jpg'))} style={local.bannerImage} />
           <Text style={local.bannerTitle}>🔥 Featured</Text>
           <Text style={local.bannerText}>Truth or Dare Night — Friday @ 9PM</Text>
-        </View>
+        </Card>
 
         {/* Event grid */}
         <View style={local.grid}>
@@ -169,11 +170,11 @@ const CommunityScreen = () => {
 
         {/* Posts */}
         {posts.map((p) => (
-          <View key={p.id} style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
+          <Card key={p.id} style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
             <Text style={local.postTitle}>{p.title}</Text>
             <Text style={local.postTime}>{p.time}</Text>
             <Text style={local.postDesc}>{p.description}</Text>
-          </View>
+          </Card>
         ))}
 
         {/* First Join Badge */}
@@ -304,7 +305,7 @@ const local = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
-    elevation: 3
+    
   },
   bannerImage: {
     width: '100%',
@@ -332,7 +333,7 @@ const local = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 20,
     padding: 12,
-    elevation: 3
+    
   },
   image: {
     width: '100%',
@@ -390,11 +391,7 @@ const local = StyleSheet.create({
     padding: 14,
     marginHorizontal: 16,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2
+    
   },
   postTitle: {
     fontSize: 15,

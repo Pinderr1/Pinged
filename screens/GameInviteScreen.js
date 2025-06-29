@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Loader from '../components/Loader';
 import SafeKeyboardView from '../components/SafeKeyboardView';
+import Card from '../components/Card';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
@@ -100,7 +101,7 @@ const GameInviteScreen = ({ route, navigation }) => {
     const isLoading = loadingId === item.id;
 
     return (
-      <View
+      <Card
         style={{
           backgroundColor: theme.card,
           borderRadius: 16,
@@ -108,11 +109,7 @@ const GameInviteScreen = ({ route, navigation }) => {
           borderColor: darkMode ? '#333' : '#eee',
           padding: 12,
           margin: 8,
-          width: CARD_WIDTH,
-          shadowColor: '#000',
-          shadowOpacity: 0.06,
-          shadowRadius: 4,
-          elevation: 3
+          width: CARD_WIDTH
         }}
       >
         <View style={{ alignItems: 'center' }}>
@@ -154,7 +151,7 @@ const GameInviteScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </Card>
     );
   };
 

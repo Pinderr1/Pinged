@@ -20,6 +20,7 @@ import { allGames } from '../data/games';
 import { games as gameRegistry } from '../games';
 import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
+import Card from '../components/Card';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { eventImageSource } from '../utils/avatar';
 
@@ -118,12 +119,12 @@ const HomeScreen = ({ navigation }) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           <Text style={[local.welcome, { color: theme.text }]}>\
 {`Welcome${user?.displayName ? `, ${user.displayName}` : ''}!`}</Text>
-          <View style={[local.progressCard, { backgroundColor: theme.card }]}>
+          <Card style={[local.progressCard, { backgroundColor: theme.card }]}>
             <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
             <ProgressBar value={xpProgress} max={100} color={theme.accent} />
             <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
-          <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
-        </View>
+            <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
+          </Card>
 
         <Text style={local.section}>Shortcuts</Text>
         <FlatList
@@ -133,13 +134,13 @@ const HomeScreen = ({ navigation }) => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={local.carousel}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[local.tile, { backgroundColor: theme.card }]}
+            <Card
               onPress={() => handleShortcut(item.key)}
+              style={[local.tile, { backgroundColor: theme.card }]}
             >
               <Text style={local.tileEmoji}>{item.emoji}</Text>
               <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
-            </TouchableOpacity>
+            </Card>
           )}
         />
 
@@ -151,13 +152,13 @@ const HomeScreen = ({ navigation }) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={local.carousel}
             renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[local.tile, { backgroundColor: theme.card }]}
+              <Card
                 onPress={() => openGamePicker(item.key)}
+                style={[local.tile, { backgroundColor: theme.card }]}
               >
                 <Text style={local.tileEmoji}>{item.emoji}</Text>
                 <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
-              </TouchableOpacity>
+              </Card>
             )}
           />
 
@@ -169,13 +170,13 @@ const HomeScreen = ({ navigation }) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={local.carousel}
             renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[local.matchTile, { backgroundColor: theme.card }]}
+              <Card
                 onPress={() => navigation.navigate('Chat', { user: item })}
+                style={[local.matchTile, { backgroundColor: theme.card }]}
               >
                 <Image source={item.image} style={local.matchAvatar} />
                 <Text style={[local.matchName, { color: theme.text }]}>{item.name}</Text>
-              </TouchableOpacity>
+              </Card>
             )}
           />
 
@@ -187,22 +188,22 @@ const HomeScreen = ({ navigation }) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={[local.carousel, { paddingBottom: 20 }]}
             renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[local.gameTile, { backgroundColor: theme.card }]}
+              <Card
                 onPress={() => {
                   setPlayTarget('match');
                   selectGame(item);
                 }}
+                style={[local.gameTile, { backgroundColor: theme.card }]}
               >
                 <View style={{ marginBottom: 8 }}>{item.icon}</View>
                 <Text style={[local.gameTitle, { color: theme.text }]}>{item.title}</Text>
-              </TouchableOpacity>
+              </Card>
             )}
           />
 
           <Text style={local.section}>Community</Text>
           {SAMPLE_EVENTS.map((event) => (
-            <View
+            <Card
               key={`e-${event.id}`}
               style={[local.eventCard, { backgroundColor: theme.card }]}
             >
@@ -214,17 +215,17 @@ const HomeScreen = ({ navigation }) => {
                   {event.description}
                 </Text>
               </View>
-            </View>
+            </Card>
           ))}
           {SAMPLE_POSTS.map((post) => (
-            <View
+            <Card
               key={`p-${post.id}`}
               style={[local.postCardPreview, { backgroundColor: theme.card }]}
             >
               <Text style={[local.postTitle, { color: theme.text }]}>{post.title}</Text>
               <Text style={local.postTime}>{post.time}</Text>
               <Text style={[local.postDesc, { color: theme.textSecondary }]}>{post.description}</Text>
-            </View>
+            </Card>
           ))}
         </ScrollView>
 
@@ -268,8 +269,6 @@ const local = StyleSheet.create({
     color: '#ff4081',
   },
   progressCard: {
-    borderRadius: 16,
-    padding: 16,
     marginHorizontal: 16,
     marginBottom: 16,
   },
@@ -290,15 +289,9 @@ const local = StyleSheet.create({
   tile: {
     width: 120,
     height: 100,
-    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
   },
   tileEmoji: {
     fontSize: 28,
@@ -311,16 +304,10 @@ const local = StyleSheet.create({
   matchTile: {
     width: 120,
     height: 140,
-    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
     padding: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
   },
   matchAvatar: {
     width: 60,
@@ -335,16 +322,10 @@ const local = StyleSheet.create({
   gameTile: {
     width: 120,
     height: 120,
-    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
     padding: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
   },
   gameTitle: {
     fontSize: 13,
@@ -378,11 +359,6 @@ const local = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 12,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
   },
   eventImage: {
     width: 50,
@@ -406,11 +382,6 @@ const local = StyleSheet.create({
     padding: 12,
     marginHorizontal: 16,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
   },
   postTitle: {
     fontSize: 14,
