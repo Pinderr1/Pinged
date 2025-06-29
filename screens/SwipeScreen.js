@@ -119,14 +119,14 @@ const SwipeScreen = () => {
     const fetchUsers = async () => {
       if (!currentUser?.uid) return;
       try {
-        const q = db
+        let userQuery = db
           .collection('users')
           .where('uid', '!=', currentUser.uid);
-        const snap = await q.get();
-        let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         if (currentUser.location) {
-          data = data.filter((u) => u.location === currentUser.location);
+          userQuery = userQuery.where('location', '==', currentUser.location);
         }
+        const snap = await userQuery.limit(50).get();
+        let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         if (devMode) {
           data = [
             {
