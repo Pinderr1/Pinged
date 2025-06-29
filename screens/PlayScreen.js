@@ -22,6 +22,7 @@ import { allGames } from '../data/games';
 import GameCard from '../components/GameCard';
 import GamePreviewModal from '../components/GamePreviewModal';
 import GameFilters from '../components/GameFilters';
+import useRequireGameCredits from '../hooks/useRequireGameCredits';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH * 0.42;
@@ -39,6 +40,7 @@ const PlayScreen = ({ navigation }) => {
   const { devMode } = useDev();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const isPremiumUser = !!user?.isPremium;
+  const requireCredits = useRequireGameCredits();
   const [filter, setFilter] = useState('All');
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
@@ -83,10 +85,7 @@ const PlayScreen = ({ navigation }) => {
       navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
-    if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-      navigation.navigate('Premium', { context: 'paywall' });
-      return;
-    }
+    if (!requireCredits()) return;
     const { id, title, category, description } = previewGame;
     navigation.navigate('GameInvite', {
       game: { id, title, category, description }

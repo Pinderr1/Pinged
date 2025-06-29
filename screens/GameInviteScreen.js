@@ -20,6 +20,7 @@ import styles from '../styles';
 import { useChats } from '../contexts/ChatContext';
 import { useUser } from '../contexts/UserContext';
 import Toast from 'react-native-toast-message';
+import useRequireGameCredits from '../hooks/useRequireGameCredits';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH / 2 - 24;
@@ -34,15 +35,14 @@ const GameInviteScreen = ({ route, navigation }) => {
   const { matches: chatMatches } = useChats();
   const { sendGameInvite } = useMatchmaking();
   const { gamesLeft } = useGameLimit();
+  const requireCredits = useRequireGameCredits();
   const [search, setSearch] = useState('');
   const [invited, setInvited] = useState({});
   const [loadingId, setLoadingId] = useState(null);
   const [matches, setMatches] = useState([]);
 
   useEffect(() => {
-    if (!currentUser?.isPremium && gamesLeft <= 0 && !devMode) {
-      navigation.replace('Premium', { context: 'paywall' });
-    }
+    requireCredits({ replace: true });
   }, [gamesLeft, currentUser?.isPremium, devMode]);
 
   useEffect(() => {
@@ -58,10 +58,7 @@ const GameInviteScreen = ({ route, navigation }) => {
 
   const handleInvite = async (user) => {
     const isPremiumUser = !!currentUser?.isPremium;
-    if (!isPremiumUser && gamesLeft <= 0 && !devMode) {
-      navigation.navigate('Premium', { context: 'paywall' });
-      return;
-    }
+    if (!requireCredits()) return;
 
     setInvited((prev) => ({ ...prev, [user.id]: true }));
     setLoadingId(user.id);
