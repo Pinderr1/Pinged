@@ -193,7 +193,7 @@ export const ChatProvider = ({ children }) => {
     );
   };
 
-  const sendGameInvite = (matchId, gameId, from = 'you') => {
+  const startLocalGame = (matchId, gameId, from = 'you') => {
     setMatches((prev) =>
       prev.map((m) =>
         m.id === matchId
@@ -260,7 +260,7 @@ export const ChatProvider = ({ children }) => {
         removeMatch,
         setActiveGame,
         getActiveGame,
-        sendGameInvite,
+        startLocalGame,
         clearGameInvite,
         acceptGameInvite,
         getPendingInvite,
