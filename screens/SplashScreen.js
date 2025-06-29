@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Image, StatusBar, Text } from 'react-native';
 import LottieView from 'lottie-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import styles from '../styles';
 
@@ -31,7 +31,7 @@ export default function SplashScreen({ onFinish }) {
   }, [onFinish]);
 
   return (
-    <LinearGradient colors={colors} style={styles.container}>
+    <GradientBackground colors={colors} style={styles.container}>
       <StatusBar barStyle="light-content" />
       <Animated.View style={{ opacity: fadeAnim, alignItems: 'center' }}>
         <Image source={require('../assets/logo.png')} style={styles.logoImage} />
@@ -44,6 +44,6 @@ export default function SplashScreen({ onFinish }) {
           style={{ width: 200, height: 200, position: 'absolute', bottom: -20 }}
         />
       </Animated.View>
-    </LinearGradient>
+    </GradientBackground>
   );
 }

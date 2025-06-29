@@ -13,7 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
@@ -164,23 +164,17 @@ const LiveSessionScreen = ({ route, navigation }) => {
 
   if (!game || !opponent) {
     return (
-      <LinearGradient
-        colors={[theme.gradientStart, theme.gradientEnd]}
-        style={styles.swipeScreen}
-      >
+      <GradientBackground style={styles.swipeScreen}>
         <Header showLogoOnly />
         <Text style={{ marginTop: 80, color: theme.text }}>
           Invalid game data.
         </Text>
-      </LinearGradient>
+      </GradientBackground>
     );
   }
 
   return (
-    <LinearGradient
-      colors={[theme.gradientStart, theme.gradientEnd]}
-      style={styles.swipeScreen}
-    >
+    <GradientBackground style={styles.swipeScreen}>
       <Header showLogoOnly />
 
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -257,7 +251,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
           })
         }
       />
-    </LinearGradient>
+    </GradientBackground>
   );
 };
 
@@ -396,7 +390,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   };
 
   return (
-      <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
+      <GradientBackground style={{ flex: 1 }}>
         <Header />
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -487,7 +481,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
         </View>
         </SafeAreaView>
         </KeyboardAvoidingView>
-      </LinearGradient>
+      </GradientBackground>
   );
 }
 

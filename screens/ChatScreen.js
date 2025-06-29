@@ -9,7 +9,7 @@ import {
   Modal,
   SafeAreaView,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import Header from '../components/Header';
@@ -46,12 +46,12 @@ function PrivateChat({ user }) {
 
   if (!user) {
     return (
-      <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
+      <GradientBackground style={{ flex: 1 }}>
         <Header />
         <Text style={{ marginTop: 80, textAlign: 'center', color: theme.text }}>
           User not found.
         </Text>
-      </LinearGradient>
+      </GradientBackground>
     );
   }
 
@@ -364,7 +364,7 @@ function PrivateChat({ user }) {
   const gradientColors = [theme.gradientStart, theme.gradientEnd];
 
   return (
-    <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
+    <GradientBackground colors={gradientColors} style={{ flex: 1 }}>
       <Header />
       <Modal
         visible={showGameModal}
@@ -392,7 +392,7 @@ function PrivateChat({ user }) {
           </View>
         </SafeKeyboardView>
       </SafeAreaView>
-    </LinearGradient>
+    </GradientBackground>
   );
 }
 
@@ -642,7 +642,7 @@ function GroupChat({ event }) {
   );
 
   return (
-    <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
+    <GradientBackground style={{ flex: 1 }}>
       <Header />
       <SafeKeyboardView style={{ flex: 1, paddingTop: 60 }}>
         <Text style={groupStyles.eventTitle}>{event.title}</Text>
@@ -674,7 +674,7 @@ function GroupChat({ event }) {
           </TouchableOpacity>
         </View>
       </SafeKeyboardView>
-    </LinearGradient>
+    </GradientBackground>
   );
 }
 
@@ -788,12 +788,12 @@ export default function ChatScreen({ route }) {
 
   if (!match) {
     return (
-      <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
+      <GradientBackground style={{ flex: 1 }}>
         <Header />
         <Text style={{ marginTop: 80, textAlign: 'center', color: theme.text }}>
           No match found.
         </Text>
-      </LinearGradient>
+      </GradientBackground>
     );
   }
 

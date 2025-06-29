@@ -8,7 +8,7 @@ import {
   StyleSheet,
   SafeAreaView,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
@@ -54,7 +54,7 @@ const MatchesScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={{ flex: 1 }}>
+      <GradientBackground style={{ flex: 1 }}>
         <Header />
         <View style={{ flex: 1, paddingTop: 80 }}>
           {newMatches.length > 0 && (
@@ -79,7 +79,7 @@ const MatchesScreen = ({ navigation }) => {
             showsVerticalScrollIndicator={false}
           />
         </View>
-      </LinearGradient>
+      </GradientBackground>
     </SafeAreaView>
   );
 };

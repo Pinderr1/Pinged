@@ -9,7 +9,7 @@ import {
   Animated,
   Keyboard
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import styles from '../styles';
 import Header from '../components/Header';
@@ -111,10 +111,7 @@ const PlayScreen = ({ navigation }) => {
   };
 
   return (
-    <LinearGradient
-      colors={gradientColors}
-      style={styles.swipeScreen}
-    >
+    <GradientBackground colors={gradientColors} style={styles.swipeScreen}>
       <Header showLogoOnly />
       <SafeKeyboardView style={{ flex: 1 }}>
 
@@ -160,7 +157,7 @@ const PlayScreen = ({ navigation }) => {
         onStart={handleStartGame}
       />
       </SafeKeyboardView>
-    </LinearGradient>
+    </GradientBackground>
   );
 };
 

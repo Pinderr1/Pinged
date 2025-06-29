@@ -12,7 +12,7 @@ import {
   ToastAndroid,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -368,7 +368,7 @@ const SwipeScreen = () => {
     : 0;
 
   return (
-    <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
+    <GradientBackground colors={gradientColors} style={{ flex: 1 }}>
       <Header />
       <View style={styles.container}>
         {displayUser ? (
@@ -485,7 +485,7 @@ const SwipeScreen = () => {
           </Modal>
         )}
       </View>
-    </LinearGradient>
+    </GradientBackground>
   );
 };
 

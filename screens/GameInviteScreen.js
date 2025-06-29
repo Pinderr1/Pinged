@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Loader from '../components/Loader';
 import SafeKeyboardView from '../components/SafeKeyboardView';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
@@ -153,10 +153,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   };
 
   return (
-    <LinearGradient
-      colors={[theme.gradientStart, theme.gradientEnd]}
-      style={styles.swipeScreen}
-    >
+    <GradientBackground style={styles.swipeScreen}>
       <Header showLogoOnly />
       <SafeKeyboardView style={{ flex: 1 }}>
           <Text
@@ -211,7 +208,7 @@ const GameInviteScreen = ({ route, navigation }) => {
             removeClippedSubviews={false}
           />
       </SafeKeyboardView>
-    </LinearGradient>
+    </GradientBackground>
   );
 };
 
