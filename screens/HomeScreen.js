@@ -36,7 +36,7 @@ const HomeScreen = ({ navigation }) => {
   const { user } = useUser();
   const { matches } = useChats();
   const isPremiumUser = !!user?.isPremium;
-  const { gamesLeft, recordGamePlayed } = useGameLimit();
+  const { gamesLeft } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
 
@@ -73,9 +73,7 @@ const HomeScreen = ({ navigation }) => {
       return;
     }
     setGamePickerVisible(false);
-    if (playTarget !== 'ai') {
-      recordGamePlayed();
-    }
+    // Record the game once the session begins in GameSessionScreen
     if (playTarget === 'ai') {
       const bot = getRandomBot();
       const aiKeyMap = { rockPaperScissors: 'rps' };

@@ -38,7 +38,7 @@ const PlayScreen = ({ navigation }) => {
   const gradientColors = [theme.gradientStart, theme.gradientEnd];
   const { user } = useUser();
   const { devMode } = useDev();
-  const { gamesLeft, recordGamePlayed } = useGameLimit();
+  const { gamesLeft } = useGameLimit();
   const isPremiumUser = !!user?.isPremium;
   const requireCredits = useRequireGameCredits();
   const [filter, setFilter] = useState('All');
@@ -90,7 +90,7 @@ const PlayScreen = ({ navigation }) => {
     navigation.navigate('GameInvite', {
       game: { id, title, category, description }
     });
-    recordGamePlayed();
+    // Game play is recorded in GameSessionScreen when the session starts
   };
 
   const renderItem = ({ item }) => {
