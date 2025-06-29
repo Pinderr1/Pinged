@@ -46,8 +46,8 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
         { price: process.env.STRIPE_PRICE_ID, quantity: 1 }
       ],
       metadata: { uid },
-      success_url: data.successUrl || process.env.SUCCESS_URL,
-      cancel_url: data.cancelUrl || process.env.CANCEL_URL
+      success_url: data.successUrl || process.env.EXPO_PUBLIC_SUCCESS_URL,
+      cancel_url: data.cancelUrl || process.env.EXPO_PUBLIC_CANCEL_URL
     });
     return { url: session.url };
   } catch (err) {
