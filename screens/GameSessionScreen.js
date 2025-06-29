@@ -30,7 +30,7 @@ import Toast from 'react-native-toast-message';
 import { bots, getRandomBot } from "../ai/bots";
 import { generateReply } from "../ai/chatBot";
 import useBotGame from "../hooks/useBotGame";
-import { bots as botMoves } from "../ai/botMoves";
+import { getBotMove } from "../ai/botMoves";
 import SafeKeyboardView from "../components/SafeKeyboardView";
 const GameSessionScreen = ({ route, navigation, sessionType }) => {
   const type = sessionType || route.params?.sessionType || (route.params?.botId ? "bot" : "live");
@@ -271,15 +271,18 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const { theme } = useTheme();
   const [game, setGame] = useState(initialGame);
 
-  const keyMap = { rps: 'rockPaperScissors' };
-  const gameMap = Object.keys(botMoves).reduce((acc, key) => {
-    const gameKey = keyMap[key] || key;
-    const info = games[gameKey];
-    if (!info) return acc;
-    acc[key] = {
+  const aiKeyMap = { rockPaperScissors: 'rps' };
+  const gameMap = Object.keys(games).reduce((acc, key) => {
+    const info = games[key];
+    const aiKey = aiKeyMap[key] || key;
+    acc[aiKey] = {
       title: info.meta?.title || info.name,
       board: info.Board,
-      state: useBotGame(info.Game, botMoves[key], (res) => handleGameEnd(res, key)),
+      state: useBotGame(
+        info.Game,
+        (G, player, gameObj) => getBotMove(aiKey, G, player, gameObj),
+        (res) => handleGameEnd(res, aiKey)
+      ),
     };
     return acc;
   }, {});
