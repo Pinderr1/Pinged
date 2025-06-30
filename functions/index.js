@@ -228,7 +228,6 @@ exports.syncPresence = functions.database
     try {
       await userRef.update({
         online: status.state === 'online',
-        lastSeenAt: admin.firestore.Timestamp.fromMillis(status.last_changed),
       });
     } catch (e) {
       console.error('Failed to sync presence', e);

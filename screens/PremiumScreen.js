@@ -14,6 +14,7 @@ import * as WebBrowser from 'expo-web-browser';
 import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 import { functions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
 import PropTypes from 'prop-types';
@@ -38,6 +39,7 @@ const PremiumScreen = ({ navigation, route }) => {
   const { theme } = useTheme();
   const paywallStyles = getPaywallStyles(theme);
   const context = route?.params?.context || 'paywall';
+  const { user } = useUser();
 
   const startCheckout = async () => {
     try {
@@ -91,6 +93,13 @@ const PremiumScreen = ({ navigation, route }) => {
     <GradientBackground style={{ flex: 1 }}>
       <Header />
       <View style={paywallStyles.container}>
+        {user?.isPremium && user.premiumUpdatedAt && (
+          <Text style={paywallStyles.memberSince}>{
+            `Member since ${new Date(
+              user.premiumUpdatedAt.toDate?.() || user.premiumUpdatedAt
+            ).toLocaleDateString()}`
+          }</Text>
+        )}
         <Text style={paywallStyles.title}>Upgrade to Premium</Text>
         <Text style={paywallStyles.subtitle}>More features. More matches. More fun.</Text>
         <FlatList
@@ -197,6 +206,11 @@ const getPaywallStyles = (theme) =>
     marginTop: 16,
     fontSize: FONT_SIZES.SM,
     color: '#888',
+  },
+  memberSince: {
+    fontSize: FONT_SIZES.SM,
+    color: '#666',
+    marginBottom: 12,
   },
 });
 
