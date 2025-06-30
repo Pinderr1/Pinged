@@ -70,6 +70,14 @@ A copy of each invite is also stored under `users/{uid}/gameInvites/{inviteId}` 
 - `createdAt` (timestamp)
 - `updatedAt` (timestamp)
 
+## Game Stats (`gameStats/{statId}`)
+- `gameId` (string)
+- `players` (array of string)
+- `durationSec` (number)
+- `winner` (string|null) – uid of the winner or `null`
+- `moves` (array of map) – `{ action, player, at }`
+- `loggedAt` (timestamp)
+
 ## Chats
 Chat conversations occur inside match documents under the `messages` subcollection (see **Matches** above). Each event also has a chat stored at `events/{eventId}/messages` following the same message shape.
 
