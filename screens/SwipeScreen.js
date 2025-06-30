@@ -34,6 +34,7 @@ import { imageSource } from '../utils/avatar';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import PropTypes from 'prop-types';
 import * as Haptics from 'expo-haptics';
+import SkeletonUserCard from '../components/SkeletonUserCard';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -97,6 +98,7 @@ const SwipeScreen = () => {
   const [showSuperLikeAnim, setShowSuperLikeAnim] = useState(false);
   const [matchLine, setMatchLine] = useState('');
   const [matchGame, setMatchGame] = useState(null);
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
   const pan = useRef(new Animated.ValueXY()).current;
   // 3 main buttons shown in the toolbar
@@ -126,7 +128,11 @@ const SwipeScreen = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      if (!currentUser?.uid) return;
+      if (!currentUser?.uid) {
+        setLoadingUsers(false);
+        return;
+      }
+      setLoadingUsers(true);
       try {
         let userQuery = db
           .collection('users')
@@ -183,6 +189,7 @@ const SwipeScreen = () => {
       } catch (e) {
         console.warn('Failed to load users', e);
       }
+      setLoadingUsers(false);
     };
     fetchUsers();
   }, [currentUser?.uid, devMode]);
@@ -471,7 +478,11 @@ const handleSwipe = async (direction) => {
           </View>
         ) : null}
         {!displayUser && (
-          <Text style={styles.noMoreText}>No more swipes</Text>
+          loadingUsers ? (
+            <SkeletonUserCard />
+          ) : (
+            <Text style={styles.noMoreText}>No more swipes</Text>
+          )
         )}
 
         <View style={styles.buttonRow}>
