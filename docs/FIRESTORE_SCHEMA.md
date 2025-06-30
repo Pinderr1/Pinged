@@ -53,6 +53,11 @@ A copy of each invite is also stored under `users/{uid}/gameInvites/{inviteId}` 
 - `createdAt` (timestamp)
 - `typing` (map) – per-user typing status
 - `messageCounts` (map) – per-user sent message totals
+- `chatCounts` (map) – count of replies sent by each user
+- `replyTotals` (map) – cumulative reply time in milliseconds per user
+- `replyCounts` (map) – number of recorded replies per user
+- `lastMessageAt` (timestamp) – time of the most recent message
+- `lastSenderId` (string) – uid of the last message sender
 
 ### Subcollections
 - **messages** – chat messages between the matched users.

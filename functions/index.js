@@ -342,18 +342,30 @@ exports.onChatMessageCreated = functions.firestore
 
     try {
       const matchRef = admin.firestore().collection('matches').doc(matchId);
-      await matchRef.set(
-        { messageCounts: { [senderId]: admin.firestore.FieldValue.increment(1) } },
-        { merge: true }
-      );
+      const matchSnap = await matchRef.get();
+      const matchData = matchSnap.data() || {};
 
-      const matchSnap = await admin
-        .firestore()
-        .collection('matches')
-        .doc(matchId)
-        .get();
-      const matchData = matchSnap.data();
-      const users = (matchData && matchData.users) || [];
+      const lastSender = matchData.lastSenderId;
+      const lastTime = matchData.lastMessageAt?.toDate?.();
+      const ts = data.timestamp?.toDate?.() || snap.createTime.toDate();
+
+      const updates = {
+        messageCounts: { [senderId]: admin.firestore.FieldValue.increment(1) },
+        lastSenderId: senderId,
+        lastMessageAt: data.timestamp || admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      if (lastSender && lastSender !== senderId && lastTime) {
+        const diff = ts.getTime() - lastTime.getTime();
+        updates.chatCounts = { [senderId]: admin.firestore.FieldValue.increment(1) };
+        updates.replyTotals = { [senderId]: admin.firestore.FieldValue.increment(diff) };
+        updates.replyCounts = { [senderId]: admin.firestore.FieldValue.increment(1) };
+      }
+
+      await matchRef.set(updates, { merge: true });
+      await admin.firestore().collection('matchHistory').doc(matchId).set(updates, { merge: true });
+
+      const users = matchData.users || [];
       const recipientId = users.find((u) => u !== senderId);
       if (!recipientId) return null;
 
