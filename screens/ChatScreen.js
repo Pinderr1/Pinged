@@ -69,6 +69,7 @@ function PrivateChat({ user }) {
   const [showGameModal, setShowGameModal] = useState(false);
   const [text, setText] = useState('');
   const [devPlayer, setDevPlayer] = useState('0');
+  const [showControls, setShowControls] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeout = useRef(null);
   const [otherUserId, setOtherUserId] = useState(null);
@@ -262,6 +263,12 @@ function PrivateChat({ user }) {
     setActiveGame(user.id, null);
   };
 
+  const endGameEarly = () => {
+    sendChatMessage('Game ended.', 'system');
+    setActiveGame(user.id, null);
+    setShowControls(false);
+  };
+
   const handleGameSelect = (gameId) => {
     const isPremiumUser = !!currentUser?.isPremium;
     if (!requireCredits()) {
@@ -366,20 +373,54 @@ function PrivateChat({ user }) {
       />
       {isTyping && <Text style={privateStyles.typingIndicator}>{user.displayName} is typing...</Text>}
       <View style={privateStyles.gameBar}>
-        <TouchableOpacity
-          style={activeGameId ? privateStyles.changeButton : privateStyles.playButton}
-          onPress={() => {
-            if (!requireCredits()) {
-              return;
-            }
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-            setShowGameModal(true);
-          }}
-        >
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-            {activeGameId ? 'Change Game' : 'Invite Game'}
-          </Text>
-        </TouchableOpacity>
+        {activeGameId ? (
+          <>
+            {showControls && (
+              <>
+                <TouchableOpacity
+                  style={privateStyles.changeButton}
+                  onPress={() => {
+                    if (!requireCredits()) return;
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                    setShowGameModal(true);
+                    setShowControls(false);
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>Change Game</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={privateStyles.endButton}
+                  onPress={endGameEarly}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>End Game</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            <TouchableOpacity
+              onPress={() => setShowControls(!showControls)}
+              style={privateStyles.menuButton}
+            >
+              <Ionicons
+                name={showControls ? 'close' : 'ellipsis-horizontal'}
+                size={20}
+                color="#fff"
+              />
+            </TouchableOpacity>
+          </>
+        ) : (
+          <TouchableOpacity
+            style={privateStyles.playButton}
+            onPress={() => {
+              if (!requireCredits()) {
+                return;
+              }
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              setShowGameModal(true);
+            }}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Invite Game</Text>
+          </TouchableOpacity>
+        )}
       </View>
       <View style={privateStyles.inputBar}>
         <TouchableOpacity
@@ -538,7 +579,7 @@ const getPrivateStyles = (theme) =>
     backgroundColor: '#f9f9f9',
     borderRadius: 20,
     paddingHorizontal: 15,
-    paddingVertical: 8,
+    paddingVertical: 6,
     fontSize: 16,
     marginRight: 10,
   },
@@ -560,6 +601,19 @@ const getPrivateStyles = (theme) =>
     backgroundColor: '#607d8b',
     paddingVertical: 6,
     paddingHorizontal: 12,
+    borderRadius: 20,
+    marginLeft: 8,
+  },
+  endButton: {
+    backgroundColor: '#d32f2f',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginLeft: 8,
+  },
+  menuButton: {
+    backgroundColor: '#607d8b',
+    padding: 6,
     borderRadius: 20,
     marginLeft: 8,
   },
