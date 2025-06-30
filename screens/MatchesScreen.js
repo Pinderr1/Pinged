@@ -16,7 +16,9 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
 import PropTypes from 'prop-types';
 import { HEADER_SPACING } from '../layout';
-import Loader from '../components/Loader';
+
+const SKELETON_NEW_COUNT = 5;
+const SKELETON_CHAT_COUNT = 5;
 
 const MatchesScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
@@ -34,6 +36,40 @@ const MatchesScreen = ({ navigation }) => {
     setRefreshing(true);
     await refreshMatches();
   };
+
+  const skeletonColor = darkMode ? '#333333' : '#e0e0e0';
+
+  const renderSkeletonNewMatch = (_, index) => (
+    <View key={`skeleton-new-${index}`} style={styles.newMatch}>
+      <View style={[styles.newAvatar, { backgroundColor: skeletonColor }]} />
+      <View
+        style={[
+          styles.skeletonText,
+          { backgroundColor: skeletonColor, width: 56 },
+        ]}
+      />
+    </View>
+  );
+
+  const renderSkeletonChat = (_, index) => (
+    <Card key={`skeleton-chat-${index}`} style={[styles.chatItem, { backgroundColor: theme.card }]}> 
+      <View style={[styles.chatAvatar, { backgroundColor: skeletonColor }]} />
+      <View style={{ flex: 1 }}>
+        <View
+          style={[
+            styles.skeletonText,
+            { backgroundColor: skeletonColor, width: '50%', height: 16, marginBottom: 6 },
+          ]}
+        />
+        <View
+          style={[
+            styles.skeletonText,
+            { backgroundColor: skeletonColor, width: '80%', height: 12 },
+          ]}
+        />
+      </View>
+    </Card>
+  );
 
   const renderNewMatch = ({ item }) => (
     <TouchableOpacity
@@ -73,9 +109,19 @@ const MatchesScreen = ({ navigation }) => {
         <Header />
         <View style={{ flex: 1, paddingTop: HEADER_SPACING }}>
           {loading ? (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <Loader />
-            </View>
+            <>
+              <Text style={styles.sectionTitle}>New Matches</Text>
+              <FlatList
+                data={Array.from({ length: SKELETON_NEW_COUNT })}
+                keyExtractor={(_, i) => `sk-new-${i}`}
+                renderItem={renderSkeletonNewMatch}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.newList}
+              />
+              <Text style={styles.sectionTitle}>Active Chats</Text>
+              {Array.from({ length: SKELETON_CHAT_COUNT }).map(renderSkeletonChat)}
+            </>
           ) : newMatches.length === 0 && activeChats.length === 0 ? (
             <>
               <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
@@ -183,6 +229,10 @@ const styles = StyleSheet.create({
   chatPreview: {
     fontSize: 12,
     marginTop: 2,
+  },
+  skeletonText: {
+    height: 10,
+    borderRadius: 4,
   },
 });
 
