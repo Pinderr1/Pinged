@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
+import { SafeAreaView, View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
-import { HEADER_HEIGHT, HEADER_PADDING_TOP } from '../layout';
+import { HEADER_HEIGHT } from '../layout';
 
 export interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
@@ -12,51 +12,56 @@ const Header: React.FC<HeaderProps> = () => {
   const notificationCount = useUnreadNotifications();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.headerBackground }]}>
-      {/* Left icon - Gear */}
-      <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.iconWrapper}>
-        <Image
-          source={require('../assets/gear.png')}
-          style={[styles.icon, { tintColor: theme.text }]}
-        />
-      </TouchableOpacity>
-
-      {/* Center logo */}
-      <Image
-        source={require('../assets/logo.png')}
-        style={styles.logo}
-      />
-
-      {/* Right icon - Bell with badge */}
-      <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.iconWrapper}>
-        <View style={styles.bellWrapper}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.headerBackground }]}>
+      <View style={styles.container}>
+        {/* Left icon - Gear */}
+        <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.iconWrapper}>
           <Image
-            source={require('../assets/bell.png')}
+            source={require('../assets/gear.png')}
             style={[styles.icon, { tintColor: theme.text }]}
           />
-          {notificationCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{notificationCount}</Text>
-            </View>
-          )}
-        </View>
-      </TouchableOpacity>
-    </View>
+        </TouchableOpacity>
+
+        {/* Center logo */}
+        <Image
+          source={require('../assets/logo.png')}
+          style={styles.logo}
+        />
+
+        {/* Right icon - Bell with badge */}
+        <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.iconWrapper}>
+          <View style={styles.bellWrapper}>
+            <Image
+              source={require('../assets/bell.png')}
+              style={[styles.icon, { tintColor: theme.text }]}
+            />
+            {notificationCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{notificationCount}</Text>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     position: 'absolute',
     top: 0,
+    left: 0,
+    right: 0,
     width: '100%',
+    zIndex: 1000,
+  },
+  container: {
     height: HEADER_HEIGHT,
     paddingHorizontal: 16,
-    paddingTop: HEADER_PADDING_TOP,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    zIndex: 1000,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -70,8 +75,8 @@ const styles = StyleSheet.create({
     }),
   },
   iconWrapper: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -81,14 +86,14 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   logo: {
-    width: 60,
-    height: 60,
+    width: 40,
+    height: 40,
     resizeMode: 'contain',
   },
   bellWrapper: {
     position: 'relative',
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },

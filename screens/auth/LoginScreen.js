@@ -1,9 +1,12 @@
 // screens/LoginScreen.js
 import React, { useEffect } from 'react';
-import { Image, Text } from 'react-native';
+
 import Toast from 'react-native-toast-message';
 import GradientBackground from '../../components/GradientBackground';
 import GradientButton from '../../components/GradientButton';
+import Header from '../../components/Header';
+import ScreenContainer from '../../components/ScreenContainer';
+import { HEADER_SPACING } from '../../layout';
 import getStyles from '../../styles';
 import { useTheme } from '../../contexts/ThemeContext';
 import * as WebBrowser from 'expo-web-browser';
@@ -76,18 +79,18 @@ export default function LoginScreen() {
 
   return (
     <GradientBackground>
-      <Image source={require('../../assets/logo.png')} style={styles.logoImage} />
-      <Text style={[styles.logoText, { color: theme.text }]}>Pinged</Text>
+      <Header showLogoOnly />
+      <ScreenContainer scroll contentContainerStyle={[styles.container, { paddingTop: HEADER_SPACING }]}>
 
-      <GradientButton
-        text="Sign in with Google"
-        onPress={() => promptAsync({ useProxy: false, prompt: 'select_account' })}
-      />
+        <GradientButton
+          text="Sign in with Google"
+          onPress={() => promptAsync({ useProxy: false, prompt: 'select_account' })}
+        />
 
-      <GradientButton
-        text="Login with Email"
-        onPress={() => navigation.navigate('EmailLogin')}
-      />
+        <GradientButton
+          text="Login with Email"
+          onPress={() => navigation.navigate('EmailLogin')}
+        />
 
         <GradientButton
           text="Sign Up"
@@ -98,7 +101,8 @@ export default function LoginScreen() {
           text="Dev Onboarding"
           onPress={handleDevLogin}
         />
-      </GradientBackground>
-    );
+      </ScreenContainer>
+    </GradientBackground>
+  );
   }
 LoginScreen.propTypes = {};
