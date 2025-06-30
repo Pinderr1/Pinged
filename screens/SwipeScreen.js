@@ -24,8 +24,7 @@ import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { allGames } from '../data/games';
 import { icebreakers } from '../data/prompts';
 import { useChats } from '../contexts/ChatContext';
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase from '../firebase';
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -140,7 +139,8 @@ const SwipeScreen = () => {
       }
       setLoadingUsers(true);
       try {
-        let userQuery = firestore
+        let userQuery = firebase
+          .firestore()
           .collection('users')
           .where('uid', '!=', currentUser.uid);
         if (currentUser.location) {
@@ -222,14 +222,16 @@ const handleSwipe = async (direction) => {
 
       if (currentUser?.uid && displayUser.id && !devMode) {
         try {
-          await firestore
+          await firebase
+            .firestore()
             .collection('likes')
             .doc(currentUser.uid)
             .collection('liked')
             .doc(displayUser.id)
-            .set({ createdAt: serverTimestamp() });
+            .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
 
-          const reciprocal = await firestore
+          const reciprocal = await firebase
+            .firestore()
             .collection('likes')
             .doc(displayUser.id)
             .collection('liked')
@@ -237,11 +239,12 @@ const handleSwipe = async (direction) => {
             .get();
 
           if (reciprocal.exists) {
-            const matchRef = await firestore
+            const matchRef = await firebase
+              .firestore()
               .collection('matches')
               .add({
                 users: [currentUser.uid, displayUser.id],
-                createdAt: serverTimestamp(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
               });
 
             addMatch({

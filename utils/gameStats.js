@@ -1,11 +1,10 @@
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase from '../firebase';
 import { snapshotExists } from './firestore';
 
 export async function logGameStats(sessionId) {
   if (!sessionId) return;
   try {
-    const ref = firestore.collection('gameSessions').doc(sessionId);
+    const ref = firebase.firestore().collection('gameSessions').doc(sessionId);
     const snap = await ref.get();
     if (!snapshotExists(snap)) return;
     const data = snap.data() || {};
@@ -20,7 +19,8 @@ export async function logGameStats(sessionId) {
       winner = players[data.gameover.winner];
     }
 
-    await firestore
+    await firebase
+      .firestore()
       .collection('gameStats')
       .doc(sessionId)
       .set({
@@ -29,7 +29,7 @@ export async function logGameStats(sessionId) {
         durationSec: duration,
         winner,
         moves: data.moves || [],
-        loggedAt: serverTimestamp(),
+        loggedAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
   } catch (e) {
     console.warn('Failed to log game stats', e);

@@ -13,8 +13,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
-import { firestore, auth } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase from '../firebase';
 import { uploadAvatarAsync } from '../utils/upload';
 import PropTypes from 'prop-types';
 import { sanitizeText } from '../utils/sanitize';
@@ -91,7 +90,8 @@ export default function OnboardingScreen() {
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
 
   useEffect(() => {
-    const unsub = firestore
+    const unsub = firebase
+      .firestore()
       .collection('games')
       .orderBy('title')
       .onSnapshot(
@@ -137,9 +137,9 @@ export default function OnboardingScreen() {
       return;
     }
     const checkExisting = async () => {
-      const uid = auth.currentUser?.uid;
+      const uid = firebase.auth().currentUser?.uid;
       if (!uid) return;
-      const ref = firestore.collection('users').doc(uid);
+      const ref = firebase.firestore().collection('users').doc(uid);
       const snap = await ref.get();
       if (snapshotExists(snap) && snap.data().onboardingComplete) {
         updateUser(snap.data());
@@ -149,7 +149,7 @@ export default function OnboardingScreen() {
     checkExisting();
   }, [hasOnboarded]);
   const handleSkip = async () => {
-    if (!auth.currentUser) {
+    if (!firebase.auth().currentUser) {
       Toast.show({ type: 'error', text1: 'No user signed in' });
       return;
     }
@@ -160,10 +160,10 @@ export default function OnboardingScreen() {
     try {
       let photoURL = answers.avatar;
       if (photoURL && !photoURL.startsWith('http')) {
-        photoURL = await uploadAvatarAsync(photoURL, auth.currentUser.uid);
+        photoURL = await uploadAvatarAsync(photoURL, firebase.auth().currentUser.uid);
       }
 
-      const user = auth.currentUser;
+      const user = firebase.auth().currentUser;
       const profile = {
         uid: user.uid,
         email: user.email,
@@ -178,9 +178,9 @@ export default function OnboardingScreen() {
         favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
         bio: sanitizeText(answers.bio.trim()),
         onboardingComplete: true,
-        createdAt: serverTimestamp(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
-      await firestore.collection('users').doc(user.uid).set(profile, { merge: true });
+      await firebase.firestore().collection('users').doc(user.uid).set(profile, { merge: true });
       updateUser(profile);
       markOnboarded();
       Toast.show({ type: 'success', text1: 'Profile saved!' });
@@ -190,7 +190,7 @@ export default function OnboardingScreen() {
     }
   };
   const handleNext = async () => {
-    if (!auth.currentUser) {
+    if (!firebase.auth().currentUser) {
       Toast.show({ type: 'error', text1: 'No user signed in' });
       return;
     }
@@ -204,7 +204,7 @@ export default function OnboardingScreen() {
         try {
           const url = await uploadAvatarAsync(
             answers.avatar,
-            auth.currentUser.uid
+            firebase.auth().currentUser.uid
           );
           setAnswers((prev) => ({ ...prev, avatar: url }));
         } catch (e) {
