@@ -225,10 +225,19 @@ exports.syncPresence = functions.database
     if (!status) return null;
     const uid = context.params.uid;
     const userRef = admin.firestore().collection('users').doc(uid);
+    const updates = {
+      online: status.state === 'online',
+    };
+
+    // Track when the presence was last updated so we can suggest active users
+    if (status.last_changed) {
+      updates.lastOnline = admin.firestore.Timestamp.fromMillis(status.last_changed);
+    } else {
+      updates.lastOnline = admin.firestore.FieldValue.serverTimestamp();
+    }
+
     try {
-      await userRef.update({
-        online: status.state === 'online',
-      });
+      await userRef.set(updates, { merge: true });
     } catch (e) {
       console.error('Failed to sync presence', e);
     }
