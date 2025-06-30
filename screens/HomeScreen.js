@@ -235,26 +235,15 @@ const HomeScreen = ({ navigation }) => {
             )}
           />
 
-          <Text style={local.sectionTitle}>Suggested Games</Text>
-          <FlatList
-            data={allGames.slice(0, 10)}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={[local.carousel, { paddingBottom: 20 }]}
-            renderItem={({ item }) => (
-              <Card
-                onPress={() => {
-                  setPlayTarget('match');
-                  selectGame(item);
-                }}
-                style={[local.gameTile, { backgroundColor: theme.card }]}
-              >
-                <View style={{ marginBottom: 8 }}>{item.icon}</View>
-                <Text style={[local.gameTitle, { color: theme.text }]}>{item.title}</Text>
-              </Card>
-            )}
-          />
+          <View style={local.group}>
+            <Card
+              onPress={() => navigation.navigate('Play')}
+              style={[local.tile, { backgroundColor: theme.card }]}
+            >
+              <Text style={local.tileEmoji}>🎮</Text>
+              <Text style={[local.tileText, { color: theme.text }]}>Games</Text>
+            </Card>
+          </View>
 
           <View style={local.group}>
             <Text style={local.sectionTitle}>Community Board</Text>
