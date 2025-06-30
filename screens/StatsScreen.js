@@ -11,6 +11,12 @@ import { db } from '../firebase';
 import { avatarSource } from '../utils/avatar';
 import ProgressBar from '../components/ProgressBar';
 import PropTypes from 'prop-types';
+import {
+  HEADER_PADDING_TOP,
+  FONT_SIZE_MD,
+  FONT_SIZE_SM,
+  BUTTON_PADDING_SM,
+} from '../constants/layout';
 
 const StatsScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -167,7 +173,7 @@ const StatsScreen = ({ navigation }) => {
 const getStyles = (theme) => StyleSheet.create({
   container: {
     paddingBottom: 80,
-    paddingTop: 60,
+    paddingTop: HEADER_PADDING_TOP,
     paddingHorizontal: 20
   },
   profileCard: {
@@ -192,10 +198,10 @@ const getStyles = (theme) => StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    fontSize: 12
+    fontSize: FONT_SIZE_SM
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: FONT_SIZE_MD,
     fontWeight: '700',
     marginTop: 20,
     marginBottom: 8,
@@ -213,23 +219,23 @@ const getStyles = (theme) => StyleSheet.create({
     elevation: 3
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: FONT_SIZE_SM,
     color: theme.textSecondary
   },
   statValue: {
-    fontSize: 16,
+    fontSize: FONT_SIZE_MD,
     fontWeight: '600',
     color: theme.text
   },
   statSub: {
-    fontSize: 12,
+    fontSize: FONT_SIZE_SM,
     color: theme.textSecondary,
     marginTop: 4,
   },
   premiumButton: {
     marginTop: 20,
     backgroundColor: theme.accent,
-    paddingVertical: 12,
+    paddingVertical: BUTTON_PADDING_SM,
     borderRadius: 14,
     alignItems: 'center'
   },

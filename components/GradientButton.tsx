@@ -4,6 +4,11 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import { View, Text, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
+import {
+  BUTTON_ROUND_RADIUS,
+  BUTTON_PADDING_SM,
+  FONT_SIZE_MD,
+} from '../constants/layout';
 
 export interface GradientButtonProps {
   text: string;
@@ -32,8 +37,8 @@ export default function GradientButton({
         end={{ x: 1, y: 0 }}
         style={[
           {
-            borderRadius: 30,
-            paddingVertical: 12,
+            borderRadius: BUTTON_ROUND_RADIUS,
+            paddingVertical: BUTTON_PADDING_SM,
             paddingHorizontal: 24,
             flexDirection: 'row',
             alignItems: 'center',
@@ -45,7 +50,7 @@ export default function GradientButton({
         ]}
       >
         {icon && <View style={{ marginRight: 8 }}>{icon}</View>}
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
+        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: FONT_SIZE_MD }}>
           {text}
         </Text>
       </LinearGradient>
