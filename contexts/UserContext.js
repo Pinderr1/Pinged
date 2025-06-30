@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { View } from "react-native";
+import Toast from "react-native-toast-message";
 import Loader from "../components/Loader";
 import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -15,6 +16,7 @@ export const UserProvider = ({ children }) => {
   const { markOnboarded, clearOnboarding } = useOnboarding();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loginBonus, setLoginBonus] = useState(false);
   const devUser = {
     displayName: "Dev Tester",
     age: 99,
@@ -87,10 +89,10 @@ export const UserProvider = ({ children }) => {
     setUser((prev) => ({ ...prev, ...updates }));
   };
 
-  const addGameXP = async (amount = 10) => {
+  const addActivityXP = async (amount = 10, opts = {}) => {
     if (!user?.uid) return;
-    const last = user.lastPlayedAt
-      ? user.lastPlayedAt.toDate?.() || new Date(user.lastPlayedAt)
+    const last = user.lastActiveAt
+      ? user.lastActiveAt.toDate?.() || new Date(user.lastActiveAt)
       : null;
     let newStreak = user.streak || 0;
     if (last) {
@@ -111,20 +113,51 @@ export const UserProvider = ({ children }) => {
     }
 
     const newXP = (user.xp || 0) + amount;
-    updateUser({ xp: newXP, streak: newStreak, lastPlayedAt: new Date() });
+    const updates = { xp: newXP, streak: newStreak, lastActiveAt: new Date() };
+    if (opts.markPlayed) updates.lastPlayedAt = new Date();
+    updateUser(updates);
     try {
       await db.collection("users").doc(user.uid).update({
-        xp: newXP,
-        streak: newStreak,
-        lastPlayedAt: serverTimestamp(),
+        ...updates,
+        lastActiveAt: serverTimestamp(),
+        ...(opts.markPlayed ? { lastPlayedAt: serverTimestamp() } : {}),
       });
     } catch (e) {
       console.warn("Failed to update XP", e);
     }
   };
 
+  const addGameXP = (amount = 10) => addActivityXP(amount, { markPlayed: true });
+
+  const addLoginXP = (amount = 5) => addActivityXP(amount);
+
+  const loginBonusGiven = useRef(false);
+
+  useEffect(() => {
+    if (!user?.uid || loginBonusGiven.current) return;
+    const last = user.lastActiveAt
+      ? user.lastActiveAt.toDate?.() || new Date(user.lastActiveAt)
+      : null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let diff = 1;
+    if (last) {
+      const lastMid = new Date(last);
+      lastMid.setHours(0, 0, 0, 0);
+      diff = Math.floor((today - lastMid) / 86400000);
+    }
+    if (diff !== 0) {
+      addLoginXP();
+      setLoginBonus(true);
+      Toast.show({ type: 'success', text1: 'Daily login bonus!', text2: '+5 XP' });
+    }
+    loginBonusGiven.current = true;
+  }, [user?.uid]);
+
   return (
-    <UserContext.Provider value={{ user, updateUser, addGameXP, loading }}>
+    <UserContext.Provider
+      value={{ user, updateUser, addGameXP, addLoginXP, loginBonus, loading }}
+    >
       {loading ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}

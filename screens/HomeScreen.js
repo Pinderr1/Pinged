@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -34,12 +34,13 @@ const games = allGames.map((g) => {
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
-  const { user } = useUser();
+  const { user, loginBonus } = useUser();
   const { matches } = useChats();
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
+  const [showBonus, setShowBonus] = useState(false);
   const local = getStyles(theme);
 
   const shortcutActions = [
@@ -53,6 +54,14 @@ const HomeScreen = ({ navigation }) => {
     { key: 'ai', title: 'Play AI', emoji: '🤖' },
     { key: 'browse', title: 'Browse Games', emoji: '🕹️' },
   ];
+
+  useEffect(() => {
+    if (loginBonus) {
+      setShowBonus(true);
+      const t = setTimeout(() => setShowBonus(false), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [loginBonus]);
 
   const openGamePicker = (target) => {
     if (target === 'browse') {
@@ -115,8 +124,12 @@ const HomeScreen = ({ navigation }) => {
       <SafeAreaView style={{ flex: 1 }}>
         <Header showLogoOnly />
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-          <Text style={[local.welcome, { color: theme.text }]}>\
-{`Welcome${user?.displayName ? `, ${user.displayName}` : ''}!`}</Text>
+          <Text style={[local.welcome, { color: theme.text }]}>
+            {`Welcome${user?.displayName ? `, ${user.displayName}` : ''}!`}
+          </Text>
+          {showBonus && (
+            <Text style={local.bonus}>🔥 Daily Bonus +5 XP</Text>
+          )}
           <Card style={[local.progressCard, { backgroundColor: theme.card }]}>
             <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
             <ProgressBar value={xpProgress} max={100} color={theme.accent} />
@@ -264,6 +277,12 @@ const getStyles = (theme) =>
     fontWeight: 'bold',
     marginHorizontal: 16,
     marginTop: 20,
+    marginBottom: 8,
+  },
+  bonus: {
+    fontSize: 14,
+    color: '#2ecc71',
+    marginHorizontal: 16,
     marginBottom: 8,
   },
   section: {
