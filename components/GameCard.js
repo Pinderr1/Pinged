@@ -1,10 +1,12 @@
 import React from 'react';
 import { Animated, TouchableOpacity, View, Text, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../contexts/ThemeContext';
 
 const CARD_WIDTH = Dimensions.get('window').width * 0.42;
 
 export default function GameCard({ item, scale, onPress, toggleFavorite, isFavorite }) {
+  const { theme } = useTheme();
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
       <TouchableOpacity
@@ -56,7 +58,7 @@ export default function GameCard({ item, scale, onPress, toggleFavorite, isFavor
               position: 'absolute',
               top: 8,
               right: 8,
-              backgroundColor: item.premium ? '#d81b60' : '#aaa',
+              backgroundColor: item.premium ? theme.accent : '#aaa',
               paddingHorizontal: 6,
               paddingVertical: 2,
               borderRadius: 8
@@ -72,7 +74,7 @@ export default function GameCard({ item, scale, onPress, toggleFavorite, isFavor
           <Ionicons
             name="lock-closed"
             size={18}
-            color="#d81b60"
+            color={theme.accent}
             style={{ position: 'absolute', bottom: 8, right: 8 }}
           />
         )}

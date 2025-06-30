@@ -39,6 +39,7 @@ const HomeScreen = ({ navigation }) => {
   const { gamesLeft } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
+  const local = getStyles(theme);
 
   const shortcutActions = [
     { key: 'startChat', title: 'Start Chat', emoji: '💬' },
@@ -239,7 +240,7 @@ const HomeScreen = ({ navigation }) => {
                 </TouchableOpacity>
               ))}
               <TouchableOpacity onPress={() => setGamePickerVisible(false)} style={{ marginTop: 16 }}>
-                <Text style={{ color: '#d81b60' }}>Cancel</Text>
+                <Text style={{ color: theme.accent }}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -249,7 +250,8 @@ const HomeScreen = ({ navigation }) => {
   );
 };
 
-const local = StyleSheet.create({
+const getStyles = (theme) =>
+  StyleSheet.create({
   welcome: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -262,7 +264,7 @@ const local = StyleSheet.create({
     fontWeight: '700',
     marginHorizontal: 16,
     marginBottom: 8,
-    color: '#ff4081',
+    color: theme.accent,
   },
   progressCard: {
     marginHorizontal: 16,
@@ -367,7 +369,7 @@ const local = StyleSheet.create({
   },
   eventTime: {
     fontSize: 12,
-    color: '#d81b60',
+    color: theme.accent,
     marginBottom: 2,
   },
   eventDesc: {
@@ -385,7 +387,7 @@ const local = StyleSheet.create({
   },
   postTime: {
     fontSize: 12,
-    color: '#d81b60',
+    color: theme.accent,
     marginBottom: 2,
   },
   postDesc: {

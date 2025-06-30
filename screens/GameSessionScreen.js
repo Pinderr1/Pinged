@@ -46,6 +46,7 @@ const GameSessionScreen = ({ route, navigation, sessionType }) => {
 
 const LiveSessionScreen = ({ route, navigation }) => {
   const { darkMode, theme } = useTheme();
+  const local = getStyles(theme);
   const { devMode } = useDev();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { user, addGameXP } = useUser();
@@ -186,7 +187,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
                   <TouchableOpacity
                     onPress={() => setDevPlayer('0')}
                     style={{
-                      backgroundColor: devPlayer === '0' ? '#d81b60' : '#ccc',
+                      backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
                       paddingHorizontal: 12,
                       paddingVertical: 6,
                       borderRadius: 10,
@@ -198,7 +199,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
                   <TouchableOpacity
                     onPress={() => setDevPlayer('1')}
                     style={{
-                      backgroundColor: devPlayer === '1' ? '#d81b60' : '#ccc',
+                      backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
                       paddingHorizontal: 12,
                       paddingVertical: 6,
                       borderRadius: 10,
@@ -256,13 +257,15 @@ const LiveSessionScreen = ({ route, navigation }) => {
 };
 
 
- function BotSessionScreen({ route }) {
+function BotSessionScreen({ route }) {
   const botId = route.params?.botId;
   const initialGame = route.params?.game || 'ticTacToe';
   const [bot, setBot] = useState(
     bots.find((b) => b.id === botId) || getRandomBot()
   );
   const { theme } = useTheme();
+  const botStyles = getBotStyles(theme);
+  const styles = getStyles(theme);
   const [game, setGame] = useState(initialGame);
 
   const aiKeyMap = { rockPaperScissors: 'rps' };
@@ -485,7 +488,8 @@ const LiveSessionScreen = ({ route, navigation }) => {
   );
 }
 
-const botStyles = StyleSheet.create({
+const getBotStyles = (theme) =>
+  StyleSheet.create({
   messageRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -531,7 +535,7 @@ const botStyles = StyleSheet.create({
     marginRight: 8,
   },
   sendBtn: {
-    backgroundColor: '#d81b60',
+    backgroundColor: theme.accent,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
@@ -569,7 +573,7 @@ const botStyles = StyleSheet.create({
   },
   closeBtn: {
     alignSelf: 'flex-end',
-    backgroundColor: '#d81b60',
+    backgroundColor: theme.accent,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -614,7 +618,8 @@ const botStyles = StyleSheet.create({
   tabText: { fontWeight: 'bold' },
 });
 
-const local = StyleSheet.create({
+const getStyles = (theme) =>
+  StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',

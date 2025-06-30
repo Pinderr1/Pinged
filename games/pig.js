@@ -1,6 +1,7 @@
 import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
 
 const PigGame = {
@@ -38,6 +39,7 @@ const PigGame = {
 
 const PigBoard = ({ G, ctx, moves, onGameEnd }) => {
   useOnGameOver(ctx.gameover, onGameEnd);
+  const { theme } = useTheme();
 
   const disabled = !!ctx.gameover;
   const status = ctx.gameover
@@ -61,7 +63,7 @@ const PigBoard = ({ G, ctx, moves, onGameEnd }) => {
             marginRight: 10,
             paddingHorizontal: 12,
             paddingVertical: 8,
-            backgroundColor: '#d81b60',
+            backgroundColor: theme.accent,
             borderRadius: 6,
           }}
         >
@@ -73,7 +75,7 @@ const PigBoard = ({ G, ctx, moves, onGameEnd }) => {
           style={{
             paddingHorizontal: 12,
             paddingVertical: 8,
-            backgroundColor: '#d81b60',
+            backgroundColor: theme.accent,
             borderRadius: 6,
           }}
         >

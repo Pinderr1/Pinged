@@ -29,7 +29,8 @@ const cardWidth = (screenWidth - 48) / 2;
 const FILTERS = ['All', 'Tonight', 'Flirty', 'Tournaments'];
 
 const CommunityScreen = () => {
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
+  const local = getStyles(theme);
   const navigation = useNavigation();
   const { user } = useUser();
   const [events, setEvents] = useState([]);
@@ -129,7 +130,7 @@ const CommunityScreen = () => {
               style={[
                 local.filterBtn,
                 {
-                  backgroundColor: f === activeFilter ? '#d81b60' : '#ccc'
+                  backgroundColor: f === activeFilter ? theme.accent : '#ccc'
                 }
               ]}
             >
@@ -237,7 +238,7 @@ const CommunityScreen = () => {
               marginVertical={14}
             />
             <TouchableOpacity onPress={() => setShowHostModal(false)} style={{ marginTop: 10 }}>
-              <Text style={{ color: '#d81b60' }}>Cancel</Text>
+              <Text style={{ color: theme.accent }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -284,7 +285,7 @@ const CommunityScreen = () => {
               marginVertical={14}
             />
             <TouchableOpacity onPress={() => setShowPostModal(false)} style={{ marginTop: 10 }}>
-              <Text style={{ color: '#d81b60' }}>Cancel</Text>
+              <Text style={{ color: theme.accent }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -293,7 +294,8 @@ const CommunityScreen = () => {
   );
 };
 
-const local = StyleSheet.create({
+const getStyles = (theme) =>
+  StyleSheet.create({
   header: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -314,7 +316,7 @@ const local = StyleSheet.create({
     marginBottom: 10
   },
   bannerTitle: {
-    color: '#d81b60',
+    color: theme.accent,
     fontWeight: 'bold',
     fontSize: 16
   },
@@ -347,7 +349,7 @@ const local = StyleSheet.create({
   },
   time: {
     fontSize: 12,
-    color: '#d81b60',
+    color: theme.accent,
     marginBottom: 2
   },
   desc: {
@@ -400,7 +402,7 @@ const local = StyleSheet.create({
   },
   postTime: {
     fontSize: 12,
-    color: '#d81b60',
+    color: theme.accent,
     marginBottom: 4
   },
   postDesc: {

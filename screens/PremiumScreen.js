@@ -34,6 +34,7 @@ const paywallFeatures = [
 
 const PremiumScreen = ({ navigation, route }) => {
   const { theme } = useTheme();
+  const paywallStyles = getPaywallStyles(theme);
   const context = route?.params?.context || 'paywall';
 
   const startCheckout = async () => {
@@ -155,7 +156,8 @@ const upgradeStyles = StyleSheet.create({
   },
 });
 
-const paywallStyles = StyleSheet.create({
+const getPaywallStyles = (theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -165,7 +167,7 @@ const paywallStyles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#d81b60',
+    color: theme.accent,
   },
   subtitle: {
     fontSize: 14,

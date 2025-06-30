@@ -20,7 +20,7 @@ export default function MultiSelectList({ options = [], selected = [], onChange,
           <MaterialCommunityIcons
             name={selected.includes(opt.value) ? 'checkbox-marked' : 'checkbox-blank-outline'}
             size={24}
-            color={theme?.accent || '#d81b60'}
+            color={theme?.accent}
           />
           <Text style={styles.label}>{opt.label}</Text>
         </TouchableOpacity>

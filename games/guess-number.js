@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
 
 const GuessNumberGame = {
@@ -23,6 +24,7 @@ const GuessNumberGame = {
 const GuessNumberBoard = ({ G, ctx, moves, onGameEnd }) => {
   const [input, setInput] = useState('');
   useOnGameOver(ctx.gameover, onGameEnd);
+  const { theme } = useTheme();
 
   const last = G.guesses[G.guesses.length - 1];
   let hint = '';
@@ -52,7 +54,7 @@ const GuessNumberBoard = ({ G, ctx, moves, onGameEnd }) => {
           moves.guess(input);
           setInput('');
         }}
-        style={{ backgroundColor: '#d81b60', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 }}
+        style={{ backgroundColor: theme.accent, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 }}
         disabled={!!ctx.gameover}
       >
         <Text style={{ color: '#fff' }}>Guess</Text>

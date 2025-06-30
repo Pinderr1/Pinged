@@ -44,6 +44,7 @@ function PrivateChat({ user }) {
   const requireCredits = useRequireGameCredits();
   const { setActiveGame, getActiveGame, getPendingInvite, startLocalGame } = useChats();
   const { darkMode, theme } = useTheme();
+  const privateStyles = getPrivateStyles(theme);
   const { showNotification } = useNotification();
 
   if (!user) {
@@ -335,7 +336,7 @@ function PrivateChat({ user }) {
           <TouchableOpacity
             onPress={() => setDevPlayer('0')}
             style={{
-              backgroundColor: devPlayer === '0' ? '#d81b60' : '#ccc',
+              backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
               paddingHorizontal: 10,
               paddingVertical: 6,
               borderRadius: 8,
@@ -347,7 +348,7 @@ function PrivateChat({ user }) {
           <TouchableOpacity
             onPress={() => setDevPlayer('1')}
             style={{
-              backgroundColor: devPlayer === '1' ? '#d81b60' : '#ccc',
+              backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
               paddingHorizontal: 10,
               paddingVertical: 6,
               borderRadius: 8,
@@ -394,7 +395,8 @@ function PrivateChat({ user }) {
   );
 }
 
-const privateStyles = StyleSheet.create({
+const getPrivateStyles = (theme) =>
+  StyleSheet.create({
   messageBubble: {
     padding: 10,
     borderRadius: 10,
@@ -447,7 +449,7 @@ const privateStyles = StyleSheet.create({
     marginRight: 10,
   },
   sendButton: {
-    backgroundColor: '#ff4081',
+    backgroundColor: theme.accent,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
@@ -508,6 +510,7 @@ function GroupChat({ event }) {
   const flatListRef = useRef();
   const { theme } = useTheme();
   const { user } = useUser();
+  const groupStyles = getGroupStyles(theme);
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -676,7 +679,8 @@ function GroupChat({ event }) {
   );
 }
 
-const groupStyles = StyleSheet.create({
+const getGroupStyles = (theme) =>
+  StyleSheet.create({
   eventTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -691,7 +695,7 @@ const groupStyles = StyleSheet.create({
     marginBottom: 10,
   },
   userBubble: {
-    backgroundColor: '#d81b60',
+    backgroundColor: theme.accent,
     alignSelf: 'flex-end',
   },
   otherBubble: {
@@ -728,7 +732,7 @@ const groupStyles = StyleSheet.create({
     marginRight: 10,
   },
   sendBtn: {
-    backgroundColor: '#d81b60',
+    backgroundColor: theme.accent,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,

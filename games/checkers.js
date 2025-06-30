@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
 
 const SIZE = 8;
@@ -72,8 +73,9 @@ const CheckersGame = {
 };
 
 const Square = ({ dark, piece, selected, onPress }) => {
+  const { theme } = useTheme();
   const bg = dark ? '#b58863' : '#f0d9b5';
-  const color = piece?.startsWith('0') ? '#d81b60' : '#000';
+  const color = piece?.startsWith('0') ? theme.accent : '#000';
   const king = piece?.endsWith('K');
   return (
     <TouchableOpacity

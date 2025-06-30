@@ -13,7 +13,8 @@ const NEXT_EVENT = {
 
 export default function EventBanner() {
   const navigation = useNavigation();
-  const { darkMode } = useTheme();
+  const { darkMode, theme } = useTheme();
+  const local = getStyles(theme);
 
   return (
     <View
@@ -37,10 +38,11 @@ export default function EventBanner() {
   );
 }
 
-const local = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+const getStyles = (theme) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      alignItems: 'center',
     borderRadius: 16,
     marginHorizontal: 16,
     padding: 12,
@@ -63,7 +65,7 @@ const local = StyleSheet.create({
   },
   time: {
     fontSize: 13,
-    color: '#d81b60',
+    color: theme.accent,
     marginTop: 2,
   },
 });
