@@ -35,6 +35,7 @@ const aiGameMap = allGames.reduce((acc, g) => {
   return acc;
 }, {});
 
+const CARD_SIZE = 140;
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const { user, loginBonus } = useUser();
@@ -143,7 +144,7 @@ const HomeScreen = ({ navigation }) => {
           </View>
 
           <View style={local.group}>
-            <Text style={local.section}>Daily Game</Text>
+            <Text style={local.sectionTitle}>Daily Game</Text>
             <Card
               style={[local.gameTile, { backgroundColor: theme.card }]}
               onPress={() => {
@@ -157,7 +158,7 @@ const HomeScreen = ({ navigation }) => {
           </View>
 
           <View style={local.group}>
-            <Text style={local.section}>Quick Play</Text>
+            <Text style={local.sectionTitle}>Quick Play</Text>
             <FlatList
               data={quickPlayOptions.slice(0, 2)}
               keyExtractor={(item) => item.key}
@@ -177,7 +178,7 @@ const HomeScreen = ({ navigation }) => {
           </View>
 
           <View style={local.group}>
-            <Text style={local.section}>Your Matches</Text>
+            <Text style={local.sectionTitle}>Matches</Text>
             {matchesLoading && matches.length === 0 ? (
               <FlatList
                 data={[1, 2, 3, 4]}
@@ -216,7 +217,7 @@ const HomeScreen = ({ navigation }) => {
             )}
           </View>
 
-          <Text style={local.section}>Shortcuts</Text>
+          <Text style={local.sectionTitle}>Shortcuts</Text>
           <FlatList
             data={shortcutActions}
             keyExtractor={(item) => item.key}
@@ -234,7 +235,7 @@ const HomeScreen = ({ navigation }) => {
             )}
           />
 
-          <Text style={local.section}>Suggested Games</Text>
+          <Text style={local.sectionTitle}>Suggested Games</Text>
           <FlatList
             data={allGames.slice(0, 10)}
             keyExtractor={(item) => item.id}
@@ -255,22 +256,25 @@ const HomeScreen = ({ navigation }) => {
             )}
           />
 
-          <Text style={local.section}>Community</Text>
-          {SAMPLE_EVENTS.map((event) => (
-            <Card
-              key={`e-${event.id}`}
-              style={[local.eventCard, { backgroundColor: theme.card }]}
-            >
-              <Image source={eventImageSource(event.image)} style={local.eventImage} />
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={[local.eventTitle, { color: theme.text }]}>{event.title}</Text>
-                <Text style={local.eventTime}>{event.time}</Text>
-                <Text style={[local.eventDesc, { color: theme.textSecondary }]}>
-                  {event.description}
-                </Text>
-              </View>
-            </Card>
-          ))}
+          <View style={local.group}>
+            <Text style={local.sectionTitle}>Community Board</Text>
+            <FlatList
+              data={SAMPLE_EVENTS}
+              keyExtractor={(item) => item.id.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={local.carousel}
+              renderItem={({ item }) => (
+                <Card style={[local.eventCard, { backgroundColor: theme.card }]}>
+                  <Image source={eventImageSource(item.image)} style={local.eventImage} />
+                  <View style={{ marginLeft: 10 }}>
+                    <Text style={[local.eventTitle, { color: theme.text }]}>{item.title}</Text>
+                    <Text style={local.eventTime}>{item.time}</Text>
+                  </View>
+                </Card>
+              )}
+            />
+          </View>
           {SAMPLE_POSTS.map((post) => (
             <Card
               key={`p-${post.id}`}
@@ -315,161 +319,163 @@ HomeScreen.propTypes = {
 
 const getStyles = (theme) =>
   StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  welcome: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    alignSelf: 'center',
-    marginTop: 20,
-    marginBottom: 8,
-  },
-  bonus: {
-    fontSize: 14,
-    color: '#2ecc71',
-    marginBottom: 8,
-    alignSelf: 'center',
-  },
-  section: {
-    fontSize: 16,
-    fontWeight: '700',
-    alignSelf: 'center',
-    marginBottom: 8,
-    color: theme.accent,
-  },
-  progressCard: {
-    marginBottom: 16,
-    alignSelf: 'stretch',
-  },
-  group: {
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  levelText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  streakLabel: {
-    fontSize: 12,
-    marginTop: 8,
-    marginBottom: 2,
-  },
-  carousel: {
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  tile: {
-    width: 120,
-    height: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  tileEmoji: {
-    fontSize: 28,
-    marginBottom: 6,
-  },
-  tileText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  matchTile: {
-    width: 120,
-    height: 140,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-    padding: 12,
-  },
-  matchAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginBottom: 6,
-  },
-  matchName: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  gameTile: {
-    width: 120,
-    height: 120,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-    padding: 12,
-  },
-  gameTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    width: '80%',
-    alignItems: 'center',
-  },
-  gameOption: {
-    paddingVertical: 10,
-    width: '100%',
-    alignItems: 'center',
-    borderBottomColor: '#eee',
-    borderBottomWidth: 1,
-  },
-  eventCard: {
-    flexDirection: 'row',
-    borderRadius: 12,
-    padding: 12,
-    alignSelf: 'stretch',
-    marginBottom: 12,
-    alignItems: 'center',
-  },
-  eventImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 8,
-  },
-  eventTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  eventTime: {
-    fontSize: 12,
-    color: theme.accent,
-    marginBottom: 2,
-  },
-  eventDesc: {
-    fontSize: 12,
-  },
-  postCardPreview: {
-    borderRadius: 12,
-    padding: 12,
-    alignSelf: 'stretch',
-    marginBottom: 12,
-  },
-  postTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  postTime: {
-    fontSize: 12,
-    color: theme.accent,
-    marginBottom: 2,
-  },
-  postDesc: {
-    fontSize: 12,
-  },
-});
+    container: {
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      paddingVertical: 20,
+    },
+    welcome: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      alignSelf: 'center',
+      marginTop: 20,
+      marginBottom: 8,
+    },
+    bonus: {
+      fontSize: 14,
+      color: '#2ecc71',
+      marginBottom: 8,
+      alignSelf: 'center',
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      alignSelf: 'center',
+      marginBottom: 8,
+      color: theme.accent,
+    },
+    progressCard: {
+      marginBottom: 16,
+      alignSelf: 'stretch',
+    },
+    group: {
+      marginBottom: 24,
+      alignItems: 'center',
+      width: '100%',
+    },
+    levelText: {
+      fontSize: 16,
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    streakLabel: {
+      fontSize: 12,
+      marginTop: 8,
+      marginBottom: 2,
+    },
+    carousel: {
+      paddingHorizontal: 16,
+      marginBottom: 12,
+    },
+    tile: {
+      width: CARD_SIZE,
+      height: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
+    },
+    tileEmoji: {
+      fontSize: 28,
+      marginBottom: 6,
+    },
+    tileText: {
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    matchTile: {
+      width: CARD_SIZE,
+      height: 160,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
+      padding: 12,
+    },
+    matchAvatar: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      marginBottom: 6,
+    },
+    matchName: {
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    gameTile: {
+      width: CARD_SIZE,
+      height: 160,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
+      padding: 12,
+    },
+    gameTitle: {
+      fontSize: 13,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalCard: {
+      backgroundColor: '#fff',
+      borderRadius: 12,
+      padding: 20,
+      width: '80%',
+      alignItems: 'center',
+    },
+    gameOption: {
+      paddingVertical: 10,
+      width: '100%',
+      alignItems: 'center',
+      borderBottomColor: '#eee',
+      borderBottomWidth: 1,
+    },
+    eventCard: {
+      flexDirection: "row",
+      borderRadius: 12,
+      padding: 12,
+      width: CARD_SIZE + 40,
+      marginRight: 12,
+      alignItems: "center",
+    },
+    eventImage: {
+      width: 50,
+      height: 50,
+      borderRadius: 8,
+    },
+    eventTitle: {
+      fontSize: 14,
+      fontWeight: 'bold',
+    },
+    eventTime: {
+      fontSize: 12,
+      color: theme.accent,
+      marginBottom: 2,
+    },
+    eventDesc: {
+      fontSize: 12,
+    },
+    postCardPreview: {
+      borderRadius: 12,
+      padding: 12,
+      alignSelf: 'stretch',
+      marginBottom: 12,
+    },
+    postTitle: {
+      fontSize: 14,
+      fontWeight: 'bold',
+    },
+    postTime: {
+      fontSize: 12,
+      color: theme.accent,
+      marginBottom: 2,
+    },
+    postDesc: {
+      fontSize: 12,
+    },
+  });
 
 export default HomeScreen;
