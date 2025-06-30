@@ -29,6 +29,7 @@ import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import VoiceMessageBubble from '../components/VoiceMessageBubble';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
+import { triggerLightHaptic } from '../utils/haptics';
 // TODO: add support for sending short voice or video intro clips in chat
 import Toast from 'react-native-toast-message';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
@@ -177,6 +178,7 @@ function PrivateChat({ user }) {
 
   const handleSend = () => {
     if (text.trim()) {
+      triggerLightHaptic();
       sendChatMessage(text);
       setText('');
       updateTyping(false);
@@ -288,6 +290,7 @@ function PrivateChat({ user }) {
             if (!requireCredits()) {
               return;
             }
+            triggerLightHaptic();
             setShowGameModal(true);
           }}
         >
@@ -549,6 +552,7 @@ function GroupChat({ event }) {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
+    triggerLightHaptic();
     try {
       await db
         .collection('events')

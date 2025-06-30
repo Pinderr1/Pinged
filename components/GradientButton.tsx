@@ -5,6 +5,7 @@ import { View, Text, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import { BUTTON_STYLE, FONT_SIZES } from '../layout';
+import { triggerLightHaptic } from '../utils/haptics';
 
 export interface GradientButtonProps {
   text: string;
@@ -29,9 +30,15 @@ export default function GradientButton({
   onPressOut,
 }: GradientButtonProps) {
   const { theme } = useTheme();
+  const handlePress = () => {
+    if (!disabled) {
+      triggerLightHaptic();
+    }
+    onPress?.();
+  };
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       style={{ width, marginVertical }}

@@ -24,6 +24,7 @@ import ProgressBar from '../components/ProgressBar';
 import Card from '../components/Card';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { eventImageSource } from '../utils/avatar';
+import { triggerLightHaptic } from '../utils/haptics';
 
 const games = allGames.map((g) => {
   const key = Object.keys(gameRegistry).find(
@@ -61,6 +62,7 @@ const HomeScreen = ({ navigation }) => {
     }
     if (target === 'ai' || gamesLeft > 0 || isPremiumUser) {
       setPlayTarget(target);
+      triggerLightHaptic();
       setGamePickerVisible(true);
     } else {
       navigation.navigate('Premium', { context: 'paywall' });

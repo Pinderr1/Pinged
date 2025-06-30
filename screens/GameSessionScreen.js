@@ -38,6 +38,7 @@ import { getBotMove } from "../ai/botMoves";
 import SafeKeyboardView from "../components/SafeKeyboardView";
 import Loader from "../components/Loader";
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import { triggerLightHaptic } from '../utils/haptics';
 import PropTypes from 'prop-types';
 const GameSessionScreen = ({ route, navigation, sessionType }) => {
   const type = sessionType || route.params?.sessionType || (route.params?.botId ? "bot" : "live");
@@ -143,6 +144,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
 
   const handleGameEnd = (result) => {
     if (result) addGameXP();
+    triggerLightHaptic();
     setGameResult(result);
   };
 
@@ -315,6 +317,7 @@ function BotSessionScreen({ route }) {
     let msg = 'Draw.';
     if (res.winner === '0') msg = 'You win!';
     else if (res.winner === '1') msg = `${bot.name} wins.`;
+    triggerLightHaptic();
     setGameOver(true);
     addSystemMessage(`Game over. ${msg}`);
   }
@@ -341,6 +344,7 @@ function BotSessionScreen({ route }) {
   const handleSend = () => {
     const t = text.trim();
     if (!t) return;
+    triggerLightHaptic();
     sendMessage(t);
     setText('');
   };

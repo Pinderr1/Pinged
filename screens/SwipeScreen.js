@@ -31,6 +31,7 @@ import LottieView from 'lottie-react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import { triggerLightHaptic } from '../utils/haptics';
 import PropTypes from 'prop-types';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -229,6 +230,7 @@ const SwipeScreen = () => {
 
             setMatchedUser(displayUser);
             Toast.show({ type: 'success', text1: "It's a match!" });
+            triggerLightHaptic();
             setShowFireworks(true);
             setTimeout(() => setShowFireworks(false), 2000);
           }
@@ -249,6 +251,7 @@ const SwipeScreen = () => {
         });
         setMatchedUser(displayUser);
         Toast.show({ type: 'success', text1: "It's a match!" });
+        triggerLightHaptic();
         setShowFireworks(true);
         setTimeout(() => setShowFireworks(false), 2000);
       }

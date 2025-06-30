@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import PropTypes from 'prop-types';
 import { useDev } from '../contexts/DevContext';
 import DevPanel from './DevPanel';
+import { triggerLightHaptic } from '../utils/haptics';
 
 export default function DevBanner() {
   const { devMode } = useDev();
@@ -12,7 +13,10 @@ export default function DevBanner() {
     <>
       <TouchableOpacity
         style={styles.banner}
-        onPress={() => setShowPanel(true)}
+        onPress={() => {
+          triggerLightHaptic();
+          setShowPanel(true);
+        }}
       >
         <Text style={styles.text}>DEV MODE</Text>
       </TouchableOpacity>
