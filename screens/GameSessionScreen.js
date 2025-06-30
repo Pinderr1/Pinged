@@ -314,9 +314,12 @@ function BotSessionScreen({ route }) {
     return acc;
   }, {});
 
-  const { G, ctx, moves, reset } = gameMap[game].state;
-  const BoardComponent = gameMap[game].board;
-  const title = gameMap[game].title;
+  const fallbackKey = 'ticTacToe';
+  const activeKey = gameMap[game] ? game : fallbackKey;
+  if (!gameMap[game]) console.warn('Unknown game key', game);
+  const { G, ctx, moves, reset } = gameMap[activeKey].state;
+  const BoardComponent = gameMap[activeKey].board;
+  const title = gameMap[activeKey].title;
 
   const [gameOver, setGameOver] = useState(false);
   const [messages, setMessages] = useState([
@@ -382,6 +385,10 @@ function BotSessionScreen({ route }) {
   };
 
   const switchGame = (g) => {
+    if (!gameMap[g]) {
+      console.warn('Unknown game key', g);
+      return;
+    }
     if (g === game) return;
     setGame(g);
     gameMap[g].state.reset();
