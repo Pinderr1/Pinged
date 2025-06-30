@@ -7,7 +7,7 @@ import { useGameSessions } from '../contexts/GameSessionContext';
 import { useChats } from '../contexts/ChatContext';
 import { useUser } from '../contexts/UserContext';
 import { games } from '../games';
-import { firestore } from '../firebase';
+import { db } from '../firebase';
 import Loader from '../components/Loader';
 import { HEADER_SPACING } from '../layout';
 
@@ -28,7 +28,7 @@ const ActiveGamesScreen = ({ navigation }) => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      const snap = await firestore
+      const snap = await db
         .collection('gameSessions')
         .where('players', 'array-contains', user.uid)
         .get();

@@ -13,12 +13,12 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
-import { firestore, auth } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import { db, auth } from '../firebase';
+import { serverTimestamp } from 'firebase/db';
 import { uploadAvatarAsync } from '../utils/upload';
 import PropTypes from 'prop-types';
 import { sanitizeText } from '../utils/sanitize';
-import { snapshotExists } from '../utils/firestore';
+import { snapshotExists } from '../utils/db';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -91,7 +91,7 @@ export default function OnboardingScreen() {
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
 
   useEffect(() => {
-    const unsub = firestore
+    const unsub = db
       .collection('games')
       .orderBy('title')
       .onSnapshot(
@@ -139,7 +139,7 @@ export default function OnboardingScreen() {
     const checkExisting = async () => {
       const uid = auth.currentUser?.uid;
       if (!uid) return;
-      const ref = firestore.collection('users').doc(uid);
+      const ref = db.collection('users').doc(uid);
       const snap = await ref.get();
       if (snapshotExists(snap) && snap.data().onboardingComplete) {
         updateUser(snap.data());
@@ -180,7 +180,7 @@ export default function OnboardingScreen() {
         onboardingComplete: true,
         createdAt: serverTimestamp(),
       };
-      await firestore.collection('users').doc(user.uid).set(profile, { merge: true });
+      await db.collection('users').doc(user.uid).set(profile, { merge: true });
       updateUser(profile);
       markOnboarded();
       Toast.show({ type: 'success', text1: 'Profile saved!' });

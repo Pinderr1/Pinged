@@ -24,8 +24,8 @@ import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { allGames } from '../data/games';
 import { icebreakers } from '../data/prompts';
 import { useChats } from '../contexts/ChatContext';
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
+import { serverTimestamp } from 'firebase/db';
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -140,7 +140,7 @@ const SwipeScreen = () => {
       }
       setLoadingUsers(true);
       try {
-        let userQuery = firestore
+        let userQuery = db
           .collection('users')
           .where('uid', '!=', currentUser.uid);
         if (currentUser.location) {
@@ -222,14 +222,14 @@ const handleSwipe = async (direction) => {
 
       if (currentUser?.uid && displayUser.id && !devMode) {
         try {
-          await firestore
+          await db
             .collection('likes')
             .doc(currentUser.uid)
             .collection('liked')
             .doc(displayUser.id)
             .set({ createdAt: serverTimestamp() });
 
-          const reciprocal = await firestore
+          const reciprocal = await db
             .collection('likes')
             .doc(displayUser.id)
             .collection('liked')
@@ -237,7 +237,7 @@ const handleSwipe = async (direction) => {
             .get();
 
           if (reciprocal.exists) {
-            const matchRef = await firestore
+            const matchRef = await db
               .collection('matches')
               .add({
                 users: [currentUser.uid, displayUser.id],

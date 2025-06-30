@@ -2,8 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from "r
 import { View } from "react-native";
 import Toast from "react-native-toast-message";
 import Loader from "../components/Loader";
-import { auth, firestore } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import firebase, { db } from "../firebase";
 import { serverTimestamp } from "firebase/firestore";
 import { useDev } from "./DevContext";
 import { useOnboarding, clearStoredOnboarding } from "./OnboardingContext";
@@ -31,7 +30,7 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     let unsubProfile;
     let currentUid = null;
-    const unsubAuth = onAuthStateChanged(auth, (fbUser) => {
+    const unsubAuth = firebase.auth().onAuthStateChanged((fbUser) => {
       if (fbUser?.uid !== currentUid) {
         if (!fbUser && currentUid) clearStoredOnboarding(currentUid);
         clearOnboarding();
@@ -45,7 +44,7 @@ export const UserProvider = ({ children }) => {
 
       if (fbUser) {
         setLoading(true);
-        const ref = firestore.collection("users").doc(fbUser.uid);
+        const ref = db.collection("users").doc(fbUser.uid);
         unsubProfile = ref.onSnapshot(
           (snap) => {
             if (snapshotExists(snap)) {
@@ -117,7 +116,7 @@ export const UserProvider = ({ children }) => {
     if (opts.markPlayed) updates.lastPlayedAt = new Date();
     updateUser(updates);
     try {
-      await firestore.collection("users").doc(user.uid).update({
+      await db.collection("users").doc(user.uid).update({
         ...updates,
         lastActiveAt: serverTimestamp(),
         ...(opts.markPlayed ? { lastPlayedAt: serverTimestamp() } : {}),

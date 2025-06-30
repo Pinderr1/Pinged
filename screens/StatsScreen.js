@@ -7,7 +7,7 @@ import Header from '../components/Header';
 import GradientButton from '../components/GradientButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
-import { firestore } from '../firebase';
+import { db } from '../firebase';
 import ProgressBar from '../components/ProgressBar';
 import PropTypes from 'prop-types';
 import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
@@ -42,7 +42,7 @@ const StatsScreen = ({ navigation }) => {
         return;
       }
       try {
-        const sessionsSnap = await firestore
+        const sessionsSnap = await db
           .collection('gameSessions')
           .where('players', 'array-contains', user.uid)
           .get();
@@ -62,7 +62,7 @@ const StatsScreen = ({ navigation }) => {
           }
         });
 
-        const matchSnap = await firestore
+        const matchSnap = await db
           .collection('matches')
           .where('users', 'array-contains', user.uid)
           .get();
@@ -74,7 +74,7 @@ const StatsScreen = ({ navigation }) => {
           messagesSent += counts[user.uid] || 0;
         });
 
-        const userSnap = await firestore.collection('users').doc(user.uid).get();
+        const userSnap = await db.collection('users').doc(user.uid).get();
         const data = userSnap.data() || {};
 
         setStats({

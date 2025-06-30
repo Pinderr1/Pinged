@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
 import { useDev } from './DevContext';
-import { firestore } from '../firebase';
+import { db } from '../firebase';
 import { serverTimestamp } from 'firebase/firestore';
 
 const GameLimitContext = createContext();
@@ -40,7 +40,7 @@ export const GameLimitProvider = ({ children }) => {
     }
     setGamesLeft(Math.max(DAILY_LIMIT - count, 0));
     try {
-      await firestore
+      await db
         .collection('users')
         .doc(user.uid)
         .update({

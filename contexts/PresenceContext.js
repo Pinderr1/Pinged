@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { AppState } from 'react-native';
-import { auth, realtimeDB } from '../firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import firebase, { realtimeDB } from '../firebase';
 import { ref, onValue, onDisconnect, set, serverTimestamp } from 'firebase/database';
 
 const PresenceContext = createContext();
@@ -39,7 +38,7 @@ export const PresenceProvider = ({ children }) => {
       appStateSubscription = AppState.addEventListener('change', appStateHandler);
     };
 
-    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+    const unsubscribe = firebase.auth().onAuthStateChanged((fbUser) => {
       if (statusRef) {
         set(statusRef, offline);
         if (appStateSubscription?.remove) {
