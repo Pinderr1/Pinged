@@ -7,7 +7,7 @@ const getStyles = (theme) =>
       flexGrow: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      paddingVertical: 20,
     },
     logoImage: {
       width: 100,

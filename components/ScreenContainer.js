@@ -43,6 +43,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    padding: 20,
+    paddingVertical: 20,
   },
 });

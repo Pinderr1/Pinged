@@ -11,7 +11,7 @@ export default function GradientBackground({ children, colors, style }) {
   const gradientColors = colors || [theme.gradientStart, theme.gradientEnd];
 
   return (
-    <LinearGradient colors={gradientColors} style={[styles.container, style]}>
+    <LinearGradient colors={gradientColors} style={[{ flex: 1 }, style]}>
       {children}
     </LinearGradient>
   );
