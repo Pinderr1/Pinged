@@ -18,6 +18,7 @@ import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
+import { HEADER_SPACING } from '../theme';
 import { useUser } from '../contexts/UserContext';
 import { db, firebase } from '../firebase';
 import styles from '../styles';
@@ -401,7 +402,7 @@ function BotSessionScreen({ route }) {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           keyboardVerticalOffset={80}
         >
-        <SafeAreaView style={{ flex: 1, paddingTop: 80, paddingHorizontal: 10, paddingBottom: 20 }}>
+        <SafeAreaView style={{ flex: 1, paddingTop: HEADER_SPACING, paddingHorizontal: 10, paddingBottom: 20 }}>
         <View style={botStyles.gameTabs}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {Object.entries(gameMap).map(([key, val]) => (

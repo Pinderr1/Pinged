@@ -16,6 +16,7 @@ import GradientBackground from '../components/GradientBackground';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
+import { HEADER_SPACING } from '../theme';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
@@ -495,7 +496,7 @@ const getStyles = (theme) =>
   StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 80,
+    paddingTop: HEADER_SPACING,
     justifyContent: 'center',
     alignItems: 'center',
   },

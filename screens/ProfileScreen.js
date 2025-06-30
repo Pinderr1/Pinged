@@ -6,6 +6,7 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import styles from '../styles';
+import { HEADER_SPACING, BUTTON_STYLE, FONT_SIZES } from '../theme';
 import Header from '../components/Header';
 import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';
@@ -99,7 +100,7 @@ const ProfileScreen = ({ navigation, route }) => {
   return (
     <GradientBackground colors={gradientColors} style={{ flex: 1 }}>
       <Header />
-      <SafeKeyboardView style={[styles.container, { paddingTop: 60 }]}>
+      <SafeKeyboardView style={[styles.container, { paddingTop: HEADER_SPACING }]}>
       <TouchableOpacity onPress={() => setEditMode(!editMode)} style={{ alignSelf: 'flex-end', marginBottom: 10 }}>
         <Text style={styles.navBtnText}>{editMode ? 'Setup Mode' : 'Edit Mode'}</Text>
       </TouchableOpacity>

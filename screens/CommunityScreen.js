@@ -22,6 +22,7 @@ import PropTypes from 'prop-types';
 import { useUser } from '../contexts/UserContext';
 import { db, firebase } from '../firebase';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
+import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../theme';
 
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = (screenWidth - 48) / 2;
@@ -119,7 +120,7 @@ const CommunityScreen = () => {
     <View style={{ flex: 1, backgroundColor: darkMode ? '#333' : '#fce4ec' }}>
       <Header />
 
-      <ScrollView contentContainerStyle={{ paddingTop: 100, paddingBottom: 150 }}>
+      <ScrollView contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 150 }}>
         <Text style={local.header}>🎉 Community Board</Text>
 
         {/* Filters */}
@@ -298,7 +299,7 @@ const CommunityScreen = () => {
 const getStyles = (theme) =>
   StyleSheet.create({
   header: {
-    fontSize: 22,
+    fontSize: FONT_SIZES.title,
     fontWeight: 'bold',
     marginLeft: 16,
     marginBottom: 12
@@ -319,10 +320,10 @@ const getStyles = (theme) =>
   bannerTitle: {
     color: theme.accent,
     fontWeight: 'bold',
-    fontSize: 16
+    fontSize: FONT_SIZES.label
   },
   bannerText: {
-    fontSize: 14,
+    fontSize: FONT_SIZES.text,
     color: '#555'
   },
   grid: {
@@ -345,27 +346,27 @@ const getStyles = (theme) =>
     marginBottom: 6
   },
   title: {
-    fontSize: 14,
+    fontSize: FONT_SIZES.text,
     fontWeight: 'bold'
   },
   time: {
-    fontSize: 12,
+    fontSize: FONT_SIZES.text - 2,
     color: theme.accent,
     marginBottom: 2
   },
   desc: {
-    fontSize: 12,
+    fontSize: FONT_SIZES.text - 2,
     color: '#666'
   },
   chatBtn: {
     marginTop: 6
   },
   chatText: {
-    fontSize: 12,
+    fontSize: FONT_SIZES.text - 2,
     color: '#4287f5'
   },
   badge: {
-    fontSize: 12,
+    fontSize: FONT_SIZES.text - 2,
     color: '#28c76f',
     marginTop: 4
   },
@@ -383,10 +384,10 @@ const getStyles = (theme) =>
   },
   badgeTitle: {
     fontWeight: 'bold',
-    fontSize: 16
+    fontSize: FONT_SIZES.label
   },
   badgeText: {
-    fontSize: 13,
+    fontSize: FONT_SIZES.text - 1,
     color: '#666'
   },
   postCard: {
@@ -397,24 +398,24 @@ const getStyles = (theme) =>
     
   },
   postTitle: {
-    fontSize: 15,
+    fontSize: FONT_SIZES.label - 1,
     fontWeight: 'bold',
     marginBottom: 2
   },
   postTime: {
-    fontSize: 12,
+    fontSize: FONT_SIZES.text - 2,
     color: theme.accent,
     marginBottom: 4
   },
   postDesc: {
-    fontSize: 13,
+    fontSize: FONT_SIZES.text - 1,
     color: '#666'
   },
   filterBtn: {
     marginRight: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 20
+    paddingVertical: BUTTON_STYLE.paddingVertical,
+    paddingHorizontal: BUTTON_STYLE.paddingHorizontal,
+    borderRadius: BUTTON_STYLE.borderRadius
   },
   modalBackdrop: {
     flex: 1,
