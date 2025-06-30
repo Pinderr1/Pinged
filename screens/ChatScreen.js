@@ -524,7 +524,11 @@ function PrivateChat({ user }) {
       >
         <View style={privateStyles.modalOverlay}>
           <View style={privateStyles.modalContent}>
-            <FlatList data={gameList} keyExtractor={(item) => item.id} renderItem={renderGameOption} />
+            <FlatList
+              data={gameList}
+              keyExtractor={(item) => item.id}
+              renderItem={renderGameOption}
+            />
             <TouchableOpacity
               style={[privateStyles.sendButton, { marginTop: 10 }]}
               onPress={() => setShowGameModal(false)}
@@ -535,6 +539,7 @@ function PrivateChat({ user }) {
         </View>
       </Modal>
       <SafeAreaView style={{ flex: 1 }}>
+        {gameSection}
         <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
           <View style={{ flex: 1 }}>
             {showPlaceholders ? (
@@ -546,7 +551,6 @@ function PrivateChat({ user }) {
             ) : (
               chatSection
             )}
-            {gameSection}
           </View>
         </SafeKeyboardView>
       </SafeAreaView>
