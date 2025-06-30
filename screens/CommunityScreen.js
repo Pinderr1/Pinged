@@ -26,6 +26,7 @@ import { db } from '../firebase';
 import { serverTimestamp } from 'firebase/firestore';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
+import * as Haptics from 'expo-haptics';
 
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = (screenWidth - 48) / 2;
@@ -172,7 +173,10 @@ const CommunityScreen = () => {
         {/* Host your own */}
         <GradientButton
           text="Host Your Own Event"
-          onPress={() => setShowHostModal(true)}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+            setShowHostModal(true);
+          }}
           marginVertical={20}
           icon={<Text style={{ fontSize: 16 }}>🎤</Text>}
           style={{ marginHorizontal: 16 }}
@@ -181,7 +185,10 @@ const CommunityScreen = () => {
         {/* Create Post */}
         <GradientButton
           text="New Post"
-          onPress={() => setShowPostModal(true)}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+            setShowPostModal(true);
+          }}
           marginVertical={20}
           icon={<Text style={{ fontSize: 16 }}>✏️</Text>}
           style={{ marginHorizontal: 16 }}
