@@ -7,6 +7,7 @@ import ChatScreen from '../screens/ChatScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import GameInviteScreen from '../screens/GameInviteScreen';
 import GameSessionScreen from '../screens/GameSessionScreen';
+import GameWithBotScreen from '../screens/GameWithBotScreen';
 import CommunityScreen from '../screens/CommunityScreen';
 import PremiumScreen from '../screens/PremiumScreen';
 import StatsScreen from '../screens/StatsScreen';
@@ -29,7 +30,7 @@ export default function AppStack() {
       <Stack.Screen name="ActiveGames" component={ActiveGamesScreen} />
       <Stack.Screen name="Premium" component={PremiumScreen} />
       <Stack.Screen name="Stats" component={StatsScreen} />
-      <Stack.Screen name="GameWithBot" component={GameSessionScreen} />
+      <Stack.Screen name="GameWithBot" component={GameWithBotScreen} />
       <Stack.Screen name="Play" component={PlayScreen} />
       </Stack.Navigator>
   );
