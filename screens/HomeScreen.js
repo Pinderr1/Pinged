@@ -26,12 +26,14 @@ import Card from '../components/Card';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { eventImageSource } from '../utils/avatar';
 
-const games = allGames.map((g) => {
+// Map app game IDs to boardgame registry keys for AI play
+const aiGameMap = allGames.reduce((acc, g) => {
   const key = Object.keys(gameRegistry).find(
     (k) => gameRegistry[k].meta.title === g.title
   );
-  return { id: g.id, key };
-});
+  if (key) acc[g.id] = key;
+  return acc;
+}, {});
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -90,13 +92,12 @@ const HomeScreen = ({ navigation }) => {
     if (playTarget === 'ai') {
       const bot = getRandomBot();
       const aiKeyMap = { rockPaperScissors: 'rps' };
-      const aiGames = games
-        .filter((g) => g.key && gameRegistry[g.key])
-        .reduce((m, g) => ({ ...m, [g.id]: aiKeyMap[g.key] || g.key }), {});
-      const gameKey = aiGames[game.id];
+      const key = aiGameMap[game.id];
+      if (!key) console.warn('No AI mapping for game id', game.id);
+      const gameKey = key ? aiKeyMap[key] || key : 'ticTacToe';
       navigation.navigate('GameWithBot', {
         botId: bot.id,
-        game: gameKey || 'ticTacToe',
+        game: gameKey,
       });
     } else {
       navigation.navigate('GameInvite', { game: { id: game.id, title: game.title } });
