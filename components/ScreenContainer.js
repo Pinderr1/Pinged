@@ -14,7 +14,6 @@ ScreenContainer.propTypes = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
     justifyContent: 'flex-start',
     alignItems: 'stretch',
   },
