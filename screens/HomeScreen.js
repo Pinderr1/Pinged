@@ -44,7 +44,6 @@ const HomeScreen = ({ navigation }) => {
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
   const [showBonus, setShowBonus] = useState(false);
-  const [showMore, setShowMore] = useState(false);
   const local = getStyles(theme);
 
   const shortcutActions = [
@@ -217,85 +216,71 @@ const HomeScreen = ({ navigation }) => {
             )}
           </View>
 
-          {!showMore && (
-            <TouchableOpacity onPress={() => setShowMore(true)} style={local.showMoreButton}>
-              <Text style={[local.section, { textAlign: 'center' }]}>Show More</Text>
-            </TouchableOpacity>
-          )}
+          <Text style={local.section}>Shortcuts</Text>
+          <FlatList
+            data={shortcutActions}
+            keyExtractor={(item) => item.key}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={local.carousel}
+            renderItem={({ item }) => (
+              <Card
+                onPress={() => handleShortcut(item.key)}
+                style={[local.tile, { backgroundColor: theme.card }]}
+              >
+                <Text style={local.tileEmoji}>{item.emoji}</Text>
+                <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
+              </Card>
+            )}
+          />
 
-          {showMore && (
-            <View>
-              <Text style={local.section}>Shortcuts</Text>
-              <FlatList
-                data={shortcutActions}
-                keyExtractor={(item) => item.key}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={local.carousel}
-                renderItem={({ item }) => (
-                  <Card
-                    onPress={() => handleShortcut(item.key)}
-                    style={[local.tile, { backgroundColor: theme.card }]}
-                  >
-                    <Text style={local.tileEmoji}>{item.emoji}</Text>
-                    <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
-                  </Card>
-                )}
-              />
+          <Text style={local.section}>Suggested Games</Text>
+          <FlatList
+            data={allGames.slice(0, 10)}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[local.carousel, { paddingBottom: 20 }]}
+            renderItem={({ item }) => (
+              <Card
+                onPress={() => {
+                  setPlayTarget('match');
+                  selectGame(item);
+                }}
+                style={[local.gameTile, { backgroundColor: theme.card }]}
+              >
+                <View style={{ marginBottom: 8 }}>{item.icon}</View>
+                <Text style={[local.gameTitle, { color: theme.text }]}>{item.title}</Text>
+              </Card>
+            )}
+          />
 
-              <Text style={local.section}>Suggested Games</Text>
-              <FlatList
-                data={allGames.slice(0, 10)}
-                keyExtractor={(item) => item.id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={[local.carousel, { paddingBottom: 20 }]}
-                renderItem={({ item }) => (
-                  <Card
-                    onPress={() => {
-                      setPlayTarget('match');
-                      selectGame(item);
-                    }}
-                    style={[local.gameTile, { backgroundColor: theme.card }]}
-                  >
-                    <View style={{ marginBottom: 8 }}>{item.icon}</View>
-                    <Text style={[local.gameTitle, { color: theme.text }]}>{item.title}</Text>
-                  </Card>
-                )}
-              />
-
-              <Text style={local.section}>Community</Text>
-              {SAMPLE_EVENTS.map((event) => (
-                <Card
-                  key={`e-${event.id}`}
-                  style={[local.eventCard, { backgroundColor: theme.card }]}
-                >
-                  <Image source={eventImageSource(event.image)} style={local.eventImage} />
-                  <View style={{ flex: 1, marginLeft: 10 }}>
-                    <Text style={[local.eventTitle, { color: theme.text }]}>{event.title}</Text>
-                    <Text style={local.eventTime}>{event.time}</Text>
-                    <Text style={[local.eventDesc, { color: theme.textSecondary }]}>
-                      {event.description}
-                    </Text>
-                  </View>
-                </Card>
-              ))}
-              {SAMPLE_POSTS.map((post) => (
-                <Card
-                  key={`p-${post.id}`}
-                  style={[local.postCardPreview, { backgroundColor: theme.card }]}
-                >
-                  <Text style={[local.postTitle, { color: theme.text }]}>{post.title}</Text>
-                  <Text style={local.postTime}>{post.time}</Text>
-                  <Text style={[local.postDesc, { color: theme.textSecondary }]}>{post.description}</Text>
-                </Card>
-              ))}
-
-              <TouchableOpacity onPress={() => setShowMore(false)} style={local.showMoreButton}>
-                <Text style={[local.section, { textAlign: 'center' }]}>Show Less</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <Text style={local.section}>Community</Text>
+          {SAMPLE_EVENTS.map((event) => (
+            <Card
+              key={`e-${event.id}`}
+              style={[local.eventCard, { backgroundColor: theme.card }]}
+            >
+              <Image source={eventImageSource(event.image)} style={local.eventImage} />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={[local.eventTitle, { color: theme.text }]}>{event.title}</Text>
+                <Text style={local.eventTime}>{event.time}</Text>
+                <Text style={[local.eventDesc, { color: theme.textSecondary }]}>
+                  {event.description}
+                </Text>
+              </View>
+            </Card>
+          ))}
+          {SAMPLE_POSTS.map((post) => (
+            <Card
+              key={`p-${post.id}`}
+              style={[local.postCardPreview, { backgroundColor: theme.card }]}
+            >
+              <Text style={[local.postTitle, { color: theme.text }]}>{post.title}</Text>
+              <Text style={local.postTime}>{post.time}</Text>
+              <Text style={[local.postDesc, { color: theme.textSecondary }]}>{post.description}</Text>
+            </Card>
+          ))}
         </ScrollView>
 
         <Modal visible={gamePickerVisible} transparent animationType="fade">
@@ -484,10 +469,6 @@ const getStyles = (theme) =>
   },
   postDesc: {
     fontSize: 12,
-  },
-  showMoreButton: {
-    marginVertical: 12,
-    alignSelf: 'center',
   },
 });
 
