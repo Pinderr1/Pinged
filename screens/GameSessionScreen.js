@@ -38,6 +38,7 @@ import useBotGame from "../hooks/useBotGame";
 import { getBotMove } from "../ai/botMoves";
 import SafeKeyboardView from "../components/SafeKeyboardView";
 import Loader from "../components/Loader";
+import { logGameStats } from '../utils/gameStats';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import PropTypes from 'prop-types';
 const GameSessionScreen = ({ route, navigation, sessionType }) => {
@@ -145,7 +146,10 @@ const LiveSessionScreen = ({ route, navigation }) => {
   }, [countdown, inviteId, user?.uid]);
 
   const handleGameEnd = (result) => {
-    if (result) addGameXP();
+    if (result) {
+      addGameXP();
+      if (inviteId) logGameStats(inviteId);
+    }
     setGameResult(result);
   };
 

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { db } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import { serverTimestamp, arrayUnion } from 'firebase/firestore';
 import { games } from '../games';
 import { useUser } from '../contexts/UserContext';
 import { snapshotExists } from '../utils/firestore';
@@ -74,6 +74,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
         currentPlayer: nextPlayer,
         gameover: gameover || null,
         updatedAt: serverTimestamp(),
+        moves: arrayUnion({ action: moveName, player: String(idx), at: serverTimestamp() }),
       });
   }, [session, Game, sessionId, user?.uid]);
 

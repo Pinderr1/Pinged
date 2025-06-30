@@ -60,6 +60,10 @@ service cloud.firestore {
         (request.auth.uid in resource.data.players || request.auth.uid in request.resource.data.players);
     }
 
+    match /gameStats/{statId} {
+      allow read, write: if signedIn();
+    }
+
     match /chats/{chatId} {
       allow read, write: if signedIn() &&
         request.auth.uid in resource.data.participants;
