@@ -13,6 +13,7 @@ import {
 import Toast from 'react-native-toast-message';
 import GradientBackground from '../components/GradientBackground';
 import ScreenContainer from '../components/ScreenContainer';
+import GradientButton from '../components/GradientButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
@@ -152,12 +153,34 @@ const SwipeScreen = () => {
         if (devMode) {
           data = [
             {
-              id: '__devUser',
-              displayName: 'Dev Tester',
-              age: 99,
-              bio: 'Testing swipes',
-              photoURL: null,
+              id: '__devUser1',
+              displayName: 'Dev One',
+              age: 21,
+              bio: 'Testing swipe 1',
+              photos: [require('../assets/user1.jpg')],
               favoriteGames: ['Chess'],
+              gender: 'Other',
+              genderPref: 'Any',
+              location: 'Localhost',
+            },
+            {
+              id: '__devUser2',
+              displayName: 'Dev Two',
+              age: 22,
+              bio: 'Testing swipe 2',
+              photos: [require('../assets/user2.jpg')],
+              favoriteGames: ['Go'],
+              gender: 'Other',
+              genderPref: 'Any',
+              location: 'Localhost',
+            },
+            {
+              id: '__devUser3',
+              displayName: 'Dev Three',
+              age: 23,
+              bio: 'Testing swipe 3',
+              photos: [require('../assets/user3.jpg')],
+              favoriteGames: ['Checkers'],
               gender: 'Other',
               genderPref: 'Any',
               location: 'Localhost',
@@ -487,13 +510,28 @@ const handleSwipe = async (direction) => {
             />
           </View>
         ) : null}
-        {!displayUser && (
-          loadingUsers ? (
+        {!displayUser &&
+          (loadingUsers ? (
             <SkeletonUserCard />
           ) : (
-            <Text style={styles.noMoreText}>No more swipes</Text>
-          )
-        )}
+            <View style={styles.noMoreWrapper}>
+              <Text style={styles.noMoreText}>No more swipes</Text>
+              <GradientButton
+                text="Boost"
+                width={180}
+                onPress={() =>
+                  navigation.navigate('Premium', { context: 'upgrade' })
+                }
+                style={{ marginTop: 20 }}
+              />
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Settings')}
+                style={{ marginTop: 12 }}
+              >
+                <Text style={styles.changeFiltersText}>Change Filters</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
 
         <View style={styles.buttonRow}>
           {[
@@ -631,18 +669,29 @@ const getStyles = (theme) =>
     marginTop: 4,
     color: '#555',
   },
+  noMoreWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 40,
+  },
   noMoreText: {
     fontSize: 20,
     color: '#999',
     textAlign: 'center',
-    marginTop: 60,
+  },
+  changeFiltersText: {
+    color: theme.accent,
+    textDecorationLine: 'underline',
+    fontSize: 16,
   },
   buttonRow: {
     position: 'absolute',
     bottom: BUTTON_ROW_BOTTOM,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
+    justifyContent: 'space-evenly',
+    paddingHorizontal: 20,
   },
   circleButton: {
     width: 60,
