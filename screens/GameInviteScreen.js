@@ -30,6 +30,7 @@ import useCardPressAnimation from '../hooks/useCardPressAnimation';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH / 2 - 24;
+const INITIAL_LIMIT = 6;
 
 const GameInviteScreen = ({ route, navigation }) => {
   const rawGame = route?.params?.game;
@@ -46,6 +47,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   const [invited, setInvited] = useState({});
   const [loadingId, setLoadingId] = useState(null);
   const [matches, setMatches] = useState([]);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     requireCredits({ replace: true });
@@ -105,6 +107,10 @@ const GameInviteScreen = ({ route, navigation }) => {
   const filtered = matches.filter((u) =>
     u.displayName.toLowerCase().includes(search.toLowerCase())
   );
+  const displayed = showAll || search
+    ? filtered
+    : filtered.slice(0, INITIAL_LIMIT);
+  const showMore = !showAll && !search && filtered.length > INITIAL_LIMIT;
 
   const renderUserCard = ({ item }) => {
     const isInvited = invited[item.id];
@@ -211,7 +217,7 @@ const GameInviteScreen = ({ route, navigation }) => {
           </View>
 
           <FlatList
-            data={filtered}
+            data={displayed}
             keyExtractor={(item) => item.id}
             renderItem={renderUserCard}
             numColumns={2}
@@ -224,6 +230,25 @@ const GameInviteScreen = ({ route, navigation }) => {
               justifyContent: 'space-between'
             }}
             removeClippedSubviews={false}
+            keyboardShouldPersistTaps="handled"
+            ListFooterComponent={
+              showMore ? (
+                <TouchableOpacity
+                  onPress={() => setShowAll(true)}
+                  style={{ paddingVertical: 16 }}
+                >
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      color: theme.accent,
+                      fontWeight: '600'
+                    }}
+                  >
+                    Show More
+                  </Text>
+                </TouchableOpacity>
+              ) : null
+            }
           />
       </SafeKeyboardView>
     </GradientBackground>
