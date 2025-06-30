@@ -353,7 +353,7 @@ function PrivateChat({ user }) {
     <View
       style={{
         padding: 10,
-        borderTopWidth: 1,
+        borderBottomWidth: 1,
         borderColor: darkMode ? '#444' : '#ccc',
         justifyContent: 'center',
         alignItems: 'center',
@@ -407,7 +407,6 @@ function PrivateChat({ user }) {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
-        ListFooterComponent={gameSection}
         ListEmptyComponent={
           !loading && (
             <View style={{ alignItems: 'center', marginTop: 20 }}>
@@ -540,19 +539,22 @@ function PrivateChat({ user }) {
         </View>
       </Modal>
       <ScreenContainer>
-        <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
-          <View style={privateStyles.container}>
-            {showPlaceholders ? (
-              <PlaceholderBubbles />
-            ) : loading ? (
-              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Loader />
-              </View>
-            ) : (
-              chatSection
-            )}
-          </View>
-        </SafeKeyboardView>
+        <View style={{ flex: 1, paddingTop: HEADER_SPACING }}>
+          {gameSection}
+          <SafeKeyboardView style={{ flex: 1 }}>
+            <View style={privateStyles.container}>
+              {showPlaceholders ? (
+                <PlaceholderBubbles />
+              ) : loading ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                  <Loader />
+                </View>
+              ) : (
+                chatSection
+              )}
+            </View>
+          </SafeKeyboardView>
+        </View>
       </ScreenContainer>
     </GradientBackground>
   );
