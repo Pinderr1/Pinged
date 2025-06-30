@@ -5,7 +5,9 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  StyleSheet
+  StyleSheet,
+  Animated,
+  Vibration,
 } from 'react-native';
 import GradientButton from '../components/GradientButton';
 import Loader from '../components/Loader';
@@ -18,6 +20,25 @@ import { useTheme } from '../contexts/ThemeContext';
 import { db } from '../firebase';
 import { games } from '../games';
 import PropTypes from 'prop-types';
+import useCardPressAnimation from '../hooks/useCardPressAnimation';
+
+const AnimatedButton = ({ onPress, text, loading, disabled, style }) => {
+  const { scale, handlePressIn, handlePressOut } = useCardPressAnimation();
+  return (
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <GradientButton
+        text={loading ? '' : text}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        width={120}
+        style={style}
+        disabled={disabled}
+        icon={loading ? <Loader size="small" /> : null}
+      />
+    </Animated.View>
+  );
+};
 
 const NotificationsScreen = ({ navigation }) => {
   const { incomingInvites, acceptGameInvite, cancelGameInvite } = useMatchmaking();
@@ -52,6 +73,7 @@ const NotificationsScreen = ({ navigation }) => {
         inviteId: invite.id,
         status: 'waiting',
       });
+      Vibration.vibrate(60);
     } catch (e) {
       console.warn('Failed to accept invite', e);
     }
@@ -69,6 +91,7 @@ const NotificationsScreen = ({ navigation }) => {
       .update({ status: 'declined' })
       .catch((e) => console.warn('Failed to decline invite', e));
     setLoadingId(null);
+    Vibration.vibrate(40);
   };
 
   return (
@@ -92,13 +115,12 @@ const NotificationsScreen = ({ navigation }) => {
                 {inv.fromName ? `${inv.fromName} invited you to play ${games[inv.gameId]?.meta?.title || 'a game'}` : 'Game invite received'}
               </Text>
               <View style={local.actions}>
-                <GradientButton
-                  text={loadingId === inv.id ? '' : 'Accept'}
+                <AnimatedButton
+                  text="Accept"
                   onPress={() => handleAccept(inv)}
-                  width={120}
                   style={{ marginRight: 10, flexDirection: 'row', justifyContent: 'center' }}
                   disabled={loadingId === inv.id}
-                  icon={loadingId === inv.id ? <Loader size="small" /> : null}
+                  loading={loadingId === inv.id}
                 />
                 <TouchableOpacity
                   onPress={() => handleDecline(inv)}

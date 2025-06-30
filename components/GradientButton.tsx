@@ -14,6 +14,8 @@ export interface GradientButtonProps {
   icon?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   disabled?: boolean;
+  onPressIn?: () => void;
+  onPressOut?: () => void;
 }
 export default function GradientButton({
   text,
@@ -23,10 +25,18 @@ export default function GradientButton({
   icon,
   style,
   disabled,
+  onPressIn,
+  onPressOut,
 }: GradientButtonProps) {
   const { theme } = useTheme();
   return (
-    <Pressable onPress={onPress} style={{ width, marginVertical }} disabled={disabled}>
+    <Pressable
+      onPress={onPress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      style={{ width, marginVertical }}
+      disabled={disabled}
+    >
       <LinearGradient
         colors={[theme.gradientStart, theme.gradientEnd]}
         start={{ x: 0, y: 0 }}
