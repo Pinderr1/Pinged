@@ -1,29 +1,44 @@
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import { Client } from 'boardgame.io/client';
 
 export default function useBotGame(game, getBotMove, onGameEnd) {
+  const getBotMoveRef = useRef(getBotMove);
+  const onGameEndRef = useRef(onGameEnd);
+
+  // Keep latest callbacks without re-creating the client
+  useEffect(() => {
+    getBotMoveRef.current = getBotMove;
+  }, [getBotMove]);
+
+  useEffect(() => {
+    onGameEndRef.current = onGameEnd;
+  }, [onGameEnd]);
+
   const client = useMemo(() => {
     return Client({
       game,
       numPlayers: 2,
       ai: {
         bot: {
-          play: ({ state }) => getBotMove(state.G, state.ctx.currentPlayer, game),
+          play: ({ state }) =>
+            getBotMoveRef.current(state.G, state.ctx.currentPlayer, game),
         },
       },
     });
-  }, [game, getBotMove]);
+  }, [game]);
 
   const [state, setState] = useState(client.getState());
 
   useEffect(() => {
     client.start();
-    const unsub = client.subscribe(s => {
+    const unsub = client.subscribe((s) => {
       setState(s);
-      if (s.ctx.gameover) onGameEnd && onGameEnd(s.ctx.gameover);
+      if (s.ctx.gameover && onGameEndRef.current) {
+        onGameEndRef.current(s.ctx.gameover);
+      }
     });
     return () => unsub();
-  }, [client, onGameEnd]);
+  }, [client]);
 
   return { G: state.G, ctx: state.ctx, moves: client.moves, reset: client.reset };
 }
