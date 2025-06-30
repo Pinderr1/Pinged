@@ -107,7 +107,7 @@ const MatchesScreen = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <GradientBackground style={{ flex: 1 }}>
         <Header />
-        <View style={{ flex: 1, paddingTop: HEADER_SPACING }}>
+        <View style={[styles.container, { paddingTop: HEADER_SPACING }]}>
           {loading ? (
             <>
               <Text style={styles.sectionTitle}>New Matches</Text>
@@ -181,15 +181,20 @@ const MatchesScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 16,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    marginHorizontal: 16,
+    alignSelf: 'center',
     marginBottom: 8,
     color: '#ff4081',
   },
   newList: {
-    paddingHorizontal: 16,
     marginBottom: 12,
   },
   newMatch: {
@@ -213,7 +218,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     padding: 12,
-    marginHorizontal: 16,
+    alignSelf: 'stretch',
     borderRadius: 16,
   },
   chatAvatar: {
