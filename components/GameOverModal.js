@@ -1,12 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import LottieView from 'lottie-react-native';
+import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
 
 export default function GameOverModal({ visible, winnerName, onRematch, onChat }) {
+  useEffect(() => {
+    if (visible && winnerName) {
+      Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Success
+      ).catch(() => {});
+      // Play celebration sound here
+    }
+  }, [visible, winnerName]);
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.backdrop}>
         <View style={styles.card}>
+          {winnerName && (
+            <LottieView
+              source={require('../assets/confetti.json')}
+              autoPlay
+              loop={false}
+              style={styles.animation}
+            />
+          )}
           <Text style={styles.emoji}>🏆</Text>
           <Text style={styles.title}>{winnerName ? `${winnerName} wins!` : 'Draw'}</Text>
           <TouchableOpacity style={styles.rematchBtn} onPress={onRematch}>
@@ -74,5 +92,11 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '600',
     fontSize: 16,
+  },
+  animation: {
+    position: 'absolute',
+    top: -30,
+    width: 200,
+    height: 200,
   },
 });
