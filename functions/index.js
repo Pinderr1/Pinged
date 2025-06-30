@@ -367,3 +367,103 @@ exports.onChatMessageCreated = functions.firestore
 
     return null;
   });
+
+exports.remindPendingInvites = functions.pubsub
+  .schedule('every 60 minutes')
+  .onRun(async () => {
+    const threshold = new Date(Date.now() - 60 * 60 * 1000);
+    const snap = await admin
+      .firestore()
+      .collection('gameInvites')
+      .where('status', '==', 'pending')
+      .where('createdAt', '<=', threshold)
+      .get();
+
+    const tasks = [];
+    snap.forEach((doc) => {
+      const data = doc.data();
+      if (!data || !data.to) return;
+      tasks.push(
+        pushToUser(
+          data.to,
+          'Reminder',
+          `${data.fromName || 'Someone'} invited you to play`,
+          { type: 'invite', inviteId: doc.id, gameId: data.gameId }
+        ).catch((e) => console.error('Failed to push invite reminder', e))
+      );
+    });
+
+    await Promise.all(tasks);
+    console.log(`Sent ${tasks.length} invite reminders`);
+    return null;
+  });
+
+exports.remindIdlePlayers = functions.pubsub
+  .schedule('0 12 * * *')
+  .timeZone('UTC')
+  .onRun(async () => {
+    const threshold = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const snap = await admin
+      .firestore()
+      .collection('users')
+      .where('lastPlayedAt', '<', threshold)
+      .get();
+
+    const tasks = [];
+    snap.forEach((doc) => {
+      tasks.push(
+        pushToUser(
+          doc.id,
+          'Time to play!',
+          "It's been a while since you played. Jump back in!",
+          { type: 'reengage' }
+        ).catch((e) => console.error('Failed to send idle reminder', e))
+      );
+    });
+
+    await Promise.all(tasks);
+    console.log(`Sent ${tasks.length} idle player reminders`);
+    return null;
+  });
+
+exports.notifyStreakRewards = functions.pubsub
+  .schedule('15 0 * * *')
+  .timeZone('UTC')
+  .onRun(async () => {
+    const threshold = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const snap = await admin
+      .firestore()
+      .collection('users')
+      .where('streak', '>=', 7)
+      .where('lastPlayedAt', '>=', threshold)
+      .get();
+
+    const tasks = [];
+    snap.forEach((doc) => {
+      const data = doc.data();
+      if (!data) return;
+      const lastPlayed = data.lastPlayedAt?.toDate?.() || data.lastPlayedAt;
+      const rewardedAt = data.streakRewardedAt?.toDate?.() || data.streakRewardedAt;
+      if (!lastPlayed) return;
+      if (data.streak % 7 === 0 && (!rewardedAt || rewardedAt < lastPlayed)) {
+        tasks.push(
+          pushToUser(
+            doc.id,
+            'Streak Reward!',
+            `You reached a ${data.streak}-day streak!`,
+            { type: 'streak', streak: data.streak }
+          )
+            .then(() =>
+              doc.ref.update({
+                streakRewardedAt: admin.firestore.FieldValue.serverTimestamp(),
+              })
+            )
+            .catch((e) => console.error('Failed to send streak reward', e))
+        );
+      }
+    });
+
+    await Promise.all(tasks);
+    console.log(`Sent ${tasks.length} streak reward notifications`);
+    return null;
+  });
