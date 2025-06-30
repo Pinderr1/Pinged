@@ -77,9 +77,24 @@ const MatchesScreen = ({ navigation }) => {
               <Loader />
             </View>
           ) : newMatches.length === 0 && activeChats.length === 0 ? (
-            <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
-              No matches yet.
-            </Text>
+            <>
+              <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
+                No matches yet.
+              </Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('GameWithBot')}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    marginTop: 10,
+                    color: theme.accent,
+                  }}
+                >
+                  Play with an AI bot
+                </Text>
+              </TouchableOpacity>
+            </>
           ) : (
             <>
               {newMatches.length > 0 && (
