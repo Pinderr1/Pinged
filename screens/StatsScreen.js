@@ -19,6 +19,13 @@ const StatsScreen = ({ navigation }) => {
   const { user } = useUser();
   const isPremium = !!user?.isPremium;
 
+  const StatSkeleton = () => (
+    <>
+      <View style={styles.skeletonLabel} />
+      <View style={styles.skeletonValue} />
+    </>
+  );
+
   const [stats, setStats] = useState({
     gamesPlayed: 0,
     gamesWon: 0,
@@ -31,9 +38,14 @@ const StatsScreen = ({ navigation }) => {
     badge: '',
   });
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const loadStats = async () => {
-      if (!user?.uid) return;
+      if (!user?.uid) {
+        setLoading(false);
+        return;
+      }
       try {
         const sessionsSnap = await db
           .collection('gameSessions')
@@ -81,8 +93,10 @@ const StatsScreen = ({ navigation }) => {
           streak: data.streak || 0,
           badge: '',
         });
+        setLoading(false);
       } catch (e) {
         console.warn('Failed to load stats', e);
+        setLoading(false);
       }
     };
 
@@ -107,50 +121,104 @@ const StatsScreen = ({ navigation }) => {
         {/* Game Stats */}
         <Text style={styles.sectionTitle}>🎮 Game Stats</Text>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>Games Played</Text>
-          <Text style={styles.statValue}>{stats.gamesPlayed}</Text>
+          {loading ? (
+            <StatSkeleton />
+          ) : (
+            <>
+              <Text style={styles.statLabel}>Games Played</Text>
+              <Text style={styles.statValue}>{stats.gamesPlayed}</Text>
+            </>
+          )}
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>Games Won</Text>
-          <Text style={styles.statValue}>{stats.gamesWon}</Text>
+          {loading ? (
+            <StatSkeleton />
+          ) : (
+            <>
+              <Text style={styles.statLabel}>Games Won</Text>
+              <Text style={styles.statValue}>{stats.gamesWon}</Text>
+            </>
+          )}
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>Favorite Games</Text>
-          <Text style={styles.statValue}>
-            {stats.favoriteGames.length > 0 ? stats.favoriteGames.join(', ') : 'N/A'}
-          </Text>
+          {loading ? (
+            <StatSkeleton />
+          ) : (
+            <>
+              <Text style={styles.statLabel}>Favorite Games</Text>
+              <Text style={styles.statValue}>
+                {stats.favoriteGames.length > 0 ? stats.favoriteGames.join(', ') : 'N/A'}
+              </Text>
+            </>
+          )}
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>{`XP Level ${level}`}</Text>
-          <ProgressBar value={xpProgress} max={100} color={theme.accent} />
-          <Text style={styles.statSub}>{stats.xp} XP</Text>
+          {loading ? (
+            <StatSkeleton />
+          ) : (
+            <>
+              <Text style={styles.statLabel}>{`XP Level ${level}`}</Text>
+              <ProgressBar value={xpProgress} max={100} color={theme.accent} />
+              <Text style={styles.statSub}>{stats.xp} XP</Text>
+            </>
+          )}
         </View>
 
         {/* Social Stats */}
         <Text style={styles.sectionTitle}>💬 Social Stats</Text>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>Matches</Text>
-          <Text style={styles.statValue}>{stats.matches}</Text>
+          {loading ? (
+            <StatSkeleton />
+          ) : (
+            <>
+              <Text style={styles.statLabel}>Matches</Text>
+              <Text style={styles.statValue}>{stats.matches}</Text>
+            </>
+          )}
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>Swipes</Text>
-          <Text style={styles.statValue}>{stats.swipes}</Text>
+          {loading ? (
+            <StatSkeleton />
+          ) : (
+            <>
+              <Text style={styles.statLabel}>Swipes</Text>
+              <Text style={styles.statValue}>{stats.swipes}</Text>
+            </>
+          )}
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>Messages Sent</Text>
-          <Text style={styles.statValue}>{stats.messagesSent}</Text>
+          {loading ? (
+            <StatSkeleton />
+          ) : (
+            <>
+              <Text style={styles.statLabel}>Messages Sent</Text>
+              <Text style={styles.statValue}>{stats.messagesSent}</Text>
+            </>
+          )}
         </View>
 
         {/* Bonus + Upgrade */}
         <Text style={styles.sectionTitle}>🔥 Activity</Text>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>Daily Streak</Text>
-          <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
-          <Text style={styles.statSub}>{stats.streak} days</Text>
+          {loading ? (
+            <StatSkeleton />
+          ) : (
+            <>
+              <Text style={styles.statLabel}>Daily Streak</Text>
+              <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
+              <Text style={styles.statSub}>{stats.streak} days</Text>
+            </>
+          )}
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>Badge</Text>
-          <Text style={styles.statValue}>{stats.badge}</Text>
+          {loading ? (
+            <StatSkeleton />
+          ) : (
+            <>
+              <Text style={styles.statLabel}>Badge</Text>
+              <Text style={styles.statValue}>{stats.badge}</Text>
+            </>
+          )}
         </View>
 
         {!isPremium && (
@@ -226,6 +294,21 @@ const getStyles = (theme) => StyleSheet.create({
     fontSize: FONT_SIZES.SM - 2,
     color: theme.textSecondary,
     marginTop: 4,
+  },
+  skeletonLabel: {
+    height: 14,
+    width: '50%',
+    backgroundColor: theme.textSecondary,
+    opacity: 0.3,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  skeletonValue: {
+    height: 18,
+    width: '30%',
+    backgroundColor: theme.textSecondary,
+    opacity: 0.3,
+    borderRadius: 4,
   },
   premiumButton: {
     marginTop: 20,
