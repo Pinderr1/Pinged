@@ -1,17 +1,18 @@
 // /screens/StatsScreen.js
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import GradientButton from '../components/GradientButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';
-import { avatarSource } from '../utils/avatar';
 import ProgressBar from '../components/ProgressBar';
 import PropTypes from 'prop-types';
 import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
+import ProfileCard from '../components/stats/ProfileCard';
+import StatBox from '../components/stats/StatBox';
 
 const StatsScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -19,12 +20,6 @@ const StatsScreen = ({ navigation }) => {
   const { user } = useUser();
   const isPremium = !!user?.isPremium;
 
-  const StatSkeleton = () => (
-    <>
-      <View style={styles.skeletonLabel} />
-      <View style={styles.skeletonValue} />
-    </>
-  );
 
   const [stats, setStats] = useState({
     gamesPlayed: 0,
@@ -112,114 +107,61 @@ const StatsScreen = ({ navigation }) => {
       <Header showLogoOnly />
       <ScrollView contentContainerStyle={styles.container}>
         {/* Profile Summary */}
-        <View style={styles.profileCard}>
-          <Image source={avatarSource(user?.photoURL)} style={styles.avatar} />
-          <Text style={styles.name}>{user?.displayName || 'User'}</Text>
-          {isPremium && <Text style={styles.premiumBadge}>★ Premium</Text>}
-        </View>
+        <ProfileCard
+          user={user}
+          isPremium={isPremium}
+          styles={styles}
+          accent={theme.accent}
+        />
 
         {/* Game Stats */}
         <Text style={styles.sectionTitle}>🎮 Game Stats</Text>
-        <View style={styles.statBox}>
-          {loading ? (
-            <StatSkeleton />
-          ) : (
-            <>
-              <Text style={styles.statLabel}>Games Played</Text>
-              <Text style={styles.statValue}>{stats.gamesPlayed}</Text>
-            </>
-          )}
-        </View>
-        <View style={styles.statBox}>
-          {loading ? (
-            <StatSkeleton />
-          ) : (
-            <>
-              <Text style={styles.statLabel}>Games Won</Text>
-              <Text style={styles.statValue}>{stats.gamesWon}</Text>
-            </>
-          )}
-        </View>
-        <View style={styles.statBox}>
-          {loading ? (
-            <StatSkeleton />
-          ) : (
-            <>
-              <Text style={styles.statLabel}>Favorite Games</Text>
-              <Text style={styles.statValue}>
-                {stats.favoriteGames.length > 0 ? stats.favoriteGames.join(', ') : 'N/A'}
-              </Text>
-            </>
-          )}
-        </View>
-        <View style={styles.statBox}>
-          {loading ? (
-            <StatSkeleton />
-          ) : (
-            <>
-              <Text style={styles.statLabel}>{`XP Level ${level}`}</Text>
-              <ProgressBar value={xpProgress} max={100} color={theme.accent} />
-              <Text style={styles.statSub}>{stats.xp} XP</Text>
-            </>
-          )}
-        </View>
+        <StatBox loading={loading} styles={styles}>
+          <Text style={styles.statLabel}>Games Played</Text>
+          <Text style={styles.statValue}>{stats.gamesPlayed}</Text>
+        </StatBox>
+        <StatBox loading={loading} styles={styles}>
+          <Text style={styles.statLabel}>Games Won</Text>
+          <Text style={styles.statValue}>{stats.gamesWon}</Text>
+        </StatBox>
+        <StatBox loading={loading} styles={styles}>
+          <Text style={styles.statLabel}>Favorite Games</Text>
+          <Text style={styles.statValue}>
+            {stats.favoriteGames.length > 0 ? stats.favoriteGames.join(', ') : 'N/A'}
+          </Text>
+        </StatBox>
+        <StatBox loading={loading} styles={styles}>
+          <Text style={styles.statLabel}>{`XP Level ${level}`}</Text>
+          <ProgressBar value={xpProgress} max={100} color={theme.accent} />
+          <Text style={styles.statSub}>{stats.xp} XP</Text>
+        </StatBox>
 
         {/* Social Stats */}
         <Text style={styles.sectionTitle}>💬 Social Stats</Text>
-        <View style={styles.statBox}>
-          {loading ? (
-            <StatSkeleton />
-          ) : (
-            <>
-              <Text style={styles.statLabel}>Matches</Text>
-              <Text style={styles.statValue}>{stats.matches}</Text>
-            </>
-          )}
-        </View>
-        <View style={styles.statBox}>
-          {loading ? (
-            <StatSkeleton />
-          ) : (
-            <>
-              <Text style={styles.statLabel}>Swipes</Text>
-              <Text style={styles.statValue}>{stats.swipes}</Text>
-            </>
-          )}
-        </View>
-        <View style={styles.statBox}>
-          {loading ? (
-            <StatSkeleton />
-          ) : (
-            <>
-              <Text style={styles.statLabel}>Messages Sent</Text>
-              <Text style={styles.statValue}>{stats.messagesSent}</Text>
-            </>
-          )}
-        </View>
+        <StatBox loading={loading} styles={styles}>
+          <Text style={styles.statLabel}>Matches</Text>
+          <Text style={styles.statValue}>{stats.matches}</Text>
+        </StatBox>
+        <StatBox loading={loading} styles={styles}>
+          <Text style={styles.statLabel}>Swipes</Text>
+          <Text style={styles.statValue}>{stats.swipes}</Text>
+        </StatBox>
+        <StatBox loading={loading} styles={styles}>
+          <Text style={styles.statLabel}>Messages Sent</Text>
+          <Text style={styles.statValue}>{stats.messagesSent}</Text>
+        </StatBox>
 
         {/* Bonus + Upgrade */}
         <Text style={styles.sectionTitle}>🔥 Activity</Text>
-        <View style={styles.statBox}>
-          {loading ? (
-            <StatSkeleton />
-          ) : (
-            <>
-              <Text style={styles.statLabel}>Daily Streak</Text>
-              <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
-              <Text style={styles.statSub}>{stats.streak} days</Text>
-            </>
-          )}
-        </View>
-        <View style={styles.statBox}>
-          {loading ? (
-            <StatSkeleton />
-          ) : (
-            <>
-              <Text style={styles.statLabel}>Badge</Text>
-              <Text style={styles.statValue}>{stats.badge}</Text>
-            </>
-          )}
-        </View>
+        <StatBox loading={loading} styles={styles}>
+          <Text style={styles.statLabel}>Daily Streak</Text>
+          <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
+          <Text style={styles.statSub}>{stats.streak} days</Text>
+        </StatBox>
+        <StatBox loading={loading} styles={styles}>
+          <Text style={styles.statLabel}>Badge</Text>
+          <Text style={styles.statValue}>{stats.badge}</Text>
+        </StatBox>
 
         {!isPremium && (
           <GradientButton

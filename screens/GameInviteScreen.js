@@ -4,15 +4,11 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  Image,
   TextInput,
   Dimensions,
-  Animated,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import Loader from '../components/Loader';
 import SafeKeyboardView from '../components/SafeKeyboardView';
-import Card from '../components/Card';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import Header from '../components/Header';
@@ -27,7 +23,7 @@ import { useChats } from '../contexts/ChatContext';
 import { useUser } from '../contexts/UserContext';
 import Toast from 'react-native-toast-message';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
-import useCardPressAnimation from '../hooks/useCardPressAnimation';
+import InviteUserCard from '../components/InviteUserCard';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH / 2 - 24;
@@ -118,63 +114,16 @@ const GameInviteScreen = ({ route, navigation }) => {
     const isInvited = invited[item.id];
     const isLoading = loadingId === item.id;
 
-    const {
-      scale,
-      handlePressIn,
-      handlePressOut,
-      playSuccess,
-    } = useCardPressAnimation();
-
     return (
-      <Card
-        style={{
-          backgroundColor: theme.card,
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: darkMode ? '#333' : '#eee',
-          padding: 12,
-          margin: 8,
-          width: CARD_WIDTH
-        }}
-      >
-        <View style={{ alignItems: 'center' }}>
-          <Image
-            source={item.photo}
-            style={{
-              width: 50,
-              height: 50,
-              borderRadius: 25,
-              marginBottom: 8
-            }}
-          />
-          <Text style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>
-            {item.displayName}
-          </Text>
-          <Text style={{ fontSize: 12, color: item.online ? '#2ecc71' : '#999', marginBottom: 6 }}>
-            {item.online ? 'Online' : 'Offline'}
-          </Text>
-
-          {isInvited && isLoading ? (
-            <View style={{ alignItems: 'center', marginTop: 8 }}>
-              <Loader size="small" />
-              <Text style={{ color: theme.textSecondary, fontSize: 12, marginTop: 4 }}>
-                Waiting for {item.displayName}...
-              </Text>
-            </View>
-          ) : (
-            <Animated.View style={{ transform: [{ scale }] }}>
-              <GradientButton
-                text="Invite"
-                onPress={() => handleInvite(item, playSuccess)}
-                onPressIn={handlePressIn}
-                onPressOut={handlePressOut}
-                width={120}
-                style={{ marginTop: 6 }}
-              />
-            </Animated.View>
-          )}
-        </View>
-      </Card>
+      <InviteUserCard
+        item={item}
+        onInvite={handleInvite}
+        isInvited={isInvited}
+        isLoading={isLoading}
+        theme={theme}
+        darkMode={darkMode}
+        width={CARD_WIDTH}
+      />
     );
   };
 
