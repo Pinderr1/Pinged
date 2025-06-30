@@ -14,7 +14,6 @@ import {
   Easing,
   RefreshControl
 } from 'react-native';
-import Loader from '../components/Loader';
 import GradientButton from '../components/GradientButton';
 import Card from '../components/Card';
 import { eventImageSource } from '../utils/avatar';
@@ -38,7 +37,8 @@ const FILTERS = ['All', 'Tonight', 'Flirty', 'Tournaments'];
 
 const CommunityScreen = () => {
   const { darkMode, theme } = useTheme();
-  const local = getStyles(theme);
+  const skeletonColor = darkMode ? '#555' : '#ddd';
+  const local = getStyles(theme, skeletonColor);
   const navigation = useNavigation();
   const { user } = useUser();
   const [events, setEvents] = useState([]);
@@ -159,14 +159,38 @@ const CommunityScreen = () => {
     );
   };
 
-  if (loadingEvents && loadingPosts) {
-    return (
-      <View style={{ flex: 1, backgroundColor: darkMode ? '#333' : '#fce4ec', justifyContent: 'center', alignItems: 'center' }}>
-        <Header />
-        <Loader />
-      </View>
-    );
-  }
+  const renderEventSkeleton = (idx) => (
+    <Card
+      key={`event-skel-${idx}`}
+      style={[
+        local.card,
+        {
+          backgroundColor: darkMode ? '#444' : '#fff',
+          marginRight: idx % 2 === 0 ? 8 : 0,
+          marginLeft: idx % 2 !== 0 ? 8 : 0,
+        },
+      ]}
+    >
+      <View style={[local.image, { backgroundColor: skeletonColor }]} />
+      <View style={[local.skelLine, { width: '60%', marginBottom: 6 }]} />
+      <View style={[local.skelLine, { width: '40%', marginBottom: 6 }]} />
+      <View style={[local.skelLine, { width: '80%', marginBottom: 8 }]} />
+      <View style={local.skelButton} />
+    </Card>
+  );
+
+  const renderPostSkeleton = (idx) => (
+    <Card
+      key={`post-skel-${idx}`}
+      style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}
+    >
+      <View style={[local.skelLine, { width: '50%', marginBottom: 6 }]} />
+      <View style={[local.skelLine, { width: '30%', marginBottom: 6 }]} />
+      <View style={[local.skelLine, { width: '80%', marginBottom: 6 }]} />
+      <View style={[local.skelLine, { width: '70%' }]} />
+    </Card>
+  );
+
 
   return (
     <View style={{ flex: 1, backgroundColor: darkMode ? '#333' : '#fce4ec' }}>
@@ -205,8 +229,8 @@ const CommunityScreen = () => {
 
         {/* Event grid */}
         {loadingEvents ? (
-          <View style={{ marginTop: 40, alignItems: 'center' }}>
-            <Loader />
+          <View style={local.grid}>
+            {[...Array(4)].map((_, idx) => renderEventSkeleton(idx))}
           </View>
         ) : filteredEvents.length === 0 ? (
           <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
@@ -244,9 +268,7 @@ const CommunityScreen = () => {
 
         {/* Posts */}
         {loadingPosts ? (
-          <View style={{ marginTop: 40, alignItems: 'center' }}>
-            <Loader />
-          </View>
+          [...Array(3)].map((_, idx) => renderPostSkeleton(idx))
         ) : posts.length === 0 ? (
           <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
             No posts yet.
@@ -384,7 +406,7 @@ const CommunityScreen = () => {
   );
 };
 
-const getStyles = (theme) =>
+const getStyles = (theme, skeletonColor) =>
   StyleSheet.create({
   header: {
     fontSize: FONT_SIZES.XL,
@@ -498,6 +520,16 @@ const getStyles = (theme) =>
   postDesc: {
     fontSize: FONT_SIZES.SM - 1,
     color: '#666'
+  },
+  skelLine: {
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: skeletonColor,
+  },
+  skelButton: {
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: skeletonColor,
   },
   filterBtn: {
     marginRight: 10,
