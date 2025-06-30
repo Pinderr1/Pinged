@@ -38,10 +38,13 @@
     "react-native-toast-message": "^2.3.0",
     "expo-notifications": "~0.31.3",
     "expo-device": "~7.1.4",
-    "expo-haptics": "~13.2.1"
+    "expo-haptics": "~14.1.4",
+    "expo-updates": "~0.28.15"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "typescript": "~5.8.3",
+    "@types/react": "~19.0.10"
   },
   "private": true
 }

@@ -492,7 +492,7 @@ const handleSwipe = async (direction) => {
         )}
 
         <View style={styles.buttonRow}>
-          [
+          {[
             {
               icon: "close",
               color: "#f87171",
@@ -511,6 +511,11 @@ const handleSwipe = async (direction) => {
               longAction: handleSuperLike,
             },
           ].map((btn, i) => (
+            <Animated.View
+              key={btn.icon}
+              style={{ transform: [{ scale: scaleRefs[i] }] }}
+            >
+              <TouchableOpacity
                 onPressIn={() =>
                   Animated.spring(scaleRefs[i], {
                     toValue: 0.9,
