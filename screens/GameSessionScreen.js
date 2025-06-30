@@ -34,6 +34,7 @@ import useBotGame from "../hooks/useBotGame";
 import { getBotMove } from "../ai/botMoves";
 import SafeKeyboardView from "../components/SafeKeyboardView";
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import PropTypes from 'prop-types';
 const GameSessionScreen = ({ route, navigation, sessionType }) => {
   const type = sessionType || route.params?.sessionType || (route.params?.botId ? "bot" : "live");
   return type === "bot" ? (
@@ -636,5 +637,22 @@ const getStyles = (theme) =>
     fontWeight: 'bold',
   },
 });
+
+GameSessionScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      sessionType: PropTypes.string,
+      botId: PropTypes.string,
+      game: PropTypes.string,
+      opponent: PropTypes.object,
+      status: PropTypes.string,
+      inviteId: PropTypes.string,
+    }),
+  }).isRequired,
+  sessionType: PropTypes.string,
+};
 
 export default GameSessionScreen;

@@ -13,6 +13,7 @@ import { snapshotExists } from '../../utils/firestore';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { useNavigation } from '@react-navigation/native';
 import { useDev } from '../../contexts/DevContext';
+import PropTypes from 'prop-types';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -92,3 +93,4 @@ export default function LoginScreen() {
       </GradientBackground>
     );
   }
+LoginScreen.propTypes = {};

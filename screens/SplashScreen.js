@@ -5,6 +5,7 @@ import LottieView from 'lottie-react-native';
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import styles from '../styles';
+import PropTypes from 'prop-types';
 
 const splashDuration = 2000;
 
@@ -47,3 +48,7 @@ export default function SplashScreen({ onFinish }) {
     </GradientBackground>
   );
 }
+
+SplashScreen.propTypes = {
+  onFinish: PropTypes.func.isRequired,
+};

@@ -18,6 +18,7 @@ import { useGameLimit } from '../contexts/GameLimitContext';
 import { useChats } from '../contexts/ChatContext';
 import { allGames } from '../data/games';
 import { games as gameRegistry } from '../games';
+import PropTypes from 'prop-types';
 import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
 import Card from '../components/Card';
@@ -248,6 +249,12 @@ const HomeScreen = ({ navigation }) => {
       </SafeAreaView>
     </GradientBackground>
   );
+};
+
+HomeScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
 };
 
 const getStyles = (theme) =>

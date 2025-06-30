@@ -8,6 +8,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import { auth } from '../firebase';
+import PropTypes from 'prop-types';
 
 const SettingsScreen = ({ navigation }) => {
   const { darkMode, toggleTheme, theme } = useTheme();
@@ -68,6 +69,12 @@ const SettingsScreen = ({ navigation }) => {
       <GradientButton text="Log Out" onPress={handleLogout} />
     </GradientBackground>
   );
+};
+
+SettingsScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
 };
 
 export default SettingsScreen;

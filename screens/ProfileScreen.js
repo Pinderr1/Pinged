@@ -14,6 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { uploadAvatarAsync } from '../utils/upload';
 import { avatarSource } from '../utils/avatar';
 import { sanitizeText } from '../utils/sanitize';
+import PropTypes from 'prop-types';
 
 const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
@@ -159,6 +160,17 @@ const ProfileScreen = ({ navigation, route }) => {
       </SafeKeyboardView>
     </GradientBackground>
   );
+};
+
+ProfileScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      editMode: PropTypes.bool,
+    }),
+  }),
 };
 
 export default ProfileScreen;

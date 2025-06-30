@@ -29,6 +29,7 @@ import LottieView from 'lottie-react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import PropTypes from 'prop-types';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -628,5 +629,7 @@ const getStyles = (theme) =>
     marginTop: 20,
   },
 });
+
+SwipeScreen.propTypes = {};
 
 export default SwipeScreen;

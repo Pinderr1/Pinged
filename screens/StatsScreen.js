@@ -10,6 +10,7 @@ import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';
 import { avatarSource } from '../utils/avatar';
 import ProgressBar from '../components/ProgressBar';
+import PropTypes from 'prop-types';
 
 const StatsScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -239,5 +240,11 @@ const getStyles = (theme) => StyleSheet.create({
   }
 
 });
+
+StatsScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default StatsScreen;

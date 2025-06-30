@@ -18,6 +18,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
+import PropTypes from 'prop-types';
 import styles from '../styles';
 import { useChats } from '../contexts/ChatContext';
 import { useUser } from '../contexts/UserContext';
@@ -208,6 +209,23 @@ const GameInviteScreen = ({ route, navigation }) => {
       </SafeKeyboardView>
     </GradientBackground>
   );
+};
+
+GameInviteScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      game: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.shape({
+          id: PropTypes.string,
+          title: PropTypes.string,
+        }),
+      ]),
+    }),
+  }),
 };
 
 export default GameInviteScreen;

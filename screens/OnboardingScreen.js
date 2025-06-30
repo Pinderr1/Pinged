@@ -13,6 +13,7 @@ import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import { db, auth, firebase } from '../firebase';
 import { uploadAvatarAsync } from '../utils/upload';
+import PropTypes from 'prop-types';
 import { sanitizeText } from '../utils/sanitize';
 import { snapshotExists } from '../utils/firestore';
 import { useUser } from '../contexts/UserContext';
@@ -582,3 +583,5 @@ const getStyles = (theme) => {
     gradientEnd: theme.gradientEnd,
   });
 };
+
+OnboardingScreen.propTypes = {};

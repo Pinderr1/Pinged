@@ -12,6 +12,7 @@ import {
 import GradientBackground from '../components/GradientBackground';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import PropTypes from 'prop-types';
 import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import styles from '../styles';
@@ -801,3 +802,16 @@ export default function ChatScreen({ route }) {
 
   return <PrivateChat user={match} />;
 }
+
+ChatScreen.propTypes = {
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      user: PropTypes.shape({
+        id: PropTypes.string,
+        name: PropTypes.string,
+        image: PropTypes.any,
+      }),
+      event: PropTypes.object,
+    }),
+  }).isRequired,
+};
