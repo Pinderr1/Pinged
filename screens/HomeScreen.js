@@ -6,12 +6,12 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   Modal,
   Image,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
+import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
@@ -26,12 +26,14 @@ import Card from '../components/Card';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { eventImageSource } from '../utils/avatar';
 
-const games = allGames.map((g) => {
+// Map app game IDs to boardgame registry keys for AI play
+const aiGameMap = allGames.reduce((acc, g) => {
   const key = Object.keys(gameRegistry).find(
     (k) => gameRegistry[k].meta.title === g.title
   );
-  return { id: g.id, key };
-});
+  if (key) acc[g.id] = key;
+  return acc;
+}, {});
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -90,13 +92,12 @@ const HomeScreen = ({ navigation }) => {
     if (playTarget === 'ai') {
       const bot = getRandomBot();
       const aiKeyMap = { rockPaperScissors: 'rps' };
-      const aiGames = games
-        .filter((g) => g.key && gameRegistry[g.key])
-        .reduce((m, g) => ({ ...m, [g.id]: aiKeyMap[g.key] || g.key }), {});
-      const gameKey = aiGames[game.id];
+      const key = aiGameMap[game.id];
+      if (!key) console.warn('No AI mapping for game id', game.id);
+      const gameKey = key ? aiKeyMap[key] || key : 'ticTacToe';
       navigation.navigate('GameWithBot', {
         botId: bot.id,
-        game: gameKey || 'ticTacToe',
+        game: gameKey,
       });
     } else {
       navigation.navigate('GameInvite', { game: { id: game.id, title: game.title } });
@@ -124,9 +125,9 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <GradientBackground style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <ScreenContainer>
         <Header showLogoOnly />
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView contentContainerStyle={[local.container, { paddingBottom: 100 }]}>
           <Text style={[local.welcome, { color: theme.text }]}>
             {`Welcome${user?.displayName ? `, ${user.displayName}` : ''}!`}
           </Text>
@@ -316,7 +317,7 @@ const HomeScreen = ({ navigation }) => {
             </View>
           </View>
         </Modal>
-      </SafeAreaView>
+      </ScreenContainer>
     </GradientBackground>
   );
 };
@@ -329,32 +330,37 @@ HomeScreen.propTypes = {
 
 const getStyles = (theme) =>
   StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
   welcome: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginHorizontal: 16,
+    alignSelf: 'center',
     marginTop: 20,
     marginBottom: 8,
   },
   bonus: {
     fontSize: 14,
     color: '#2ecc71',
-    marginHorizontal: 16,
     marginBottom: 8,
+    alignSelf: 'center',
   },
   section: {
     fontSize: 16,
     fontWeight: '700',
-    marginHorizontal: 16,
+    alignSelf: 'center',
     marginBottom: 8,
     color: theme.accent,
   },
   progressCard: {
-    marginHorizontal: 16,
     marginBottom: 16,
+    alignSelf: 'stretch',
   },
   group: {
     marginBottom: 24,
+    alignItems: 'center',
   },
   levelText: {
     fontSize: 16,
@@ -440,7 +446,7 @@ const getStyles = (theme) =>
     flexDirection: 'row',
     borderRadius: 12,
     padding: 12,
-    marginHorizontal: 16,
+    alignSelf: 'stretch',
     marginBottom: 12,
     alignItems: 'center',
   },
@@ -464,7 +470,7 @@ const getStyles = (theme) =>
   postCardPreview: {
     borderRadius: 12,
     padding: 12,
-    marginHorizontal: 16,
+    alignSelf: 'stretch',
     marginBottom: 12,
   },
   postTitle: {

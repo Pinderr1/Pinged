@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-  SafeAreaView,
   RefreshControl,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
@@ -17,6 +16,7 @@ import PropTypes from 'prop-types';
 import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
+import ScreenContainer from '../components/ScreenContainer';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
 import firebase from '../firebase';
@@ -348,6 +348,52 @@ function PrivateChat({ user }) {
     );
   };
 
+  const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
+  const gameSection = SelectedGameClient ? (
+    <View
+      style={{
+        padding: 10,
+        borderTopWidth: 1,
+        borderColor: darkMode ? '#444' : '#ccc',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      {devMode && (
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          <TouchableOpacity
+            onPress={() => setDevPlayer('0')}
+            style={{
+              backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 8,
+              marginRight: 8,
+            }}
+          >
+            <Text style={{ color: '#fff' }}>Player 1</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setDevPlayer('1')}
+            style={{
+              backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ color: '#fff' }}>Player 2</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      <SelectedGameClient
+        matchID={user.id}
+        playerID={devMode ? devPlayer : '0'}
+        onGameEnd={handleGameEnd}
+      />
+    </View>
+  ) : null;
+
   const chatSection = (
     <View style={{ flex: 4, padding: 10 }}>
       <FlatList
@@ -361,6 +407,7 @@ function PrivateChat({ user }) {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
+        ListFooterComponent={gameSection}
         ListEmptyComponent={
           !loading && (
             <View style={{ alignItems: 'center', marginTop: 20 }}>
@@ -470,48 +517,6 @@ function PrivateChat({ user }) {
     </View>
   );
 
-  const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
-  const gameSection = SelectedGameClient ? (
-    <View
-      style={{
-        flex: 0.6,
-        padding: 10,
-        borderTopWidth: 1,
-        borderColor: darkMode ? '#444' : '#ccc',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      {devMode && (
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <TouchableOpacity
-            onPress={() => setDevPlayer('0')}
-            style={{
-              backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 8,
-              marginRight: 8,
-            }}
-          >
-            <Text style={{ color: '#fff' }}>Player 1</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setDevPlayer('1')}
-            style={{
-              backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 8,
-            }}
-          >
-            <Text style={{ color: '#fff' }}>Player 2</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      <SelectedGameClient matchID={user.id} playerID={devMode ? devPlayer : '0'} onGameEnd={handleGameEnd} />
-    </View>
-  ) : null;
 
   return (
     <GradientBackground style={{ flex: 1 }}>
@@ -534,9 +539,9 @@ function PrivateChat({ user }) {
           </View>
         </View>
       </Modal>
-      <SafeAreaView style={{ flex: 1 }}>
+      <ScreenContainer>
         <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
-          <View style={{ flex: 1 }}>
+          <View style={privateStyles.container}>
             {showPlaceholders ? (
               <PlaceholderBubbles />
             ) : loading ? (
@@ -546,16 +551,20 @@ function PrivateChat({ user }) {
             ) : (
               chatSection
             )}
-            {gameSection}
           </View>
         </SafeKeyboardView>
-      </SafeAreaView>
+      </ScreenContainer>
     </GradientBackground>
   );
 }
 
 const getPrivateStyles = (theme) =>
   StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
   messageBubble: {
     padding: 10,
     borderRadius: 10,
@@ -859,7 +868,7 @@ function GroupChat({ event }) {
   return (
     <GradientBackground style={{ flex: 1 }}>
       <Header />
-      <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
+      <SafeKeyboardView style={[groupStyles.container, { paddingTop: HEADER_SPACING }]}>
         {loading ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Loader />
@@ -911,6 +920,11 @@ function GroupChat({ event }) {
 
 const getGroupStyles = (theme) =>
   StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
   eventTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
