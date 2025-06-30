@@ -43,6 +43,8 @@ const questions = [
   { key: 'favoriteGames', label: 'Select your favorite games' },
 ];
 
+const requiredFields = ['avatar', 'displayName', 'age'];
+
 export default function OnboardingScreen() {
   const navigation = useNavigation();
   const { darkMode, theme } = useTheme();
@@ -171,11 +173,9 @@ export default function OnboardingScreen() {
 
   const validateField = () => {
     const value = answers[currentField];
+    if (!requiredFields.includes(currentField)) return true;
     if (currentField === 'age') return /^\d+$/.test(value) && parseInt(value, 10) >= 18;
     if (currentField === 'avatar') return !!value;
-    if (currentField === 'location') return value && value.length > 3;
-    if (currentField === 'favoriteGames') return Array.isArray(value) && value.length > 0;
-    if (currentField === 'genderInfo') return answers.gender && answers.genderPref;
     return value && value.toString().trim().length > 0;
   };
 
@@ -197,6 +197,47 @@ export default function OnboardingScreen() {
     };
     checkExisting();
   }, [hasOnboarded]);
+  const handleSkip = async () => {
+    if (!auth.currentUser) {
+      Toast.show({ type: 'error', text1: 'No user signed in' });
+      return;
+    }
+    await saveProfile();
+  };
+
+  const saveProfile = async () => {
+    try {
+      let photoURL = answers.avatar;
+      if (photoURL && !photoURL.startsWith('http')) {
+        photoURL = await uploadAvatarAsync(photoURL, auth.currentUser.uid);
+      }
+
+      const user = auth.currentUser;
+      const profile = {
+        uid: user.uid,
+        email: user.email,
+        displayName: sanitizeText(
+          (answers.displayName || user.displayName || '').trim()
+        ),
+        photoURL,
+        age: parseInt(answers.age, 10) || null,
+        gender: sanitizeText(answers.gender),
+        genderPref: sanitizeText(answers.genderPref),
+        location: sanitizeText(answers.location),
+        favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
+        bio: sanitizeText(answers.bio.trim()),
+        onboardingComplete: true,
+        createdAt: serverTimestamp(),
+      };
+      await db.collection('users').doc(user.uid).set(profile, { merge: true });
+      updateUser(profile);
+      markOnboarded();
+      Toast.show({ type: 'success', text1: 'Profile saved!' });
+    } catch (e) {
+      console.error('Save error:', e);
+      Toast.show({ type: 'error', text1: 'Failed to save profile' });
+    }
+  };
   const handleNext = async () => {
     if (!auth.currentUser) {
       Toast.show({ type: 'error', text1: 'No user signed in' });
@@ -223,40 +264,7 @@ export default function OnboardingScreen() {
       }
       animateStepChange(step + 1);
     } else {
-      try {
-        let photoURL = answers.avatar;
-        if (answers.avatar && !answers.avatar.startsWith('http')) {
-          photoURL = await uploadAvatarAsync(
-            answers.avatar,
-            auth.currentUser.uid
-          );
-        }
-
-        const user = auth.currentUser;
-        const profile = {
-          uid: user.uid,
-          email: user.email,
-          displayName: sanitizeText(
-            (answers.displayName || user.displayName || '').trim()
-          ),
-          photoURL,
-          age: parseInt(answers.age, 10) || null,
-          gender: sanitizeText(answers.gender),
-        genderPref: sanitizeText(answers.genderPref),
-        location: sanitizeText(answers.location),
-        favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
-        bio: sanitizeText(answers.bio.trim()),
-          onboardingComplete: true,
-          createdAt: serverTimestamp(),
-        };
-        await db.collection('users').doc(user.uid).set(profile);
-        updateUser(profile);
-        markOnboarded();
-        Toast.show({ type: 'success', text1: 'Profile saved!' });
-      } catch (e) {
-        console.error('Save error:', e);
-        Toast.show({ type: 'error', text1: 'Failed to save profile' });
-      }
+      await saveProfile();
     }
   };
 
@@ -512,6 +520,11 @@ export default function OnboardingScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+        {step >= requiredFields.length - 1 && (
+          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+            <Text style={styles.skipButtonText}>Complete Profile Later</Text>
+          </TouchableOpacity>
+        )}
       </SafeKeyboardView>
     </GradientBackground>
   );
@@ -627,6 +640,15 @@ const getStyles = (theme) => {
     nextButtonText: {
       color: '#fff',
       fontSize: FONT_SIZES.MD,
+    },
+    skipButton: {
+      marginTop: 20,
+      alignSelf: 'center',
+    },
+    skipButtonText: {
+      color: accent,
+      fontSize: FONT_SIZES.MD,
+      textDecorationLine: 'underline',
     },
     gradientStart: theme.gradientStart,
     gradientEnd: theme.gradientEnd,
