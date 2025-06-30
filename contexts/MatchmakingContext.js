@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from 'react';
-import { db, firebase } from '../firebase';
+import { db } from '../firebase';
+import { serverTimestamp, arrayUnion } from 'firebase/firestore';
 import { useUser } from './UserContext';
 import { useListeners } from './ListenerContext';
 import { snapshotExists } from '../utils/firestore';
@@ -22,7 +23,7 @@ export const MatchmakingProvider = ({ children }) => {
       from: user.uid,
       to,
       status: 'pending',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt: serverTimestamp(),
     });
     return ref.id;
   };
@@ -54,7 +55,7 @@ export const MatchmakingProvider = ({ children }) => {
       fromName: user.displayName || 'User',
       status: 'pending',
       acceptedBy: [user.uid],
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt: serverTimestamp(),
     };
     const ref = await db.collection('gameInvites').add(payload);
     const inviteData = { ...payload, inviteId: ref.id };
@@ -84,7 +85,7 @@ export const MatchmakingProvider = ({ children }) => {
     const data = snap.data();
     if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
     await ref.update({
-      acceptedBy: firebase.firestore.FieldValue.arrayUnion(user.uid),
+      acceptedBy: arrayUnion(user.uid),
     });
 
     if (data.acceptedBy?.length + 1 >= 2 && !data.acceptedBy?.includes(user.uid)) {

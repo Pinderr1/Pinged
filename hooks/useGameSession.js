@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { db, firebase } from '../firebase';
+import { db } from '../firebase';
+import { serverTimestamp } from 'firebase/firestore';
 import { games } from '../games';
 import { useUser } from '../contexts/UserContext';
 import { snapshotExists } from '../utils/firestore';
@@ -29,7 +30,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
           players: [user.uid, opponentId],
           state: Game.setup(),
           currentPlayer: '0',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdAt: serverTimestamp(),
         });
       }
     });
@@ -72,7 +73,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
         state: G,
         currentPlayer: nextPlayer,
         gameover: gameover || null,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
   }, [session, Game, sessionId, user?.uid]);
 

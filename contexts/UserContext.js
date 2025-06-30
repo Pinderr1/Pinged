@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { View } from 'react-native';
 import Loader from '../components/Loader';
-import { auth, db, firebase } from '../firebase';
+import { auth, db } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { serverTimestamp } from 'firebase/firestore';
 import { useDev } from './DevContext';
 import { useOnboarding } from './OnboardingContext';
 import { snapshotExists } from '../utils/firestore';
@@ -26,7 +28,7 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     let unsubProfile;
-    const unsubAuth = auth.onAuthStateChanged((fbUser) => {
+    const unsubAuth = onAuthStateChanged(auth, (fbUser) => {
       if (unsubProfile) {
         unsubProfile();
         unsubProfile = null;
@@ -104,7 +106,7 @@ export const UserProvider = ({ children }) => {
         .update({
           xp: newXP,
           streak: newStreak,
-          lastPlayedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          lastPlayedAt: serverTimestamp(),
         });
     } catch (e) {
       console.warn('Failed to update XP', e);

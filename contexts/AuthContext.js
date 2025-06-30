@@ -3,7 +3,16 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { auth, db, firebase } from '../firebase';
+import { auth, db } from '../firebase';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithCredential,
+  signOut,
+  GoogleAuthProvider,
+} from 'firebase/auth';
+import { serverTimestamp } from 'firebase/firestore';
 import { snapshotExists } from '../utils/firestore';
 import { isAllowedDomain } from '../utils/email';
 
@@ -32,7 +41,7 @@ export const AuthProvider = ({ children }) => {
           displayName: fbUser.displayName || '',
           photoURL: fbUser.photoURL || '',
           onboardingComplete: false,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdAt: serverTimestamp(),
         });
       }
     } catch (e) {
@@ -41,7 +50,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithEmail = async (email, password) => {
-    const userCred = await auth.signInWithEmailAndPassword(
+    const userCred = await signInWithEmailAndPassword(
+      auth,
       email.trim(),
       password,
     );
@@ -52,7 +62,8 @@ export const AuthProvider = ({ children }) => {
     if (!isAllowedDomain(email)) {
       throw new Error('Email domain not supported');
     }
-    const userCred = await auth.createUserWithEmailAndPassword(
+    const userCred = await createUserWithEmailAndPassword(
+      auth,
       email.trim(),
       password,
     );
@@ -69,17 +80,17 @@ export const AuthProvider = ({ children }) => {
       displayName: userCred.user.displayName || '',
       photoURL: userCred.user.photoURL || '',
       onboardingComplete: false,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt: serverTimestamp(),
     });
   };
 
   const loginWithGoogle = () =>
     promptAsync({ useProxy: false, prompt: 'select_account' });
 
-  const logout = () => auth.signOut();
+  const logout = () => signOut(auth);
 
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged(async (fbUser) => {
+    const unsub = onAuthStateChanged(auth, async (fbUser) => {
       setUser(fbUser);
       if (fbUser) await ensureUserDoc(fbUser);
       setLoading(false);
@@ -90,9 +101,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (response?.type === 'success') {
       const { id_token } = response.params;
-      const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
-      auth
-        .signInWithCredential(credential)
+      const credential = GoogleAuthProvider.credential(id_token);
+      signInWithCredential(auth, credential)
         .then((res) => ensureUserDoc(res.user))
         .catch((err) => console.warn('Google login failed', err));
     }
