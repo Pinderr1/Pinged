@@ -1,26 +1,26 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { View } from 'react-native';
-import Loader from '../components/Loader';
-import { auth, db } from '../firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { serverTimestamp } from 'firebase/firestore';
-import { useDev } from './DevContext';
-import { useOnboarding } from './OnboardingContext';
-import { snapshotExists } from '../utils/firestore';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { View } from "react-native";
+import Loader from "../components/Loader";
+import { auth, db } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { serverTimestamp } from "firebase/firestore";
+import { useDev } from "./DevContext";
+import { useOnboarding, clearStoredOnboarding } from "./OnboardingContext";
+import { snapshotExists } from "../utils/firestore";
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const { devMode } = useDev();
-  const { markOnboarded } = useOnboarding();
+  const { markOnboarded, clearOnboarding } = useOnboarding();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const devUser = {
-    displayName: 'Dev Tester',
+    displayName: "Dev Tester",
     age: 99,
-    gender: 'Other',
-    bio: 'Development user',
-    location: 'Localhost',
+    gender: "Other",
+    bio: "Development user",
+    location: "Localhost",
     photoURL: null,
     xp: 0,
     streak: 0,
@@ -28,7 +28,14 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     let unsubProfile;
+    let currentUid = null;
     const unsubAuth = onAuthStateChanged(auth, (fbUser) => {
+      if (fbUser?.uid !== currentUid) {
+        if (!fbUser && currentUid) clearStoredOnboarding(currentUid);
+        clearOnboarding();
+        currentUid = fbUser?.uid || null;
+      }
+
       if (unsubProfile) {
         unsubProfile();
         unsubProfile = null;
@@ -36,7 +43,7 @@ export const UserProvider = ({ children }) => {
 
       if (fbUser) {
         setLoading(true);
-        const ref = db.collection('users').doc(fbUser.uid);
+        const ref = db.collection("users").doc(fbUser.uid);
         unsubProfile = ref.onSnapshot(
           (snap) => {
             if (snapshotExists(snap)) {
@@ -51,15 +58,19 @@ export const UserProvider = ({ children }) => {
             } else if (devMode) {
               setUser({ uid: fbUser.uid, email: fbUser.email, ...devUser });
             } else {
-              setUser({ uid: fbUser.uid, email: fbUser.email, isPremium: false });
+              setUser({
+                uid: fbUser.uid,
+                email: fbUser.email,
+                isPremium: false,
+              });
             }
             setLoading(false);
           },
           (err) => {
-            console.warn('Failed to subscribe user doc', err);
+            console.warn("Failed to subscribe user doc", err);
             setUser({ uid: fbUser.uid, email: fbUser.email, isPremium: false });
             setLoading(false);
-          }
+          },
         );
       } else {
         setUser(null);
@@ -78,7 +89,9 @@ export const UserProvider = ({ children }) => {
 
   const addGameXP = async (amount = 10) => {
     if (!user?.uid) return;
-    const last = user.lastPlayedAt ? user.lastPlayedAt.toDate?.() || new Date(user.lastPlayedAt) : null;
+    const last = user.lastPlayedAt
+      ? user.lastPlayedAt.toDate?.() || new Date(user.lastPlayedAt)
+      : null;
     let newStreak = user.streak || 0;
     if (last) {
       const lastMid = new Date(last);
@@ -100,23 +113,22 @@ export const UserProvider = ({ children }) => {
     const newXP = (user.xp || 0) + amount;
     updateUser({ xp: newXP, streak: newStreak, lastPlayedAt: new Date() });
     try {
-      await db
-        .collection('users')
-        .doc(user.uid)
-        .update({
-          xp: newXP,
-          streak: newStreak,
-          lastPlayedAt: serverTimestamp(),
-        });
+      await db.collection("users").doc(user.uid).update({
+        xp: newXP,
+        streak: newStreak,
+        lastPlayedAt: serverTimestamp(),
+      });
     } catch (e) {
-      console.warn('Failed to update XP', e);
+      console.warn("Failed to update XP", e);
     }
   };
 
   return (
     <UserContext.Provider value={{ user, updateUser, addGameXP, loading }}>
       {loading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <Loader />
         </View>
       ) : (
