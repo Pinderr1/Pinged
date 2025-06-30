@@ -101,11 +101,18 @@ const SwipeScreen = () => {
 
   const pan = useRef(new Animated.ValueXY()).current;
   // 3 main buttons shown in the toolbar
-  const scaleRefs = useRef(Array(3).fill(null).map(() => new Animated.Value(1))).current;
+  const scaleRefs = useRef(
+    Array(3)
+      .fill(null)
+      .map(() => new Animated.Value(1))
+  ).current;
+
+  const likeOpacity = pan.x.interpolate({
     inputRange: [0, 150],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
+
   const nopeOpacity = pan.x.interpolate({
     inputRange: [-150, 0],
     outputRange: [1, 0],
