@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef } from 'react';
 import { Animated } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { NotificationContext } from '../contexts/NotificationContext';
 
 export default function useNotificationBanner() {
@@ -8,6 +9,8 @@ export default function useNotificationBanner() {
 
   useEffect(() => {
     if (visible) {
+      // Trigger a small vibration to draw attention to the banner
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 300,
