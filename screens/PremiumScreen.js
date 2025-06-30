@@ -16,6 +16,7 @@ import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { functions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
+import PropTypes from 'prop-types';
 
 const upgradeFeatures = [
   { icon: require('../assets/icons/unlimited.png'), text: 'Unlimited Game Invites' },
@@ -197,5 +198,16 @@ const getPaywallStyles = (theme) =>
     color: '#888',
   },
 });
+
+PremiumScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      context: PropTypes.string,
+    }),
+  }),
+};
 
 export default PremiumScreen;

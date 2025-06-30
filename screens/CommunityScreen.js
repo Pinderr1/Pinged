@@ -18,6 +18,7 @@ import Header from '../components/Header';
 import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
+import PropTypes from 'prop-types';
 import { useUser } from '../contexts/UserContext';
 import { db, firebase } from '../firebase';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
@@ -442,5 +443,7 @@ const getStyles = (theme) =>
     marginBottom: 10
   }
 });
+
+CommunityScreen.propTypes = {};
 
 export default CommunityScreen;

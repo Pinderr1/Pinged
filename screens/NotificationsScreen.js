@@ -17,6 +17,7 @@ import { useUser } from '../contexts/UserContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { db } from '../firebase';
 import { games } from '../games';
+import PropTypes from 'prop-types';
 
 const NotificationsScreen = ({ navigation }) => {
   const { incomingInvites, acceptGameInvite, cancelGameInvite } = useMatchmaking();
@@ -147,5 +148,11 @@ const local = StyleSheet.create({
     marginTop: 40
   }
 });
+
+NotificationsScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default NotificationsScreen;

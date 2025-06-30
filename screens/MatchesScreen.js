@@ -13,6 +13,7 @@ import Header from '../components/Header';
 import Card from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
+import PropTypes from 'prop-types';
 
 const MatchesScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
@@ -136,5 +137,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
+
+MatchesScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default MatchesScreen;

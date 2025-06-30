@@ -18,6 +18,7 @@ import GameCard from '../components/GameCard';
 import GamePreviewModal from '../components/GamePreviewModal';
 import GameFilters from '../components/GameFilters';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import PropTypes from 'prop-types';
 
 
 const getAllCategories = () => {
@@ -147,6 +148,12 @@ const PlayScreen = ({ navigation }) => {
       </SafeKeyboardView>
     </GradientBackground>
   );
+};
+
+PlayScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
 };
 
 export default PlayScreen;

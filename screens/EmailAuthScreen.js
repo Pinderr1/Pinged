@@ -7,6 +7,7 @@ import { useOnboarding } from '../contexts/OnboardingContext';
 import { snapshotExists } from '../utils/firestore';
 import { isAllowedDomain } from '../utils/email';
 import styles from '../styles';
+import PropTypes from 'prop-types';
 
 export default function EmailAuthScreen({ route, navigation }) {
   const mode = route.params?.mode || (route.name === 'Signup' ? 'signup' : 'login');
@@ -112,3 +113,15 @@ export default function EmailAuthScreen({ route, navigation }) {
     </GradientBackground>
   );
 }
+
+EmailAuthScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      mode: PropTypes.string,
+    }),
+    name: PropTypes.string,
+  }).isRequired,
+};
