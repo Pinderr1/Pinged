@@ -94,6 +94,7 @@ function PrivateChat({ user }) {
           timestamp: serverTimestamp(),
         });
       if (sender === 'user') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         Toast.show({ type: 'success', text1: 'Message sent' });
       }
     } catch (e) {
@@ -335,6 +336,7 @@ function PrivateChat({ user }) {
             if (!requireCredits()) {
               return;
             }
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
             setShowGameModal(true);
           }}
         >
