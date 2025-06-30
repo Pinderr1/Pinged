@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
 
 function initTiles(random) {
@@ -100,6 +101,7 @@ const DominoTile = ({ values, selected, onPress }) => (
 const DominoesBoard = ({ G, ctx, moves, onGameEnd }) => {
   const [selected, setSelected] = useState(null);
   useOnGameOver(ctx.gameover, onGameEnd);
+  const { theme } = useTheme();
 
   const myHand = G.hands[ctx.currentPlayer];
   const disabled = !!ctx.gameover;
@@ -146,7 +148,7 @@ const DominoesBoard = ({ G, ctx, moves, onGameEnd }) => {
             }
           }}
           disabled={selected === null || disabled}
-          style={{ marginHorizontal: 6, padding: 6, backgroundColor: '#d81b60', borderRadius: 4 }}
+          style={{ marginHorizontal: 6, padding: 6, backgroundColor: theme.accent, borderRadius: 4 }}
         >
           <Text style={{ color: '#fff' }}>Play Left</Text>
         </TouchableOpacity>
@@ -158,14 +160,14 @@ const DominoesBoard = ({ G, ctx, moves, onGameEnd }) => {
             }
           }}
           disabled={selected === null || disabled}
-          style={{ marginHorizontal: 6, padding: 6, backgroundColor: '#d81b60', borderRadius: 4 }}
+          style={{ marginHorizontal: 6, padding: 6, backgroundColor: theme.accent, borderRadius: 4 }}
         >
           <Text style={{ color: '#fff' }}>Play Right</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => moves.drawTile()}
           disabled={disabled || G.drawPile.length === 0}
-          style={{ marginHorizontal: 6, padding: 6, backgroundColor: '#d81b60', borderRadius: 4 }}
+          style={{ marginHorizontal: 6, padding: 6, backgroundColor: theme.accent, borderRadius: 4 }}
         >
           <Text style={{ color: '#fff' }}>Draw</Text>
         </TouchableOpacity>

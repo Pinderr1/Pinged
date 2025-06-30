@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, TextInput, TouchableOpacity, Text, Keyboard } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function GameFilters({ search, setSearch, filter, setFilter, category, setCategory, categories }) {
+  const { theme } = useTheme();
   return (
     <>
       <View
@@ -36,7 +38,7 @@ export default function GameFilters({ search, setSearch, filter, setFilter, cate
               paddingVertical: 4,
               paddingHorizontal: 10,
               borderRadius: 16,
-              backgroundColor: filter === label ? '#d81b60' : '#eee',
+              backgroundColor: filter === label ? theme.accent : '#eee',
               marginHorizontal: 3
             }}
           >
@@ -62,7 +64,7 @@ export default function GameFilters({ search, setSearch, filter, setFilter, cate
               paddingVertical: 3,
               paddingHorizontal: 8,
               borderRadius: 16,
-              backgroundColor: category === cat ? '#ff80ab' : '#eee',
+              backgroundColor: category === cat ? theme.gradientStart : '#eee',
               margin: 2
             }}
           >

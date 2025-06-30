@@ -71,6 +71,7 @@ const computeMatchPercent = (a, b) => {
 
 const SwipeScreen = () => {
   const { theme } = useTheme();
+  const styles = getStyles(theme);
   const navigation = useNavigation();
   const { showNotification } = useNotification();
   const { user: currentUser } = useUser();
@@ -488,7 +489,8 @@ const SwipeScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 80,
@@ -530,7 +532,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 4,
     fontWeight: 'bold',
-    color: '#d81b60',
+    color: theme.accent,
   },
   bio: {
     fontSize: 16,

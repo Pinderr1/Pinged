@@ -2,6 +2,7 @@ import React from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
 
 const lines = [
@@ -50,6 +51,8 @@ const TicTacToeGame = {
 
 const TicTacToeBoard = ({ G, ctx, moves, onGameEnd }) => {
   useOnGameOver(ctx.gameover, onGameEnd);
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
 
   const disabled = !!ctx.gameover;
 
@@ -102,13 +105,14 @@ const TicTacToeBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) =>
+  StyleSheet.create({
   boardContainer: {
     flexDirection: 'column',
     width: BOARD_SIZE,
     height: BOARD_SIZE,
     borderWidth: 2,
-    borderColor: '#d81b60',
+    borderColor: theme.accent,
     borderRadius: 16,
     backgroundColor: '#fff',
     overflow: 'hidden',

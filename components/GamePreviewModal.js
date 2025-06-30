@@ -1,7 +1,9 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function GamePreviewModal({ visible, game, onStart, onClose }) {
+  const { theme } = useTheme();
   return (
     <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
@@ -28,7 +30,7 @@ export default function GamePreviewModal({ visible, game, onStart, onClose }) {
             )}
           </View>
           <TouchableOpacity
-            style={{ backgroundColor: game?.route ? '#d81b60' : '#ccc', borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}
+            style={{ backgroundColor: game?.route ? theme.accent : '#ccc', borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}
             disabled={!game?.route}
             onPress={onStart}
           >
