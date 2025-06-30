@@ -259,6 +259,7 @@ exports.onMatchCreated = functions.firestore
   .onCreate(async (snap, context) => {
     const data = snap.data();
     if (!data || !Array.isArray(data.users)) return null;
+    await ensureMatchHistory(data.users);
     await Promise.all(
       data.users.map((uid) =>
         pushToUser(uid, 'New Match', 'You have a new match!', {
