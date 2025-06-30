@@ -168,6 +168,14 @@ const SwipeScreen = () => {
             images,
           };
         });
+
+        // Sort by compatibility score so higher matches appear first
+        formatted.sort(
+          (aUser, bUser) =>
+            computeMatchPercent(currentUser, bUser) -
+            computeMatchPercent(currentUser, aUser)
+        );
+
         setUsers(formatted);
       } catch (e) {
         console.warn('Failed to load users', e);
