@@ -57,6 +57,9 @@ const CommunityScreen = () => {
   const [postTitle, setPostTitle] = useState('');
   const [postDesc, setPostDesc] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [optionsEvent, setOptionsEvent] = useState(null);
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const [showFabMenu, setShowFabMenu] = useState(false);
 
   useEffect(() => {
     if (firstJoin) {
@@ -95,6 +98,7 @@ const CommunityScreen = () => {
   const filteredEvents = activeFilter === 'All'
     ? events
     : events.filter((e) => e.category === activeFilter);
+  const displayEvents = filteredEvents.slice(0, 4);
 
   const toggleJoin = (id) => {
     const isJoined = joinedEvents.includes(id);
@@ -138,23 +142,21 @@ const CommunityScreen = () => {
         ]}
       >
         <Image source={eventImageSource(event.image)} style={local.image} />
+        <TouchableOpacity
+          style={local.moreBtn}
+          onPress={() => {
+            setOptionsEvent({ event, isJoined });
+            setShowOptionsModal(true);
+          }}
+        >
+          <Text style={local.moreText}>⋯</Text>
+        </TouchableOpacity>
         <Text style={local.title}>{event.title}</Text>
         <Text style={local.time}>{event.time}</Text>
         <Text style={local.desc}>{event.description}</Text>
-        <TouchableOpacity
-          style={local.chatBtn}
-          onPress={() => navigation.navigate('EventChat', { event })}
-        >
-          <Text style={local.chatText}>💬 Chat</Text>
-        </TouchableOpacity>
         {isJoined && (
           <Text style={local.badge}>🎯 Joined • +10 XP</Text>
         )}
-        <GradientButton
-          text={isJoined ? 'Cancel RSVP' : 'Join Event'}
-          onPress={() => toggleJoin(event.id)}
-          marginVertical={8}
-        />
       </Card>
     );
   };
@@ -214,33 +216,9 @@ const CommunityScreen = () => {
           </Text>
         ) : (
           <View style={local.grid}>
-            {filteredEvents.map((event, idx) => renderEventCard(event, idx))}
+            {displayEvents.map((event, idx) => renderEventCard(event, idx))}
           </View>
         )}
-
-        {/* Host your own */}
-        <GradientButton
-          text="Host Your Own Event"
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-            setShowHostModal(true);
-          }}
-          marginVertical={20}
-          icon={<Text style={{ fontSize: 16 }}>🎤</Text>}
-          style={{ marginHorizontal: 16 }}
-        />
-
-        {/* Create Post */}
-        <GradientButton
-          text="New Post"
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-            setShowPostModal(true);
-          }}
-          marginVertical={20}
-          icon={<Text style={{ fontSize: 16 }}>✏️</Text>}
-          style={{ marginHorizontal: 16 }}
-        />
 
         {/* Posts */}
         {loadingPosts ? (
@@ -277,6 +255,36 @@ const CommunityScreen = () => {
           </Animated.View>
         )}
       </ScrollView>
+
+      {/* Floating actions */}
+      {showFabMenu && (
+        <View style={local.fabMenu}>
+          <TouchableOpacity
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              setShowHostModal(true);
+              setShowFabMenu(false);
+            }}
+          >
+            <Text style={local.fabItem}>🎤 Host Event</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              setShowPostModal(true);
+              setShowFabMenu(false);
+            }}
+          >
+            <Text style={local.fabItem}>✏️ New Post</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      <TouchableOpacity
+        style={local.fab}
+        onPress={() => setShowFabMenu((v) => !v)}
+      >
+        <Text style={local.fabIcon}>＋</Text>
+      </TouchableOpacity>
 
       {/* Host Modal */}
       <Modal visible={showHostModal} transparent animationType="fade">
@@ -376,6 +384,38 @@ const CommunityScreen = () => {
             />
             <TouchableOpacity onPress={() => setShowPostModal(false)} style={{ marginTop: 10 }}>
               <Text style={{ color: theme.accent }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Options Modal */}
+      <Modal visible={showOptionsModal} transparent animationType="fade">
+        <View style={local.modalBackdrop}>
+          <View style={local.modalCard}>
+            <TouchableOpacity
+              style={{ marginBottom: 10 }}
+              onPress={() => {
+                setShowOptionsModal(false);
+                if (optionsEvent) {
+                  navigation.navigate('EventChat', { event: optionsEvent.event });
+                }
+              }}
+            >
+              <Text style={local.modalTitle}>💬 Chat</Text>
+            </TouchableOpacity>
+            <GradientButton
+              text={optionsEvent?.isJoined ? 'Cancel RSVP' : 'Join Event'}
+              onPress={() => {
+                if (optionsEvent) {
+                  toggleJoin(optionsEvent.event.id);
+                }
+                setShowOptionsModal(false);
+              }}
+              marginVertical={10}
+            />
+            <TouchableOpacity onPress={() => setShowOptionsModal(false)}>
+              <Text style={{ color: theme.accent }}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -530,6 +570,45 @@ const getStyles = (theme) =>
     padding: 10,
     fontSize: 13,
     marginBottom: 10
+  },
+  moreBtn: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    padding: 4
+  },
+  moreText: {
+    fontSize: 18,
+    color: '#666'
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: theme.accent,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5
+  },
+  fabIcon: {
+    color: '#fff',
+    fontSize: 28,
+    lineHeight: 28
+  },
+  fabMenu: {
+    position: 'absolute',
+    bottom: 88,
+    right: 20,
+    backgroundColor: theme.accent,
+    borderRadius: 8,
+    padding: 8
+  },
+  fabItem: {
+    color: '#fff',
+    paddingVertical: 6
   }
 });
 
