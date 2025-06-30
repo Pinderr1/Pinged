@@ -16,6 +16,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useChats } from '../contexts/ChatContext';
+import SkeletonPlaceholder from '../components/SkeletonPlaceholder';
 import { allGames } from '../data/games';
 import { games as gameRegistry } from '../games';
 import PropTypes from 'prop-types';
@@ -35,7 +36,7 @@ const games = allGames.map((g) => {
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const { user, loginBonus } = useUser();
-  const { matches } = useChats();
+  const { matches, loading: matchesLoading } = useChats();
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
@@ -177,22 +178,42 @@ const HomeScreen = ({ navigation }) => {
 
           <View style={local.group}>
             <Text style={local.section}>Your Matches</Text>
-            <FlatList
-              data={matches}
-              keyExtractor={(item) => item.id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={local.carousel}
-              renderItem={({ item }) => (
-                <Card
-                  onPress={() => navigation.navigate('Chat', { user: item })}
-                  style={[local.matchTile, { backgroundColor: theme.card }]}
-                >
-                  <Image source={item.image} style={local.matchAvatar} />
-                  <Text style={[local.matchName, { color: theme.text }]}>{item.displayName}</Text>
-                </Card>
-              )}
-            />
+            {matchesLoading && matches.length === 0 ? (
+              <FlatList
+                data={[1, 2, 3, 4]}
+                keyExtractor={(item) => item.toString()}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={local.carousel}
+                renderItem={() => (
+                  <Card style={[local.matchTile, { backgroundColor: theme.card }]}>
+                    <SkeletonPlaceholder
+                      shapes={[
+                        { circle: true, size: 60, style: { alignSelf: 'center', marginBottom: 6 } },
+                        { width: 80, height: 16, borderRadius: 8, style: { alignSelf: 'center' } },
+                      ]}
+                    />
+                  </Card>
+                )}
+              />
+            ) : (
+              <FlatList
+                data={matches}
+                keyExtractor={(item) => item.id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={local.carousel}
+                renderItem={({ item }) => (
+                  <Card
+                    onPress={() => navigation.navigate('Chat', { user: item })}
+                    style={[local.matchTile, { backgroundColor: theme.card }]}
+                  >
+                    <Image source={item.image} style={local.matchAvatar} />
+                    <Text style={[local.matchName, { color: theme.text }]}>{item.displayName}</Text>
+                  </Card>
+                )}
+              />
+            )}
           </View>
 
           {!showMore && (
