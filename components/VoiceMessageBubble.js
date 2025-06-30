@@ -1,39 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Audio } from 'expo-av';
 import { useTheme } from '../contexts/ThemeContext';
+import useVoicePlayback from '../hooks/useVoicePlayback';
 
 export default function VoiceMessageBubble({ message, userName, otherUserId }) {
   const { theme, darkMode } = useTheme();
-  const [playing, setPlaying] = useState(false);
-  const soundRef = useRef(null);
-
-  const playPause = async () => {
-    if (playing) {
-      try {
-        await soundRef.current.stopAsync();
-        await soundRef.current.unloadAsync();
-      } catch (e) {
-        // ignore
-      }
-      setPlaying(false);
-      return;
-    }
-    try {
-      const { sound } = await Audio.Sound.createAsync({ uri: message.url });
-      soundRef.current = sound;
-      await sound.playAsync();
-      setPlaying(true);
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.didJustFinish) {
-          setPlaying(false);
-          sound.unloadAsync();
-        }
-      });
-    } catch (e) {
-      console.warn('Failed to play audio', e);
-    }
-  };
+  const { playing, playPause } = useVoicePlayback(message.url);
 
   const minutes = Math.floor((message.duration || 0) / 60000);
   const seconds = Math.floor(((message.duration || 0) % 60000) / 1000)
