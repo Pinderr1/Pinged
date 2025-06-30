@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
@@ -16,6 +16,9 @@ const SettingsScreen = ({ navigation }) => {
   const { user } = useUser();
   const isPremium = !!user?.isPremium;
   const { devMode, toggleDevMode } = useDev();
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const toggleAdvanced = () => setShowAdvanced((prev) => !prev);
 
   const handleEditProfile = () => navigation.navigate('Profile', { editMode: true });
   const handleLogout = async () => {
@@ -53,21 +56,30 @@ const SettingsScreen = ({ navigation }) => {
       <GradientButton text="Edit Profile" onPress={handleEditProfile} />
 
       <GradientButton
-        text={`Toggle ${darkMode ? 'Light' : 'Dark'} Mode`}
-        onPress={toggleTheme}
+        text={showAdvanced ? 'Hide Advanced Settings' : 'Show Advanced Settings'}
+        onPress={toggleAdvanced}
       />
 
-      <GradientButton
-        text="View My Stats"
-        onPress={() => navigation.navigate('Stats')}
-      />
+      {showAdvanced && (
+        <>
+          <GradientButton
+            text={`Toggle ${darkMode ? 'Light' : 'Dark'} Mode`}
+            onPress={toggleTheme}
+          />
 
-      <GradientButton
-        text={devMode ? 'Disable Dev Mode' : 'Enable Dev Mode'}
-        onPress={toggleDevMode}
-      />
+          <GradientButton
+            text="View My Stats"
+            onPress={() => navigation.navigate('Stats')}
+          />
 
-      <GradientButton text="Log Out" onPress={handleLogout} />
+          <GradientButton
+            text={devMode ? 'Disable Dev Mode' : 'Enable Dev Mode'}
+            onPress={toggleDevMode}
+          />
+
+          <GradientButton text="Log Out" onPress={handleLogout} />
+        </>
+      )}
     </GradientBackground>
   );
 };
