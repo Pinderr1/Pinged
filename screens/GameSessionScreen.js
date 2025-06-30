@@ -21,7 +21,7 @@ import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { HEADER_SPACING } from '../layout';
 import { useUser } from '../contexts/UserContext';
-import { db } from '../firebase';
+import { firestore } from '../firebase';
 import { serverTimestamp } from 'firebase/firestore';
 import * as Haptics from 'expo-haptics';
 import getGlobalStyles from '../styles';
@@ -79,7 +79,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   // Listen for Firestore invite status
   useEffect(() => {
     if (!inviteId || !user?.uid) return;
-    const ref = db.collection('gameInvites').doc(inviteId);
+    const ref = firestore.collection('gameInvites').doc(inviteId);
     const unsub = ref.onSnapshot((snap) => {
       if (snapshotExists(snap)) {
         const data = snap.data();
@@ -126,7 +126,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
         await createMatchIfMissing(user.uid, opponent.id);
       }
       if (inviteId && user?.uid) {
-        const ref = db.collection('gameInvites').doc(inviteId);
+        const ref = firestore.collection('gameInvites').doc(inviteId);
         const snap = await ref.get();
         const data = snap.data();
         if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
@@ -157,7 +157,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const handleRematch = async () => {
     if (!requireCredits()) return;
     if (inviteId && user?.uid) {
-      const ref = db.collection('gameInvites').doc(inviteId);
+      const ref = firestore.collection('gameInvites').doc(inviteId);
         const snap = await ref.get();
         const data = snap.data();
         if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
@@ -165,7 +165,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
             status: 'finished',
             endedAt: serverTimestamp(),
           });
-          await db
+          await firestore
           .collection('gameSessions')
           .doc(inviteId)
           .update({

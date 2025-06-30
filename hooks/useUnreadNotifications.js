@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { db } from '../firebase';
+import { firestore } from '../firebase';
 import { useUser } from '../contexts/UserContext';
 
 export default function useUnreadNotifications() {
@@ -8,7 +8,7 @@ export default function useUnreadNotifications() {
 
   useEffect(() => {
     if (!user?.uid) return;
-    const q = db
+    const q = firestore
       .collection('users')
       .doc(user.uid)
       .collection('notifications')

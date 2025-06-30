@@ -27,14 +27,14 @@ try {
 }
 
 const auth = getAuth(app);
-let db;
+let firestore;
 try {
-  db = getFirestore(app);
+  firestore = getFirestore(app);
 } catch (e) {
   console.log('Firestore init error', e);
 }
 const storage = getStorage(app);
 const functions = getFunctions(app);
-const database = getDatabase(app);
+const realtimeDB = getDatabase(app);
 
-export { app, auth, db, storage, functions, database };
+export { app, auth, firestore, storage, functions, realtimeDB };
