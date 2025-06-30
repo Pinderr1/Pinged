@@ -3,6 +3,7 @@ import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
+import { HEADER_HEIGHT } from '../theme';
 
 export interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
@@ -49,7 +50,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     width: '100%',
-    height: 60,
+    height: HEADER_HEIGHT,
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 44 : 16,
     flexDirection: 'row',

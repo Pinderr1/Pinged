@@ -20,6 +20,7 @@ import { games, gameList } from '../games';
 import { db, firebase } from '../firebase';
 import { uploadVoiceAsync } from '../utils/upload';
 import { useTheme } from '../contexts/ThemeContext';
+import { HEADER_SPACING, FONT_SIZES } from '../theme';
 import { useNotification } from '../contexts/NotificationContext';
 import { useChats } from '../contexts/ChatContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
@@ -385,7 +386,7 @@ function PrivateChat({ user }) {
         </View>
       </Modal>
       <SafeAreaView style={{ flex: 1 }}>
-        <SafeKeyboardView style={{ flex: 1, paddingTop: 60 }}>
+        <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
           <View style={{ flex: 1 }}>
             {chatSection}
             {gameSection}
@@ -646,7 +647,7 @@ function GroupChat({ event }) {
   return (
     <GradientBackground style={{ flex: 1 }}>
       <Header />
-      <SafeKeyboardView style={{ flex: 1, paddingTop: 60 }}>
+      <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
         <Text style={groupStyles.eventTitle}>{event.title}</Text>
 
         {messages.filter((m) => m.pinned).map((msg) => (
@@ -683,10 +684,10 @@ function GroupChat({ event }) {
 const getGroupStyles = (theme) =>
   StyleSheet.create({
   eventTitle: {
-    fontSize: 18,
+    fontSize: FONT_SIZES.label,
     fontWeight: 'bold',
     textAlign: 'center',
-    paddingTop: 80,
+    paddingTop: HEADER_SPACING,
     paddingBottom: 10,
   },
   messageBubble: {

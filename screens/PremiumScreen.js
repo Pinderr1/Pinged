@@ -17,6 +17,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { functions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
 import PropTypes from 'prop-types';
+import { HEADER_SPACING, FONT_SIZES } from '../theme';
 
 const upgradeFeatures = [
   { icon: require('../assets/icons/unlimited.png'), text: 'Unlimited Game Invites' },
@@ -58,7 +59,7 @@ const PremiumScreen = ({ navigation, route }) => {
     return (
       <GradientBackground style={{ flex: 1 }}>
         <Header />
-        <ScrollView contentContainerStyle={{ paddingTop: 80, paddingBottom: 100 }}>
+        <ScrollView contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 100 }}>
           <View style={upgradeStyles.container}>
             <Text style={upgradeStyles.title}>Upgrade to Premium</Text>
             <Text style={upgradeStyles.subtitle}>
@@ -163,15 +164,15 @@ const getPaywallStyles = (theme) =>
     flex: 1,
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 80,
+    paddingTop: HEADER_SPACING,
   },
   title: {
-    fontSize: 24,
+    fontSize: FONT_SIZES.title,
     fontWeight: 'bold',
     color: theme.accent,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: FONT_SIZES.text,
     color: '#666',
     marginTop: 8,
     textAlign: 'center',
@@ -188,13 +189,13 @@ const getPaywallStyles = (theme) =>
     marginRight: 12,
   },
   featureText: {
-    fontSize: 16,
+    fontSize: FONT_SIZES.label,
     color: '#333',
     flexShrink: 1,
   },
   cancel: {
     marginTop: 16,
-    fontSize: 14,
+    fontSize: FONT_SIZES.text,
     color: '#888',
   },
 });

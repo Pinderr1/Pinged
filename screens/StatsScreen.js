@@ -11,6 +11,7 @@ import { db } from '../firebase';
 import { avatarSource } from '../utils/avatar';
 import ProgressBar from '../components/ProgressBar';
 import PropTypes from 'prop-types';
+import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../theme';
 
 const StatsScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -167,7 +168,7 @@ const StatsScreen = ({ navigation }) => {
 const getStyles = (theme) => StyleSheet.create({
   container: {
     paddingBottom: 80,
-    paddingTop: 60,
+    paddingTop: HEADER_SPACING,
     paddingHorizontal: 20
   },
   profileCard: {
@@ -181,7 +182,7 @@ const getStyles = (theme) => StyleSheet.create({
     marginBottom: 10
   },
   name: {
-    fontSize: 20,
+    fontSize: FONT_SIZES.title,
     fontWeight: 'bold',
     color: theme.text
   },
@@ -192,10 +193,10 @@ const getStyles = (theme) => StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    fontSize: 12
+    fontSize: FONT_SIZES.text - 2
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: FONT_SIZES.label,
     fontWeight: '700',
     marginTop: 20,
     marginBottom: 8,
@@ -213,30 +214,31 @@ const getStyles = (theme) => StyleSheet.create({
     elevation: 3
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: FONT_SIZES.text,
     color: theme.textSecondary
   },
   statValue: {
-    fontSize: 16,
+    fontSize: FONT_SIZES.label,
     fontWeight: '600',
     color: theme.text
   },
   statSub: {
-    fontSize: 12,
+    fontSize: FONT_SIZES.text - 2,
     color: theme.textSecondary,
     marginTop: 4,
   },
   premiumButton: {
     marginTop: 20,
     backgroundColor: theme.accent,
-    paddingVertical: 12,
-    borderRadius: 14,
+    paddingVertical: BUTTON_STYLE.paddingVertical,
+    paddingHorizontal: BUTTON_STYLE.paddingHorizontal,
+    borderRadius: BUTTON_STYLE.borderRadius,
     alignItems: 'center'
   },
   premiumText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 15
+    fontSize: FONT_SIZES.label - 1
   }
 
 });

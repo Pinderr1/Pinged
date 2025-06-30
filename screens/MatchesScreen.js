@@ -14,6 +14,7 @@ import Card from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
 import PropTypes from 'prop-types';
+import { HEADER_SPACING } from '../theme';
 
 const MatchesScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
@@ -58,7 +59,7 @@ const MatchesScreen = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <GradientBackground style={{ flex: 1 }}>
         <Header />
-        <View style={{ flex: 1, paddingTop: 80 }}>
+        <View style={{ flex: 1, paddingTop: HEADER_SPACING }}>
           {newMatches.length > 0 && (
             <>
               <Text style={styles.sectionTitle}>New Matches</Text>

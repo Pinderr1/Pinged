@@ -26,6 +26,7 @@ import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import MultiSelectList from '../components/MultiSelectList';
+import { FONT_SIZES, BUTTON_STYLE } from '../theme';
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
@@ -479,7 +480,7 @@ const getStyles = (theme) => {
     inner: { flex: 1, justifyContent: 'center' },
     progressText: {
       color: textColor,
-      fontSize: 16,
+      fontSize: FONT_SIZES.label,
       textAlign: 'center',
       marginBottom: 30,
     },
@@ -507,15 +508,15 @@ const getStyles = (theme) => {
     },
     questionText: {
       color: textColor,
-      fontSize: 22,
+      fontSize: FONT_SIZES.title,
       marginBottom: 15,
     },
     input: {
       borderBottomWidth: 2,
       borderColor: accent,
       color: textColor,
-      fontSize: 18,
-      paddingVertical: 8,
+      fontSize: FONT_SIZES.label,
+      paddingVertical: BUTTON_STYLE.paddingVertical,
     },
     imagePicker: {
       alignSelf: 'center',
@@ -550,7 +551,7 @@ const getStyles = (theme) => {
     },
     locationText: {
       color: '#fff',
-      fontSize: 16,
+      fontSize: FONT_SIZES.label,
     },
     buttonRow: {
       flexDirection: 'row',
@@ -559,25 +560,25 @@ const getStyles = (theme) => {
       paddingHorizontal: 10,
     },
     backButton: {
-      paddingVertical: 12,
-      paddingHorizontal: 25,
-      borderRadius: 8,
+      paddingVertical: BUTTON_STYLE.paddingVertical,
+      paddingHorizontal: BUTTON_STYLE.paddingHorizontal,
+      borderRadius: BUTTON_STYLE.borderRadius,
       borderWidth: 1,
       borderColor: accent,
     },
     backButtonText: {
       color: accent,
-      fontSize: 16,
+      fontSize: FONT_SIZES.label,
     },
     nextButton: {
       backgroundColor: accent,
-      paddingVertical: 12,
-      paddingHorizontal: 25,
-      borderRadius: 8,
+      paddingVertical: BUTTON_STYLE.paddingVertical,
+      paddingHorizontal: BUTTON_STYLE.paddingHorizontal,
+      borderRadius: BUTTON_STYLE.borderRadius,
     },
     nextButtonText: {
       color: '#fff',
-      fontSize: 16,
+      fontSize: FONT_SIZES.label,
     },
     gradientStart: theme.gradientStart,
     gradientEnd: theme.gradientEnd,
