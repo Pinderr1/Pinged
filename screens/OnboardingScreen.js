@@ -31,6 +31,7 @@ import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import MultiSelectList from '../components/MultiSelectList';
 import { FONT_SIZES, BUTTON_STYLE } from '../layout';
+import { allGames } from '../data/games';
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
@@ -83,60 +84,10 @@ export default function OnboardingScreen() {
     location: '',
     favoriteGames: [],
   });
-  const defaultGameOptions = [
-    { label: 'Tic Tac Toe', value: 'Tic Tac Toe' },
-    { label: 'Chess', value: 'Chess' },
-    { label: 'Rock Paper Scissors', value: 'Rock Paper Scissors' },
-    { label: 'Connect Four', value: 'Connect Four' },
-    { label: 'Checkers', value: 'Checkers' },
-    { label: 'Memory Match', value: 'Memory Match' },
-    { label: 'Hangman', value: 'Hangman' },
-    { label: 'Dots and Boxes', value: 'Dots and Boxes' },
-    { label: 'Gomoku', value: 'Gomoku' },
-    { label: 'Mancala', value: 'Mancala' },
-    { label: 'Uno', value: 'Uno' },
-    { label: 'Battleship', value: 'Battleship' },
-    { label: '4-in-a-Row Advanced', value: '4-in-a-Row Advanced' },
-    { label: 'Reversi', value: 'Reversi' },
-    { label: 'Speed Card Game', value: 'Speed Card Game' },
-    { label: 'Word Duel', value: 'Word Duel' },
-    { label: 'Pictionary', value: 'Pictionary' },
-    { label: 'Blackjack', value: 'Blackjack' },
-    { label: 'Poker Duel', value: 'Poker Duel' },
-    { label: 'Truth or Dare', value: 'Truth or Dare' },
-    { label: 'Sudoku', value: 'Sudoku' },
-    { label: 'Minesweeper', value: 'Minesweeper' },
-    { label: 'Word Search', value: 'Word Search' },
-    { label: 'Dominoes', value: 'Dominoes' },
-    { label: 'Mahjong', value: 'Mahjong' },
-    { label: 'Go', value: 'Go' },
-    { label: 'Xiangqi', value: 'Xiangqi' },
-    { label: 'Shogi', value: 'Shogi' },
-    { label: 'Ludo', value: 'Ludo' },
-    { label: 'Carrom', value: 'Carrom' },
-    { label: 'Backgammon', value: 'Backgammon' },
-    { label: 'Snakes & Ladders', value: 'Snakes & Ladders' },
-    { label: 'Guess Number', value: 'Guess Number' },
-    { label: 'Flirty Questions', value: 'Flirty Questions' },
-    { label: 'Game 35', value: 'Game 35' },
-    { label: 'Game 36', value: 'Game 36' },
-    { label: 'Game 37', value: 'Game 37' },
-    { label: 'Game 38', value: 'Game 38' },
-    { label: 'Game 39', value: 'Game 39' },
-    { label: 'Game 40', value: 'Game 40' },
-    { label: 'Game 41', value: 'Game 41' },
-    { label: 'Game 42', value: 'Game 42' },
-    { label: 'Game 43', value: 'Game 43' },
-    { label: 'Game 44', value: 'Game 44' },
-    { label: 'Game 45', value: 'Game 45' },
-    { label: 'Game 46', value: 'Game 46' },
-    { label: 'Game 47', value: 'Game 47' },
-    { label: 'Game 48', value: 'Game 48' },
-    { label: 'Game 49', value: 'Game 49' },
-    { label: 'Game 50', value: 'Game 50' },
-    { label: 'Game 51', value: 'Game 51' },
-    { label: 'Game 52', value: 'Game 52' },
-  ];
+  const defaultGameOptions = allGames.map((g) => ({
+    label: g.title,
+    value: g.title,
+  }));
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
 
   useEffect(() => {
