@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   Image,
   TextInput,
   Dimensions,
@@ -38,7 +37,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   const { darkMode, theme } = useTheme();
   const { devMode } = useDev();
   const { user: currentUser } = useUser();
-  const { matches: chatMatches } = useChats();
+  const { matches: chatMatches, loading: matchesLoading } = useChats();
   const { sendGameInvite } = useMatchmaking();
   const { gamesLeft } = useGameLimit();
   const requireCredits = useRequireGameCredits();
@@ -46,6 +45,9 @@ const GameInviteScreen = ({ route, navigation }) => {
   const [invited, setInvited] = useState({});
   const [loadingId, setLoadingId] = useState(null);
   const [matches, setMatches] = useState([]);
+  const skeletonData = Array.from({ length: 6 }).map((_, i) => ({
+    id: `skeleton-${i}`,
+  }));
 
   useEffect(() => {
     requireCredits({ replace: true });
@@ -102,9 +104,11 @@ const GameInviteScreen = ({ route, navigation }) => {
     }
   };
 
+  const showSkeletons = matchesLoading && matches.length === 0;
   const filtered = matches.filter((u) =>
     u.displayName.toLowerCase().includes(search.toLowerCase())
   );
+  const dataToRender = showSkeletons ? skeletonData : filtered;
 
   const renderUserCard = ({ item }) => {
     const isInvited = invited[item.id];
@@ -170,6 +174,49 @@ const GameInviteScreen = ({ route, navigation }) => {
     );
   };
 
+  const renderSkeletonCard = () => (
+    <Card
+      style={{
+        backgroundColor: theme.card,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: darkMode ? '#333' : '#eee',
+        padding: 12,
+        margin: 8,
+        width: CARD_WIDTH,
+      }}
+    >
+      <View style={{ alignItems: 'center' }}>
+        <View
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 25,
+            backgroundColor: darkMode ? '#444' : '#ddd',
+            marginBottom: 8,
+          }}
+        />
+        <View
+          style={{
+            width: 80,
+            height: 12,
+            borderRadius: 6,
+            backgroundColor: darkMode ? '#444' : '#ddd',
+            marginBottom: 6,
+          }}
+        />
+        <View
+          style={{
+            width: 40,
+            height: 10,
+            borderRadius: 5,
+            backgroundColor: darkMode ? '#444' : '#ddd',
+          }}
+        />
+      </View>
+    </Card>
+  );
+
   return (
     <GradientBackground style={styles.swipeScreen}>
       <Header showLogoOnly />
@@ -211,9 +258,9 @@ const GameInviteScreen = ({ route, navigation }) => {
           </View>
 
           <FlatList
-            data={filtered}
+            data={dataToRender}
             keyExtractor={(item) => item.id}
-            renderItem={renderUserCard}
+            renderItem={showSkeletons ? renderSkeletonCard : renderUserCard}
             numColumns={2}
             contentContainerStyle={{
               paddingHorizontal: 8,
