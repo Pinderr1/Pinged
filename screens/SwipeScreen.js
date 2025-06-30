@@ -157,7 +157,7 @@ const SwipeScreen = () => {
           );
           return {
             id: u.uid || u.id,
-            name: u.displayName || 'User',
+            displayName: u.displayName || 'User',
             age: u.age || '',
             bio: u.bio || '',
             favoriteGames: Array.isArray(u.favoriteGames) ? u.favoriteGames : [],
@@ -190,7 +190,7 @@ const SwipeScreen = () => {
       }
 
       setLikesUsed((prev) => prev + 1);
-      showNotification(`You liked ${displayUser.name}`);
+      showNotification(`You liked ${displayUser.displayName}`);
 
       if (currentUser?.uid && displayUser.id && !devMode) {
         try {
@@ -218,7 +218,7 @@ const SwipeScreen = () => {
 
             addMatch({
               id: matchRef.id,
-              name: displayUser.name,
+              displayName: displayUser.displayName,
               age: displayUser.age,
               image: displayUser.images[0],
               messages: [],
@@ -239,7 +239,7 @@ const SwipeScreen = () => {
         // In dev mode instantly match
         addMatch({
           id: displayUser.id,
-          name: displayUser.name,
+          displayName: displayUser.displayName,
           age: displayUser.age,
           image: displayUser.images[0],
           messages: [],
@@ -347,7 +347,7 @@ const SwipeScreen = () => {
           game: { id: '1', title: gameTitle },
           opponent: {
             id: displayUser.id,
-            name: displayUser.name,
+            displayName: displayUser.displayName,
             photo: displayUser.images[0],
           },
           inviteId,
@@ -417,7 +417,7 @@ const SwipeScreen = () => {
             />
             <View style={styles.info}>
               <Text style={styles.name}>
-                {displayUser.name}, {displayUser.age}
+                {displayUser.displayName}, {displayUser.age}
               </Text>
               <Text style={styles.match}>Match: {matchPercent}%</Text>
               <Text style={styles.bio}>{displayUser.bio}</Text>
@@ -484,7 +484,7 @@ const SwipeScreen = () => {
                 loop={false}
                 style={{ width: 300, height: 300 }}
               />
-              <Text style={styles.matchText}>It's a Match with {matchedUser.name}!</Text>
+              <Text style={styles.matchText}>It's a Match with {matchedUser.displayName}!</Text>
             </View>
           </Modal>
         )}

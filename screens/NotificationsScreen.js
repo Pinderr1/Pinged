@@ -67,7 +67,7 @@ const NotificationsScreen = ({ navigation }) => {
         },
         opponent: {
           id: invite.from,
-          name: opp.displayName || 'Opponent',
+          displayName: opp.displayName || 'Opponent',
           photo: opp.photoURL ? { uri: opp.photoURL } : require('../assets/user1.jpg'),
         },
         inviteId: invite.id,

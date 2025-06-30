@@ -204,7 +204,7 @@ function PrivateChat({ user }) {
     if (!result) return;
     addGameXP();
     if (result.winner !== undefined) {
-      const msg = result.winner === '0' ? 'You win!' : `${user.name} wins.`;
+      const msg = result.winner === '0' ? 'You win!' : `${user.displayName} wins.`;
       sendChatMessage(`Game over. ${msg}`, 'system');
     } else if (result.draw) {
       sendChatMessage('Game over. Draw.', 'system');
@@ -234,7 +234,7 @@ function PrivateChat({ user }) {
       return (
         <VoiceMessageBubble
           message={item}
-          userName={user.name}
+          userName={user.displayName}
           otherUserId={otherUserId}
         />
       );
@@ -251,7 +251,7 @@ function PrivateChat({ user }) {
         ]}
       >
         <Text style={privateStyles.sender}>
-          {item.sender === 'you' ? 'You' : item.sender === 'system' ? 'System' : user.name}
+          {item.sender === 'you' ? 'You' : item.sender === 'system' ? 'System' : user.displayName}
         </Text>
         <Text style={privateStyles.messageText}>{item.text}</Text>
         {item.sender === 'you' && (
@@ -280,7 +280,7 @@ function PrivateChat({ user }) {
         inverted
         keyboardShouldPersistTaps="handled"
       />
-      {isTyping && <Text style={privateStyles.typingIndicator}>{user.name} is typing...</Text>}
+      {isTyping && <Text style={privateStyles.typingIndicator}>{user.displayName} is typing...</Text>}
       <View style={privateStyles.gameBar}>
         <TouchableOpacity
           style={activeGameId ? privateStyles.changeButton : privateStyles.playButton}

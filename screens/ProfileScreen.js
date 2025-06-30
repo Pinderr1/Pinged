@@ -20,7 +20,7 @@ import PropTypes from 'prop-types';
 const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
   const [editMode, setEditMode] = useState(route?.params?.editMode || false);
-  const [name, setName] = useState(user?.displayName || '');
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [age, setAge] = useState(user?.age ? String(user.age) : '');
   const [gender, setGender] = useState(user?.gender || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -46,7 +46,7 @@ const ProfileScreen = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    setName(user?.displayName || '');
+    setDisplayName(user?.displayName || '');
     setAge(user?.age ? String(user.age) : '');
     setGender(user?.gender || '');
     setBio(user?.bio || '');
@@ -71,7 +71,7 @@ const ProfileScreen = ({ navigation, route }) => {
     }
 
     const clean = {
-      displayName: sanitizeText(name.trim()),
+      displayName: sanitizeText(displayName.trim()),
       age: parseInt(age, 10) || null,
       gender: sanitizeText(gender),
       bio: sanitizeText(bio.trim()),
@@ -112,8 +112,8 @@ const ProfileScreen = ({ navigation, route }) => {
       <TextInput
         style={styles.input}
         placeholder="Name"
-        value={name}
-        onChangeText={setName}
+        value={displayName}
+        onChangeText={setDisplayName}
       />
 
       <TextInput

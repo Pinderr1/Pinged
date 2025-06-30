@@ -34,7 +34,7 @@ import { FONT_SIZES, BUTTON_STYLE } from '../layout';
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
   // TODO: allow recording a short voice or video intro and store URL in profile
-  { key: 'name', label: 'What’s your name?' },
+  { key: 'displayName', label: 'What’s your name?' },
   { key: 'age', label: 'How old are you?' },
   { key: 'genderInfo', label: 'Gender & preference' },
   { key: 'bio', label: 'Write a short bio' },
@@ -72,7 +72,7 @@ export default function OnboardingScreen() {
   };
   const [answers, setAnswers] = useState({
     avatar: '',
-    name: '',
+    displayName: '',
     age: '',
     gender: '',
     genderPref: '',
@@ -235,9 +235,10 @@ export default function OnboardingScreen() {
         const profile = {
           uid: user.uid,
           email: user.email,
-          displayName: user.displayName || '',
+          displayName: sanitizeText(
+            (answers.displayName || user.displayName || '').trim()
+          ),
           photoURL,
-          name: sanitizeText(answers.name.trim()),
           age: parseInt(answers.age, 10) || null,
           gender: sanitizeText(answers.gender),
         genderPref: sanitizeText(answers.genderPref),
