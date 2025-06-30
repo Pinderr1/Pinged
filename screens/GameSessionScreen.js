@@ -11,7 +11,8 @@ import {
   StyleSheet,
   SafeAreaView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Easing,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
@@ -34,6 +35,7 @@ import { generateReply } from "../ai/chatBot";
 import useBotGame from "../hooks/useBotGame";
 import { getBotMove } from "../ai/botMoves";
 import SafeKeyboardView from "../components/SafeKeyboardView";
+import Loader from "../components/Loader";
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import PropTypes from 'prop-types';
 const GameSessionScreen = ({ route, navigation, sessionType }) => {
@@ -67,6 +69,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const GameComponent = game?.id ? games[game.id]?.Client : null;
   const isReady = devMode || inviteStatus === 'ready';
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const overlayOpacity = useRef(new Animated.Value(1)).current;
 
   // Listen for Firestore invite status
   useEffect(() => {
@@ -96,6 +99,15 @@ const LiveSessionScreen = ({ route, navigation }) => {
       Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
     }
   }, [countdown]);
+
+  useEffect(() => {
+    Animated.timing(overlayOpacity, {
+      toValue: showGame ? 0 : 1,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  }, [showGame, overlayOpacity]);
 
   // Countdown logic
   useEffect(() => {
@@ -223,7 +235,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
           </View>
         )}
         {!showGame && (
-          <View style={local.overlay}>
+          <Animated.View style={[local.overlay, { opacity: overlayOpacity }]}>
             {countdown === null ? (
               <>
                 <Text style={[local.waitText, { color: theme.text }]}>Waiting for opponent...</Text>
@@ -232,7 +244,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
             ) : (
               <Animated.Text style={[local.countText, { transform: [{ scale: scaleAnim }] }]}>{countdown}</Animated.Text>
             )}
-          </View>
+          </Animated.View>
         )}
       </View>
 

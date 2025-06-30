@@ -1,5 +1,5 @@
 // screens/OnboardingScreen.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  Animated,
+  Easing,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import GradientBackground from '../components/GradientBackground';
@@ -47,6 +49,26 @@ export default function OnboardingScreen() {
   const styles = getStyles(theme);
 
   const [step, setStep] = useState(0);
+  const cardOpacity = useRef(new Animated.Value(1)).current;
+  const progressAnim = useRef(new Animated.Value(1 / questions.length)).current;
+
+  const animateStepChange = (newStep) => {
+    Animated.timing(cardOpacity, {
+      toValue: 0,
+      duration: 200,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start(() => {
+      setStep(newStep);
+      cardOpacity.setValue(0);
+      Animated.timing(cardOpacity, {
+        toValue: 1,
+        duration: 200,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    });
+  };
   const [answers, setAnswers] = useState({
     avatar: '',
     name: '',
@@ -136,6 +158,15 @@ export default function OnboardingScreen() {
   const currentField = questions[step].key;
   const progress = (step + 1) / questions.length;
 
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: progress,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  }, [progress, progressAnim]);
+
   const validateField = () => {
     const value = answers[currentField];
     if (currentField === 'age') return /^\d+$/.test(value) && parseInt(value, 10) >= 18;
@@ -188,7 +219,7 @@ export default function OnboardingScreen() {
           return;
         }
       }
-      setStep(step + 1);
+      animateStepChange(step + 1);
     } else {
       try {
         let photoURL = answers.avatar;
@@ -227,7 +258,7 @@ export default function OnboardingScreen() {
   };
 
   const handleBack = () => {
-    if (step > 0) setStep(step - 1);
+    if (step > 0) animateStepChange(step - 1);
   };
 
   const pickImage = async () => {
@@ -440,13 +471,23 @@ export default function OnboardingScreen() {
         <Text style={styles.progressText}>{`Step ${step + 1} of ${questions.length}`}</Text>
 
         <View style={styles.progressContainer}>
-          <View style={[styles.progressBar, { width: `${progress * 100}%` }]} />
+          <Animated.View
+            style={[
+              styles.progressBar,
+              {
+                width: progressAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0%', '100%'],
+                }),
+              },
+            ]}
+          />
         </View>
 
-        <View style={styles.card}>
+        <Animated.View style={[styles.card, { opacity: cardOpacity }]}>
           <Text style={styles.questionText}>{questions[step].label}</Text>
           {renderInput()}
-        </View>
+        </Animated.View>
 
         <View style={styles.buttonRow}>
           {step > 0 && (
