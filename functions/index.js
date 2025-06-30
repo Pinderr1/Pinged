@@ -164,6 +164,58 @@ exports.sendPushNotification = functions.https.onCall(async (data, context) => {
   }
 });
 
+async function ensureMatchHistory(users, extra = {}) {
+  if (!Array.isArray(users) || users.length < 2) return null;
+  const sorted = [...users].sort();
+  const id = sorted.join('_');
+  const ref = admin.firestore().collection('matchHistory').doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    let likeInitiator = null;
+    try {
+      const [a, b] = await Promise.all([
+        admin
+          .firestore()
+          .collection('likes')
+          .doc(sorted[0])
+          .collection('liked')
+          .doc(sorted[1])
+          .get(),
+        admin
+          .firestore()
+          .collection('likes')
+          .doc(sorted[1])
+          .collection('liked')
+          .doc(sorted[0])
+          .get(),
+      ]);
+      const t1 = a.get('createdAt');
+      const t2 = b.get('createdAt');
+      if (t1 && (!t2 || t1.toMillis() <= t2.toMillis())) {
+        likeInitiator = sorted[0];
+      } else if (t2) {
+        likeInitiator = sorted[1];
+      }
+    } catch (e) {
+      console.error('Failed to determine like initiator', e);
+    }
+
+    await ref.set(
+      {
+        users: sorted,
+        likeInitiator: likeInitiator || null,
+        startedAt: admin.firestore.FieldValue.serverTimestamp(),
+        chatCounts: {},
+        ...extra,
+      },
+      { merge: true }
+    );
+  } else if (Object.keys(extra).length) {
+    await ref.set(extra, { merge: true });
+  }
+  return ref;
+}
+
 exports.onGameInviteCreated = functions.firestore
   .document('gameInvites/{inviteId}')
   .onCreate(async (snap, context) => {
@@ -292,6 +344,29 @@ exports.autoStartGame = functions.firestore
     return null;
   });
 
+exports.trackGameInvite = functions.firestore
+  .document('gameInvites/{inviteId}')
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() || {};
+    const after = change.after.data() || {};
+    if (!after.from || !after.to) return null;
+
+    if (before.status !== 'active' && after.status === 'active') {
+      await ensureMatchHistory([after.from, after.to], { gameId: after.gameId });
+    }
+
+    if (before.status !== 'finished' && after.status === 'finished') {
+      const id = [after.from, after.to].sort().join('_');
+      await admin
+        .firestore()
+        .collection('matchHistory')
+        .doc(id)
+        .set({ endedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    }
+
+    return null;
+  });
+
 exports.autoStartLobby = functions.firestore
   .document('gameLobbies/{lobbyId}')
   .onUpdate(async (change, context) => {
@@ -355,6 +430,20 @@ exports.onChatMessageCreated = functions.firestore
       const matchData = matchSnap.data();
       const users = (matchData && matchData.users) || [];
       const recipientId = users.find((u) => u !== senderId);
+      await ensureMatchHistory(users);
+      const histId = [...users].sort().join('_');
+      await admin
+        .firestore()
+        .collection('matchHistory')
+        .doc(histId)
+        .set(
+          {
+            chatCounts: {
+              [senderId]: admin.firestore.FieldValue.increment(1),
+            },
+          },
+          { merge: true }
+        );
       if (!recipientId) return null;
 
       await pushToUser(recipientId, 'New Message', data.text || 'You have a new message', {

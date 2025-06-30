@@ -82,3 +82,11 @@ Chat conversations occur inside match documents under the `messages` subcollecti
 
 These per-user notifications can be paired with push notifications to keep users informed of invites or other activity.
 
+## Match History (`matchHistory/{pairId}`)
+- `users` (array of string) – two user ids in sorted order
+- `likeInitiator` (string|null) – uid of the user who first liked
+- `gameId` (string|null) – last game played between the pair
+- `startedAt` (timestamp)
+- `endedAt` (timestamp)
+- `chatCounts` (map) – per-user message totals
+

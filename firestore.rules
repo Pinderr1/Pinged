@@ -79,6 +79,10 @@ service cloud.firestore {
       allow read, write: if signedIn();
     }
 
+    match /matchHistory/{historyId} {
+      allow read: if signedIn();
+    }
+
     // List of available games for onboarding
     match /games/{gameId} {
       allow read: if true;
