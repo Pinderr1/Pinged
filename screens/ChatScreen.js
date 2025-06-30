@@ -19,6 +19,7 @@ import styles from '../styles';
 import { games, gameList } from '../games';
 import { db } from '../firebase';
 import { serverTimestamp, arrayUnion } from 'firebase/firestore';
+import * as Haptics from 'expo-haptics';
 import { uploadVoiceAsync } from '../utils/upload';
 import { useTheme } from '../contexts/ThemeContext';
 import { HEADER_SPACING, FONT_SIZES } from '../layout';
@@ -564,6 +565,7 @@ function GroupChat({ event }) {
         });
       setInput('');
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
       Toast.show({ type: 'success', text1: 'Message sent' });
     } catch (e) {
       console.warn('Failed to send message', e);

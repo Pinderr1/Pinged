@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, Keyboard } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -11,6 +12,7 @@ export default function FilterTabs({ filter, setFilter }) {
         <TouchableOpacity
           key={label}
           onPress={() => {
+            Haptics.selectionAsync().catch(() => {});
             setFilter(label);
             Keyboard.dismiss();
           }}

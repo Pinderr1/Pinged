@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
 
@@ -11,6 +12,7 @@ export default function MultiSelectList({ options = [], selected = [], onChange,
     } else {
       onChange([...selected, val]);
     }
+    Haptics.selectionAsync().catch(() => {});
   };
 
   const styles = getStyles(theme);

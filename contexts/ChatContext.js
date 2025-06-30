@@ -6,6 +6,7 @@ import { db } from '../firebase';
 import { serverTimestamp } from 'firebase/firestore';
 import { useListeners } from './ListenerContext';
 import Toast from 'react-native-toast-message';
+import * as Haptics from 'expo-haptics';
 
 const ChatContext = createContext();
 
@@ -174,6 +175,7 @@ export const ChatProvider = ({ children }) => {
         timestamp: serverTimestamp(),
         });
       if (sender === 'you') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         Toast.show({ type: 'success', text1: 'Message sent' });
       }
     } catch (e) {
