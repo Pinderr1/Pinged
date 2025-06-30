@@ -19,17 +19,6 @@ export const allGames = [
     speed: 'quick'
   },
   {
-    id: '2',
-    title: 'Chess',
-    icon: <FontAwesome5 name="chess-knight" size={30} />,
-    route: null,
-    premium: false,
-    category: 'Board',
-    description: 'Outsmart your opponent in this strategic classic.',
-    mode: 'versus',
-    speed: 'slow'
-  },
-  {
     id: '3',
     title: 'Rock Paper Scissors',
     icon: <MaterialCommunityIcons name="hand-peace" size={30} />,
@@ -88,7 +77,7 @@ export const allGames = [
     id: '8',
     title: 'Dots and Boxes',
     icon: <FontAwesome5 name="braille" size={30} />,
-    route: null,
+    route: 'DotsAndBoxes',
     premium: false,
     category: 'Board',
     description: 'Connect dots to complete boxes. Strategic and competitive.',
@@ -110,122 +99,34 @@ export const allGames = [
     id: '10',
     title: 'Mancala',
     icon: <MaterialCommunityIcons name="dots-circle" size={30} />,
-    route: null,
+    route: 'Mancala',
     premium: false,
     category: 'Board',
-    description: 'Capture your opponent’s pieces in this ancient strategy game.',
+    description: 'Capture your opponent\u2019s pieces in this ancient strategy game.',
     mode: 'versus',
     speed: 'medium'
-  },
-  {
-    id: '11',
-    title: 'Uno',
-    icon: <MaterialCommunityIcons name="cards" size={30} />,
-    route: null,
-    premium: true,
-    category: 'Card',
-    description: 'Match colors and numbers to shed your hand first. Fast and fun.',
-    mode: 'both',
-    speed: 'quick'
   },
   {
     id: '12',
     title: 'Battleship',
     icon: <MaterialCommunityIcons name="ship-wheel" size={30} />,
-    route: null,
+    route: 'Battleship',
     premium: true,
     category: 'Strategy',
-    description: 'Sink your opponent’s fleet before they get yours.',
+    description: 'Sink your opponent\u2019s fleet before they get yours.',
     mode: 'versus',
     speed: 'slow'
-  },
-  {
-    id: '13',
-    title: '4-in-a-Row Advanced',
-    icon: <MaterialCommunityIcons name="dots-grid" size={30} />,
-    route: null,
-    premium: true,
-    category: 'Board',
-    description: 'Same as Connect Four, but with twists and traps!',
-    mode: 'versus',
-    speed: 'medium'
-  },
-  {
-    id: '14',
-    title: 'Reversi',
-    icon: <MaterialCommunityIcons name="swap-horizontal" size={30} />,
-    route: null,
-    premium: true,
-    category: 'Board',
-    description: 'Flip your opponent’s pieces in this classic territory control game.',
-    mode: 'versus',
-    speed: 'medium'
-  },
-  {
-    id: '15',
-    title: 'Speed Card Game',
-    icon: <MaterialCommunityIcons name="timer-outline" size={30} />,
-    route: null,
-    premium: true,
-    category: 'Card',
-    description: 'Play cards fast to win. Speed and reflexes win here!',
-    mode: 'versus',
-    speed: 'quick'
-  },
-  {
-    id: '16',
-    title: 'Word Duel',
-    icon: <MaterialCommunityIcons name="alphabetical" size={30} />,
-    route: null,
-    premium: true,
-    category: 'Word',
-    description: 'Form words faster than your opponent. Vocabulary meets battle!',
-    mode: 'versus',
-    speed: 'medium'
-  },
-  {
-    id: '17',
-    title: 'Pictionary',
-    icon: <MaterialCommunityIcons name="palette" size={30} />,
-    route: null,
-    premium: true,
-    category: 'Drawing',
-    description: 'Draw a word, your partner guesses it. A hilarious co-op drawing game!',
-    mode: 'co-op',
-    speed: 'medium'
   },
   {
     id: '18',
     title: 'Blackjack',
     icon: <MaterialCommunityIcons name="cards-playing-outline" size={30} />,
-    route: null,
+    route: 'Blackjack',
     premium: true,
     category: 'Card',
     description: '21 or bust. Compete head-to-head or beat the house.',
     mode: 'both',
     speed: 'quick'
-  },
-  {
-    id: '19',
-    title: 'Poker Duel',
-    icon: <MaterialCommunityIcons name="cards-outline" size={30} />,
-    route: null,
-    premium: true,
-    category: 'Card',
-    description: 'Heads-up poker duel. Bluff, bet, and dominate.',
-    mode: 'versus',
-    speed: 'slow'
-  },
-  {
-    id: '20',
-    title: 'Truth or Dare',
-    icon: <MaterialCommunityIcons name="emoticon-wink-outline" size={30} />,
-    route: null,
-    premium: true,
-    category: 'Party',
-    description: 'The ultimate social icebreaker. Play spicy or silly.',
-    mode: 'co-op',
-    speed: 'medium'
   },
   {
     id: '21',
@@ -250,21 +151,10 @@ export const allGames = [
     speed: 'medium'
   },
   {
-    id: '23',
-    title: 'Word Search',
-    icon: <Ionicons name="search" size={30} />,
-    route: null,
-    premium: false,
-    category: 'Word',
-    description: 'Find hidden words in the letter grid as fast as you can.',
-    mode: 'solo',
-    speed: 'quick'
-  },
-  {
     id: '24',
     title: 'Dominoes',
     icon: <MaterialCommunityIcons name="dots-horizontal" size={30} />,
-    route: null,
+    route: 'Dominoes',
     premium: true,
     category: 'Board',
     description: 'Match tiles end to end. A timeless strategy game.',
@@ -272,87 +162,10 @@ export const allGames = [
     speed: 'slow'
   },
   {
-    id: '25',
-    title: 'Mahjong',
-    icon: <MaterialCommunityIcons name="puzzle" size={30} />,
-    route: null,
-    premium: true,
-    category: 'International',
-    description: 'Tile-matching challenge from China. Clear the board to win.',
-    mode: 'versus',
-    speed: 'slow'
-  },
-  {
-    id: '26',
-    title: 'Go',
-    icon: <FontAwesome5 name="circle" size={30} />,
-    route: null,
-    premium: true,
-    category: 'International',
-    description: 'Ancient territory game. Surround more area than your opponent.',
-    mode: 'versus',
-    speed: 'slow'
-  },
-  {
-    id: '27',
-    title: 'Xiangqi',
-    icon: <FontAwesome5 name="chess" size={30} />,
-    route: null,
-    premium: true,
-    category: 'International',
-    description: 'Chinese chess. Outsmart your rival on the river board.',
-    mode: 'versus',
-    speed: 'slow'
-  },
-  {
-    id: '28',
-    title: 'Shogi',
-    icon: <FontAwesome5 name="chess-bishop" size={30} />,
-    route: null,
-    premium: true,
-    category: 'International',
-    description: 'Japanese chess with piece promotion and drops.',
-    mode: 'versus',
-    speed: 'slow'
-  },
-  {
-    id: '29',
-    title: 'Ludo',
-    icon: <MaterialCommunityIcons name="dice-4" size={30} />,
-    route: null,
-    premium: false,
-    category: 'International',
-    description: 'Race your tokens around the board. Family favourite worldwide.',
-    mode: 'versus',
-    speed: 'medium'
-  },
-  {
-    id: '30',
-    title: 'Carrom',
-    icon: <MaterialCommunityIcons name="circle-slice-8" size={30} />,
-    route: null,
-    premium: false,
-    category: 'International',
-    description: 'Flick discs into pockets in this popular Asian table game.',
-    mode: 'versus',
-    speed: 'medium'
-  },
-  {
-    id: '31',
-    title: 'Backgammon',
-    icon: <FontAwesome5 name="dice-d20" size={30} />,
-    route: null,
-    premium: true,
-    category: 'International',
-    description: 'Move your checkers off the board before your opponent does.',
-    mode: 'versus',
-    speed: 'slow'
-  },
-  {
     id: '32',
     title: 'Snakes & Ladders',
     icon: <MaterialCommunityIcons name="snake" size={30} />,
-    route: null,
+    route: 'SnakesLadders',
     premium: false,
     category: 'International',
     description: 'Climb up ladders and avoid snakes in this luck-based race.',
@@ -379,6 +192,39 @@ export const allGames = [
     category: 'Party',
     description: 'Take turns answering cute questions and spark conversation.',
     mode: 'co-op',
+    speed: 'quick'
+  },
+  {
+    id: '35',
+    title: 'Coin Toss',
+    icon: <MaterialCommunityIcons name="coin" size={30} />,
+    route: 'CoinToss',
+    premium: false,
+    category: 'Quick',
+    description: 'Pick heads or tails and test your luck.',
+    mode: 'versus',
+    speed: 'quick'
+  },
+  {
+    id: '36',
+    title: 'Nim',
+    icon: <FontAwesome5 name="dice-d6" size={30} />,
+    route: 'Nim',
+    premium: false,
+    category: 'Strategy',
+    description: 'Take turns removing sticks. Avoid taking the last one.',
+    mode: 'versus',
+    speed: 'medium'
+  },
+  {
+    id: '37',
+    title: 'Pig Dice',
+    icon: <FontAwesome5 name="dice" size={30} />,
+    route: 'PigDice',
+    premium: false,
+    category: 'Dice',
+    description: 'Roll and hold to reach 100 points first.',
+    mode: 'versus',
     speed: 'quick'
   }
 ];
