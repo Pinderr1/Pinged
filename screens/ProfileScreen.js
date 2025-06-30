@@ -25,7 +25,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
   const { theme } = useTheme();
   const [editMode, setEditMode] = useState(route?.params?.editMode || false);
-  const [name, setName] = useState(user?.displayName || '');
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [age, setAge] = useState(user?.age ? String(user.age) : '');
   const [gender, setGender] = useState(user?.gender || '');
   const [genderPref, setGenderPref] = useState(user?.genderPref || '');
@@ -57,7 +57,7 @@ const ProfileScreen = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    setName(user?.displayName || '');
+    setDisplayName(user?.displayName || '');
     setAge(user?.age ? String(user.age) : '');
     setGender(user?.gender || '');
     setGenderPref(user?.genderPref || '');
@@ -101,7 +101,7 @@ const ProfileScreen = ({ navigation, route }) => {
     }
 
     const clean = {
-      displayName: sanitizeText(name.trim()),
+      displayName: sanitizeText(displayName.trim()),
       age: parseInt(age, 10) || null,
       gender: sanitizeText(gender),
       genderPref: sanitizeText(genderPref),
@@ -144,8 +144,8 @@ const ProfileScreen = ({ navigation, route }) => {
       <TextInput
         style={styles.input}
         placeholder="Name"
-        value={name}
-        onChangeText={setName}
+        value={displayName}
+        onChangeText={setDisplayName}
       />
 
       <TextInput

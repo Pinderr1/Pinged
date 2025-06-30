@@ -20,7 +20,7 @@ export const ChatProvider = ({ children }) => {
   const { getMessages } = useListeners();
   const devMatch = {
     id: '__testMatch',
-    name: 'Dev Tester',
+    displayName: 'Dev Tester',
     age: 99,
     image: require('../assets/user1.jpg'),
     messages: [
@@ -81,7 +81,7 @@ export const ChatProvider = ({ children }) => {
           return {
             id: m.id,
             otherUserId: otherId,
-            name: prevMatch.name || 'Match',
+            displayName: prevMatch.displayName || 'Match',
             age: prevMatch.age || 0,
             image: prevMatch.image || require('../assets/user1.jpg'),
             online: prevMatch.online || false,
@@ -124,7 +124,7 @@ export const ChatProvider = ({ children }) => {
                   m.otherUserId === uid
                     ? {
                         ...m,
-                        name: info.displayName || info.name || 'User',
+                        displayName: info.displayName || info.name || 'User',
                         age: info.age || 0,
                         image: info.photoURL
                           ? { uri: info.photoURL }

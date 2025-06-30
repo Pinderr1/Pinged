@@ -173,7 +173,7 @@ const HomeScreen = ({ navigation }) => {
                 style={[local.matchTile, { backgroundColor: theme.card }]}
               >
                 <Image source={item.image} style={local.matchAvatar} />
-                <Text style={[local.matchName, { color: theme.text }]}>{item.name}</Text>
+                <Text style={[local.matchName, { color: theme.text }]}>{item.displayName}</Text>
               </Card>
             )}
           />

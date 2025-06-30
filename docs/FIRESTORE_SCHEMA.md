@@ -7,7 +7,6 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `email` (string)
 - `displayName` (string)
 - `photoURL` (string)
-- `name` (string)
 - `age` (number)
 - `gender` (string)
 - `genderPref` (string)
