@@ -11,8 +11,10 @@ import {
   TextInput,
   Dimensions,
   Animated,
-  Easing
+  Easing,
+  RefreshControl
 } from 'react-native';
+import Loader from '../components/Loader';
 import GradientButton from '../components/GradientButton';
 import Card from '../components/Card';
 import { eventImageSource } from '../utils/avatar';
@@ -39,6 +41,7 @@ const CommunityScreen = () => {
   const navigation = useNavigation();
   const { user } = useUser();
   const [events, setEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
   const [joinedEvents, setJoinedEvents] = useState([]);
   const [activeFilter, setActiveFilter] = useState('All');
   const [showHostModal, setShowHostModal] = useState(false);
@@ -49,8 +52,10 @@ const CommunityScreen = () => {
   const [newTime, setNewTime] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [posts, setPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
   const [postTitle, setPostTitle] = useState('');
   const [postDesc, setPostDesc] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (firstJoin) {
@@ -69,6 +74,8 @@ const CommunityScreen = () => {
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setEvents(data.length ? data : SAMPLE_EVENTS);
+      setLoadingEvents(false);
+      setRefreshing(false);
     });
     return unsub;
   }, []);
@@ -78,6 +85,8 @@ const CommunityScreen = () => {
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setPosts(data.length ? data : SAMPLE_POSTS);
+      setLoadingPosts(false);
+      setRefreshing(false);
     });
     return unsub;
   }, []);
@@ -94,6 +103,23 @@ const CommunityScreen = () => {
       isJoined ? 'RSVP Cancelled' : 'Event Joined',
       isJoined ? 'You left the event.' : 'You’re in! XP applied.'
     );
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const eventSnap = await db.collection('events').orderBy('createdAt', 'desc').get();
+      const eventData = eventSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setEvents(eventData.length ? eventData : SAMPLE_EVENTS);
+      const postSnap = await db.collection('communityPosts').orderBy('createdAt', 'desc').get();
+      const postData = postSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setPosts(postData.length ? postData : SAMPLE_POSTS);
+    } catch (e) {
+      console.warn('Failed to refresh community', e);
+    }
+    setLoadingEvents(false);
+    setLoadingPosts(false);
+    setRefreshing(false);
   };
 
   const renderEventCard = (event, idx) => {
@@ -132,11 +158,23 @@ const CommunityScreen = () => {
     );
   };
 
+  if (loadingEvents && loadingPosts) {
+    return (
+      <View style={{ flex: 1, backgroundColor: darkMode ? '#333' : '#fce4ec', justifyContent: 'center', alignItems: 'center' }}>
+        <Header />
+        <Loader />
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: darkMode ? '#333' : '#fce4ec' }}>
       <Header />
 
-      <ScrollView contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 150 }}>
+      <ScrollView
+        contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 150 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+      >
         <Text style={local.header}>🎉 Community Board</Text>
 
         {/* Filters */}
@@ -165,9 +203,19 @@ const CommunityScreen = () => {
         </Card>
 
         {/* Event grid */}
-        <View style={local.grid}>
-          {filteredEvents.map((event, idx) => renderEventCard(event, idx))}
-        </View>
+        {loadingEvents ? (
+          <View style={{ marginTop: 40, alignItems: 'center' }}>
+            <Loader />
+          </View>
+        ) : filteredEvents.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
+            No events found.
+          </Text>
+        ) : (
+          <View style={local.grid}>
+            {filteredEvents.map((event, idx) => renderEventCard(event, idx))}
+          </View>
+        )}
 
         {/* Host your own */}
         <GradientButton
@@ -188,13 +236,23 @@ const CommunityScreen = () => {
         />
 
         {/* Posts */}
-        {posts.map((p) => (
-          <Card key={p.id} style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
-            <Text style={local.postTitle}>{p.title}</Text>
-            <Text style={local.postTime}>{p.time}</Text>
-            <Text style={local.postDesc}>{p.description}</Text>
-          </Card>
-        ))}
+        {loadingPosts ? (
+          <View style={{ marginTop: 40, alignItems: 'center' }}>
+            <Loader />
+          </View>
+        ) : posts.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
+            No posts yet.
+          </Text>
+        ) : (
+          posts.map((p) => (
+            <Card key={p.id} style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
+              <Text style={local.postTitle}>{p.title}</Text>
+              <Text style={local.postTime}>{p.time}</Text>
+              <Text style={local.postDesc}>{p.description}</Text>
+            </Card>
+          ))
+        )}
 
         {/* First Join Badge */}
         {firstJoin && (

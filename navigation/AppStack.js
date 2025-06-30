@@ -11,6 +11,7 @@ import CommunityScreen from '../screens/CommunityScreen';
 import PremiumScreen from '../screens/PremiumScreen';
 import StatsScreen from '../screens/StatsScreen';
 import PlayScreen from '../screens/PlayScreen';
+import ActiveGamesScreen from '../screens/ActiveGamesScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,7 @@ export default function AppStack() {
       <Stack.Screen name="GameSession" component={GameSessionScreen} />
       <Stack.Screen name="Community" component={CommunityScreen} />
       <Stack.Screen name="EventChat" component={ChatScreen} />
+      <Stack.Screen name="ActiveGames" component={ActiveGamesScreen} />
       <Stack.Screen name="Premium" component={PremiumScreen} />
       <Stack.Screen name="Stats" component={StatsScreen} />
       <Stack.Screen name="GameWithBot" component={GameSessionScreen} />

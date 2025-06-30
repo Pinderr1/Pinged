@@ -34,13 +34,17 @@ export const ChatProvider = ({ children }) => {
 
   // Start with no matches and inject a tester match when dev mode is enabled.
   const [matches, setMatches] = useState(devMode ? [devMatch] : []);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.uid) {
       setMatches(devMode ? [devMatch] : []);
+      setLoading(false);
       return;
     }
-    AsyncStorage.getItem(getStorageKey(user.uid)).then((data) => {
+    setLoading(true);
+    AsyncStorage.getItem(getStorageKey(user.uid))
+      .then((data) => {
       if (data) {
         try {
           const parsed = JSON.parse(data);
@@ -56,7 +60,7 @@ export const ChatProvider = ({ children }) => {
       } else {
         setMatches(devMode ? [devMatch] : []);
       }
-    });
+      });
   }, [user?.uid, devMode]);
 
   // Subscribe to Firestore matches for the current user
@@ -91,6 +95,7 @@ export const ChatProvider = ({ children }) => {
         });
         return [...others, ...converted];
       });
+      setLoading(false);
 
       const userIds = data
         .map((m) =>
@@ -255,10 +260,50 @@ export const ChatProvider = ({ children }) => {
   const removeMatch = (matchId) =>
     setMatches((prev) => prev.filter((m) => m.id !== matchId));
 
+  const refreshMatches = async () => {
+    if (!user?.uid) return;
+    setLoading(true);
+    try {
+      const snap = await db
+        .collection('matches')
+        .where('users', 'array-contains', user.uid)
+        .get();
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setMatches((prev) => {
+        const others = prev.filter((m) => !data.find((d) => d.id === m.id));
+        const converted = data.map((m) => {
+          const otherId = Array.isArray(m.users)
+            ? m.users.find((u) => u !== user.uid)
+            : null;
+          const prevMatch = prev.find((p) => p.id === m.id) || {};
+          return {
+            id: m.id,
+            otherUserId: otherId,
+            name: prevMatch.name || 'Match',
+            age: prevMatch.age || 0,
+            image: prevMatch.image || require('../assets/user1.jpg'),
+            online: prevMatch.online || false,
+            messages: prevMatch.messages || [],
+            matchedAt: m.createdAt
+              ? m.createdAt.toDate?.().toISOString()
+              : 'now',
+            activeGameId: prevMatch.activeGameId || null,
+            pendingInvite: prevMatch.pendingInvite || null,
+          };
+        });
+        return [...others, ...converted];
+      });
+    } catch (e) {
+      console.warn('Failed to refresh matches', e);
+    }
+    setLoading(false);
+  };
+
   return (
     <ChatContext.Provider
       value={{
         matches,
+        loading,
         sendMessage,
         getMessages,
         addMatch,
@@ -269,6 +314,7 @@ export const ChatProvider = ({ children }) => {
         clearGameInvite,
         acceptGameInvite,
         getPendingInvite,
+        refreshMatches,
       }}
     >
       {children}

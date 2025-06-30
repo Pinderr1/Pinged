@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Image,
   StyleSheet,
   SafeAreaView,
+  RefreshControl,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
@@ -15,13 +16,24 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
 import PropTypes from 'prop-types';
 import { HEADER_SPACING } from '../layout';
+import Loader from '../components/Loader';
 
 const MatchesScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
-  const { matches } = useChats();
+  const { matches, loading, refreshMatches } = useChats();
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (!loading) setRefreshing(false);
+  }, [loading]);
 
   const newMatches = matches.filter((m) => (m.messages || []).length === 0);
   const activeChats = matches.filter((m) => (m.messages || []).length > 0);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refreshMatches();
+  };
 
   const renderNewMatch = ({ item }) => (
     <TouchableOpacity
@@ -60,27 +72,47 @@ const MatchesScreen = ({ navigation }) => {
       <GradientBackground style={{ flex: 1 }}>
         <Header />
         <View style={{ flex: 1, paddingTop: HEADER_SPACING }}>
-          {newMatches.length > 0 && (
+          {loading ? (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <Loader />
+            </View>
+          ) : newMatches.length === 0 && activeChats.length === 0 ? (
+            <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
+              No matches yet.
+            </Text>
+          ) : (
             <>
-              <Text style={styles.sectionTitle}>New Matches</Text>
+              {newMatches.length > 0 && (
+                <>
+                  <Text style={styles.sectionTitle}>New Matches</Text>
+                  <FlatList
+                    data={newMatches}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderNewMatch}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.newList}
+                  />
+                </>
+              )}
+              <Text style={styles.sectionTitle}>Active Chats</Text>
               <FlatList
-                data={newMatches}
+                data={activeChats}
                 keyExtractor={(item) => item.id}
-                renderItem={renderNewMatch}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.newList}
+                renderItem={renderChat}
+                refreshControl={
+                  <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+                }
+                ListEmptyComponent={
+                  <Text style={{ textAlign: 'center', marginTop: 20, color: theme.text }}>
+                    No chats yet.
+                  </Text>
+                }
+                contentContainerStyle={{ paddingBottom: 120 }}
+                showsVerticalScrollIndicator={false}
               />
             </>
           )}
-          <Text style={styles.sectionTitle}>Active Chats</Text>
-          <FlatList
-            data={activeChats}
-            keyExtractor={(item) => item.id}
-            renderItem={renderChat}
-            contentContainerStyle={{ paddingBottom: 120 }}
-            showsVerticalScrollIndicator={false}
-          />
         </View>
       </GradientBackground>
     </SafeAreaView>
