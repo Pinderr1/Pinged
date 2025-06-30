@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   FlatList,
   StyleSheet,
   Image
@@ -12,6 +11,7 @@ import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
 import * as WebBrowser from 'expo-web-browser';
 import Header from '../components/Header';
+import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import firebase from '../firebase';
@@ -61,7 +61,7 @@ const PremiumScreen = ({ navigation, route }) => {
     return (
       <GradientBackground style={{ flex: 1 }}>
         <Header />
-        <ScrollView contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 100 }}>
+        <ScreenContainer scroll contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 100 }}>
           <View style={upgradeStyles.container}>
             <Text style={upgradeStyles.title}>Upgrade to Premium</Text>
             <Text style={upgradeStyles.subtitle}>
@@ -84,7 +84,7 @@ const PremiumScreen = ({ navigation, route }) => {
               1 free game/day included on free plan. Cancel anytime. All prices in CAD.
             </Text>
           </View>
-        </ScrollView>
+        </ScreenContainer>
       </GradientBackground>
     );
   }
@@ -92,7 +92,7 @@ const PremiumScreen = ({ navigation, route }) => {
   return (
     <GradientBackground style={{ flex: 1 }}>
       <Header />
-      <View style={paywallStyles.container}>
+      <ScreenContainer scroll contentContainerStyle={paywallStyles.container}>
         {user?.isPremium && user.premiumUpdatedAt && (
           <Text style={paywallStyles.memberSince}>{
             `Member since ${new Date(
@@ -121,7 +121,7 @@ const PremiumScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={paywallStyles.cancel}>Maybe Later</Text>
         </TouchableOpacity>
-      </View>
+      </ScreenContainer>
     </GradientBackground>
   );
 };

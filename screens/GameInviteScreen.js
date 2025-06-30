@@ -10,6 +10,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
+import ScreenContainer from '../components/ScreenContainer';
 import GradientButton from '../components/GradientButton';
 import Header from '../components/Header';
 import SkeletonPlaceholder from '../components/SkeletonPlaceholder';
@@ -154,7 +155,8 @@ const GameInviteScreen = ({ route, navigation }) => {
   return (
     <GradientBackground style={styles.swipeScreen}>
       <Header showLogoOnly />
-      <SafeKeyboardView style={{ flex: 1 }}>
+      <ScreenContainer scroll contentContainerStyle={{ paddingBottom: 100 }}>
+        <SafeKeyboardView style={{ flex: 1 }}>
           <Text
             style={{
               fontSize: 18,
@@ -227,7 +229,8 @@ const GameInviteScreen = ({ route, navigation }) => {
               ) : null
             }
           />
-      </SafeKeyboardView>
+        </SafeKeyboardView>
+      </ScreenContainer>
     </GradientBackground>
   );
 };

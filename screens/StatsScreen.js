@@ -1,7 +1,7 @@
 // /screens/StatsScreen.js
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import GradientButton from '../components/GradientButton';
@@ -13,6 +13,8 @@ import PropTypes from 'prop-types';
 import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 import ProfileCard from '../components/stats/ProfileCard';
 import StatBox from '../components/stats/StatBox';
+import ScreenContainer from '../components/ScreenContainer';
+import { CARD_STYLE } from '../components/Card';
 
 const StatsScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -107,7 +109,7 @@ const StatsScreen = ({ navigation }) => {
   return (
     <GradientBackground style={{ flex: 1 }}>
       <Header showLogoOnly />
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScreenContainer scroll contentContainerStyle={styles.container}>
         {/* Profile Summary */}
         <ProfileCard
           user={user}
@@ -172,7 +174,7 @@ const StatsScreen = ({ navigation }) => {
             style={styles.premiumButton}
           />
         )}
-      </ScrollView>
+      </ScreenContainer>
     </GradientBackground>
   );
 };
@@ -185,7 +187,9 @@ const getStyles = (theme) => StyleSheet.create({
   },
   profileCard: {
     alignItems: 'center',
-    marginBottom: 20
+    marginBottom: 20,
+    backgroundColor: theme.card,
+    ...CARD_STYLE,
   },
   avatar: {
     width: 90,
@@ -212,18 +216,14 @@ const getStyles = (theme) => StyleSheet.create({
     fontWeight: '700',
     marginTop: 20,
     marginBottom: 8,
-    color: theme.text
+    color: theme.text,
+    textAlign: 'center',
   },
   statBox: {
     backgroundColor: theme.card,
-    borderRadius: 12,
     padding: 14,
     marginBottom: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3
+    ...CARD_STYLE,
   },
   statLabel: {
     fontSize: FONT_SIZES.SM,

@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import GradientButton from '../components/GradientButton';
 import Card from '../components/Card';
+import ScreenContainer from '../components/ScreenContainer';
 import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
@@ -195,8 +196,8 @@ const CommunityScreen = () => {
   return (
     <View style={{ flex: 1, backgroundColor: darkMode ? '#333' : '#fce4ec' }}>
       <Header />
-
-      <ScrollView
+      <ScreenContainer
+        scroll
         contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 150 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
@@ -274,7 +275,7 @@ const CommunityScreen = () => {
             </Text>
           </Animated.View>
         )}
-      </ScrollView>
+      </ScreenContainer>
 
       {/* Floating actions */}
       {showFabMenu && (
@@ -449,8 +450,8 @@ const getStyles = (theme, skeletonColor) =>
   header: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    marginLeft: 16,
-    marginBottom: 12
+    textAlign: 'center',
+    marginVertical: 16,
   },
   banner: {
     marginHorizontal: 16,
