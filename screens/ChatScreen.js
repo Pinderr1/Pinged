@@ -536,7 +536,7 @@ function PrivateChat({ user }) {
       </Modal>
       <SafeAreaView style={{ flex: 1 }}>
         <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
-          <View style={{ flex: 1 }}>
+          <View style={privateStyles.container}>
             {showPlaceholders ? (
               <PlaceholderBubbles />
             ) : loading ? (
@@ -556,6 +556,11 @@ function PrivateChat({ user }) {
 
 const getPrivateStyles = (theme) =>
   StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
   messageBubble: {
     padding: 10,
     borderRadius: 10,
@@ -859,7 +864,7 @@ function GroupChat({ event }) {
   return (
     <GradientBackground style={{ flex: 1 }}>
       <Header />
-      <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
+      <SafeKeyboardView style={[groupStyles.container, { paddingTop: HEADER_SPACING }]}>
         {loading ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Loader />
@@ -911,6 +916,11 @@ function GroupChat({ event }) {
 
 const getGroupStyles = (theme) =>
   StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
   eventTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',

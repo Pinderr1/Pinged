@@ -126,7 +126,7 @@ const HomeScreen = ({ navigation }) => {
     <GradientBackground style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Header showLogoOnly />
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView contentContainerStyle={[local.container, { paddingBottom: 100 }]}>
           <Text style={[local.welcome, { color: theme.text }]}>
             {`Welcome${user?.displayName ? `, ${user.displayName}` : ''}!`}
           </Text>
@@ -329,32 +329,37 @@ HomeScreen.propTypes = {
 
 const getStyles = (theme) =>
   StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
   welcome: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginHorizontal: 16,
+    alignSelf: 'center',
     marginTop: 20,
     marginBottom: 8,
   },
   bonus: {
     fontSize: 14,
     color: '#2ecc71',
-    marginHorizontal: 16,
     marginBottom: 8,
+    alignSelf: 'center',
   },
   section: {
     fontSize: 16,
     fontWeight: '700',
-    marginHorizontal: 16,
+    alignSelf: 'center',
     marginBottom: 8,
     color: theme.accent,
   },
   progressCard: {
-    marginHorizontal: 16,
     marginBottom: 16,
+    alignSelf: 'stretch',
   },
   group: {
     marginBottom: 24,
+    alignItems: 'center',
   },
   levelText: {
     fontSize: 16,
@@ -440,7 +445,7 @@ const getStyles = (theme) =>
     flexDirection: 'row',
     borderRadius: 12,
     padding: 12,
-    marginHorizontal: 16,
+    alignSelf: 'stretch',
     marginBottom: 12,
     alignItems: 'center',
   },
@@ -464,7 +469,7 @@ const getStyles = (theme) =>
   postCardPreview: {
     borderRadius: 12,
     padding: 12,
-    marginHorizontal: 16,
+    alignSelf: 'stretch',
     marginBottom: 12,
   },
   postTitle: {
