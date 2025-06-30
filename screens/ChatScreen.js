@@ -11,6 +11,7 @@ import {
   Keyboard,
   Animated,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import { Ionicons } from '@expo/vector-icons';
@@ -584,7 +585,11 @@ function PrivateChat({ user }) {
       <ScreenContainer>
         <View style={{ flex: 1, paddingTop: HEADER_SPACING }}>
           {gameSection}
-          <SafeKeyboardView style={{ flex: 1 }}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={HEADER_SPACING}
+          >
             <View style={privateStyles.container}>
               {showPlaceholders ? (
                 <PlaceholderBubbles />
@@ -596,7 +601,7 @@ function PrivateChat({ user }) {
                 chatSection
               )}
             </View>
-          </SafeKeyboardView>
+          </KeyboardAvoidingView>
         </View>
       </ScreenContainer>
     </GradientBackground>
@@ -651,6 +656,7 @@ const getPrivateStyles = (theme) =>
     borderColor: '#ccc',
     backgroundColor: '#fff',
     alignItems: 'center',
+    width: '100%',
   },
   textInput: {
     flex: 1,
