@@ -1,35 +1,16 @@
-import React, { useContext, useEffect, useRef } from 'react';
+import React from 'react';
 import { Animated, Text, StyleSheet, Dimensions, View } from 'react-native';
-import { NotificationContext } from '../contexts/NotificationContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import useNotificationBanner from '../hooks/useNotificationBanner';
 
 const screenWidth = Dimensions.get('window').width;
 
 const NotificationCenter = ({ color }) => {
-  const { visible, notification } = useContext(NotificationContext);
   const { theme } = useTheme();
-  const slideAnim = useRef(new Animated.Value(-100)).current;
+  const { notification, isVisible, slideAnim } = useNotificationBanner();
 
-  useEffect(() => {
-    if (visible) {
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true
-      }).start(() => {
-        setTimeout(() => {
-          Animated.timing(slideAnim, {
-            toValue: -100,
-            duration: 300,
-            useNativeDriver: true
-          }).start();
-        }, 2500);
-      });
-    }
-  }, [visible]);
-
-  if (!visible || !notification) return null;
+  if (!isVisible) return null;
 
   const bannerColor = color || theme.accent;
 
