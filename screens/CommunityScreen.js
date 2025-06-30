@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,9 @@ import {
   Alert,
   Modal,
   TextInput,
-  Dimensions
+  Dimensions,
+  Animated,
+  Easing
 } from 'react-native';
 import GradientButton from '../components/GradientButton';
 import Card from '../components/Card';
@@ -40,12 +42,25 @@ const CommunityScreen = () => {
   const [showHostModal, setShowHostModal] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const [firstJoin, setFirstJoin] = useState(false);
+  const badgeAnim = useRef(new Animated.Value(0)).current;
   const [newTitle, setNewTitle] = useState('');
   const [newTime, setNewTime] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [posts, setPosts] = useState([]);
   const [postTitle, setPostTitle] = useState('');
   const [postDesc, setPostDesc] = useState('');
+
+  useEffect(() => {
+    if (firstJoin) {
+      badgeAnim.setValue(0);
+      Animated.timing(badgeAnim, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [firstJoin, badgeAnim]);
 
   useEffect(() => {
     const q = db.collection('events').orderBy('createdAt', 'desc');
@@ -181,11 +196,18 @@ const CommunityScreen = () => {
 
         {/* First Join Badge */}
         {firstJoin && (
-          <View style={local.badgePopup}>
+          <Animated.View
+            style={[
+              local.badgePopup,
+              { opacity: badgeAnim, transform: [{ scale: badgeAnim }] },
+            ]}
+          >
             <Text style={local.badgeEmoji}>🏅</Text>
             <Text style={local.badgeTitle}>New Badge Unlocked!</Text>
-            <Text style={local.badgeText}>You earned the “Social Butterfly” badge.</Text>
-          </View>
+            <Text style={local.badgeText}>
+              You earned the “Social Butterfly” badge.
+            </Text>
+          </Animated.View>
         )}
       </ScrollView>
 
