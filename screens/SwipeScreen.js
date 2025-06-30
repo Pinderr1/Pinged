@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import GradientBackground from '../components/GradientBackground';
+import ScreenContainer from '../components/ScreenContainer';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
@@ -424,8 +425,8 @@ const handleSwipe = async (direction) => {
 
   return (
     <GradientBackground colors={gradientColors} style={{ flex: 1 }}>
-      <Header />
-      <View style={styles.container}>
+      <ScreenContainer style={styles.container}>
+        <Header />
         {displayUser ? (
           <Animated.View
             {...panResponder.panHandlers}
@@ -570,7 +571,7 @@ const handleSwipe = async (direction) => {
             </View>
           </Modal>
         )}
-      </View>
+      </ScreenContainer>
     </GradientBackground>
   );
 };

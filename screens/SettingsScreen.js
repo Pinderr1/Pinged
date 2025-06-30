@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
+import ScreenContainer from '../components/ScreenContainer';
 import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
 import getStyles from '../styles';
@@ -29,8 +30,9 @@ const SettingsScreen = ({ navigation }) => {
   const handleGoPremium = () => navigation.navigate('Premium', { context: 'paywall' });
 
   return (
-    <GradientBackground style={styles.container}>
-      <Header />
+    <GradientBackground style={{ flex: 1 }}>
+      <ScreenContainer style={styles.container}>
+        <Header />
 
       <Text style={[styles.logoText, { color: theme.text, marginBottom: 10 }]}>
         Settings
@@ -80,6 +82,7 @@ const SettingsScreen = ({ navigation }) => {
           <GradientButton text="Log Out" onPress={handleLogout} />
         </>
       )}
+      </ScreenContainer>
     </GradientBackground>
   );
 };
