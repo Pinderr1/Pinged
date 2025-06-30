@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import PropTypes from 'prop-types';
 
 export default function MultiSelectList({ options = [], selected = [], onChange, theme }) {
   const toggle = (val) => {
@@ -28,6 +29,15 @@ export default function MultiSelectList({ options = [], selected = [], onChange,
     </ScrollView>
   );
 }
+
+MultiSelectList.propTypes = {
+  options: PropTypes.arrayOf(
+    PropTypes.shape({ value: PropTypes.any.isRequired, label: PropTypes.string.isRequired })
+  ),
+  selected: PropTypes.array,
+  onChange: PropTypes.func,
+  theme: PropTypes.object,
+};
 
 const getStyles = (theme) =>
   StyleSheet.create({

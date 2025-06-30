@@ -3,6 +3,7 @@ import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
+import PropTypes from 'prop-types';
 
 const Header = () => {
   const navigation = useNavigation();
@@ -42,6 +43,8 @@ const Header = () => {
     </View>
   );
 };
+
+Header.propTypes = {};
 
 const styles = StyleSheet.create({
   container: {

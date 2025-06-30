@@ -1,5 +1,6 @@
 import React from 'react';
 import LottieView from 'lottie-react-native';
+import PropTypes from 'prop-types';
 
 export default function Loader({ size = 'large', style }) {
   const dimension = size === 'small' ? 40 : 80;
@@ -12,3 +13,8 @@ export default function Loader({ size = 'large', style }) {
     />
   );
 }
+
+Loader.propTypes = {
+  size: PropTypes.oneOf(['small', 'large']),
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+};

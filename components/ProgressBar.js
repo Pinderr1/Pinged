@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import PropTypes from 'prop-types';
 
 export default function ProgressBar({ label, value = 0, max = 100, color }) {
   const { theme } = useTheme();
@@ -30,3 +31,10 @@ export default function ProgressBar({ label, value = 0, max = 100, color }) {
     </View>
   );
 }
+
+ProgressBar.propTypes = {
+  label: PropTypes.string,
+  value: PropTypes.number,
+  max: PropTypes.number,
+  color: PropTypes.string,
+};

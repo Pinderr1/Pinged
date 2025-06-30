@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import Loader from './Loader';
 import useGameSession from '../hooks/useGameSession';
 import { games } from '../games';
+import PropTypes from 'prop-types';
 
 export default function SyncedGame({ sessionId, gameId, opponentId, onGameEnd }) {
   const { Board } = games[gameId] || {};
@@ -19,3 +20,10 @@ export default function SyncedGame({ sessionId, gameId, opponentId, onGameEnd })
 
   return <Board G={G} ctx={ctx} moves={moves} onGameEnd={onGameEnd} />;
 }
+
+SyncedGame.propTypes = {
+  sessionId: PropTypes.string.isRequired,
+  gameId: PropTypes.string.isRequired,
+  opponentId: PropTypes.string.isRequired,
+  onGameEnd: PropTypes.func.isRequired,
+};

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import PropTypes from 'prop-types';
 
 const PremiumBadge = ({ premium, route, accent }) => {
   if (route) return null;
@@ -20,6 +21,12 @@ const PremiumBadge = ({ premium, route, accent }) => {
       </Text>
     </View>
   );
+};
+
+PremiumBadge.propTypes = {
+  premium: PropTypes.bool,
+  route: PropTypes.string,
+  accent: PropTypes.string,
 };
 
 export default PremiumBadge;

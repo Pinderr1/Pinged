@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import PropTypes from 'prop-types';
 
 const Card = ({ children, style, onPress, ...rest }) => {
   const Container = onPress ? TouchableOpacity : View;
@@ -8,6 +9,12 @@ const Card = ({ children, style, onPress, ...rest }) => {
       {children}
     </Container>
   );
+};
+
+Card.propTypes = {
+  children: PropTypes.node,
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  onPress: PropTypes.func,
 };
 
 const styles = StyleSheet.create({

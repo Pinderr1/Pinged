@@ -1,5 +1,6 @@
 import React from 'react';
 import { Animated, TouchableOpacity, Dimensions } from 'react-native';
+import PropTypes from 'prop-types';
 
 const CARD_WIDTH = Dimensions.get('window').width * 0.42;
 
@@ -30,5 +31,13 @@ const GameCardBase = ({ children, scale, onPress, onPressIn, onPressOut }) => (
     </TouchableOpacity>
   </Animated.View>
 );
+
+GameCardBase.propTypes = {
+  children: PropTypes.node.isRequired,
+  scale: PropTypes.oneOfType([PropTypes.number, PropTypes.object]),
+  onPress: PropTypes.func,
+  onPressIn: PropTypes.func,
+  onPressOut: PropTypes.func,
+};
 
 export default GameCardBase;

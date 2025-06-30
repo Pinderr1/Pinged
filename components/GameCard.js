@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import GameCardBase from './GameCardBase';
@@ -47,3 +48,10 @@ export default function GameCard({ item, onPress, toggleFavorite, isFavorite }) 
     </GameCardBase>
   );
 }
+
+GameCard.propTypes = {
+  item: PropTypes.object.isRequired,
+  onPress: PropTypes.func.isRequired,
+  toggleFavorite: PropTypes.func.isRequired,
+  isFavorite: PropTypes.bool.isRequired,
+};

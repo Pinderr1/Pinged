@@ -2,6 +2,7 @@
 import React from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
+import PropTypes from 'prop-types';
 import styles from '../styles';
 
 export default function GradientBackground({ children, colors, style }) {
@@ -14,3 +15,9 @@ export default function GradientBackground({ children, colors, style }) {
     </LinearGradient>
   );
 }
+
+GradientBackground.propTypes = {
+  children: PropTypes.node,
+  colors: PropTypes.arrayOf(PropTypes.string),
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+};

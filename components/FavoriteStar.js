@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import PropTypes from 'prop-types';
 
 const FavoriteStar = ({ isFavorite, onPress }) => (
   <TouchableOpacity
@@ -14,5 +15,10 @@ const FavoriteStar = ({ isFavorite, onPress }) => (
     />
   </TouchableOpacity>
 );
+
+FavoriteStar.propTypes = {
+  isFavorite: PropTypes.bool.isRequired,
+  onPress: PropTypes.func.isRequired,
+};
 
 export default FavoriteStar;

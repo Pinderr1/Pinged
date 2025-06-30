@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
+import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
 import GradientButton from './GradientButton';
 
@@ -44,3 +45,10 @@ export default function GamePreviewModal({ visible, game, onStart, onClose }) {
     </Modal>
   );
 }
+
+GamePreviewModal.propTypes = {
+  visible: PropTypes.bool.isRequired,
+  game: PropTypes.object,
+  onStart: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
