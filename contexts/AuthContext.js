@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import * as AuthSession from 'expo-auth-session';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { auth, db } from '../firebase';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import * as AuthSession from "expo-auth-session";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { auth, db } from "../firebase";
+import { clearStoredOnboarding } from "./OnboardingContext";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -11,10 +12,10 @@ import {
   signInWithCredential,
   signOut,
   GoogleAuthProvider,
-} from 'firebase/auth';
-import { serverTimestamp } from 'firebase/firestore';
-import { snapshotExists } from '../utils/firestore';
-import { isAllowedDomain } from '../utils/email';
+} from "firebase/auth";
+import { serverTimestamp } from "firebase/firestore";
+import { snapshotExists } from "../utils/firestore";
+import { isAllowedDomain } from "../utils/email";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -23,7 +24,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const redirectUri = AuthSession.makeRedirectUri({ scheme: 'pinged' });
+  const redirectUri = AuthSession.makeRedirectUri({ scheme: "pinged" });
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
@@ -32,20 +33,20 @@ export const AuthProvider = ({ children }) => {
 
   const ensureUserDoc = async (fbUser) => {
     try {
-      const ref = db.collection('users').doc(fbUser.uid);
+      const ref = db.collection("users").doc(fbUser.uid);
       const snap = await ref.get();
       if (!snapshotExists(snap)) {
         await ref.set({
           uid: fbUser.uid,
           email: fbUser.email,
-          displayName: fbUser.displayName || '',
-          photoURL: fbUser.photoURL || '',
+          displayName: fbUser.displayName || "",
+          photoURL: fbUser.photoURL || "",
           onboardingComplete: false,
           createdAt: serverTimestamp(),
         });
       }
     } catch (e) {
-      console.warn('Failed to ensure user doc', e);
+      console.warn("Failed to ensure user doc", e);
     }
   };
 
@@ -60,7 +61,7 @@ export const AuthProvider = ({ children }) => {
 
   const signUpWithEmail = async (email, password) => {
     if (!isAllowedDomain(email)) {
-      throw new Error('Email domain not supported');
+      throw new Error("Email domain not supported");
     }
     const userCred = await createUserWithEmailAndPassword(
       auth,
@@ -69,25 +70,31 @@ export const AuthProvider = ({ children }) => {
     );
     try {
       const keys = await AsyncStorage.getAllKeys();
-      const matchKeys = keys.filter((k) => k.startsWith('chatMatches'));
+      const matchKeys = keys.filter((k) => k.startsWith("chatMatches"));
       if (matchKeys.length) await AsyncStorage.multiRemove(matchKeys);
     } catch (e) {
-      console.warn('Failed to clear stored matches', e);
+      console.warn("Failed to clear stored matches", e);
     }
-    await db.collection('users').doc(userCred.user.uid).set({
-      uid: userCred.user.uid,
-      email: userCred.user.email,
-      displayName: userCred.user.displayName || '',
-      photoURL: userCred.user.photoURL || '',
-      onboardingComplete: false,
-      createdAt: serverTimestamp(),
-    });
+    await db
+      .collection("users")
+      .doc(userCred.user.uid)
+      .set({
+        uid: userCred.user.uid,
+        email: userCred.user.email,
+        displayName: userCred.user.displayName || "",
+        photoURL: userCred.user.photoURL || "",
+        onboardingComplete: false,
+        createdAt: serverTimestamp(),
+      });
   };
 
   const loginWithGoogle = () =>
-    promptAsync({ useProxy: false, prompt: 'select_account' });
+    promptAsync({ useProxy: false, prompt: "select_account" });
 
-  const logout = () => signOut(auth);
+  const logout = async () => {
+    if (user?.uid) await clearStoredOnboarding(user.uid);
+    return signOut(auth);
+  };
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
@@ -99,12 +106,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (response?.type === 'success') {
+    if (response?.type === "success") {
       const { id_token } = response.params;
       const credential = GoogleAuthProvider.credential(id_token);
       signInWithCredential(auth, credential)
         .then((res) => ensureUserDoc(res.user))
-        .catch((err) => console.warn('Google login failed', err));
+        .catch((err) => console.warn("Google login failed", err));
     }
   }, [response]);
 
