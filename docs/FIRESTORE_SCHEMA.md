@@ -61,6 +61,12 @@ A copy of each invite is also stored under `users/{uid}/gameInvites/{inviteId}` 
   - `timestamp` (timestamp)
   - `readBy` (array of string)
 
+## Match History (`matchHistory/{entryId}`)
+- `matchId` (string) – id of the related match
+- `users` (array of string) – the two user ids in the match
+- `likeInitiator` (string) – uid of the user who liked first
+- `createdAt` (timestamp)
+
 ## Game Sessions (`gameSessions/{sessionId}`)
 - `gameId` (string)
 - `players` (array of string) – user ids

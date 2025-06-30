@@ -231,6 +231,17 @@ const handleSwipe = async (direction) => {
                 createdAt: serverTimestamp(),
               });
 
+            try {
+              await db.collection('matchHistory').add({
+                matchId: matchRef.id,
+                users: [currentUser.uid, displayUser.id],
+                likeInitiator: displayUser.id,
+                createdAt: serverTimestamp(),
+              });
+            } catch (historyErr) {
+              console.warn('Failed to log match history', historyErr);
+            }
+
             addMatch({
               id: matchRef.id,
               displayName: displayUser.displayName,
