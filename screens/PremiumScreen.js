@@ -12,7 +12,6 @@ import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
 import * as WebBrowser from 'expo-web-browser';
 import Header from '../components/Header';
-import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { functions } from '../firebase';

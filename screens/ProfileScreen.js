@@ -5,7 +5,7 @@ import { Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
-import styles from '../styles';
+import getStyles from '../styles';
 import { HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { useUser } from '../contexts/UserContext';
@@ -24,6 +24,7 @@ import { allGames } from '../data/games';
 const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
   const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [editMode, setEditMode] = useState(route?.params?.editMode || false);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [age, setAge] = useState(user?.age ? String(user.age) : '');

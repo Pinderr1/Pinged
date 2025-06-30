@@ -13,7 +13,7 @@ import * as Haptics from 'expo-haptics';
 import GradientButton from '../components/GradientButton';
 import Loader from '../components/Loader';
 import Header from '../components/Header';
-import styles from '../styles';
+import getStyles from '../styles';
 import GradientBackground from '../components/GradientBackground';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { useUser } from '../contexts/UserContext';
@@ -52,6 +52,7 @@ const NotificationsScreen = ({ navigation }) => {
   const { incomingInvites, acceptGameInvite, cancelGameInvite } = useMatchmaking();
   const { user } = useUser();
   const { darkMode, theme } = useTheme();
+  const styles = getStyles(theme);
   const [loadingId, setLoadingId] = useState(null);
   const [invitesLoaded, setInvitesLoaded] = useState(false);
 

@@ -17,7 +17,6 @@ import PropTypes from 'prop-types';
 import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
-import styles from '../styles';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
 import { db } from '../firebase';

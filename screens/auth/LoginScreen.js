@@ -4,7 +4,8 @@ import { Image, Text } from 'react-native';
 import Toast from 'react-native-toast-message';
 import GradientBackground from '../../components/GradientBackground';
 import GradientButton from '../../components/GradientButton';
-import styles from '../../styles';
+import getStyles from '../../styles';
+import { useTheme } from '../../contexts/ThemeContext';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
@@ -23,6 +24,8 @@ export default function LoginScreen() {
   const navigation = useNavigation();
   const { markOnboarded } = useOnboarding();
   const { toggleDevMode } = useDev();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
 
   const redirectUri = AuthSession.makeRedirectUri({ scheme: 'pinged' });
 
@@ -70,7 +73,7 @@ export default function LoginScreen() {
   return (
     <GradientBackground>
       <Image source={require('../../assets/logo.png')} style={styles.logoImage} />
-      <Text style={[styles.logoText, { color: '#fff' }]}>Pinged</Text>
+      <Text style={[styles.logoText, { color: theme.text }]}>Pinged</Text>
 
       <GradientButton
         text="Sign in with Google"

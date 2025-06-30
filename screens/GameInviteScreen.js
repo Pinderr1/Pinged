@@ -18,7 +18,7 @@ import { useDev } from '../contexts/DevContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import PropTypes from 'prop-types';
-import styles from '../styles';
+import getGlobalStyles from '../styles';
 import { useChats } from '../contexts/ChatContext';
 import { useUser } from '../contexts/UserContext';
 import Toast from 'react-native-toast-message';
@@ -34,6 +34,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   const gameTitle = typeof rawGame === 'string' ? rawGame : rawGame?.title || 'a game';
   const gameId = typeof rawGame === 'object' ? rawGame.id : null;
   const { darkMode, theme } = useTheme();
+  const styles = getGlobalStyles(theme);
   const { devMode } = useDev();
   const { user: currentUser } = useUser();
   const { matches: chatMatches, loading: matchesLoading } = useChats();
