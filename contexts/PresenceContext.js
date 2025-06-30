@@ -8,6 +8,7 @@ export const PresenceProvider = ({ children }) => {
   useEffect(() => {
     let statusRef;
     let appStateHandler;
+    let appStateSubscription;
     const offline = {
       state: 'offline',
       last_changed: firebase.database.ServerValue.TIMESTAMP,
@@ -33,13 +34,15 @@ export const PresenceProvider = ({ children }) => {
           statusRef.set(offline);
         }
       };
-      AppState.addEventListener('change', appStateHandler);
+      appStateSubscription = AppState.addEventListener('change', appStateHandler);
     };
 
     const unsubscribe = auth.onAuthStateChanged((fbUser) => {
       if (statusRef) {
         statusRef.set(offline);
-        AppState.removeEventListener('change', appStateHandler);
+        if (appStateSubscription?.remove) {
+          appStateSubscription.remove();
+        }
         statusRef = null;
       }
       if (fbUser) setup(fbUser.uid);
@@ -49,7 +52,9 @@ export const PresenceProvider = ({ children }) => {
       unsubscribe();
       if (statusRef) {
         statusRef.set(offline);
-        AppState.removeEventListener('change', appStateHandler);
+        if (appStateSubscription?.remove) {
+          appStateSubscription.remove();
+        }
       }
     };
   }, []);
