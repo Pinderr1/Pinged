@@ -52,8 +52,23 @@ const MatchesScreen = ({ navigation }) => {
   );
 
   const renderSkeletonChat = (_, index) => (
-    <Card key={`skeleton-chat-${index}`} style={[styles.chatItem, { backgroundColor: theme.card }]}> 
-      <View style={[styles.chatAvatar, { backgroundColor: skeletonColor }]} />
+    <Card
+      key={`skeleton-chat-${index}`}
+      style={[styles.chatItem, { backgroundColor: theme.card }]}
+    >
+      <View style={styles.avatarColumn}>
+        <View style={[styles.chatAvatar, { backgroundColor: skeletonColor }]} />
+        <View
+          style={[
+            styles.skeletonText,
+            {
+              backgroundColor: skeletonColor,
+              width: 56,
+              marginTop: 4,
+            },
+          ]}
+        />
+      </View>
       <View style={{ flex: 1 }}>
         <View
           style={[
@@ -88,7 +103,15 @@ const MatchesScreen = ({ navigation }) => {
       onPress={() => navigation.navigate('Chat', { user: item })}
       style={[styles.chatItem, { backgroundColor: theme.card }]}
     >
-      <Image source={item.image} style={styles.chatAvatar} />
+      <View style={styles.avatarColumn}>
+        <Image source={item.image} style={styles.chatAvatar} />
+        <Text
+          style={[styles.avatarName, { color: theme.text }]}
+          numberOfLines={1}
+        >
+          {item.displayName}
+        </Text>
+      </View>
       <View style={{ flex: 1 }}>
         <Text style={[styles.chatName, { color: theme.text }]}>{item.displayName}</Text>
         {item.messages?.length ? (
@@ -191,11 +214,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     alignSelf: 'center',
+    textAlign: 'center',
     marginBottom: 8,
     color: '#ff4081',
   },
   newList: {
     marginBottom: 12,
+    paddingHorizontal: 8,
+    justifyContent: 'center',
   },
   newMatch: {
     alignItems: 'center',
@@ -218,7 +244,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     padding: 12,
-    alignSelf: 'stretch',
+    alignSelf: 'center',
+    width: '90%',
+    maxWidth: 400,
     borderRadius: 16,
   },
   chatAvatar: {
@@ -226,6 +254,16 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     marginRight: 12,
+  },
+  avatarColumn: {
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  avatarName: {
+    fontSize: 12,
+    marginTop: 4,
+    maxWidth: 64,
+    textAlign: 'center',
   },
   chatName: {
     fontSize: 16,
