@@ -82,6 +82,7 @@ function PrivateChat({ user }) {
   const [refreshing, setRefreshing] = useState(false);
   const [firstLine, setFirstLine] = useState('');
   const [firstGame, setFirstGame] = useState(null);
+  const showPlaceholders = loading && messages.length === 0;
 
   useEffect(() => {
     setFirstLine(
@@ -326,6 +327,24 @@ function PrivateChat({ user }) {
     </TouchableOpacity>
   );
 
+  const PlaceholderBubbles = () => {
+    const widths = ['60%', '70%', '55%', '80%'];
+    return (
+      <View style={{ flex: 4, padding: 10 }}>
+        {widths.map((w, i) => (
+          <View
+            key={i}
+            style={[
+              privateStyles.messageBubble,
+              i % 2 === 0 ? privateStyles.messageLeft : privateStyles.messageRight,
+              { backgroundColor: darkMode ? '#444' : '#ddd', width: w, height: 20 },
+            ]}
+          />
+        ))}
+      </View>
+    );
+  };
+
   const chatSection = (
     <View style={{ flex: 4, padding: 10 }}>
       <FlatList
@@ -515,7 +534,9 @@ function PrivateChat({ user }) {
       <SafeAreaView style={{ flex: 1 }}>
         <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
           <View style={{ flex: 1 }}>
-            {loading ? (
+            {showPlaceholders ? (
+              <PlaceholderBubbles />
+            ) : loading ? (
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Loader />
               </View>
