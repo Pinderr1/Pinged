@@ -1,11 +1,11 @@
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
-import { snapshotExists } from './firestore';
+import { db } from '../firebase';
+import { serverTimestamp } from 'firebase/db';
+import { snapshotExists } from './db';
 
 export async function logGameStats(sessionId) {
   if (!sessionId) return;
   try {
-    const ref = firestore.collection('gameSessions').doc(sessionId);
+    const ref = db.collection('gameSessions').doc(sessionId);
     const snap = await ref.get();
     if (!snapshotExists(snap)) return;
     const data = snap.data() || {};
@@ -20,7 +20,7 @@ export async function logGameStats(sessionId) {
       winner = players[data.gameover.winner];
     }
 
-    await firestore
+    await db
       .collection('gameStats')
       .doc(sessionId)
       .set({

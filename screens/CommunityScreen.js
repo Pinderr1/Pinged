@@ -22,8 +22,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import PropTypes from 'prop-types';
 import { useUser } from '../contexts/UserContext';
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
+import { serverTimestamp } from 'firebase/db';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 import * as Haptics from 'expo-haptics';
@@ -73,7 +73,7 @@ const CommunityScreen = () => {
   }, [firstJoin, badgeAnim]);
 
   useEffect(() => {
-    const q = firestore.collection('events').orderBy('createdAt', 'desc');
+    const q = db.collection('events').orderBy('createdAt', 'desc');
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setEvents(data.length ? data : SAMPLE_EVENTS);
@@ -84,7 +84,7 @@ const CommunityScreen = () => {
   }, []);
 
   useEffect(() => {
-    const q = firestore.collection('communityPosts').orderBy('createdAt', 'desc');
+    const q = db.collection('communityPosts').orderBy('createdAt', 'desc');
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setPosts(data.length ? data : SAMPLE_POSTS);
@@ -112,10 +112,10 @@ const CommunityScreen = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      const eventSnap = await firestore.collection('events').orderBy('createdAt', 'desc').get();
+      const eventSnap = await db.collection('events').orderBy('createdAt', 'desc').get();
       const eventData = eventSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setEvents(eventData.length ? eventData : SAMPLE_EVENTS);
-      const postSnap = await firestore.collection('communityPosts').orderBy('createdAt', 'desc').get();
+      const postSnap = await db.collection('communityPosts').orderBy('createdAt', 'desc').get();
       const postData = postSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setPosts(postData.length ? postData : SAMPLE_POSTS);
     } catch (e) {
@@ -338,7 +338,7 @@ const CommunityScreen = () => {
               text="Submit Event"
               onPress={async () => {
                 try {
-                  await firestore.collection('events').add({
+                  await db.collection('events').add({
                     title: newTitle,
                     time: newTime,
                     description: newDesc,
@@ -387,7 +387,7 @@ const CommunityScreen = () => {
               text="Submit Post"
               onPress={async () => {
                 try {
-                  await firestore.collection('communityPosts').add({
+                  await db.collection('communityPosts').add({
                     title: postTitle,
                     time: 'Just now',
                     description: postDesc,

@@ -1,16 +1,16 @@
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
+import { serverTimestamp } from 'firebase/db';
 
 export async function createMatchIfMissing(uid, otherUid) {
   if (!uid || !otherUid) return null;
   try {
-    const q = await firestore
+    const q = await db
       .collection('matches')
       .where('users', 'array-contains', uid)
       .get();
     const exists = q.docs.some((d) => (d.data().users || []).includes(otherUid));
     if (!exists) {
-      const ref = await firestore.collection('matches').add({
+      const ref = await db.collection('matches').add({
         users: [uid, otherUid],
         createdAt: serverTimestamp(),
       });

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
-import { firestore } from '../firebase';
+import { db } from '../firebase';
 import { useUser } from './UserContext';
 
 const ListenerContext = createContext();
@@ -21,7 +21,7 @@ export const ListenerProvider = ({ children }) => {
   // Subscribe to match messages for current user
   useEffect(() => {
     if (!user?.uid) return;
-    const matchQ = firestore
+    const matchQ = db
       .collection('matches')
       .where('users', 'array-contains', user.uid);
     const unsubMatches = matchQ.onSnapshot((snap) => {
@@ -30,7 +30,7 @@ export const ListenerProvider = ({ children }) => {
       Object.values(messageUnsubs.current).forEach((u) => u && u());
       messageUnsubs.current = {};
       ids.forEach((id) => {
-        const q = firestore
+        const q = db
           .collection('matches')
           .doc(id)
           .collection('messages')
@@ -64,7 +64,7 @@ export const ListenerProvider = ({ children }) => {
   // Subscribe to invites and match requests
   useEffect(() => {
     if (!user?.uid) return;
-    const reqRef = firestore.collection('matchRequests');
+    const reqRef = db.collection('matchRequests');
     const outQ = reqRef.where('from', '==', user.uid);
     const inQ = reqRef.where('to', '==', user.uid);
 
@@ -78,7 +78,7 @@ export const ListenerProvider = ({ children }) => {
       setIncomingRequests(data);
     });
 
-    const inviteRef = firestore.collection('gameInvites');
+    const inviteRef = db.collection('gameInvites');
     const outInvQ = inviteRef.where('from', '==', user.uid);
     const inInvQ = inviteRef.where('to', '==', user.uid);
 
@@ -103,7 +103,7 @@ export const ListenerProvider = ({ children }) => {
   // Subscribe to game sessions for current user
   useEffect(() => {
     if (!user?.uid) return;
-    const q = firestore
+    const q = db
       .collection('gameSessions')
       .where('players', 'array-contains', user.uid);
     const unsub = q.onSnapshot((snap) => {

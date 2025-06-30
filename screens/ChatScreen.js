@@ -19,8 +19,8 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
-import { firestore } from '../firebase';
-import { serverTimestamp, arrayUnion } from 'firebase/firestore';
+import { db } from '../firebase';
+import { serverTimestamp, arrayUnion } from 'firebase/db';
 import * as Haptics from 'expo-haptics';
 import { uploadVoiceAsync } from '../utils/upload';
 import { useTheme } from '../contexts/ThemeContext';
@@ -96,7 +96,7 @@ function PrivateChat({ user }) {
     if (!msgText.trim() && !extras.voice) return;
     if (!user?.id) return;
     try {
-      await firestore
+      await db
         .collection('matches')
         .doc(user.id)
         .collection('messages')
@@ -120,7 +120,7 @@ function PrivateChat({ user }) {
 
   const updateTyping = (state) => {
     if (!user?.id || !currentUser?.uid) return;
-    firestore.collection('matches')
+    db.collection('matches')
       .doc(user.id)
       .set({ typing: { [currentUser.uid]: state } }, { merge: true });
   };
@@ -142,7 +142,7 @@ function PrivateChat({ user }) {
 
   useEffect(() => {
     if (!user?.id || !currentUser?.uid) return;
-    const ref = firestore.collection('matches').doc(user.id);
+    const ref = db.collection('matches').doc(user.id);
     const unsub = ref.onSnapshot((doc) => {
       const data = doc.data();
       if (data?.users && !otherUserId) {
@@ -167,7 +167,7 @@ function PrivateChat({ user }) {
   useEffect(() => {
     if (!user?.id || !currentUser?.uid) return;
     setLoading(true);
-    const msgRef = firestore
+    const msgRef = db
       .collection('matches')
       .doc(user.id)
       .collection('messages')
@@ -226,7 +226,7 @@ function PrivateChat({ user }) {
     if (!user?.id || !currentUser?.uid) return;
     setRefreshing(true);
     try {
-      const snap = await firestore
+      const snap = await db
         .collection('matches')
         .doc(user.id)
         .collection('messages')
@@ -687,7 +687,7 @@ function GroupChat({ event }) {
   const [reactionTarget, setReactionTarget] = useState(null);
 
   useEffect(() => {
-    const q = firestore
+    const q = db
       .collection('events')
       .doc(event.id)
       .collection('messages')
@@ -720,7 +720,7 @@ function GroupChat({ event }) {
   const sendMessage = async () => {
     if (!input.trim()) return;
     try {
-      await firestore
+      await db
         .collection('events')
         .doc(event.id)
         .collection('messages')
@@ -744,7 +744,7 @@ function GroupChat({ event }) {
 
   const addReaction = async (msgId, emoji) => {
     try {
-      await firestore
+      await db
         .collection('events')
         .doc(event.id)
         .collection('messages')
@@ -760,7 +760,7 @@ function GroupChat({ event }) {
     const msg = messages.find((m) => m.id === msgId);
     if (!msg) return;
     try {
-      await firestore
+      await db
         .collection('events')
         .doc(event.id)
         .collection('messages')
@@ -774,7 +774,7 @@ function GroupChat({ event }) {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      const snap = await firestore
+      const snap = await db
         .collection('events')
         .doc(event.id)
         .collection('messages')
