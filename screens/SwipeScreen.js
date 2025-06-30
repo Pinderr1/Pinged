@@ -23,6 +23,7 @@ import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { allGames } from '../data/games';
+import { icebreakers } from '../data/prompts';
 import { useChats } from '../contexts/ChatContext';
 import { db } from '../firebase';
 import { serverTimestamp } from 'firebase/firestore';
@@ -94,6 +95,8 @@ const SwipeScreen = () => {
   const [imageIndex, setImageIndex] = useState(0);
   const [history, setHistory] = useState([]);
   const [showSuperLikeAnim, setShowSuperLikeAnim] = useState(false);
+  const [matchLine, setMatchLine] = useState('');
+  const [matchGame, setMatchGame] = useState(null);
 
   const pan = useRef(new Animated.ValueXY()).current;
   const scaleRefs = useRef(Array(5).fill(null).map(() => new Animated.Value(1))).current;
@@ -232,6 +235,12 @@ const handleSwipe = async (direction) => {
             });
 
             setMatchedUser(displayUser);
+            setMatchLine(
+              icebreakers[Math.floor(Math.random() * icebreakers.length)] || ''
+            );
+            setMatchGame(
+              allGames[Math.floor(Math.random() * allGames.length)] || null
+            );
             // Provide a stronger haptic pulse when a match occurs
             Haptics.notificationAsync(
               Haptics.NotificationFeedbackType.Success
@@ -257,6 +266,10 @@ const handleSwipe = async (direction) => {
           pendingInvite: null,
         });
         setMatchedUser(displayUser);
+        setMatchLine(
+          icebreakers[Math.floor(Math.random() * icebreakers.length)] || ''
+        );
+        setMatchGame(allGames[Math.floor(Math.random() * allGames.length)] || null);
         // Provide a stronger haptic pulse when a match occurs
         Haptics.notificationAsync(
           Haptics.NotificationFeedbackType.Success
@@ -499,6 +512,12 @@ const handleSwipe = async (direction) => {
                 style={{ width: 300, height: 300 }}
               />
               <Text style={styles.matchText}>It's a Match with {matchedUser.displayName}!</Text>
+              {matchLine ? (
+                <Text style={styles.suggestText}>{`Try: "${matchLine}"`}</Text>
+              ) : null}
+              {matchGame ? (
+                <Text style={styles.suggestText}>{`Or invite them to play ${matchGame.title}`}</Text>
+              ) : null}
             </View>
           </Modal>
         )}
@@ -643,6 +662,13 @@ const getStyles = (theme) =>
     fontWeight: 'bold',
     color: '#fff',
     marginTop: 20,
+  },
+  suggestText: {
+    fontSize: 14,
+    color: '#fff',
+    marginTop: 6,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });
 
