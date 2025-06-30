@@ -87,7 +87,7 @@ const GameInviteScreen = ({ route, navigation }) => {
     }
 
     const toLobby = () =>
-      navigation.navigate('GameSession', {
+      navigation.replace('GameSession', {
         game: { id: gameId, title: gameTitle },
         opponent: { id: user.id, displayName: user.displayName, photo: user.photo },
         inviteId,
@@ -233,6 +233,7 @@ const GameInviteScreen = ({ route, navigation }) => {
 GameInviteScreen.propTypes = {
   navigation: PropTypes.shape({
     navigate: PropTypes.func.isRequired,
+    replace: PropTypes.func.isRequired,
   }).isRequired,
   route: PropTypes.shape({
     params: PropTypes.shape({
