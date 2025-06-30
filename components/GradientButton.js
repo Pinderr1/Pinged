@@ -11,10 +11,11 @@ export default function GradientButton({
   marginVertical = 8,
   icon,
   style,
+  disabled,
 }) {
   const { theme } = useTheme();
   return (
-    <Pressable onPress={onPress} style={{ width, marginVertical }}>
+    <Pressable onPress={onPress} style={{ width, marginVertical }} disabled={disabled}>
       <LinearGradient
         colors={[theme.gradientStart, theme.gradientEnd]}
         start={{ x: 0, y: 0 }}
@@ -28,6 +29,7 @@ export default function GradientButton({
             alignItems: 'center',
             justifyContent: 'center',
             elevation: 2,
+            opacity: disabled ? 0.6 : 1,
           },
           style,
         ]}

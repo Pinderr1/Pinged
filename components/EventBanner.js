@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import styles from '../styles';
 import { eventImageSource } from '../utils/avatar';
+import GradientButton from './GradientButton';
 
 const NEXT_EVENT = {
   title: 'Checkers Blitz Tournament',
@@ -28,12 +29,11 @@ export default function EventBanner() {
         <Text style={local.title}>{NEXT_EVENT.title}</Text>
         <Text style={local.time}>{NEXT_EVENT.time}</Text>
       </View>
-      <TouchableOpacity
-        style={[styles.emailBtn, { marginLeft: 10 }]}
+      <GradientButton
+        text="Join Now"
         onPress={() => navigation.navigate('Community')}
-      >
-        <Text style={styles.btnText}>Join Now</Text>
-      </TouchableOpacity>
+        style={{ marginLeft: 10 }}
+      />
     </View>
   );
 }

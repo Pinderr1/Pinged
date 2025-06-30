@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import GradientButton from './GradientButton';
 
 export default function GamePreviewModal({ visible, game, onStart, onClose }) {
   const { theme } = useTheme();
@@ -29,15 +30,12 @@ export default function GamePreviewModal({ visible, game, onStart, onClose }) {
               </Text>
             )}
           </View>
-          <TouchableOpacity
-            style={{ backgroundColor: game?.route ? theme.accent : '#ccc', borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}
-            disabled={!game?.route}
+          <GradientButton
+            text={game?.route ? 'Start Game' : 'Coming Soon'}
             onPress={onStart}
-          >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-              {game?.route ? 'Start Game' : 'Coming Soon'}
-            </Text>
-          </TouchableOpacity>
+            disabled={!game?.route}
+            style={{ borderRadius: 10 }}
+          />
           <TouchableOpacity onPress={onClose} style={{ marginTop: 12 }}>
             <Text style={{ textAlign: 'center', color: '#888' }}>Cancel</Text>
           </TouchableOpacity>

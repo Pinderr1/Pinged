@@ -12,6 +12,7 @@ import Loader from '../components/Loader';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import Card from '../components/Card';
 import GradientBackground from '../components/GradientBackground';
+import GradientButton from '../components/GradientButton';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
@@ -137,18 +138,12 @@ const GameInviteScreen = ({ route, navigation }) => {
               </Text>
             </View>
           ) : (
-            <TouchableOpacity
-              style={{
-                backgroundColor: theme.accent,
-                borderRadius: 20,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                marginTop: 6
-              }}
+            <GradientButton
+              text="Invite"
               onPress={() => handleInvite(item)}
-            >
-              <Text style={{ color: '#fff', fontWeight: '600' }}>Invite</Text>
-            </TouchableOpacity>
+              width={120}
+              style={{ marginTop: 6 }}
+            />
           )}
         </View>
       </Card>

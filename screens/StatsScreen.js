@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
+import GradientButton from '../components/GradientButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';
@@ -151,12 +152,11 @@ const StatsScreen = ({ navigation }) => {
         </View>
 
         {!isPremium && (
-          <TouchableOpacity
+          <GradientButton
+            text="Upgrade to Premium"
             onPress={() => navigation.navigate('Premium', { context: 'paywall' })}
             style={styles.premiumButton}
-          >
-            <Text style={styles.premiumText}>Upgrade to Premium</Text>
-          </TouchableOpacity>
+          />
         )}
       </ScrollView>
     </GradientBackground>
