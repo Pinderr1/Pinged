@@ -19,6 +19,7 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
 import styles from '../styles';
 import { games, gameList } from '../games';
+import { icebreakers } from '../data/prompts';
 import { db } from '../firebase';
 import { serverTimestamp, arrayUnion } from 'firebase/firestore';
 import * as Haptics from 'expo-haptics';
@@ -78,6 +79,17 @@ function PrivateChat({ user }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [firstLine, setFirstLine] = useState('');
+  const [firstGame, setFirstGame] = useState(null);
+
+  useEffect(() => {
+    setFirstLine(
+      icebreakers[Math.floor(Math.random() * icebreakers.length)] || ''
+    );
+    setFirstGame(
+      gameList[Math.floor(Math.random() * gameList.length)] || null
+    );
+  }, []);
 
   const sendChatMessage = async (msgText = '', sender = 'user', extras = {}) => {
     if (!msgText.trim() && !extras.voice) return;
@@ -322,9 +334,33 @@ function PrivateChat({ user }) {
         }
         ListEmptyComponent={
           !loading && (
-            <Text style={{ textAlign: 'center', marginTop: 20, color: theme.text }}>
-              No messages yet.
-            </Text>
+            <View style={{ alignItems: 'center', marginTop: 20 }}>
+              <Text style={{ textAlign: 'center', color: theme.text }}>
+                No messages yet.
+              </Text>
+              {firstLine ? (
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    color: theme.textSecondary,
+                    marginTop: 4,
+                  }}
+                >
+                  {`Try: "${firstLine}"`}
+                </Text>
+              ) : null}
+              {firstGame ? (
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    color: theme.textSecondary,
+                    marginTop: 2,
+                  }}
+                >
+                  {`Or invite them to play ${firstGame.title}`}
+                </Text>
+              ) : null}
+            </View>
           )
         }
       />
