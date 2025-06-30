@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
-  Dimensions
+  Dimensions,
+  Animated,
+  Vibration,
 } from 'react-native';
 import Loader from '../components/Loader';
 import SafeKeyboardView from '../components/SafeKeyboardView';
@@ -24,6 +26,7 @@ import { useChats } from '../contexts/ChatContext';
 import { useUser } from '../contexts/UserContext';
 import Toast from 'react-native-toast-message';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import useCardPressAnimation from '../hooks/useCardPressAnimation';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH / 2 - 24;
@@ -70,6 +73,7 @@ const GameInviteScreen = ({ route, navigation }) => {
     try {
       inviteId = await sendGameInvite(user.id, gameId);
       Toast.show({ type: 'success', text1: 'Invite sent!' });
+      Vibration.vibrate(60);
     } catch (e) {
       console.warn('Failed to send game invite', e);
       Toast.show({ type: 'error', text1: 'Failed to send invite' });
@@ -101,6 +105,8 @@ const GameInviteScreen = ({ route, navigation }) => {
   const renderUserCard = ({ item }) => {
     const isInvited = invited[item.id];
     const isLoading = loadingId === item.id;
+
+    const { scale, handlePressIn, handlePressOut } = useCardPressAnimation();
 
     return (
       <Card
@@ -139,12 +145,16 @@ const GameInviteScreen = ({ route, navigation }) => {
               </Text>
             </View>
           ) : (
-            <GradientButton
-              text="Invite"
-              onPress={() => handleInvite(item)}
-              width={120}
-              style={{ marginTop: 6 }}
-            />
+            <Animated.View style={{ transform: [{ scale }] }}>
+              <GradientButton
+                text="Invite"
+                onPress={() => handleInvite(item)}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+                width={120}
+                style={{ marginTop: 6 }}
+              />
+            </Animated.View>
           )}
         </View>
       </Card>

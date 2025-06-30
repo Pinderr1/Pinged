@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { Vibration } from 'react-native';
 import { db } from '../firebase';
 import { useUser } from './UserContext';
 
@@ -15,6 +16,7 @@ export const ListenerProvider = ({ children }) => {
   const [sessions, setSessions] = useState([]);
 
   const messageUnsubs = useRef({});
+  const prevInvites = useRef([]);
 
   // Subscribe to match messages for current user
   useEffect(() => {
@@ -48,6 +50,13 @@ export const ListenerProvider = ({ children }) => {
       messageUnsubs.current = {};
     };
   }, [user?.uid]);
+
+  useEffect(() => {
+    if (incomingInvites.length > prevInvites.current.length) {
+      Vibration.vibrate(60);
+    }
+    prevInvites.current = incomingInvites;
+  }, [incomingInvites]);
 
   // Subscribe to invites and match requests
   useEffect(() => {
