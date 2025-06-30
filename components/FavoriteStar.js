@@ -1,11 +1,15 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
 
 const FavoriteStar = ({ isFavorite, onPress }) => (
   <TouchableOpacity
-    onPress={onPress}
+    onPress={() => {
+      Haptics.selectionAsync().catch(() => {});
+      onPress();
+    }}
     style={{ position: 'absolute', top: 8, left: 8, zIndex: 10 }}
   >
     <Ionicons

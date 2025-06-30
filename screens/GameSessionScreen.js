@@ -23,6 +23,7 @@ import { HEADER_SPACING } from '../layout';
 import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';
 import { serverTimestamp } from 'firebase/firestore';
+import * as Haptics from 'expo-haptics';
 import styles from '../styles';
 import { games } from '../games';
 import SyncedGame from '../components/SyncedGame';
@@ -343,6 +344,7 @@ function BotSessionScreen({ route }) {
     if (!t) return;
     sendMessage(t);
     setText('');
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   };
 
   const playAgain = () => {

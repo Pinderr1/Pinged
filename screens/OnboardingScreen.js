@@ -27,6 +27,7 @@ import { avatarSource } from '../utils/avatar';
 import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import MultiSelectList from '../components/MultiSelectList';
 import { FONT_SIZES, BUTTON_STYLE } from '../layout';
@@ -351,9 +352,10 @@ export default function OnboardingScreen() {
       }));
       return (
         <RNPickerSelect
-          onValueChange={(val) =>
-            setAnswers((prev) => ({ ...prev, age: val }))
-          }
+          onValueChange={(val) => {
+            Haptics.selectionAsync().catch(() => {});
+            setAnswers((prev) => ({ ...prev, age: val }));
+          }}
           value={answers.age}
           placeholder={{ label: 'Select age', value: null }}
           useNativeAndroidPickerStyle={false}
@@ -371,9 +373,10 @@ export default function OnboardingScreen() {
       return (
         <View>
           <RNPickerSelect
-            onValueChange={(val) =>
-              setAnswers((prev) => ({ ...prev, gender: val }))
-            }
+            onValueChange={(val) => {
+              Haptics.selectionAsync().catch(() => {});
+              setAnswers((prev) => ({ ...prev, gender: val }));
+            }}
             value={answers.gender}
             placeholder={{ label: 'Select gender', value: null }}
             useNativeAndroidPickerStyle={false}
@@ -385,9 +388,10 @@ export default function OnboardingScreen() {
             items={pickerFields.gender}
           />
           <RNPickerSelect
-            onValueChange={(val) =>
-              setAnswers((prev) => ({ ...prev, genderPref: val }))
-            }
+            onValueChange={(val) => {
+              Haptics.selectionAsync().catch(() => {});
+              setAnswers((prev) => ({ ...prev, genderPref: val }));
+            }}
             value={answers.genderPref}
             placeholder={{ label: 'Preferred teammate gender', value: null }}
             useNativeAndroidPickerStyle={false}
@@ -420,9 +424,10 @@ export default function OnboardingScreen() {
     if (pickerFields[currentField]) {
       return (
         <RNPickerSelect
-          onValueChange={(val) =>
-            setAnswers((prev) => ({ ...prev, [currentField]: val }))
-          }
+          onValueChange={(val) => {
+            Haptics.selectionAsync().catch(() => {});
+            setAnswers((prev) => ({ ...prev, [currentField]: val }));
+          }}
           value={answers[currentField]}
           placeholder={{ label: `Select ${currentField}`, value: null }}
           useNativeAndroidPickerStyle={false}

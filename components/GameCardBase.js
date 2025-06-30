@@ -1,5 +1,6 @@
 import React from 'react';
 import { Animated, TouchableOpacity, Dimensions } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
 
 const CARD_WIDTH = Dimensions.get('window').width * 0.42;
@@ -25,7 +26,10 @@ const GameCardBase = ({ children, scale, onPress, onPressIn, onPressOut }) => (
       }}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
-      onPress={onPress}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        onPress?.();
+      }}
     >
       {children}
     </TouchableOpacity>
