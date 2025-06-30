@@ -357,7 +357,7 @@ const handleSwipe = async (direction) => {
 
       const gameTitle = allGames.find((g) => g.id === '1')?.title || 'Game';
       const toLobby = () =>
-        navigation.navigate('GameSession', {
+        navigation.replace('GameSession', {
           game: { id: '1', title: gameTitle },
           opponent: {
             id: displayUser.id,
