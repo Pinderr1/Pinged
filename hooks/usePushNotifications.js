@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { registerForPushNotificationsAsync } from '../utils/notifications';
-import { auth, db } from '../firebase';
+import { auth, firestore } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export default function usePushNotifications() {
@@ -10,7 +10,7 @@ export default function usePushNotifications() {
       registerForPushNotificationsAsync()
         .then((token) => {
           if (token) {
-            db
+            firestore
               .collection('users')
               .doc(fbUser.uid)
               .update({ expoPushToken: token })

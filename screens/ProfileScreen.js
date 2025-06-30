@@ -9,7 +9,7 @@ import getStyles from '../styles';
 import { HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { useUser } from '../contexts/UserContext';
-import { db } from '../firebase';
+import { firestore } from '../firebase';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadAvatarAsync } from '../utils/upload';
@@ -73,7 +73,7 @@ const ProfileScreen = ({ navigation, route }) => {
   }, [route?.params?.editMode]);
 
   useEffect(() => {
-    const unsub = db
+    const unsub = firestore
       .collection('games')
       .orderBy('title')
       .onSnapshot(
@@ -112,7 +112,7 @@ const ProfileScreen = ({ navigation, route }) => {
       photoURL,
     };
     try {
-      await db
+      await firestore
         .collection('users')
         .doc(user.uid)
         .set(clean, { merge: true });

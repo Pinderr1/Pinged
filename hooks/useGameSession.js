@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { db } from '../firebase';
+import { firestore } from '../firebase';
 import { serverTimestamp, arrayUnion } from 'firebase/firestore';
 import { games } from '../games';
 import { useUser } from '../contexts/UserContext';
@@ -15,7 +15,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
 
   useEffect(() => {
     if (!Game || !sessionId || !user?.uid) return;
-    const ref = db.collection('gameSessions').doc(sessionId);
+    const ref = firestore.collection('gameSessions').doc(sessionId);
     let initialized = false;
     const unsub = ref.onSnapshot(async (snap) => {
       if (snapshotExists(snap)) {
@@ -66,7 +66,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
 
     const gameover = Game.endIf ? Game.endIf({ G, ctx: { currentPlayer: nextPlayer } }) : undefined;
 
-    await db
+    await firestore
       .collection('gameSessions')
       .doc(sessionId)
       .update({

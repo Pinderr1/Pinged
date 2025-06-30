@@ -9,7 +9,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
-import { auth, db } from '../../firebase';
+import { auth, firestore } from '../../firebase';
 import { GoogleAuthProvider, signInWithCredential, signInAnonymously } from 'firebase/auth';
 import { serverTimestamp } from 'firebase/firestore';
 import { snapshotExists } from '../../utils/firestore';
@@ -41,7 +41,7 @@ export default function LoginScreen() {
       signInWithCredential(auth, credential)
         .then(async (res) => {
           console.log('✅ Google login success:', res.user.uid);
-          const snap = await db.collection('users').doc(res.user.uid).get();
+          const snap = await firestore.collection('users').doc(res.user.uid).get();
           if (snapshotExists(snap) && snap.data().onboardingComplete) {
             markOnboarded();
           }
@@ -57,7 +57,7 @@ export default function LoginScreen() {
     toggleDevMode();
     try {
       const cred = await signInAnonymously(auth);
-      await db.collection('users').doc(cred.user.uid).set({
+      await firestore.collection('users').doc(cred.user.uid).set({
         uid: cred.user.uid,
         email: '',
         displayName: 'Dev Tester',

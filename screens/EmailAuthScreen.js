@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Text, TouchableOpacity, Alert } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import AuthForm from '../components/AuthForm';
-import { auth, db } from '../firebase';
+import { auth, firestore } from '../firebase';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -25,7 +25,7 @@ export default function EmailAuthScreen({ route, navigation }) {
 
   const ensureUserDoc = async (fbUser) => {
     try {
-      const ref = db.collection('users').doc(fbUser.uid);
+      const ref = firestore.collection('users').doc(fbUser.uid);
       const snap = await ref.get();
       if (!snapshotExists(snap)) {
         await ref.set({
@@ -46,7 +46,7 @@ export default function EmailAuthScreen({ route, navigation }) {
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
       await ensureUserDoc(userCred.user);
-      const snap = await db.collection('users').doc(userCred.user.uid).get();
+      const snap = await firestore.collection('users').doc(userCred.user.uid).get();
       if (snapshotExists(snap) && snap.data().onboardingComplete) {
         markOnboarded();
       }
@@ -73,7 +73,7 @@ export default function EmailAuthScreen({ route, navigation }) {
     }
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email.trim(), password);
-      await db.collection('users').doc(userCred.user.uid).set({
+      await firestore.collection('users').doc(userCred.user.uid).set({
         uid: userCred.user.uid,
         email: userCred.user.email,
         displayName: userCred.user.displayName || '',

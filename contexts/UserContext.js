@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from "r
 import { View } from "react-native";
 import Toast from "react-native-toast-message";
 import Loader from "../components/Loader";
-import { auth, db } from "../firebase";
+import { auth, firestore } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { serverTimestamp } from "firebase/firestore";
 import { useDev } from "./DevContext";
@@ -45,7 +45,7 @@ export const UserProvider = ({ children }) => {
 
       if (fbUser) {
         setLoading(true);
-        const ref = db.collection("users").doc(fbUser.uid);
+        const ref = firestore.collection("users").doc(fbUser.uid);
         unsubProfile = ref.onSnapshot(
           (snap) => {
             if (snapshotExists(snap)) {
@@ -117,7 +117,7 @@ export const UserProvider = ({ children }) => {
     if (opts.markPlayed) updates.lastPlayedAt = new Date();
     updateUser(updates);
     try {
-      await db.collection("users").doc(user.uid).update({
+      await firestore.collection("users").doc(user.uid).update({
         ...updates,
         lastActiveAt: serverTimestamp(),
         ...(opts.markPlayed ? { lastPlayedAt: serverTimestamp() } : {}),

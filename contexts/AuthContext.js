@@ -3,7 +3,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import * as AuthSession from "expo-auth-session";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth, db } from "../firebase";
+import { auth, firestore } from "../firebase";
 import { clearStoredOnboarding } from "./OnboardingContext";
 import {
   signInWithEmailAndPassword,
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
 
   const ensureUserDoc = async (fbUser) => {
     try {
-      const ref = db.collection("users").doc(fbUser.uid);
+      const ref = firestore.collection("users").doc(fbUser.uid);
       const snap = await ref.get();
       if (!snapshotExists(snap)) {
         await ref.set({
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {
       console.warn("Failed to clear stored matches", e);
     }
-    await db
+    await firestore
       .collection("users")
       .doc(userCred.user.uid)
       .set({
