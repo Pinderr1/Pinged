@@ -29,6 +29,7 @@ import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import VoiceMessageBubble from '../components/VoiceMessageBubble';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
+import { lightFeedback } from '../utils/haptics';
 // TODO: add support for sending short voice or video intro clips in chat
 import Toast from 'react-native-toast-message';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
@@ -177,6 +178,7 @@ function PrivateChat({ user }) {
 
   const handleSend = () => {
     if (text.trim()) {
+      lightFeedback();
       sendChatMessage(text);
       setText('');
       updateTyping(false);
@@ -218,6 +220,7 @@ function PrivateChat({ user }) {
       setShowGameModal(false);
       return;
     }
+    lightFeedback();
     const title = games[gameId].meta.title;
     if (activeGameId && activeGameId !== gameId) {
       sendChatMessage(`Switched game to ${title}`, 'system');
@@ -264,7 +267,13 @@ function PrivateChat({ user }) {
   };
 
   const renderGameOption = ({ item }) => (
-    <TouchableOpacity style={privateStyles.gameOption} onPress={() => handleGameSelect(item.id)}>
+    <TouchableOpacity
+      style={privateStyles.gameOption}
+      onPress={() => {
+        lightFeedback();
+        handleGameSelect(item.id);
+      }}
+    >
       <Text style={privateStyles.gameOptionText}>{item.title}</Text>
     </TouchableOpacity>
   );
@@ -288,6 +297,7 @@ function PrivateChat({ user }) {
             if (!requireCredits()) {
               return;
             }
+            lightFeedback();
             setShowGameModal(true);
           }}
         >
@@ -298,7 +308,10 @@ function PrivateChat({ user }) {
       </View>
       <View style={privateStyles.inputBar}>
         <TouchableOpacity
-          onLongPress={startRecording}
+          onLongPress={() => {
+            lightFeedback();
+            startRecording();
+          }}
           onPressOut={handleVoiceFinish}
           style={{ marginRight: 6 }}
         >
@@ -379,7 +392,10 @@ function PrivateChat({ user }) {
             <FlatList data={gameList} keyExtractor={(item) => item.id} renderItem={renderGameOption} />
             <TouchableOpacity
               style={[privateStyles.sendButton, { marginTop: 10 }]}
-              onPress={() => setShowGameModal(false)}
+              onPress={() => {
+                lightFeedback();
+                setShowGameModal(false);
+              }}
             >
               <Text style={{ color: '#fff', fontWeight: 'bold' }}>Close</Text>
             </TouchableOpacity>
@@ -549,6 +565,7 @@ function GroupChat({ event }) {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
+    lightFeedback();
     try {
       await db
         .collection('events')

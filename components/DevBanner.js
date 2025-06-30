@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { selectionFeedback } from '../utils/haptics';
 import PropTypes from 'prop-types';
 import { useDev } from '../contexts/DevContext';
 import DevPanel from './DevPanel';
@@ -12,7 +13,10 @@ export default function DevBanner() {
     <>
       <TouchableOpacity
         style={styles.banner}
-        onPress={() => setShowPanel(true)}
+        onPress={() => {
+          selectionFeedback();
+          setShowPanel(true);
+        }}
       >
         <Text style={styles.text}>DEV MODE</Text>
       </TouchableOpacity>

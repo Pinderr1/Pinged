@@ -4,6 +4,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import { View, Text, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
+import { lightFeedback } from '../utils/haptics';
 
 export interface GradientButtonProps {
   text: string;
@@ -24,8 +25,12 @@ export default function GradientButton({
   disabled,
 }: GradientButtonProps) {
   const { theme } = useTheme();
+  const handlePress = () => {
+    lightFeedback();
+    onPress && onPress();
+  };
   return (
-    <Pressable onPress={onPress} style={{ width, marginVertical }} disabled={disabled}>
+    <Pressable onPress={handlePress} style={{ width, marginVertical }} disabled={disabled}>
       <LinearGradient
         colors={[theme.gradientStart, theme.gradientEnd]}
         start={{ x: 0, y: 0 }}

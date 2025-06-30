@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
+import { lightFeedback } from '../utils/haptics';
 
 export default function GameOverModal({ visible, winnerName, onRematch, onChat }) {
   return (
@@ -9,10 +10,22 @@ export default function GameOverModal({ visible, winnerName, onRematch, onChat }
         <View style={styles.card}>
           <Text style={styles.emoji}>🏆</Text>
           <Text style={styles.title}>{winnerName ? `${winnerName} wins!` : 'Draw'}</Text>
-          <TouchableOpacity style={styles.rematchBtn} onPress={onRematch}>
+          <TouchableOpacity
+            style={styles.rematchBtn}
+            onPress={() => {
+              lightFeedback();
+              onRematch();
+            }}
+          >
             <Text style={styles.rematchText}>Rematch</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chatBtn} onPress={onChat}>
+          <TouchableOpacity
+            style={styles.chatBtn}
+            onPress={() => {
+              lightFeedback();
+              onChat();
+            }}
+          >
             <Text style={styles.chatText}>Chat</Text>
           </TouchableOpacity>
         </View>

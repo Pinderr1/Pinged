@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
+import { lightFeedback } from '../utils/haptics';
 import GradientButton from './GradientButton';
 
 export default function GamePreviewModal({ visible, game, onStart, onClose }) {
@@ -37,7 +38,13 @@ export default function GamePreviewModal({ visible, game, onStart, onClose }) {
             disabled={!game?.route}
             style={{ borderRadius: 10 }}
           />
-          <TouchableOpacity onPress={onClose} style={{ marginTop: 12 }}>
+          <TouchableOpacity
+            onPress={() => {
+              lightFeedback();
+              onClose();
+            }}
+            style={{ marginTop: 12 }}
+          >
             <Text style={{ textAlign: 'center', color: '#888' }}>Cancel</Text>
           </TouchableOpacity>
         </View>

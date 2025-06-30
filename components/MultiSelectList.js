@@ -2,10 +2,12 @@ import React from 'react';
 import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
+import { selectionFeedback } from '../utils/haptics';
 
 export default function MultiSelectList({ options = [], selected = [], onChange, theme }) {
   const toggle = (val) => {
     if (!onChange) return;
+    selectionFeedback();
     if (selected.includes(val)) {
       onChange(selected.filter((v) => v !== val));
     } else {

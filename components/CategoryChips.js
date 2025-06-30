@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
+import { selectionFeedback } from '../utils/haptics';
 
 export default function CategoryChips({ categories, category, setCategory }) {
   const { theme } = useTheme();
@@ -10,7 +11,10 @@ export default function CategoryChips({ categories, category, setCategory }) {
       {categories.map((cat) => (
         <TouchableOpacity
           key={cat}
-          onPress={() => setCategory(cat)}
+          onPress={() => {
+            selectionFeedback();
+            setCategory(cat);
+          }}
           style={{
             paddingVertical: 3,
             paddingHorizontal: 8,

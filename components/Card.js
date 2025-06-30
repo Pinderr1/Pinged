@@ -1,11 +1,16 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { lightFeedback } from '../utils/haptics';
 import PropTypes from 'prop-types';
 
 const Card = ({ children, style, onPress, ...rest }) => {
   const Container = onPress ? TouchableOpacity : View;
   return (
-    <Container style={[styles.card, style]} onPress={onPress} {...rest}>
+    <Container
+      style={[styles.card, style]}
+      onPress={onPress ? () => { lightFeedback(); onPress(); } : undefined}
+      {...rest}
+    >
       {children}
     </Container>
   );

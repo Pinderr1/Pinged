@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
+import { selectionFeedback } from '../utils/haptics';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
 import { HEADER_HEIGHT } from '../theme';
 
@@ -14,7 +15,13 @@ const Header: React.FC<HeaderProps> = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.headerBackground }]}>
       {/* Left icon - Gear */}
-      <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.iconWrapper}>
+      <TouchableOpacity
+        onPress={() => {
+          selectionFeedback();
+          navigation.navigate('Settings');
+        }}
+        style={styles.iconWrapper}
+      >
         <Image
           source={require('../assets/gear.png')}
           style={[styles.icon, { tintColor: theme.text }]}
@@ -28,7 +35,13 @@ const Header: React.FC<HeaderProps> = () => {
       />
 
       {/* Right icon - Bell with badge */}
-      <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.iconWrapper}>
+      <TouchableOpacity
+        onPress={() => {
+          selectionFeedback();
+          navigation.navigate('Notifications');
+        }}
+        style={styles.iconWrapper}
+      >
         <View style={styles.bellWrapper}>
           <Image
             source={require('../assets/bell.png')}

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, Text, Keyboard } from 'react-native';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
+import { selectionFeedback } from '../utils/haptics';
 
 export default function FilterTabs({ filter, setFilter }) {
   const { theme } = useTheme();
@@ -11,6 +12,7 @@ export default function FilterTabs({ filter, setFilter }) {
         <TouchableOpacity
           key={label}
           onPress={() => {
+            selectionFeedback();
             setFilter(label);
             Keyboard.dismiss();
           }}
