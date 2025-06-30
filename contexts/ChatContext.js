@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDev } from './DevContext';
 import { useUser } from './UserContext';
-import { db, firebase } from '../firebase';
+import { db } from '../firebase';
+import { serverTimestamp } from 'firebase/firestore';
 import { useListeners } from './ListenerContext';
 import Toast from 'react-native-toast-message';
 
@@ -170,7 +171,7 @@ export const ChatProvider = ({ children }) => {
         .add({
           senderId: sender === 'you' ? user.uid : sender,
           text: text.trim(),
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        timestamp: serverTimestamp(),
         });
       if (sender === 'you') {
         Toast.show({ type: 'success', text1: 'Message sent' });

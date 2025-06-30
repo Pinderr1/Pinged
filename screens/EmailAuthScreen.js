@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { Text, TouchableOpacity, Alert } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import AuthForm from '../components/AuthForm';
-import { auth, db, firebase } from '../firebase';
+import { auth, db } from '../firebase';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from 'firebase/auth';
+import { serverTimestamp } from 'firebase/firestore';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import { snapshotExists } from '../utils/firestore';
 import { isAllowedDomain } from '../utils/email';
@@ -26,7 +31,7 @@ export default function EmailAuthScreen({ route, navigation }) {
           displayName: fbUser.displayName || '',
           photoURL: fbUser.photoURL || '',
           onboardingComplete: false,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdAt: serverTimestamp(),
         });
       }
     } catch (e) {
@@ -36,7 +41,7 @@ export default function EmailAuthScreen({ route, navigation }) {
 
   const handleLogin = async () => {
     try {
-      const userCred = await auth.signInWithEmailAndPassword(email, password);
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
       await ensureUserDoc(userCred.user);
       const snap = await db.collection('users').doc(userCred.user.uid).get();
       if (snapshotExists(snap) && snap.data().onboardingComplete) {
@@ -64,14 +69,14 @@ export default function EmailAuthScreen({ route, navigation }) {
       return;
     }
     try {
-      const userCred = await auth.createUserWithEmailAndPassword(email.trim(), password);
+      const userCred = await createUserWithEmailAndPassword(auth, email.trim(), password);
       await db.collection('users').doc(userCred.user.uid).set({
         uid: userCred.user.uid,
         email: userCred.user.email,
         displayName: userCred.user.displayName || '',
         photoURL: userCred.user.photoURL || '',
         onboardingComplete: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdAt: serverTimestamp(),
       });
       Alert.alert('Signup Successful', 'Your account has been created.');
     } catch (error) {

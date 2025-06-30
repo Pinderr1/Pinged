@@ -8,7 +8,9 @@ import styles from '../../styles';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
-import { auth, db, firebase } from '../../firebase';
+import { auth, db } from '../../firebase';
+import { GoogleAuthProvider, signInWithCredential, signInAnonymously } from 'firebase/auth';
+import { serverTimestamp } from 'firebase/firestore';
 import { snapshotExists } from '../../utils/firestore';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { useNavigation } from '@react-navigation/native';
@@ -32,9 +34,8 @@ export default function LoginScreen() {
   useEffect(() => {
     if (response?.type === 'success') {
       const { id_token } = response.params;
-      const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
-      auth
-        .signInWithCredential(credential)
+      const credential = GoogleAuthProvider.credential(id_token);
+      signInWithCredential(auth, credential)
         .then(async (res) => {
           console.log('✅ Google login success:', res.user.uid);
           const snap = await db.collection('users').doc(res.user.uid).get();
@@ -52,14 +53,14 @@ export default function LoginScreen() {
   const handleDevLogin = async () => {
     toggleDevMode();
     try {
-      const cred = await auth.signInAnonymously();
+      const cred = await signInAnonymously(auth);
       await db.collection('users').doc(cred.user.uid).set({
         uid: cred.user.uid,
         email: '',
         displayName: 'Dev Tester',
         photoURL: '',
         onboardingComplete: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdAt: serverTimestamp(),
       });
     } catch (e) {
       console.warn('Dev login failed', e);

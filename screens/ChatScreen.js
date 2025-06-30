@@ -17,7 +17,8 @@ import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import styles from '../styles';
 import { games, gameList } from '../games';
-import { db, firebase } from '../firebase';
+import { db } from '../firebase';
+import { serverTimestamp, arrayUnion } from 'firebase/firestore';
 import { uploadVoiceAsync } from '../utils/upload';
 import { useTheme } from '../contexts/ThemeContext';
 import { HEADER_SPACING, FONT_SIZES } from '../theme';
@@ -85,7 +86,7 @@ function PrivateChat({ user }) {
           senderId: sender === 'system' ? 'system' : currentUser?.uid,
           text: msgText.trim(),
           ...extras,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          timestamp: serverTimestamp(),
         });
       if (sender === 'user') {
         Toast.show({ type: 'success', text1: 'Message sent' });
@@ -156,7 +157,7 @@ function PrivateChat({ user }) {
         const val = d.data();
         if (val.senderId !== currentUser.uid && !(val.readBy || []).includes(currentUser.uid)) {
           d.ref.update({
-            readBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+            readBy: arrayUnion(currentUser.uid),
           });
         }
         return {
@@ -557,7 +558,7 @@ function GroupChat({ event }) {
           user: user?.displayName || 'You',
           userId: user?.uid || null,
           text: input.trim(),
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          timestamp: serverTimestamp(),
           reactions: [],
           pinned: false,
         });
@@ -577,7 +578,7 @@ function GroupChat({ event }) {
         .doc(event.id)
         .collection('messages')
         .doc(msgId)
-        .update({ reactions: firebase.firestore.FieldValue.arrayUnion(emoji) });
+        .update({ reactions: arrayUnion(emoji) });
     } catch (e) {
       console.warn('Failed to add reaction', e);
     }

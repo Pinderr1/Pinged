@@ -1,10 +1,10 @@
 // firebase.js
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
-import 'firebase/compat/storage';
-import 'firebase/compat/functions';
-import 'firebase/compat/database';
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+import { getFunctions } from 'firebase/functions';
+import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -19,23 +19,22 @@ if (__DEV__) {
   console.log('Firebase config loaded', firebaseConfig);
 }
 
+let app;
 try {
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
+  app = initializeApp(firebaseConfig);
 } catch (e) {
   console.log('Firebase init error', e);
 }
 
-const auth = firebase.auth();
+const auth = getAuth(app);
 let db;
 try {
-  db = firebase.firestore();
+  db = getFirestore(app);
 } catch (e) {
   console.log('Firestore init error', e);
 }
-const storage = firebase.storage();
-const functions = firebase.app().functions();
-const database = firebase.database();
+const storage = getStorage(app);
+const functions = getFunctions(app);
+const database = getDatabase(app);
 
-export { firebase, auth, db, storage, functions, database };
+export { app, auth, db, storage, functions, database };
