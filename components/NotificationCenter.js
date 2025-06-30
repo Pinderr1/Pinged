@@ -3,6 +3,7 @@ import { Animated, Text, StyleSheet, Dimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import useNotificationBanner from '../hooks/useNotificationBanner';
+import PropTypes from 'prop-types';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -24,6 +25,10 @@ const NotificationCenter = ({ color }) => {
       </View>
     </Animated.View>
   );
+};
+
+NotificationCenter.propTypes = {
+  color: PropTypes.string,
 };
 
 const styles = StyleSheet.create({

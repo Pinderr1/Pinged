@@ -1,5 +1,6 @@
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import React from 'react';
+import PropTypes from 'prop-types';
 
 export default function SafeKeyboardView({ children, style }) {
   return (
@@ -12,3 +13,8 @@ export default function SafeKeyboardView({ children, style }) {
     </KeyboardAvoidingView>
   );
 }
+
+SafeKeyboardView.propTypes = {
+  children: PropTypes.node,
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+};

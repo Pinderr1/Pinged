@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import PropTypes from 'prop-types';
 import { useDev } from '../contexts/DevContext';
 
 export default function DevBanner() {
@@ -11,6 +12,8 @@ export default function DevBanner() {
     </View>
   );
 }
+
+DevBanner.propTypes = {};
 
 const styles = StyleSheet.create({
   banner: {

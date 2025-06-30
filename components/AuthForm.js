@@ -1,5 +1,6 @@
 import React from 'react';
 import { TextInput } from 'react-native';
+import PropTypes from 'prop-types';
 import SafeKeyboardView from './SafeKeyboardView';
 import GradientButton from './GradientButton';
 import styles from '../styles';
@@ -38,3 +39,13 @@ export default function AuthForm({
     </SafeKeyboardView>
   );
 }
+
+AuthForm.propTypes = {
+  email: PropTypes.string.isRequired,
+  onEmailChange: PropTypes.func.isRequired,
+  password: PropTypes.string.isRequired,
+  onPasswordChange: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  submitLabel: PropTypes.string.isRequired,
+  children: PropTypes.node,
+};

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import useVoicePlayback from '../hooks/useVoicePlayback';
+import PropTypes from 'prop-types';
 
 export default function VoiceMessageBubble({ message, userName, otherUserId }) {
   const { theme, darkMode } = useTheme();
@@ -44,6 +45,17 @@ export default function VoiceMessageBubble({ message, userName, otherUserId }) {
     </View>
   );
 }
+
+VoiceMessageBubble.propTypes = {
+  message: PropTypes.shape({
+    url: PropTypes.string.isRequired,
+    duration: PropTypes.number,
+    sender: PropTypes.string.isRequired,
+    readBy: PropTypes.arrayOf(PropTypes.string).isRequired,
+  }).isRequired,
+  userName: PropTypes.string.isRequired,
+  otherUserId: PropTypes.string.isRequired,
+};
 
 const styles = StyleSheet.create({
   bubble: {

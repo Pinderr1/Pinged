@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
+import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function CategoryChips({ categories, category, setCategory }) {
@@ -31,3 +32,9 @@ export default function CategoryChips({ categories, category, setCategory }) {
     </View>
   );
 }
+
+CategoryChips.propTypes = {
+  categories: PropTypes.arrayOf(PropTypes.string).isRequired,
+  category: PropTypes.string.isRequired,
+  setCategory: PropTypes.func.isRequired,
+};

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TextInput } from 'react-native';
+import PropTypes from 'prop-types';
 
 export default function SearchInput({ search, setSearch }) {
   return (
@@ -24,3 +25,8 @@ export default function SearchInput({ search, setSearch }) {
     </View>
   );
 }
+
+SearchInput.propTypes = {
+  search: PropTypes.string.isRequired,
+  setSearch: PropTypes.func.isRequired,
+};

@@ -3,6 +3,7 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
+import PropTypes from 'prop-types';
 
 export default function GradientButton({
   text,
@@ -42,3 +43,13 @@ export default function GradientButton({
     </Pressable>
   );
 }
+
+GradientButton.propTypes = {
+  text: PropTypes.string.isRequired,
+  onPress: PropTypes.func,
+  width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  marginVertical: PropTypes.number,
+  icon: PropTypes.node,
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  disabled: PropTypes.bool,
+};

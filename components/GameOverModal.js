@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import PropTypes from 'prop-types';
 
 export default function GameOverModal({ visible, winnerName, onRematch, onChat }) {
   return (
@@ -19,6 +20,13 @@ export default function GameOverModal({ visible, winnerName, onRematch, onChat }
     </Modal>
   );
 }
+
+GameOverModal.propTypes = {
+  visible: PropTypes.bool.isRequired,
+  winnerName: PropTypes.string,
+  onRematch: PropTypes.func.isRequired,
+  onChat: PropTypes.func.isRequired,
+};
 
 const styles = StyleSheet.create({
   backdrop: {
