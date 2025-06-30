@@ -295,7 +295,6 @@ function BotSessionScreen({ route }) {
   );
   const { theme } = useTheme();
   const botStyles = getBotStyles(theme);
-  const styles = getStyles(theme);
   const [game, setGame] = useState(initialGame);
 
   const aiKeyMap = { rockPaperScissors: 'rps' };
