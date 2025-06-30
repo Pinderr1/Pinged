@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
-  SafeAreaView,
   RefreshControl,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
+import ScreenContainer from '../components/ScreenContainer';
 import Card from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
@@ -104,8 +104,8 @@ const MatchesScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <GradientBackground style={{ flex: 1 }}>
+    <GradientBackground style={{ flex: 1 }}>
+      <ScreenContainer>
         <Header />
         <View style={[styles.container, { paddingTop: HEADER_SPACING }]}>
           {loading ? (
@@ -175,8 +175,8 @@ const MatchesScreen = ({ navigation }) => {
             </>
           )}
         </View>
-      </GradientBackground>
-    </SafeAreaView>
+      </ScreenContainer>
+    </GradientBackground>
   );
 };
 

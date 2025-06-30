@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-  SafeAreaView,
   RefreshControl,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
@@ -17,6 +16,7 @@ import PropTypes from 'prop-types';
 import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
+import ScreenContainer from '../components/ScreenContainer';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
 import firebase from '../firebase';
@@ -539,7 +539,7 @@ function PrivateChat({ user }) {
           </View>
         </View>
       </Modal>
-      <SafeAreaView style={{ flex: 1 }}>
+      <ScreenContainer>
         <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
           <View style={privateStyles.container}>
             {showPlaceholders ? (
@@ -553,7 +553,7 @@ function PrivateChat({ user }) {
             )}
           </View>
         </SafeKeyboardView>
-      </SafeAreaView>
+      </ScreenContainer>
     </GradientBackground>
   );
 }

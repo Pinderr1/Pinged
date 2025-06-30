@@ -6,12 +6,12 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   Modal,
   Image,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
+import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
@@ -125,7 +125,7 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <GradientBackground style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <ScreenContainer>
         <Header showLogoOnly />
         <ScrollView contentContainerStyle={[local.container, { paddingBottom: 100 }]}>
           <Text style={[local.welcome, { color: theme.text }]}>
@@ -317,7 +317,7 @@ const HomeScreen = ({ navigation }) => {
             </View>
           </View>
         </Modal>
-      </SafeAreaView>
+      </ScreenContainer>
     </GradientBackground>
   );
 };
