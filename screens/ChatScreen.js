@@ -21,7 +21,7 @@ import { db } from '../firebase';
 import { serverTimestamp, arrayUnion } from 'firebase/firestore';
 import { uploadVoiceAsync } from '../utils/upload';
 import { useTheme } from '../contexts/ThemeContext';
-import { HEADER_SPACING, FONT_SIZES } from '../theme';
+import { HEADER_SPACING, FONT_SIZES } from '../layout';
 import { useNotification } from '../contexts/NotificationContext';
 import { useChats } from '../contexts/ChatContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
@@ -685,7 +685,7 @@ function GroupChat({ event }) {
 const getGroupStyles = (theme) =>
   StyleSheet.create({
   eventTitle: {
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
     textAlign: 'center',
     paddingTop: HEADER_SPACING,

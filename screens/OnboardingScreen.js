@@ -29,7 +29,7 @@ import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import MultiSelectList from '../components/MultiSelectList';
-import { FONT_SIZES, BUTTON_STYLE } from '../theme';
+import { FONT_SIZES, BUTTON_STYLE } from '../layout';
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
@@ -522,7 +522,7 @@ const getStyles = (theme) => {
     inner: { flex: 1, justifyContent: 'center' },
     progressText: {
       color: textColor,
-      fontSize: FONT_SIZES.label,
+      fontSize: FONT_SIZES.MD,
       textAlign: 'center',
       marginBottom: 30,
     },
@@ -550,14 +550,14 @@ const getStyles = (theme) => {
     },
     questionText: {
       color: textColor,
-      fontSize: FONT_SIZES.title,
+      fontSize: FONT_SIZES.XL,
       marginBottom: 15,
     },
     input: {
       borderBottomWidth: 2,
       borderColor: accent,
       color: textColor,
-      fontSize: FONT_SIZES.label,
+      fontSize: FONT_SIZES.MD,
       paddingVertical: BUTTON_STYLE.paddingVertical,
     },
     imagePicker: {
@@ -593,7 +593,7 @@ const getStyles = (theme) => {
     },
     locationText: {
       color: '#fff',
-      fontSize: FONT_SIZES.label,
+      fontSize: FONT_SIZES.MD,
     },
     buttonRow: {
       flexDirection: 'row',
@@ -610,7 +610,7 @@ const getStyles = (theme) => {
     },
     backButtonText: {
       color: accent,
-      fontSize: FONT_SIZES.label,
+      fontSize: FONT_SIZES.MD,
     },
     nextButton: {
       backgroundColor: accent,
@@ -620,7 +620,7 @@ const getStyles = (theme) => {
     },
     nextButtonText: {
       color: '#fff',
-      fontSize: FONT_SIZES.label,
+      fontSize: FONT_SIZES.MD,
     },
     gradientStart: theme.gradientStart,
     gradientEnd: theme.gradientEnd,

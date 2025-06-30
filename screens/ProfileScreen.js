@@ -6,7 +6,7 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import styles from '../styles';
-import { HEADER_SPACING, BUTTON_STYLE, FONT_SIZES } from '../theme';
+import { HEADER_SPACING, BUTTON_STYLE, FONT_SIZES } from '../layout';
 import Header from '../components/Header';
 import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';

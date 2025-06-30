@@ -16,7 +16,7 @@ import GradientBackground from '../components/GradientBackground';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
-import { HEADER_SPACING } from '../theme';
+import { HEADER_SPACING } from '../layout';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';

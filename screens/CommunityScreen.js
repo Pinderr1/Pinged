@@ -25,7 +25,7 @@ import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';
 import { serverTimestamp } from 'firebase/firestore';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
-import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../theme';
+import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = (screenWidth - 48) / 2;
@@ -322,7 +322,7 @@ const CommunityScreen = () => {
 const getStyles = (theme) =>
   StyleSheet.create({
   header: {
-    fontSize: FONT_SIZES.title,
+    fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
     marginLeft: 16,
     marginBottom: 12
@@ -343,10 +343,10 @@ const getStyles = (theme) =>
   bannerTitle: {
     color: theme.accent,
     fontWeight: 'bold',
-    fontSize: FONT_SIZES.label
+    fontSize: FONT_SIZES.MD
   },
   bannerText: {
-    fontSize: FONT_SIZES.text,
+    fontSize: FONT_SIZES.SM,
     color: '#555'
   },
   grid: {
@@ -369,27 +369,27 @@ const getStyles = (theme) =>
     marginBottom: 6
   },
   title: {
-    fontSize: FONT_SIZES.text,
+    fontSize: FONT_SIZES.SM,
     fontWeight: 'bold'
   },
   time: {
-    fontSize: FONT_SIZES.text - 2,
+    fontSize: FONT_SIZES.SM - 2,
     color: theme.accent,
     marginBottom: 2
   },
   desc: {
-    fontSize: FONT_SIZES.text - 2,
+    fontSize: FONT_SIZES.SM - 2,
     color: '#666'
   },
   chatBtn: {
     marginTop: 6
   },
   chatText: {
-    fontSize: FONT_SIZES.text - 2,
+    fontSize: FONT_SIZES.SM - 2,
     color: '#4287f5'
   },
   badge: {
-    fontSize: FONT_SIZES.text - 2,
+    fontSize: FONT_SIZES.SM - 2,
     color: '#28c76f',
     marginTop: 4
   },
@@ -407,10 +407,10 @@ const getStyles = (theme) =>
   },
   badgeTitle: {
     fontWeight: 'bold',
-    fontSize: FONT_SIZES.label
+    fontSize: FONT_SIZES.MD
   },
   badgeText: {
-    fontSize: FONT_SIZES.text - 1,
+    fontSize: FONT_SIZES.SM - 1,
     color: '#666'
   },
   postCard: {
@@ -421,17 +421,17 @@ const getStyles = (theme) =>
     
   },
   postTitle: {
-    fontSize: FONT_SIZES.label - 1,
+    fontSize: FONT_SIZES.MD - 1,
     fontWeight: 'bold',
     marginBottom: 2
   },
   postTime: {
-    fontSize: FONT_SIZES.text - 2,
+    fontSize: FONT_SIZES.SM - 2,
     color: theme.accent,
     marginBottom: 4
   },
   postDesc: {
-    fontSize: FONT_SIZES.text - 1,
+    fontSize: FONT_SIZES.SM - 1,
     color: '#666'
   },
   filterBtn: {

@@ -19,7 +19,7 @@ import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
-import { HEADER_SPACING } from '../theme';
+import { HEADER_SPACING } from '../layout';
 import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';
 import { serverTimestamp } from 'firebase/firestore';

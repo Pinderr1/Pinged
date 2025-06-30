@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { BUTTON_STYLE, FONT_SIZES } from './theme';
+import { BUTTON_STYLE, FONT_SIZES } from './layout';
 
 const styles = StyleSheet.create({
   container: {
@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   logoText: {
-    fontSize: FONT_SIZES.title + 6,
+    fontSize: FONT_SIZES.XL + 6,
     fontWeight: '800',
     color: '#d81b60',
     marginBottom: 12,
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     marginBottom: 16,
     backgroundColor: '#fff'
   },
@@ -62,12 +62,12 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: '#fff',
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     fontWeight: '600'
   },
   backLink: {
     color: '#666',
-    fontSize: FONT_SIZES.text,
+    fontSize: FONT_SIZES.SM,
     marginTop: 20,
     textDecorationLine: 'underline'
   },
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     borderColor: '#d81b60'
   },
   genderText: {
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     color: '#333'
   },
   genderTextSelected: {
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   uploadText: {
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     color: '#888',
     textDecorationLine: 'underline'
   },
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   },
   navBtnText: {
     color: '#fff',
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     fontWeight: '600'
   },
   card: {
@@ -145,12 +145,12 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   cardName: {
-    fontSize: FONT_SIZES.title,
+    fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
     color: '#222'
   },
   cardBio: {
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     color: '#666',
     marginTop: 8,
     textAlign: 'center'
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     marginRight: 16
   },
   gameTitle: {
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     fontWeight: '600'
   },
   notificationBox: {
@@ -195,11 +195,11 @@ const styles = StyleSheet.create({
     width: '100%'
   },
   notificationText: {
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     color: '#d81b60'
   },
   settingText: {
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     color: '#666',
     marginBottom: 6
   },
