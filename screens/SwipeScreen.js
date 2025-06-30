@@ -99,8 +99,8 @@ const SwipeScreen = () => {
   const [matchGame, setMatchGame] = useState(null);
 
   const pan = useRef(new Animated.ValueXY()).current;
-  const scaleRefs = useRef(Array(5).fill(null).map(() => new Animated.Value(1))).current;
-  const likeOpacity = pan.x.interpolate({
+  // 3 main buttons shown in the toolbar
+  const scaleRefs = useRef(Array(3).fill(null).map(() => new Animated.Value(1))).current;
     inputRange: [0, 150],
     outputRange: [0, 1],
     extrapolate: 'clamp',
@@ -475,15 +475,25 @@ const handleSwipe = async (direction) => {
         )}
 
         <View style={styles.buttonRow}>
-          {[
-            { icon: 'refresh', color: '#facc15', action: rewind },
-            { icon: 'close', color: '#f87171', action: swipeLeft },
-            { icon: 'star', color: '#60a5fa', action: handleSuperLike },
-            { icon: 'game-controller', color: '#a78bfa', action: handleGameInvite },
-            { icon: 'heart', color: '#ff75b5', action: swipeRight },
+          [
+            {
+              icon: "close",
+              color: "#f87171",
+              action: swipeLeft,
+              longAction: rewind,
+            },
+            {
+              icon: "game-controller",
+              color: "#a78bfa",
+              action: handleGameInvite,
+            },
+            {
+              icon: "heart",
+              color: "#ff75b5",
+              action: swipeRight,
+              longAction: handleSuperLike,
+            },
           ].map((btn, i) => (
-            <Animated.View key={i} style={{ transform: [{ scale: scaleRefs[i] }] }}>
-              <TouchableOpacity
                 onPressIn={() =>
                   Animated.spring(scaleRefs[i], {
                     toValue: 0.9,
@@ -498,6 +508,12 @@ const handleSwipe = async (direction) => {
                   }).start()
                 }
                 onPress={btn.action}
+                onLongPress={() =>
+                  btn.longAction && (isPremiumUser || devMode)
+                    ? btn.longAction()
+                    : btn.longAction && navigation.navigate('Premium', { context: 'paywall' })
+                }
+                delayLongPress={300}
                 style={[styles.circleButton, { backgroundColor: btn.color }]}
               >
                 {btn.icon === 'game-controller' ? (
