@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
+import GradientButton from '../components/GradientButton';
 import styles from '../styles';
 import Header from '../components/Header';
 import { useUser } from '../contexts/UserContext';
@@ -154,9 +155,7 @@ const ProfileScreen = ({ navigation, route }) => {
         value={location}
         onChangeText={setLocation}
       />
-      <TouchableOpacity style={styles.emailBtn} onPress={handleSave}>
-        <Text style={styles.btnText}>{saveLabel}</Text>
-      </TouchableOpacity>
+      <GradientButton text={saveLabel} onPress={handleSave} />
       </SafeKeyboardView>
     </GradientBackground>
   );

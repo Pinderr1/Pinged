@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet
 } from 'react-native';
+import GradientButton from '../components/GradientButton';
 import Loader from '../components/Loader';
 import Header from '../components/Header';
 import styles from '../styles';
@@ -90,17 +91,14 @@ const NotificationsScreen = ({ navigation }) => {
                 {inv.fromName ? `${inv.fromName} invited you to play ${games[inv.gameId]?.meta?.title || 'a game'}` : 'Game invite received'}
               </Text>
               <View style={local.actions}>
-                <TouchableOpacity
-                  style={[styles.emailBtn, { marginRight: 10, flexDirection: 'row', justifyContent: 'center' }]}
+                <GradientButton
+                  text={loadingId === inv.id ? '' : 'Accept'}
                   onPress={() => handleAccept(inv)}
+                  width={120}
+                  style={{ marginRight: 10, flexDirection: 'row', justifyContent: 'center' }}
                   disabled={loadingId === inv.id}
-                >
-                  {loadingId === inv.id ? (
-                    <Loader size="small" />
-                  ) : (
-                    <Text style={styles.btnText}>Accept</Text>
-                  )}
-                </TouchableOpacity>
+                  icon={loadingId === inv.id ? <Loader size="small" /> : null}
+                />
                 <TouchableOpacity
                   onPress={() => handleDecline(inv)}
                   disabled={loadingId === inv.id + '_decline'}
