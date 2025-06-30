@@ -14,7 +14,6 @@ export const BUTTON_STYLE = {
 };
 
 export const HEADER_HEIGHT = 60;
-export const HEADER_PADDING_TOP = Platform.OS === 'ios' ? 44 : 16;
 export const HEADER_SPACING = Platform.OS === 'ios'
   ? HEADER_HEIGHT + 40
   : HEADER_HEIGHT + 20;
