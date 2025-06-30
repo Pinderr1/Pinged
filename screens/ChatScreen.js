@@ -348,6 +348,52 @@ function PrivateChat({ user }) {
     );
   };
 
+  const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
+  const gameSection = SelectedGameClient ? (
+    <View
+      style={{
+        padding: 10,
+        borderTopWidth: 1,
+        borderColor: darkMode ? '#444' : '#ccc',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      {devMode && (
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          <TouchableOpacity
+            onPress={() => setDevPlayer('0')}
+            style={{
+              backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 8,
+              marginRight: 8,
+            }}
+          >
+            <Text style={{ color: '#fff' }}>Player 1</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setDevPlayer('1')}
+            style={{
+              backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ color: '#fff' }}>Player 2</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      <SelectedGameClient
+        matchID={user.id}
+        playerID={devMode ? devPlayer : '0'}
+        onGameEnd={handleGameEnd}
+      />
+    </View>
+  ) : null;
+
   const chatSection = (
     <View style={{ flex: 4, padding: 10 }}>
       <FlatList
@@ -361,6 +407,7 @@ function PrivateChat({ user }) {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
+        ListFooterComponent={gameSection}
         ListEmptyComponent={
           !loading && (
             <View style={{ alignItems: 'center', marginTop: 20 }}>
@@ -470,48 +517,6 @@ function PrivateChat({ user }) {
     </View>
   );
 
-  const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
-  const gameSection = SelectedGameClient ? (
-    <View
-      style={{
-        flex: 0.6,
-        padding: 10,
-        borderTopWidth: 1,
-        borderColor: darkMode ? '#444' : '#ccc',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      {devMode && (
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <TouchableOpacity
-            onPress={() => setDevPlayer('0')}
-            style={{
-              backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 8,
-              marginRight: 8,
-            }}
-          >
-            <Text style={{ color: '#fff' }}>Player 1</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setDevPlayer('1')}
-            style={{
-              backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 8,
-            }}
-          >
-            <Text style={{ color: '#fff' }}>Player 2</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      <SelectedGameClient matchID={user.id} playerID={devMode ? devPlayer : '0'} onGameEnd={handleGameEnd} />
-    </View>
-  ) : null;
 
   return (
     <GradientBackground style={{ flex: 1 }}>
@@ -546,7 +551,6 @@ function PrivateChat({ user }) {
             ) : (
               chatSection
             )}
-            {gameSection}
           </View>
         </SafeKeyboardView>
       </SafeAreaView>
