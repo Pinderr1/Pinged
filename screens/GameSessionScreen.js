@@ -21,8 +21,7 @@ import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { HEADER_SPACING } from '../layout';
 import { useUser } from '../contexts/UserContext';
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase from '../firebase';
 import * as Haptics from 'expo-haptics';
 import getGlobalStyles from '../styles';
 import { games } from '../games';
@@ -79,7 +78,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   // Listen for Firestore invite status
   useEffect(() => {
     if (!inviteId || !user?.uid) return;
-    const ref = firestore.collection('gameInvites').doc(inviteId);
+    const ref = firebase.firestore().collection('gameInvites').doc(inviteId);
     const unsub = ref.onSnapshot((snap) => {
       if (snapshotExists(snap)) {
         const data = snap.data();
@@ -126,13 +125,13 @@ const LiveSessionScreen = ({ route, navigation }) => {
         await createMatchIfMissing(user.uid, opponent.id);
       }
       if (inviteId && user?.uid) {
-        const ref = firestore.collection('gameInvites').doc(inviteId);
+        const ref = firebase.firestore().collection('gameInvites').doc(inviteId);
         const snap = await ref.get();
         const data = snap.data();
         if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
           ref.update({
             status: 'active',
-            startedAt: serverTimestamp(),
+            startedAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
         }
       }
@@ -157,21 +156,22 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const handleRematch = async () => {
     if (!requireCredits()) return;
     if (inviteId && user?.uid) {
-      const ref = firestore.collection('gameInvites').doc(inviteId);
+      const ref = firebase.firestore().collection('gameInvites').doc(inviteId);
         const snap = await ref.get();
         const data = snap.data();
         if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
           await ref.update({
             status: 'finished',
-            endedAt: serverTimestamp(),
+            endedAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
-          await firestore
-          .collection('gameSessions')
-          .doc(inviteId)
-          .update({
-            archived: true,
-            archivedAt: serverTimestamp(),
-          });
+          await firebase
+            .firestore()
+            .collection('gameSessions')
+            .doc(inviteId)
+            .update({
+              archived: true,
+              archivedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
       }
     }
 

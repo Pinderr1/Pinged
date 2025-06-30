@@ -3,17 +3,8 @@ import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import * as AuthSession from "expo-auth-session";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth, firestore } from "../firebase";
+import firebase from "../firebase";
 import { clearStoredOnboarding } from "./OnboardingContext";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signInWithCredential,
-  signOut,
-  GoogleAuthProvider,
-} from "firebase/auth";
-import { serverTimestamp } from "firebase/firestore";
 import { snapshotExists } from "../utils/firestore";
 import { isAllowedDomain } from "../utils/email";
 
@@ -33,7 +24,7 @@ export const AuthProvider = ({ children }) => {
 
   const ensureUserDoc = async (fbUser) => {
     try {
-      const ref = firestore.collection("users").doc(fbUser.uid);
+      const ref = firebase.firestore().collection("users").doc(fbUser.uid);
       const snap = await ref.get();
       if (!snapshotExists(snap)) {
         await ref.set({
@@ -42,7 +33,7 @@ export const AuthProvider = ({ children }) => {
           displayName: fbUser.displayName || "",
           photoURL: fbUser.photoURL || "",
           onboardingComplete: false,
-          createdAt: serverTimestamp(),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
     } catch (e) {
@@ -51,11 +42,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithEmail = async (email, password) => {
-    const userCred = await signInWithEmailAndPassword(
-      auth,
-      email.trim(),
-      password,
-    );
+    const userCred = await firebase
+      .auth()
+      .signInWithEmailAndPassword(email.trim(), password);
     await ensureUserDoc(userCred.user);
   };
 
@@ -63,11 +52,9 @@ export const AuthProvider = ({ children }) => {
     if (!isAllowedDomain(email)) {
       throw new Error("Email domain not supported");
     }
-    const userCred = await createUserWithEmailAndPassword(
-      auth,
-      email.trim(),
-      password,
-    );
+    const userCred = await firebase
+      .auth()
+      .createUserWithEmailAndPassword(email.trim(), password);
     try {
       const keys = await AsyncStorage.getAllKeys();
       const matchKeys = keys.filter((k) => k.startsWith("chatMatches"));
@@ -75,7 +62,8 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {
       console.warn("Failed to clear stored matches", e);
     }
-    await firestore
+    await firebase
+      .firestore()
       .collection("users")
       .doc(userCred.user.uid)
       .set({
@@ -84,7 +72,7 @@ export const AuthProvider = ({ children }) => {
         displayName: userCred.user.displayName || "",
         photoURL: userCred.user.photoURL || "",
         onboardingComplete: false,
-        createdAt: serverTimestamp(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
   };
 
@@ -93,11 +81,11 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     if (user?.uid) await clearStoredOnboarding(user.uid);
-    return signOut(auth);
+    return firebase.auth().signOut();
   };
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+    const unsub = firebase.auth().onAuthStateChanged(async (fbUser) => {
       setUser(fbUser);
       if (fbUser) await ensureUserDoc(fbUser);
       setLoading(false);
@@ -108,8 +96,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (response?.type === "success") {
       const { id_token } = response.params;
-      const credential = GoogleAuthProvider.credential(id_token);
-      signInWithCredential(auth, credential)
+      const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
+      firebase
+        .auth()
+        .signInWithCredential(credential)
         .then((res) => ensureUserDoc(res.user))
         .catch((err) => console.warn("Google login failed", err));
     }

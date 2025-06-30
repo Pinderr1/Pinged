@@ -2,8 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDev } from './DevContext';
 import { useUser } from './UserContext';
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase from '../firebase';
 import { useListeners } from './ListenerContext';
 import Toast from 'react-native-toast-message';
 import * as Haptics from 'expo-haptics';
@@ -80,7 +79,10 @@ export const ChatProvider = ({ children }) => {
   const userUnsubs = useRef({});
   useEffect(() => {
     if (!user?.uid) return;
-    const q = firestore.collection('matches').where('users', 'array-contains', user.uid);
+    const q = firebase
+      .firestore()
+      .collection('matches')
+      .where('users', 'array-contains', user.uid);
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
@@ -127,7 +129,8 @@ export const ChatProvider = ({ children }) => {
       // Subscribe to each user's profile for presence
       userIds.forEach((uid) => {
         if (!userUnsubs.current[uid]) {
-          userUnsubs.current[uid] = firestore
+          userUnsubs.current[uid] = firebase
+            .firestore()
             .collection('users')
             .doc(uid)
             .onSnapshot((doc) => {
@@ -183,14 +186,15 @@ export const ChatProvider = ({ children }) => {
   const sendMessage = async (matchId, text, sender = 'you') => {
     if (!text || !matchId || !user?.uid) return;
     try {
-      await firestore
+      await firebase
+        .firestore()
         .collection('matches')
         .doc(matchId)
         .collection('messages')
         .add({
           senderId: sender === 'you' ? user.uid : sender,
           text: text.trim(),
-        timestamp: serverTimestamp(),
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
       if (sender === 'you') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -277,7 +281,8 @@ export const ChatProvider = ({ children }) => {
     if (!user?.uid) return;
     setLoading(true);
     try {
-      const snap = await firestore
+      const snap = await firebase
+        .firestore()
         .collection('matches')
         .where('users', 'array-contains', user.uid)
         .get();

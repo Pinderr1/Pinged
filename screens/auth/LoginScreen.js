@@ -9,9 +9,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
-import { auth, firestore } from '../../firebase';
-import { GoogleAuthProvider, signInWithCredential, signInAnonymously } from 'firebase/auth';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase from '../../firebase';
 import { snapshotExists } from '../../utils/firestore';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { useNavigation } from '@react-navigation/native';
@@ -37,11 +35,17 @@ export default function LoginScreen() {
   useEffect(() => {
     if (response?.type === 'success') {
       const { id_token } = response.params;
-      const credential = GoogleAuthProvider.credential(id_token);
-      signInWithCredential(auth, credential)
+      const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
+      firebase
+        .auth()
+        .signInWithCredential(credential)
         .then(async (res) => {
           console.log('✅ Google login success:', res.user.uid);
-          const snap = await firestore.collection('users').doc(res.user.uid).get();
+          const snap = await firebase
+            .firestore()
+            .collection('users')
+            .doc(res.user.uid)
+            .get();
           if (snapshotExists(snap) && snap.data().onboardingComplete) {
             markOnboarded();
           }
@@ -56,14 +60,14 @@ export default function LoginScreen() {
   const handleDevLogin = async () => {
     toggleDevMode();
     try {
-      const cred = await signInAnonymously(auth);
-      await firestore.collection('users').doc(cred.user.uid).set({
+      const cred = await firebase.auth().signInAnonymously();
+      await firebase.firestore().collection('users').doc(cred.user.uid).set({
         uid: cred.user.uid,
         email: '',
         displayName: 'Dev Tester',
         photoURL: '',
         onboardingComplete: false,
-        createdAt: serverTimestamp(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
     } catch (e) {
       console.warn('Dev login failed', e);

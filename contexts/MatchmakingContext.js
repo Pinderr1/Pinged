@@ -1,6 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import { firestore } from '../firebase';
-import { serverTimestamp, arrayUnion } from 'firebase/firestore';
+import firebase from '../firebase';
 import { useUser } from './UserContext';
 import { useListeners } from './ListenerContext';
 import { snapshotExists } from '../utils/firestore';
@@ -19,18 +18,21 @@ export const MatchmakingProvider = ({ children }) => {
 
   const sendMatchRequest = async (to) => {
     if (!user?.uid || !to) return null;
-    const ref = await firestore.collection('matchRequests').add({
-      from: user.uid,
-      to,
-      status: 'pending',
-      createdAt: serverTimestamp(),
-    });
+    const ref = await firebase
+      .firestore()
+      .collection('matchRequests')
+      .add({
+        from: user.uid,
+        to,
+        status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
     return ref.id;
   };
 
   const acceptMatchRequest = async (id) => {
     if (!user?.uid || !id) return;
-    const ref = firestore.collection('matchRequests').doc(id);
+    const ref = firebase.firestore().collection('matchRequests').doc(id);
     const snap = await ref.get();
     const data = snap.data();
     if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
@@ -39,7 +41,7 @@ export const MatchmakingProvider = ({ children }) => {
 
   const cancelMatchRequest = async (id) => {
     if (!user?.uid || !id) return;
-    const ref = firestore.collection('matchRequests').doc(id);
+    const ref = firebase.firestore().collection('matchRequests').doc(id);
     const snap = await ref.get();
     const data = snap.data();
     if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
@@ -55,9 +57,9 @@ export const MatchmakingProvider = ({ children }) => {
       fromName: user.displayName || 'User',
       status: 'pending',
       acceptedBy: [user.uid],
-      createdAt: serverTimestamp(),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
-    const ref = await firestore.collection('gameInvites').add(payload);
+    const ref = await firebase.firestore().collection('gameInvites').add(payload);
     const inviteData = { ...payload, inviteId: ref.id };
     try {
       await firestore
@@ -80,12 +82,12 @@ export const MatchmakingProvider = ({ children }) => {
 
   const acceptGameInvite = async (id) => {
     if (!user?.uid || !id) return;
-    const ref = firestore.collection('gameInvites').doc(id);
+    const ref = firebase.firestore().collection('gameInvites').doc(id);
     const snap = await ref.get();
     const data = snap.data();
     if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
     await ref.update({
-      acceptedBy: arrayUnion(user.uid),
+      acceptedBy: firebase.firestore.FieldValue.arrayUnion(user.uid),
     });
 
     if (data.acceptedBy?.length + 1 >= 2 && !data.acceptedBy?.includes(user.uid)) {
@@ -95,7 +97,8 @@ export const MatchmakingProvider = ({ children }) => {
     }
 
     try {
-      await firestore
+      await firebase
+        .firestore()
         .collection('users')
         .doc(user.uid)
         .collection('gameInvites')
@@ -111,7 +114,7 @@ export const MatchmakingProvider = ({ children }) => {
   const cancelGameInvite = async (id) => {
     if (!user?.uid || !id) return;
 
-    const ref = firestore.collection('gameInvites').doc(id);
+    const ref = firebase.firestore().collection('gameInvites').doc(id);
     const snap = await ref.get();
 
     if (!snapshotExists(snap)) return;
@@ -122,7 +125,8 @@ export const MatchmakingProvider = ({ children }) => {
     try {
       await ref.update({ status: 'cancelled' });
 
-      await firestore
+      await firebase
+        .firestore()
         .collection('users')
         .doc(user.uid)
         .collection('gameInvites')
