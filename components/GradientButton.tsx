@@ -1,10 +1,19 @@
-// components/GradientButton.js
+// components/GradientButton.tsx
 import React from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { View, Text, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
-import PropTypes from 'prop-types';
 
+export interface GradientButtonProps {
+  text: string;
+  onPress?: () => void;
+  width?: number | string;
+  marginVertical?: number;
+  icon?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  disabled?: boolean;
+}
 export default function GradientButton({
   text,
   onPress,
@@ -13,7 +22,7 @@ export default function GradientButton({
   icon,
   style,
   disabled,
-}) {
+}: GradientButtonProps) {
   const { theme } = useTheme();
   return (
     <Pressable onPress={onPress} style={{ width, marginVertical }} disabled={disabled}>
@@ -44,12 +53,3 @@ export default function GradientButton({
   );
 }
 
-GradientButton.propTypes = {
-  text: PropTypes.string.isRequired,
-  onPress: PropTypes.func,
-  width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  marginVertical: PropTypes.number,
-  icon: PropTypes.node,
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  disabled: PropTypes.bool,
-};

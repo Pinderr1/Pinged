@@ -3,9 +3,9 @@ import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
-import PropTypes from 'prop-types';
 
-const Header = () => {
+export interface HeaderProps {}
+const Header: React.FC<HeaderProps> = () => {
   const navigation = useNavigation();
   const { darkMode, theme } = useTheme();
   const notificationCount = useUnreadNotifications();
@@ -43,8 +43,6 @@ const Header = () => {
     </View>
   );
 };
-
-Header.propTypes = {};
 
 const styles = StyleSheet.create({
   container: {

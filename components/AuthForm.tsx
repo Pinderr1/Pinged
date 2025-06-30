@@ -1,9 +1,18 @@
 import React from 'react';
 import { TextInput } from 'react-native';
-import PropTypes from 'prop-types';
 import SafeKeyboardView from './SafeKeyboardView';
 import GradientButton from './GradientButton';
 import styles from '../styles';
+
+export interface AuthFormProps {
+  email: string;
+  onEmailChange: (text: string) => void;
+  password: string;
+  onPasswordChange: (text: string) => void;
+  onSubmit: () => void;
+  submitLabel: string;
+  children?: React.ReactNode;
+}
 
 export default function AuthForm({
   email,
@@ -13,7 +22,7 @@ export default function AuthForm({
   onSubmit,
   submitLabel,
   children,
-}) {
+}: AuthFormProps) {
   return (
     <SafeKeyboardView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%' }}>
       <TextInput
@@ -39,13 +48,3 @@ export default function AuthForm({
     </SafeKeyboardView>
   );
 }
-
-AuthForm.propTypes = {
-  email: PropTypes.string.isRequired,
-  onEmailChange: PropTypes.func.isRequired,
-  password: PropTypes.string.isRequired,
-  onPasswordChange: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
-  submitLabel: PropTypes.string.isRequired,
-  children: PropTypes.node,
-};
