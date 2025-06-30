@@ -19,5 +19,20 @@ export default function useCardPressAnimation() {
     }).start();
   };
 
-  return { scale, handlePressIn, handlePressOut };
+  const playSuccess = () => {
+    Animated.sequence([
+      Animated.spring(scale, {
+        toValue: 1.1,
+        friction: 3,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 3,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  return { scale, handlePressIn, handlePressOut, playSuccess };
 }

@@ -8,8 +8,8 @@ import {
   TextInput,
   Dimensions,
   Animated,
-  Vibration,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import Loader from '../components/Loader';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import Card from '../components/Card';
@@ -62,7 +62,7 @@ const GameInviteScreen = ({ route, navigation }) => {
     );
   }, [chatMatches]);
 
-  const handleInvite = async (user) => {
+  const handleInvite = async (user, animateSuccess) => {
     const isPremiumUser = !!currentUser?.isPremium;
     if (!requireCredits()) return;
 
@@ -73,7 +73,11 @@ const GameInviteScreen = ({ route, navigation }) => {
     try {
       inviteId = await sendGameInvite(user.id, gameId);
       Toast.show({ type: 'success', text1: 'Invite sent!' });
-      Vibration.vibrate(60);
+      Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Success
+      ).catch(() => {});
+      // TODO: play success sound here
+      if (animateSuccess) animateSuccess();
     } catch (e) {
       console.warn('Failed to send game invite', e);
       Toast.show({ type: 'error', text1: 'Failed to send invite' });
@@ -106,7 +110,12 @@ const GameInviteScreen = ({ route, navigation }) => {
     const isInvited = invited[item.id];
     const isLoading = loadingId === item.id;
 
-    const { scale, handlePressIn, handlePressOut } = useCardPressAnimation();
+    const {
+      scale,
+      handlePressIn,
+      handlePressOut,
+      playSuccess,
+    } = useCardPressAnimation();
 
     return (
       <Card
@@ -148,7 +157,7 @@ const GameInviteScreen = ({ route, navigation }) => {
             <Animated.View style={{ transform: [{ scale }] }}>
               <GradientButton
                 text="Invite"
-                onPress={() => handleInvite(item)}
+                onPress={() => handleInvite(item, playSuccess)}
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
                 width={120}

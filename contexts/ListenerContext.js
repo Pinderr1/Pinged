@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { Vibration } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { db } from '../firebase';
 import { useUser } from './UserContext';
 
@@ -53,7 +53,10 @@ export const ListenerProvider = ({ children }) => {
 
   useEffect(() => {
     if (incomingInvites.length > prevInvites.current.length) {
-      Vibration.vibrate(60);
+      Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Success
+      ).catch(() => {});
+      // TODO: play success sound here
     }
     prevInvites.current = incomingInvites;
   }, [incomingInvites]);
