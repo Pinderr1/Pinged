@@ -33,15 +33,15 @@ const games = allGames.map((g) => {
 });
 
 const HomeScreen = ({ navigation }) => {
-  const { theme } = useTheme();
+  const { darkMode, theme } = useTheme();
   const { user, loginBonus } = useUser();
-  const { matches } = useChats();
+  const { matches, loading } = useChats();
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
   const [showBonus, setShowBonus] = useState(false);
-  const local = getStyles(theme);
+  const local = getStyles(theme, darkMode);
 
   const shortcutActions = [
     { key: 'startChat', title: 'Start Chat', emoji: '💬' },
@@ -174,22 +174,35 @@ const HomeScreen = ({ navigation }) => {
           />
 
           <Text style={local.section}>Your Matches</Text>
-          <FlatList
-            data={matches}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={local.carousel}
-            renderItem={({ item }) => (
-              <Card
-                onPress={() => navigation.navigate('Chat', { user: item })}
-                style={[local.matchTile, { backgroundColor: theme.card }]}
-              >
-                <Image source={item.image} style={local.matchAvatar} />
-                <Text style={[local.matchName, { color: theme.text }]}>{item.displayName}</Text>
-              </Card>
-            )}
-          />
+          {loading && matches.length === 0 ? (
+            <View style={[local.carousel, { flexDirection: 'row' }]}>
+              {Array.from({ length: 3 }).map((_, idx) => (
+                <View key={idx} style={[local.matchTile, local.skeletonTile]}>
+                  <View style={[local.matchAvatar, local.skeletonAvatar]} />
+                  <View style={local.skeletonLabel} />
+                </View>
+              ))}
+            </View>
+          ) : (
+            <FlatList
+              data={matches}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={local.carousel}
+              renderItem={({ item }) => (
+                <Card
+                  onPress={() => navigation.navigate('Chat', { user: item })}
+                  style={[local.matchTile, { backgroundColor: theme.card }]}
+                >
+                  <Image source={item.image} style={local.matchAvatar} />
+                  <Text style={[local.matchName, { color: theme.text }]}>
+                    {item.displayName}
+                  </Text>
+                </Card>
+              )}
+            />
+          )}
 
           <Text style={local.section}>Suggested Games</Text>
           <FlatList
@@ -270,7 +283,7 @@ HomeScreen.propTypes = {
   }).isRequired,
 };
 
-const getStyles = (theme) =>
+const getStyles = (theme, darkMode) =>
   StyleSheet.create({
   welcome: {
     fontSize: 18,
@@ -342,6 +355,21 @@ const getStyles = (theme) =>
   matchName: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  skeletonTile: {
+    backgroundColor: darkMode ? '#444' : '#ddd',
+    borderRadius: 12,
+  },
+  skeletonAvatar: {
+    backgroundColor: darkMode ? '#555' : '#eee',
+    borderRadius: 30,
+  },
+  skeletonLabel: {
+    height: 14,
+    width: 80,
+    borderRadius: 7,
+    marginTop: 6,
+    backgroundColor: darkMode ? '#555' : '#eee',
   },
   gameTile: {
     width: 120,
