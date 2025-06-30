@@ -14,7 +14,7 @@ import Card from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
 import PropTypes from 'prop-types';
-import { HEADER_SPACING } from '../theme';
+import { HEADER_SPACING } from '../layout';
 
 const MatchesScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();

@@ -11,7 +11,7 @@ import { db } from '../firebase';
 import { avatarSource } from '../utils/avatar';
 import ProgressBar from '../components/ProgressBar';
 import PropTypes from 'prop-types';
-import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../theme';
+import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 
 const StatsScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -182,7 +182,7 @@ const getStyles = (theme) => StyleSheet.create({
     marginBottom: 10
   },
   name: {
-    fontSize: FONT_SIZES.title,
+    fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
     color: theme.text
   },
@@ -193,10 +193,10 @@ const getStyles = (theme) => StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    fontSize: FONT_SIZES.text - 2
+    fontSize: FONT_SIZES.SM - 2
   },
   sectionTitle: {
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     fontWeight: '700',
     marginTop: 20,
     marginBottom: 8,
@@ -214,16 +214,16 @@ const getStyles = (theme) => StyleSheet.create({
     elevation: 3
   },
   statLabel: {
-    fontSize: FONT_SIZES.text,
+    fontSize: FONT_SIZES.SM,
     color: theme.textSecondary
   },
   statValue: {
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     fontWeight: '600',
     color: theme.text
   },
   statSub: {
-    fontSize: FONT_SIZES.text - 2,
+    fontSize: FONT_SIZES.SM - 2,
     color: theme.textSecondary,
     marginTop: 4,
   },
@@ -238,7 +238,7 @@ const getStyles = (theme) => StyleSheet.create({
   premiumText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: FONT_SIZES.label - 1
+    fontSize: FONT_SIZES.MD - 1
   }
 
 });

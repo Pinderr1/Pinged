@@ -17,7 +17,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { functions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
 import PropTypes from 'prop-types';
-import { HEADER_SPACING, FONT_SIZES } from '../theme';
+import { HEADER_SPACING, FONT_SIZES } from '../layout';
 
 const upgradeFeatures = [
   { icon: require('../assets/icons/unlimited.png'), text: 'Unlimited Game Invites' },
@@ -167,12 +167,12 @@ const getPaywallStyles = (theme) =>
     paddingTop: HEADER_SPACING,
   },
   title: {
-    fontSize: FONT_SIZES.title,
+    fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
     color: theme.accent,
   },
   subtitle: {
-    fontSize: FONT_SIZES.text,
+    fontSize: FONT_SIZES.SM,
     color: '#666',
     marginTop: 8,
     textAlign: 'center',
@@ -189,13 +189,13 @@ const getPaywallStyles = (theme) =>
     marginRight: 12,
   },
   featureText: {
-    fontSize: FONT_SIZES.label,
+    fontSize: FONT_SIZES.MD,
     color: '#333',
     flexShrink: 1,
   },
   cancel: {
     marginTop: 16,
-    fontSize: FONT_SIZES.text,
+    fontSize: FONT_SIZES.SM,
     color: '#888',
   },
 });
