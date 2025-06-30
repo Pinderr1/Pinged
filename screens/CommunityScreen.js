@@ -22,8 +22,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import PropTypes from 'prop-types';
 import { useUser } from '../contexts/UserContext';
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase, { firestore } from '../firebase';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 import * as Haptics from 'expo-haptics';
@@ -344,7 +343,7 @@ const CommunityScreen = () => {
                     description: newDesc,
                     category: 'Tonight',
                     hostId: user?.uid || null,
-                    createdAt: serverTimestamp(),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                   });
                   setShowHostModal(false);
                   setNewTitle('');
@@ -392,7 +391,7 @@ const CommunityScreen = () => {
                     time: 'Just now',
                     description: postDesc,
                     userId: user?.uid || null,
-                    createdAt: serverTimestamp(),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                   });
                   setShowPostModal(false);
                   setPostTitle('');

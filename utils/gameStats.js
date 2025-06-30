@@ -1,5 +1,4 @@
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase, { firestore } from '../firebase';
 import { snapshotExists } from './firestore';
 
 export async function logGameStats(sessionId) {
@@ -29,7 +28,7 @@ export async function logGameStats(sessionId) {
         durationSec: duration,
         winner,
         moves: data.moves || [],
-        loggedAt: serverTimestamp(),
+        loggedAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
   } catch (e) {
     console.warn('Failed to log game stats', e);

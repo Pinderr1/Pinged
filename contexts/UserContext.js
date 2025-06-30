@@ -2,9 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from "r
 import { View } from "react-native";
 import Toast from "react-native-toast-message";
 import Loader from "../components/Loader";
-import { auth, firestore } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { serverTimestamp } from "firebase/firestore";
+import firebase, { auth, firestore } from "../firebase";
 import { useDev } from "./DevContext";
 import { useOnboarding, clearStoredOnboarding } from "./OnboardingContext";
 import { snapshotExists } from "../utils/firestore";
@@ -31,7 +29,7 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     let unsubProfile;
     let currentUid = null;
-    const unsubAuth = onAuthStateChanged(auth, (fbUser) => {
+    const unsubAuth = auth.onAuthStateChanged((fbUser) => {
       if (fbUser?.uid !== currentUid) {
         if (!fbUser && currentUid) clearStoredOnboarding(currentUid);
         clearOnboarding();
@@ -119,8 +117,10 @@ export const UserProvider = ({ children }) => {
     try {
       await firestore.collection("users").doc(user.uid).update({
         ...updates,
-        lastActiveAt: serverTimestamp(),
-        ...(opts.markPlayed ? { lastPlayedAt: serverTimestamp() } : {}),
+        lastActiveAt: firebase.firestore.FieldValue.serverTimestamp(),
+        ...(opts.markPlayed
+          ? { lastPlayedAt: firebase.firestore.FieldValue.serverTimestamp() }
+          : {}),
       });
     } catch (e) {
       console.warn("Failed to update XP", e);

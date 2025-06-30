@@ -24,8 +24,7 @@ import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { allGames } from '../data/games';
 import { icebreakers } from '../data/prompts';
 import { useChats } from '../contexts/ChatContext';
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase, { firestore } from '../firebase';
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -227,7 +226,7 @@ const handleSwipe = async (direction) => {
             .doc(currentUser.uid)
             .collection('liked')
             .doc(displayUser.id)
-            .set({ createdAt: serverTimestamp() });
+            .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
 
           const reciprocal = await firestore
             .collection('likes')
@@ -241,7 +240,7 @@ const handleSwipe = async (direction) => {
               .collection('matches')
               .add({
                 users: [currentUser.uid, displayUser.id],
-                createdAt: serverTimestamp(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
               });
 
             addMatch({

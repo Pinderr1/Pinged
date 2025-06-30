@@ -7,8 +7,7 @@ import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
-import { auth } from '../firebase';
-import { signOut } from 'firebase/auth';
+import firebase, { auth } from '../firebase';
 import PropTypes from 'prop-types';
 
 const SettingsScreen = ({ navigation }) => {
@@ -23,7 +22,7 @@ const SettingsScreen = ({ navigation }) => {
 
   const handleEditProfile = () => navigation.navigate('Profile', { editMode: true });
   const handleLogout = async () => {
-    await signOut(auth);
+    await auth.signOut();
     // RootNavigator will detect the auth change and present the AuthStack
     // so no manual navigation reset is required here.
   };

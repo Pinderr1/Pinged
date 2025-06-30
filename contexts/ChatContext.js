@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDev } from './DevContext';
 import { useUser } from './UserContext';
 import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase from '../firebase';
 import { useListeners } from './ListenerContext';
 import Toast from 'react-native-toast-message';
 import * as Haptics from 'expo-haptics';
@@ -190,7 +190,7 @@ export const ChatProvider = ({ children }) => {
         .add({
           senderId: sender === 'you' ? user.uid : sender,
           text: text.trim(),
-        timestamp: serverTimestamp(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
       if (sender === 'you') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});

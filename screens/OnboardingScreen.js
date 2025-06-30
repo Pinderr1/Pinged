@@ -13,8 +13,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
-import { firestore, auth } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase, { firestore, auth } from '../firebase';
 import { uploadAvatarAsync } from '../utils/upload';
 import PropTypes from 'prop-types';
 import { sanitizeText } from '../utils/sanitize';
@@ -178,7 +177,7 @@ export default function OnboardingScreen() {
         favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
         bio: sanitizeText(answers.bio.trim()),
         onboardingComplete: true,
-        createdAt: serverTimestamp(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
       await firestore.collection('users').doc(user.uid).set(profile, { merge: true });
       updateUser(profile);

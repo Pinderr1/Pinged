@@ -19,8 +19,7 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
-import { firestore } from '../firebase';
-import { serverTimestamp, arrayUnion } from 'firebase/firestore';
+import firebase, { firestore } from '../firebase';
 import * as Haptics from 'expo-haptics';
 import { uploadVoiceAsync } from '../utils/upload';
 import { useTheme } from '../contexts/ThemeContext';
@@ -104,7 +103,7 @@ function PrivateChat({ user }) {
           senderId: sender === 'system' ? 'system' : currentUser?.uid,
           text: msgText.trim(),
           ...extras,
-          timestamp: serverTimestamp(),
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
       if (sender === 'user') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -177,7 +176,7 @@ function PrivateChat({ user }) {
         const val = d.data();
         if (val.senderId !== currentUser.uid && !(val.readBy || []).includes(currentUser.uid)) {
           d.ref.update({
-            readBy: arrayUnion(currentUser.uid),
+            readBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
           });
         }
         return {
@@ -728,7 +727,7 @@ function GroupChat({ event }) {
           user: user?.displayName || 'You',
           userId: user?.uid || null,
           text: input.trim(),
-          timestamp: serverTimestamp(),
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
           reactions: [],
           pinned: false,
         });
@@ -749,7 +748,7 @@ function GroupChat({ event }) {
         .doc(event.id)
         .collection('messages')
         .doc(msgId)
-        .update({ reactions: arrayUnion(emoji) });
+        .update({ reactions: firebase.firestore.FieldValue.arrayUnion(emoji) });
     } catch (e) {
       console.warn('Failed to add reaction', e);
     }

@@ -1,5 +1,4 @@
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase, { firestore } from '../firebase';
 
 export async function createMatchIfMissing(uid, otherUid) {
   if (!uid || !otherUid) return null;
@@ -12,7 +11,7 @@ export async function createMatchIfMissing(uid, otherUid) {
     if (!exists) {
       const ref = await firestore.collection('matches').add({
         users: [uid, otherUid],
-        createdAt: serverTimestamp(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       return ref.id;
     }

@@ -21,8 +21,7 @@ import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { HEADER_SPACING } from '../layout';
 import { useUser } from '../contexts/UserContext';
-import { firestore } from '../firebase';
-import { serverTimestamp } from 'firebase/firestore';
+import firebase, { firestore } from '../firebase';
 import * as Haptics from 'expo-haptics';
 import getGlobalStyles from '../styles';
 import { games } from '../games';
@@ -132,7 +131,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
         if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
           ref.update({
             status: 'active',
-            startedAt: serverTimestamp(),
+            startedAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
         }
       }
@@ -163,14 +162,14 @@ const LiveSessionScreen = ({ route, navigation }) => {
         if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
           await ref.update({
             status: 'finished',
-            endedAt: serverTimestamp(),
+            endedAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
           await firestore
           .collection('gameSessions')
           .doc(inviteId)
           .update({
             archived: true,
-            archivedAt: serverTimestamp(),
+            archivedAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
       }
     }
