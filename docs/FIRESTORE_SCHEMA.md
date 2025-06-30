@@ -19,6 +19,7 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `premiumUpdatedAt` (timestamp)
 - `xp` (number)
 - `streak` (number)
+- `lastActiveAt` (timestamp) – last login or game completion
 - `lastPlayedAt` (timestamp)
 - `streakRewardedAt` (timestamp) – last time a streak reward notification was sent
 - `dailyPlayCount` (number) – count of games started today for free users
