@@ -1,5 +1,5 @@
 // /screens/NotificationsScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -53,6 +53,11 @@ const NotificationsScreen = ({ navigation }) => {
   const { user } = useUser();
   const { darkMode, theme } = useTheme();
   const [loadingId, setLoadingId] = useState(null);
+  const [invitesLoaded, setInvitesLoaded] = useState(false);
+
+  useEffect(() => {
+    setInvitesLoaded(true);
+  }, [incomingInvites]);
 
   const pendingInvites = incomingInvites.filter((i) => i.status === 'pending');
 
@@ -113,7 +118,28 @@ const NotificationsScreen = ({ navigation }) => {
         <Text style={[local.title, { color: theme.text }]}>Game Invites</Text>
 
         {pendingInvites.length === 0 ? (
-          <Text style={[local.empty, { color: theme.textSecondary }]}>No invites right now.</Text>
+          invitesLoaded ? (
+            <Text style={[local.empty, { color: theme.textSecondary }]}>No invites right now.</Text>
+          ) : (
+            [0, 1].map((i) => (
+              <View
+                key={`skel-${i}`}
+                style={[local.card, { backgroundColor: theme.card }]}
+              >
+                <View
+                  style={[local.skelText, { backgroundColor: theme.textSecondary }]}
+                />
+                <View style={local.actions}>
+                  <View
+                    style={[local.skelButton, { backgroundColor: theme.textSecondary }]}
+                  />
+                  <View
+                    style={[local.skelDecline, { backgroundColor: theme.textSecondary }]}
+                  />
+                </View>
+              </View>
+            ))
+          )
         ) : (
           pendingInvites.map((inv) => (
             <View
@@ -180,6 +206,26 @@ const local = StyleSheet.create({
     textAlign: 'center',
     color: '#888',
     marginTop: 40
+  },
+  skelText: {
+    height: 14,
+    borderRadius: 7,
+    marginBottom: 10,
+    width: '60%',
+    opacity: 0.3
+  },
+  skelButton: {
+    height: 32,
+    borderRadius: 16,
+    width: 100,
+    marginRight: 10,
+    opacity: 0.3
+  },
+  skelDecline: {
+    height: 16,
+    borderRadius: 8,
+    width: 60,
+    opacity: 0.3
   }
 });
 
