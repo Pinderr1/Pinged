@@ -1,15 +1,23 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import PropTypes from 'prop-types';
 import { useDev } from '../contexts/DevContext';
+import DevPanel from './DevPanel';
 
 export default function DevBanner() {
   const { devMode } = useDev();
+  const [showPanel, setShowPanel] = useState(false);
   if (!devMode) return null;
   return (
-    <View style={styles.banner} pointerEvents="none">
-      <Text style={styles.text}>DEV MODE</Text>
-    </View>
+    <>
+      <TouchableOpacity
+        style={styles.banner}
+        onPress={() => setShowPanel(true)}
+      >
+        <Text style={styles.text}>DEV MODE</Text>
+      </TouchableOpacity>
+      <DevPanel visible={showPanel} onClose={() => setShowPanel(false)} />
+    </>
   );
 }
 
