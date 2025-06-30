@@ -41,6 +41,7 @@ const HomeScreen = ({ navigation }) => {
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
   const [showBonus, setShowBonus] = useState(false);
+  const [showMore, setShowMore] = useState(false);
   const local = getStyles(theme);
 
   const shortcutActions = [
@@ -118,6 +119,7 @@ const HomeScreen = ({ navigation }) => {
   const level = Math.floor((user?.xp || 0) / 100);
   const xpProgress = (user?.xp || 0) % 100;
   const streakProgress = Math.min((user?.streak || 0) % 7, 7);
+  const dailyGame = allGames[0];
 
   return (
     <GradientBackground style={{ flex: 1 }}>
@@ -130,114 +132,148 @@ const HomeScreen = ({ navigation }) => {
           {showBonus && (
             <Text style={local.bonus}>🔥 Daily Bonus +5 XP</Text>
           )}
-          <Card style={[local.progressCard, { backgroundColor: theme.card }]}>
-            <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
-            <ProgressBar value={xpProgress} max={100} color={theme.accent} />
-            <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
-            <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
-          </Card>
-
-        <Text style={local.section}>Shortcuts</Text>
-        <FlatList
-          data={shortcutActions}
-          keyExtractor={(item) => item.key}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={local.carousel}
-          renderItem={({ item }) => (
-            <Card
-              onPress={() => handleShortcut(item.key)}
-              style={[local.tile, { backgroundColor: theme.card }]}
-            >
-              <Text style={local.tileEmoji}>{item.emoji}</Text>
-              <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
+          <View style={local.group}>
+            <Card style={[local.progressCard, { backgroundColor: theme.card }]}>
+              <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
+              <ProgressBar value={xpProgress} max={100} color={theme.accent} />
+              <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
+              <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
             </Card>
+          </View>
+
+          <View style={local.group}>
+            <Text style={local.section}>Daily Game</Text>
+            <Card
+              style={[local.gameTile, { backgroundColor: theme.card }]}
+              onPress={() => {
+                setPlayTarget('match');
+                selectGame(dailyGame);
+              }}
+            >
+              <View style={{ marginBottom: 8 }}>{dailyGame.icon}</View>
+              <Text style={[local.gameTitle, { color: theme.text }]}>{dailyGame.title}</Text>
+            </Card>
+          </View>
+
+          <View style={local.group}>
+            <Text style={local.section}>Quick Play</Text>
+            <FlatList
+              data={quickPlayOptions.slice(0, 2)}
+              keyExtractor={(item) => item.key}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={local.carousel}
+              renderItem={({ item }) => (
+                <Card
+                  onPress={() => openGamePicker(item.key)}
+                  style={[local.tile, { backgroundColor: theme.card }]}
+                >
+                  <Text style={local.tileEmoji}>{item.emoji}</Text>
+                  <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
+                </Card>
+              )}
+            />
+          </View>
+
+          <View style={local.group}>
+            <Text style={local.section}>Your Matches</Text>
+            <FlatList
+              data={matches}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={local.carousel}
+              renderItem={({ item }) => (
+                <Card
+                  onPress={() => navigation.navigate('Chat', { user: item })}
+                  style={[local.matchTile, { backgroundColor: theme.card }]}
+                >
+                  <Image source={item.image} style={local.matchAvatar} />
+                  <Text style={[local.matchName, { color: theme.text }]}>{item.displayName}</Text>
+                </Card>
+              )}
+            />
+          </View>
+
+          {!showMore && (
+            <TouchableOpacity onPress={() => setShowMore(true)} style={local.showMoreButton}>
+              <Text style={[local.section, { textAlign: 'center' }]}>Show More</Text>
+            </TouchableOpacity>
           )}
-        />
 
-          <Text style={local.section}>Quick Play</Text>
-          <FlatList
-            data={quickPlayOptions}
-            keyExtractor={(item) => item.key}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={local.carousel}
-            renderItem={({ item }) => (
-              <Card
-                onPress={() => openGamePicker(item.key)}
-                style={[local.tile, { backgroundColor: theme.card }]}
-              >
-                <Text style={local.tileEmoji}>{item.emoji}</Text>
-                <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
-              </Card>
-            )}
-          />
+          {showMore && (
+            <View>
+              <Text style={local.section}>Shortcuts</Text>
+              <FlatList
+                data={shortcutActions}
+                keyExtractor={(item) => item.key}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={local.carousel}
+                renderItem={({ item }) => (
+                  <Card
+                    onPress={() => handleShortcut(item.key)}
+                    style={[local.tile, { backgroundColor: theme.card }]}
+                  >
+                    <Text style={local.tileEmoji}>{item.emoji}</Text>
+                    <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
+                  </Card>
+                )}
+              />
 
-          <Text style={local.section}>Your Matches</Text>
-          <FlatList
-            data={matches}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={local.carousel}
-            renderItem={({ item }) => (
-              <Card
-                onPress={() => navigation.navigate('Chat', { user: item })}
-                style={[local.matchTile, { backgroundColor: theme.card }]}
-              >
-                <Image source={item.image} style={local.matchAvatar} />
-                <Text style={[local.matchName, { color: theme.text }]}>{item.displayName}</Text>
-              </Card>
-            )}
-          />
+              <Text style={local.section}>Suggested Games</Text>
+              <FlatList
+                data={allGames.slice(0, 10)}
+                keyExtractor={(item) => item.id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={[local.carousel, { paddingBottom: 20 }]}
+                renderItem={({ item }) => (
+                  <Card
+                    onPress={() => {
+                      setPlayTarget('match');
+                      selectGame(item);
+                    }}
+                    style={[local.gameTile, { backgroundColor: theme.card }]}
+                  >
+                    <View style={{ marginBottom: 8 }}>{item.icon}</View>
+                    <Text style={[local.gameTitle, { color: theme.text }]}>{item.title}</Text>
+                  </Card>
+                )}
+              />
 
-          <Text style={local.section}>Suggested Games</Text>
-          <FlatList
-            data={allGames.slice(0, 10)}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={[local.carousel, { paddingBottom: 20 }]}
-            renderItem={({ item }) => (
-              <Card
-                onPress={() => {
-                  setPlayTarget('match');
-                  selectGame(item);
-                }}
-                style={[local.gameTile, { backgroundColor: theme.card }]}
-              >
-                <View style={{ marginBottom: 8 }}>{item.icon}</View>
-                <Text style={[local.gameTitle, { color: theme.text }]}>{item.title}</Text>
-              </Card>
-            )}
-          />
+              <Text style={local.section}>Community</Text>
+              {SAMPLE_EVENTS.map((event) => (
+                <Card
+                  key={`e-${event.id}`}
+                  style={[local.eventCard, { backgroundColor: theme.card }]}
+                >
+                  <Image source={eventImageSource(event.image)} style={local.eventImage} />
+                  <View style={{ flex: 1, marginLeft: 10 }}>
+                    <Text style={[local.eventTitle, { color: theme.text }]}>{event.title}</Text>
+                    <Text style={local.eventTime}>{event.time}</Text>
+                    <Text style={[local.eventDesc, { color: theme.textSecondary }]}>
+                      {event.description}
+                    </Text>
+                  </View>
+                </Card>
+              ))}
+              {SAMPLE_POSTS.map((post) => (
+                <Card
+                  key={`p-${post.id}`}
+                  style={[local.postCardPreview, { backgroundColor: theme.card }]}
+                >
+                  <Text style={[local.postTitle, { color: theme.text }]}>{post.title}</Text>
+                  <Text style={local.postTime}>{post.time}</Text>
+                  <Text style={[local.postDesc, { color: theme.textSecondary }]}>{post.description}</Text>
+                </Card>
+              ))}
 
-          <Text style={local.section}>Community</Text>
-          {SAMPLE_EVENTS.map((event) => (
-            <Card
-              key={`e-${event.id}`}
-              style={[local.eventCard, { backgroundColor: theme.card }]}
-            >
-              <Image source={eventImageSource(event.image)} style={local.eventImage} />
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={[local.eventTitle, { color: theme.text }]}>{event.title}</Text>
-                <Text style={local.eventTime}>{event.time}</Text>
-                <Text style={[local.eventDesc, { color: theme.textSecondary }]}>
-                  {event.description}
-                </Text>
-              </View>
-            </Card>
-          ))}
-          {SAMPLE_POSTS.map((post) => (
-            <Card
-              key={`p-${post.id}`}
-              style={[local.postCardPreview, { backgroundColor: theme.card }]}
-            >
-              <Text style={[local.postTitle, { color: theme.text }]}>{post.title}</Text>
-              <Text style={local.postTime}>{post.time}</Text>
-              <Text style={[local.postDesc, { color: theme.textSecondary }]}>{post.description}</Text>
-            </Card>
-          ))}
+              <TouchableOpacity onPress={() => setShowMore(false)} style={local.showMoreButton}>
+                <Text style={[local.section, { textAlign: 'center' }]}>Show Less</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </ScrollView>
 
         <Modal visible={gamePickerVisible} transparent animationType="fade">
@@ -295,6 +331,9 @@ const getStyles = (theme) =>
   progressCard: {
     marginHorizontal: 16,
     marginBottom: 16,
+  },
+  group: {
+    marginBottom: 24,
   },
   levelText: {
     fontSize: 16,
@@ -418,6 +457,10 @@ const getStyles = (theme) =>
   },
   postDesc: {
     fontSize: 12,
+  },
+  showMoreButton: {
+    marginVertical: 12,
+    alignSelf: 'center',
   },
 });
 
