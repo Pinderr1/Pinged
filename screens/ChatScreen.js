@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Modal,
   SafeAreaView,
+  RefreshControl,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import PropTypes from 'prop-types';
 import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
+import Loader from '../components/Loader';
 import styles from '../styles';
 import { games, gameList } from '../games';
 import { db } from '../firebase';
@@ -73,6 +75,8 @@ function PrivateChat({ user }) {
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
   const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const sendChatMessage = async (msgText = '', sender = 'user', extras = {}) => {
     if (!msgText.trim() && !extras.voice) return;
@@ -147,6 +151,7 @@ function PrivateChat({ user }) {
 
   useEffect(() => {
     if (!user?.id || !currentUser?.uid) return;
+    setLoading(true);
     const msgRef = db
       .collection('matches')
       .doc(user.id)
@@ -171,6 +176,8 @@ function PrivateChat({ user }) {
         };
       });
       setMessages(data.reverse());
+      setLoading(false);
+      setRefreshing(false);
     });
     return unsub;
   }, [user?.id, currentUser?.uid]);
@@ -198,6 +205,35 @@ function PrivateChat({ user }) {
       console.warn('Failed to send voice message', e);
       Toast.show({ type: 'error', text1: 'Failed to send voice message' });
     }
+  };
+
+  const handleRefresh = async () => {
+    if (!user?.id || !currentUser?.uid) return;
+    setRefreshing(true);
+    try {
+      const snap = await db
+        .collection('matches')
+        .doc(user.id)
+        .collection('messages')
+        .orderBy('timestamp', 'asc')
+        .get();
+      const data = snap.docs.map((d) => {
+        const val = d.data();
+        return {
+          id: d.id,
+          text: val.text,
+          readBy: val.readBy || [],
+          sender: val.senderId === currentUser.uid ? 'you' : val.senderId || 'them',
+          voice: !!val.voice,
+          url: val.url,
+          duration: val.duration,
+        };
+      });
+      setMessages(data.reverse());
+    } catch (e) {
+      console.warn('Failed to refresh messages', e);
+    }
+    setRefreshing(false);
   };
 
   const handleGameEnd = (result) => {
@@ -279,6 +315,16 @@ function PrivateChat({ user }) {
         contentContainerStyle={{ paddingBottom: 20 }}
         inverted
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+        ListEmptyComponent={
+          !loading && (
+            <Text style={{ textAlign: 'center', marginTop: 20, color: theme.text }}>
+              No messages yet.
+            </Text>
+          )
+        }
       />
       {isTyping && <Text style={privateStyles.typingIndicator}>{user.name} is typing...</Text>}
       <View style={privateStyles.gameBar}>
@@ -389,7 +435,13 @@ function PrivateChat({ user }) {
       <SafeAreaView style={{ flex: 1 }}>
         <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
           <View style={{ flex: 1 }}>
-            {chatSection}
+            {loading ? (
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Loader />
+              </View>
+            ) : (
+              chatSection
+            )}
             {gameSection}
           </View>
         </SafeKeyboardView>
@@ -516,6 +568,8 @@ function GroupChat({ event }) {
   const groupStyles = getGroupStyles(theme);
 
   const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [input, setInput] = useState('');
   const [reactionTarget, setReactionTarget] = useState(null);
 
@@ -525,6 +579,7 @@ function GroupChat({ event }) {
       .doc(event.id)
       .collection('messages')
       .orderBy('timestamp', 'asc');
+    setLoading(true);
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => {
         const val = d.data();
@@ -543,6 +598,8 @@ function GroupChat({ event }) {
       });
       setMessages(data);
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
+      setLoading(false);
+      setRefreshing(false);
     });
     return unsub;
   }, [event.id]);
@@ -600,6 +657,37 @@ function GroupChat({ event }) {
     }
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const snap = await db
+        .collection('events')
+        .doc(event.id)
+        .collection('messages')
+        .orderBy('timestamp', 'asc')
+        .get();
+      const data = snap.docs.map((d) => {
+        const val = d.data();
+        return {
+          id: d.id,
+          user: val.user,
+          userId: val.userId,
+          reactions: val.reactions || [],
+          pinned: !!val.pinned,
+          time: val.timestamp?.toDate?.().toLocaleTimeString([], {
+            hour: 'numeric',
+            minute: '2-digit',
+          }),
+          text: val.text,
+        };
+      });
+      setMessages(data);
+    } catch (e) {
+      console.warn('Failed to refresh messages', e);
+    }
+    setRefreshing(false);
+  };
+
   const renderMessage = ({ item }) => (
     <TouchableOpacity
       onLongPress={() => setReactionTarget(item.id)}
@@ -649,21 +737,37 @@ function GroupChat({ event }) {
     <GradientBackground style={{ flex: 1 }}>
       <Header />
       <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
-        <Text style={groupStyles.eventTitle}>{event.title}</Text>
-
-        {messages.filter((m) => m.pinned).map((msg) => (
-          <View key={msg.id} style={groupStyles.pinnedBanner}>
-            <Text style={groupStyles.pinnedText}>📌 {msg.text}</Text>
+        {loading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Loader />
           </View>
-        ))}
+        ) : (
+          <>
+            <Text style={groupStyles.eventTitle}>{event.title}</Text>
 
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.id}
-          renderItem={renderMessage}
-          contentContainerStyle={{ padding: 16 }}
-        />
+            {messages.filter((m) => m.pinned).map((msg) => (
+              <View key={msg.id} style={groupStyles.pinnedBanner}>
+                <Text style={groupStyles.pinnedText}>📌 {msg.text}</Text>
+              </View>
+            ))}
+
+            <FlatList
+              ref={flatListRef}
+              data={messages}
+              keyExtractor={(item) => item.id}
+              renderItem={renderMessage}
+              contentContainerStyle={{ padding: 16 }}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+              }
+              ListEmptyComponent={
+                <Text style={{ textAlign: 'center', marginTop: 20, color: theme.text }}>
+                  No messages yet.
+                </Text>
+              }
+            />
+          </>
+        )}
 
         <View style={groupStyles.inputRow}>
           <TextInput
