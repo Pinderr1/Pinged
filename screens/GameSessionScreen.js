@@ -67,6 +67,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const [countdown, setCountdown] = useState(null);
   const [devPlayer, setDevPlayer] = useState('0');
   const [gameResult, setGameResult] = useState(null);
+  const gameActive = showGame && !gameResult;
 
   const GameComponent = game?.id ? games[game.id]?.Client : null;
   const isReady = devMode || inviteStatus === 'ready';
@@ -117,6 +118,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
     const handleStart = async () => {
       if (!requireCredits()) return;
       setShowGame(true);
+      setCountdown(null);
       recordGamePlayed();
       if (opponent?.id && user?.uid) {
         await createMatchIfMissing(user.uid, opponent.id);
@@ -195,7 +197,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
       <Header showLogoOnly />
 
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        {GameComponent && showGame && (
+        {GameComponent && gameActive && (
           <View style={{ alignItems: 'center' }}>
             {devMode ? (
               <>
@@ -443,7 +445,7 @@ function BotSessionScreen({ route }) {
         </Text>
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
-            {showBoard ? (
+            {showBoard && !gameOver ? (
               <>
                 <TouchableOpacity
                   style={botStyles.closeBtn}
@@ -463,14 +465,14 @@ function BotSessionScreen({ route }) {
                   <Text style={{ color: '#fff', fontWeight: 'bold' }}>Reset</Text>
                 </TouchableOpacity>
               </>
-            ) : (
+            ) : !gameOver ? (
               <TouchableOpacity
                 style={botStyles.showBtn}
                 onPress={() => setShowBoard(true)}
               >
                 <Text style={botStyles.showBtnText}>Show Game</Text>
               </TouchableOpacity>
-            )}
+            ) : null}
             {gameOver && (
               <View style={botStyles.overButtons}>
                 <TouchableOpacity style={botStyles.againBtn} onPress={playAgain}>
