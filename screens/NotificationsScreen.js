@@ -9,6 +9,7 @@ import {
   Animated,
   Vibration,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import GradientButton from '../components/GradientButton';
 import Loader from '../components/Loader';
 import Header from '../components/Header';
@@ -23,12 +24,19 @@ import PropTypes from 'prop-types';
 import useCardPressAnimation from '../hooks/useCardPressAnimation';
 
 const AnimatedButton = ({ onPress, text, loading, disabled, style }) => {
-  const { scale, handlePressIn, handlePressOut } = useCardPressAnimation();
+  const {
+    scale,
+    handlePressIn,
+    handlePressOut,
+    playSuccess,
+  } = useCardPressAnimation();
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
       <GradientButton
         text={loading ? '' : text}
-        onPress={onPress}
+        onPress={() => {
+          if (onPress) onPress(playSuccess);
+        }}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         width={120}
@@ -48,7 +56,7 @@ const NotificationsScreen = ({ navigation }) => {
 
   const pendingInvites = incomingInvites.filter((i) => i.status === 'pending');
 
-  const handleAccept = async (invite) => {
+  const handleAccept = async (invite, animateSuccess) => {
     setLoadingId(invite.id);
     await acceptGameInvite(invite.id);
     try {
@@ -73,7 +81,11 @@ const NotificationsScreen = ({ navigation }) => {
         inviteId: invite.id,
         status: 'waiting',
       });
-      Vibration.vibrate(60);
+      Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Success
+      ).catch(() => {});
+      // TODO: play success sound here
+      if (animateSuccess) animateSuccess();
     } catch (e) {
       console.warn('Failed to accept invite', e);
     }
@@ -117,7 +129,7 @@ const NotificationsScreen = ({ navigation }) => {
               <View style={local.actions}>
                 <AnimatedButton
                   text="Accept"
-                  onPress={() => handleAccept(inv)}
+                  onPress={(anim) => handleAccept(inv, anim)}
                   style={{ marginRight: 10, flexDirection: 'row', justifyContent: 'center' }}
                   disabled={loadingId === inv.id}
                   loading={loadingId === inv.id}
