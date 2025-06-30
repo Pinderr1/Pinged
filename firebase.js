@@ -1,10 +1,10 @@
-// firebase.js
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import { getFunctions } from 'firebase/functions';
-import { getDatabase } from 'firebase/database';
+// firebase.js (Firebase v8 compat)
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/firestore';
+import 'firebase/storage';
+import 'firebase/functions';
+import 'firebase/database';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -15,26 +15,16 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-if (__DEV__) {
-  console.log('Firebase config loaded', firebaseConfig);
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+  if (__DEV__) {
+    console.log('Firebase config loaded', firebaseConfig);
+  }
 }
 
-let app;
-try {
-  app = initializeApp(firebaseConfig);
-} catch (e) {
-  console.log('Firebase init error', e);
-}
-
-const auth = getAuth(app);
-let firestore;
-try {
-  firestore = getFirestore(app);
-} catch (e) {
-  console.log('Firestore init error', e);
-}
-const storage = getStorage(app);
-const functions = getFunctions(app);
-const realtimeDB = getDatabase(app);
-
-export { app, auth, firestore, storage, functions, realtimeDB };
+export const auth = firebase.auth();
+export const firestore = firebase.firestore();
+export const storage = firebase.storage();
+export const functions = firebase.functions();
+export const realtimeDB = firebase.database();
+export default firebase;
