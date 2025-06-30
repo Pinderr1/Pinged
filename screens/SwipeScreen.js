@@ -32,6 +32,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import PropTypes from 'prop-types';
+import * as Haptics from 'expo-haptics';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -180,8 +181,11 @@ const SwipeScreen = () => {
     pan.setValue({ x: 0, y: 0 });
   }, [currentIndex]);
 
-  const handleSwipe = async (direction) => {
-    if (!displayUser) return;
+const handleSwipe = async (direction) => {
+  if (!displayUser) return;
+
+  // Provide light haptic feedback on every swipe
+  Haptics.selectionAsync().catch(() => {});
 
     if (direction === 'right') {
       if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
@@ -228,6 +232,11 @@ const SwipeScreen = () => {
             });
 
             setMatchedUser(displayUser);
+            // Provide a stronger haptic pulse when a match occurs
+            Haptics.notificationAsync(
+              Haptics.NotificationFeedbackType.Success
+            ).catch(() => {});
+            // Placeholder: play short match sound here
             Toast.show({ type: 'success', text1: "It's a match!" });
             setShowFireworks(true);
             setTimeout(() => setShowFireworks(false), 2000);
@@ -248,6 +257,11 @@ const SwipeScreen = () => {
           pendingInvite: null,
         });
         setMatchedUser(displayUser);
+        // Provide a stronger haptic pulse when a match occurs
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success
+        ).catch(() => {});
+        // Placeholder: play short match sound here
         Toast.show({ type: 'success', text1: "It's a match!" });
         setShowFireworks(true);
         setTimeout(() => setShowFireworks(false), 2000);
