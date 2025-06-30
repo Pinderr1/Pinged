@@ -55,7 +55,7 @@ const GameInviteScreen = ({ route, navigation }) => {
     setMatches(
       chatMatches.map((m) => ({
         id: m.otherUserId,
-        name: m.name,
+        displayName: m.displayName,
         photo: m.image,
         online: m.online,
       }))
@@ -89,7 +89,7 @@ const GameInviteScreen = ({ route, navigation }) => {
     const toLobby = () =>
       navigation.navigate('GameSession', {
         game: { id: gameId, title: gameTitle },
-        opponent: { id: user.id, name: user.name, photo: user.photo },
+        opponent: { id: user.id, displayName: user.displayName, photo: user.photo },
         inviteId,
         status: devMode ? 'ready' : 'waiting',
       });
@@ -103,7 +103,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   };
 
   const filtered = matches.filter((u) =>
-    u.name.toLowerCase().includes(search.toLowerCase())
+    u.displayName.toLowerCase().includes(search.toLowerCase())
   );
 
   const renderUserCard = ({ item }) => {
@@ -140,7 +140,7 @@ const GameInviteScreen = ({ route, navigation }) => {
             }}
           />
           <Text style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>
-            {item.name}
+            {item.displayName}
           </Text>
           <Text style={{ fontSize: 12, color: item.online ? '#2ecc71' : '#999', marginBottom: 6 }}>
             {item.online ? 'Online' : 'Offline'}
@@ -150,7 +150,7 @@ const GameInviteScreen = ({ route, navigation }) => {
             <View style={{ alignItems: 'center', marginTop: 8 }}>
               <Loader size="small" />
               <Text style={{ color: theme.textSecondary, fontSize: 12, marginTop: 4 }}>
-                Waiting for {item.name}...
+                Waiting for {item.displayName}...
               </Text>
             </View>
           ) : (

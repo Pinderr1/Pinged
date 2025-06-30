@@ -236,9 +236,8 @@ export default function OnboardingScreen() {
         const profile = {
           uid: user.uid,
           email: user.email,
-          displayName: user.displayName || '',
+          displayName: sanitizeText(answers.name.trim()),
           photoURL,
-          name: sanitizeText(answers.name.trim()),
           age: parseInt(answers.age, 10) || null,
           gender: sanitizeText(answers.gender),
         genderPref: sanitizeText(answers.genderPref),

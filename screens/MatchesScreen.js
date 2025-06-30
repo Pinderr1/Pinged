@@ -30,7 +30,7 @@ const MatchesScreen = ({ navigation }) => {
     >
       <Image source={item.image} style={styles.newAvatar} />
       <Text style={[styles.newName, { color: theme.text }]} numberOfLines={1}>
-        {item.name}
+        {item.displayName}
       </Text>
     </TouchableOpacity>
   );
@@ -42,7 +42,7 @@ const MatchesScreen = ({ navigation }) => {
     >
       <Image source={item.image} style={styles.chatAvatar} />
       <View style={{ flex: 1 }}>
-        <Text style={[styles.chatName, { color: theme.text }]}>{item.name}</Text>
+        <Text style={[styles.chatName, { color: theme.text }]}>{item.displayName}</Text>
         {item.messages?.length ? (
           <Text
             style={[styles.chatPreview, { color: theme.textSecondary }]}

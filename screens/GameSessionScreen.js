@@ -257,13 +257,13 @@ const LiveSessionScreen = ({ route, navigation }) => {
           gameResult?.winner === '0'
             ? 'You'
             : gameResult?.winner === '1'
-            ? opponent.name
+            ? opponent.displayName
             : null
         }
         onRematch={handleRematch}
         onChat={() =>
           navigation.navigate('Chat', {
-            user: { id: opponent.id, name: opponent.name, image: opponent.photo },
+            user: { id: opponent.id, displayName: opponent.displayName, image: opponent.photo },
             gameId: game.id,
           })
         }
