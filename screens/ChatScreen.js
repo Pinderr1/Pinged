@@ -918,7 +918,7 @@ ChatScreen.propTypes = {
     params: PropTypes.shape({
       user: PropTypes.shape({
         id: PropTypes.string,
-        name: PropTypes.string,
+        displayName: PropTypes.string,
         image: PropTypes.any,
       }),
       event: PropTypes.object,

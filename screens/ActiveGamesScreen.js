@@ -43,7 +43,7 @@ const ActiveGamesScreen = ({ navigation }) => {
   const renderItem = ({ item }) => {
     const otherId = item.players.find((p) => p !== user.uid);
     const match = matches.find((m) => m.otherUserId === otherId);
-    const opponentName = match?.name || 'Opponent';
+    const opponentName = match?.displayName || 'Opponent';
     const title = games[item.gameId]?.meta?.title || 'Game';
     return (
       <TouchableOpacity
@@ -54,7 +54,7 @@ const ActiveGamesScreen = ({ navigation }) => {
             game: { id: item.gameId, title },
             opponent: {
               id: otherId,
-              name: opponentName,
+              displayName: opponentName,
               photo: match?.image,
             },
           })

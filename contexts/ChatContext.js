@@ -49,7 +49,20 @@ export const ChatProvider = ({ children }) => {
         try {
           const parsed = JSON.parse(data);
           if (Array.isArray(parsed)) {
-            setMatches(devMode ? [...parsed, devMatch].filter((v, i, a) => a.findIndex(x => x.id === v.id) === i) : parsed);
+            const converted = parsed.map((m) => {
+              const { name, ...rest } = m;
+              return {
+                ...rest,
+                displayName: m.displayName || name || 'Match',
+              };
+            });
+            setMatches(
+              devMode
+                ? [...converted, devMatch].filter(
+                    (v, i, a) => a.findIndex((x) => x.id === v.id) === i
+                  )
+                : converted
+            );
           } else {
             setMatches(devMode ? [devMatch] : []);
           }
@@ -124,7 +137,7 @@ export const ChatProvider = ({ children }) => {
                   m.otherUserId === uid
                     ? {
                         ...m,
-                        displayName: info.displayName || info.name || 'User',
+            displayName: info.displayName || 'User',
                         age: info.age || 0,
                         image: info.photoURL
                           ? { uri: info.photoURL }
@@ -279,7 +292,7 @@ export const ChatProvider = ({ children }) => {
           return {
             id: m.id,
             otherUserId: otherId,
-            name: prevMatch.name || 'Match',
+            displayName: prevMatch.displayName || 'Match',
             age: prevMatch.age || 0,
             image: prevMatch.image || require('../assets/user1.jpg'),
             online: prevMatch.online || false,
