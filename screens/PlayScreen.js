@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import SafeKeyboardView from '../components/SafeKeyboardView';
-import styles from '../styles';
+import getGlobalStyles from '../styles';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
@@ -29,6 +29,7 @@ const getAllCategories = () => {
 
 const PlayScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
+  const styles = getGlobalStyles(theme);
   const { user } = useUser();
   const { devMode } = useDev();
   const { gamesLeft } = useGameLimit();

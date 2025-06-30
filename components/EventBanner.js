@@ -3,7 +3,6 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
-import styles from '../styles';
 import { eventImageSource } from '../utils/avatar';
 import GradientButton from './GradientButton';
 

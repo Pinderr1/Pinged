@@ -9,7 +9,6 @@ import {
   Dimensions,
   Modal,
   StyleSheet,
-  ToastAndroid,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import GradientBackground from '../components/GradientBackground';
@@ -322,7 +321,7 @@ const handleSwipe = async (direction) => {
     }
     setShowSuperLikeAnim(true);
     handleSwipe('right');
-    ToastAndroid.show('🌟 Superliked!', ToastAndroid.SHORT);
+    Toast.show({ type: 'success', text1: '🌟 Superliked!' });
     setTimeout(() => setShowSuperLikeAnim(false), 1500);
   };
 

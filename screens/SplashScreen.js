@@ -4,7 +4,7 @@ import { Animated, Image, StatusBar, Text } from 'react-native';
 import LottieView from 'lottie-react-native';
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
-import styles from '../styles';
+import getStyles from '../styles';
 import PropTypes from 'prop-types';
 
 const splashDuration = 2000;
@@ -24,6 +24,7 @@ const useFadeIn = (duration = 1000) => {
 export default function SplashScreen({ onFinish }) {
   const fadeAnim = useFadeIn();
   const { darkMode, theme } = useTheme();
+  const styles = getStyles(theme);
   const colors = [theme.gradientStart, theme.gradientEnd];
 
   useEffect(() => {

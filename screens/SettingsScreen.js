@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
-import styles from '../styles';
+import getStyles from '../styles';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
@@ -13,6 +13,7 @@ import PropTypes from 'prop-types';
 
 const SettingsScreen = ({ navigation }) => {
   const { darkMode, toggleTheme, theme } = useTheme();
+  const styles = getStyles(theme);
   const { user } = useUser();
   const isPremium = !!user?.isPremium;
   const { devMode, toggleDevMode } = useDev();

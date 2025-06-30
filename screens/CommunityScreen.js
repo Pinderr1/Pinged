@@ -18,7 +18,6 @@ import GradientButton from '../components/GradientButton';
 import Card from '../components/Card';
 import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
-import styles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import PropTypes from 'prop-types';

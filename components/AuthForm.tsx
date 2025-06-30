@@ -2,7 +2,8 @@ import React from 'react';
 import { TextInput } from 'react-native';
 import SafeKeyboardView from './SafeKeyboardView';
 import GradientButton from './GradientButton';
-import styles from '../styles';
+import getStyles from '../styles';
+import { useTheme } from '../contexts/ThemeContext';
 
 export interface AuthFormProps {
   email: string;
@@ -23,6 +24,8 @@ export default function AuthForm({
   submitLabel,
   children,
 }: AuthFormProps) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   return (
     <SafeKeyboardView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%' }}>
       <TextInput
@@ -32,7 +35,7 @@ export default function AuthForm({
         onChangeText={onEmailChange}
         keyboardType="email-address"
         autoCapitalize="none"
-        placeholderTextColor="#ccc"
+        placeholderTextColor={theme.textSecondary}
       />
       <TextInput
         style={styles.input}
@@ -41,10 +44,11 @@ export default function AuthForm({
         onChangeText={onPasswordChange}
         secureTextEntry
         autoCapitalize="none"
-        placeholderTextColor="#ccc"
+        placeholderTextColor={theme.textSecondary}
       />
       <GradientButton text={submitLabel} onPress={onSubmit} />
       {children}
     </SafeKeyboardView>
   );
 }
+

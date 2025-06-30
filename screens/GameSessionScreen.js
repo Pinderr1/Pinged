@@ -24,7 +24,7 @@ import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';
 import { serverTimestamp } from 'firebase/firestore';
 import * as Haptics from 'expo-haptics';
-import styles from '../styles';
+import getGlobalStyles from '../styles';
 import { games } from '../games';
 import SyncedGame from '../components/SyncedGame';
 import GameOverModal from '../components/GameOverModal';
@@ -53,7 +53,8 @@ const GameSessionScreen = ({ route, navigation, sessionType }) => {
 
 const LiveSessionScreen = ({ route, navigation }) => {
   const { darkMode, theme } = useTheme();
-  const local = getStyles(theme);
+  const globalStyles = getGlobalStyles(theme);
+  const local = createStyles(theme);
   const { devMode } = useDev();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { user, addGameXP } = useUser();
@@ -187,7 +188,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
 
   if (!game || !opponent) {
     return (
-      <GradientBackground style={styles.swipeScreen}>
+      <GradientBackground style={globalStyles.swipeScreen}>
         <Header showLogoOnly />
         <Text style={{ marginTop: 80, color: theme.text }}>
           Invalid game data.
@@ -197,7 +198,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   }
 
   return (
-    <GradientBackground style={styles.swipeScreen}>
+    <GradientBackground style={globalStyles.swipeScreen}>
       <Header showLogoOnly />
 
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -648,7 +649,7 @@ const getBotStyles = (theme) =>
   tabText: { fontWeight: 'bold' },
 });
 
-const getStyles = (theme) =>
+const createStyles = (theme) =>
   StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,

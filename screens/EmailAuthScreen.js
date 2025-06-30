@@ -11,13 +11,16 @@ import { serverTimestamp } from 'firebase/firestore';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import { snapshotExists } from '../utils/firestore';
 import { isAllowedDomain } from '../utils/email';
-import styles from '../styles';
+import getStyles from '../styles';
+import { useTheme } from '../contexts/ThemeContext';
 import PropTypes from 'prop-types';
 
 export default function EmailAuthScreen({ route, navigation }) {
   const mode = route.params?.mode || (route.name === 'Signup' ? 'signup' : 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { markOnboarded } = useOnboarding();
 
   const ensureUserDoc = async (fbUser) => {
@@ -89,7 +92,7 @@ export default function EmailAuthScreen({ route, navigation }) {
 
   return (
     <GradientBackground>
-      <Text style={[styles.logoText, { color: '#fff' }]}>
+      <Text style={[styles.logoText, { color: theme.text }]}>
         {mode === 'signup' ? 'Create Account' : 'Log In'}
       </Text>
       <AuthForm
@@ -103,15 +106,15 @@ export default function EmailAuthScreen({ route, navigation }) {
         {mode === 'login' ? (
           <>
             <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-              <Text style={{ color: '#fff', marginTop: 10 }}>Need an account? Sign Up</Text>
+              <Text style={{ color: theme.text, marginTop: 10 }}>Need an account? Sign Up</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Text style={{ color: '#fff', marginTop: 10 }}>← Back</Text>
+              <Text style={{ color: theme.text, marginTop: 10 }}>← Back</Text>
             </TouchableOpacity>
           </>
         ) : (
           <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 20 }}>
-            <Text style={{ color: '#fff' }}>← Back to Login</Text>
+            <Text style={{ color: theme.text }}>← Back to Login</Text>
           </TouchableOpacity>
         )}
       </AuthForm>
