@@ -6,7 +6,7 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import styles from '../styles';
-import { HEADER_SPACING, BUTTON_STYLE, FONT_SIZES } from '../layout';
+import { HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';
@@ -16,15 +16,26 @@ import { uploadAvatarAsync } from '../utils/upload';
 import { avatarSource } from '../utils/avatar';
 import { sanitizeText } from '../utils/sanitize';
 import PropTypes from 'prop-types';
+import RNPickerSelect from 'react-native-picker-select';
+import MultiSelectList from '../components/MultiSelectList';
+import { useTheme } from '../contexts/ThemeContext';
+import { allGames } from '../data/games';
 
 const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
+  const { theme } = useTheme();
   const [editMode, setEditMode] = useState(route?.params?.editMode || false);
   const [name, setName] = useState(user?.displayName || '');
   const [age, setAge] = useState(user?.age ? String(user.age) : '');
   const [gender, setGender] = useState(user?.gender || '');
+  const [genderPref, setGenderPref] = useState(user?.genderPref || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [location, setLocation] = useState(user?.location || '');
+  const [favoriteGames, setFavoriteGames] = useState(
+    Array.isArray(user?.favoriteGames) ? user.favoriteGames : []
+  );
+  const defaultGameOptions = allGames.map((g) => ({ label: g.title, value: g.title }));
+  const [gameOptions, setGameOptions] = useState(defaultGameOptions);
   const [avatar, setAvatar] = useState(user?.photoURL || '');
 
   const pickImage = async () => {
@@ -49,14 +60,33 @@ const ProfileScreen = ({ navigation, route }) => {
     setName(user?.displayName || '');
     setAge(user?.age ? String(user.age) : '');
     setGender(user?.gender || '');
+    setGenderPref(user?.genderPref || '');
     setBio(user?.bio || '');
     setLocation(user?.location || '');
+    setFavoriteGames(Array.isArray(user?.favoriteGames) ? user.favoriteGames : []);
     setAvatar(user?.photoURL || '');
   }, [user]);
 
   useEffect(() => {
     setEditMode(route?.params?.editMode || false);
   }, [route?.params?.editMode]);
+
+  useEffect(() => {
+    const unsub = db
+      .collection('games')
+      .orderBy('title')
+      .onSnapshot(
+        (snap) => {
+          if (!snap.empty) {
+            setGameOptions(
+              snap.docs.map((d) => ({ label: d.data().title, value: d.data().title }))
+            );
+          }
+        },
+        (e) => console.warn('Failed to load games', e)
+      );
+    return unsub;
+  }, []);
 
   const handleSave = async () => {
     if (!user) return;
@@ -74,6 +104,8 @@ const ProfileScreen = ({ navigation, route }) => {
       displayName: sanitizeText(name.trim()),
       age: parseInt(age, 10) || null,
       gender: sanitizeText(gender),
+      genderPref: sanitizeText(genderPref),
+      favoriteGames: favoriteGames.map((g) => sanitizeText(g)),
       bio: sanitizeText(bio.trim()),
       location: sanitizeText(location),
       photoURL,
@@ -143,6 +175,24 @@ const ProfileScreen = ({ navigation, route }) => {
         ))}
       </View>
 
+      <RNPickerSelect
+        onValueChange={(val) => setGenderPref(val)}
+        value={genderPref}
+        placeholder={{ label: 'Preferred teammate gender', value: null }}
+        useNativeAndroidPickerStyle={false}
+        style={{
+          inputIOS: styles.input,
+          inputAndroid: styles.input,
+          placeholder: { color: '#999' },
+        }}
+        items={[
+          { label: 'Male', value: 'Male' },
+          { label: 'Female', value: 'Female' },
+          { label: 'Other', value: 'Other' },
+          { label: 'Any', value: 'Any' },
+        ]}
+      />
+
       <TextInput
         style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
         placeholder="Bio"
@@ -156,6 +206,13 @@ const ProfileScreen = ({ navigation, route }) => {
         placeholder="Location"
         value={location}
         onChangeText={setLocation}
+      />
+
+      <MultiSelectList
+        options={gameOptions}
+        selected={favoriteGames}
+        onChange={setFavoriteGames}
+        theme={theme}
       />
       <GradientButton text={saveLabel} onPress={handleSave} />
       </SafeKeyboardView>
