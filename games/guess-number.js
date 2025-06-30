@@ -6,7 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
 
 const GuessNumberGame = {
-  setup: (ctx) => ({ target: ctx.random.D100(), guesses: [] }),
+  setup: (ctx) => ({ target: ctx.random.Die(100), guesses: [] }),
   moves: {
     guess: ({ G }, value) => {
       const num = parseInt(value, 10);
