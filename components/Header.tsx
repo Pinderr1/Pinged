@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Platform, Text, SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
@@ -12,7 +12,8 @@ const Header: React.FC<HeaderProps> = () => {
   const notificationCount = useUnreadNotifications();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.headerBackground }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.headerBackground }]}> 
+      <View style={styles.container}>
       {/* Left icon - Gear */}
       <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.iconWrapper}>
         <Image
@@ -41,21 +42,17 @@ const Header: React.FC<HeaderProps> = () => {
           )}
         </View>
       </TouchableOpacity>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     position: 'absolute',
     top: 0,
     width: '100%',
-    height: HEADER_HEIGHT,
-    paddingHorizontal: 16,
     paddingTop: HEADER_PADDING_TOP,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     zIndex: 1000,
     ...Platform.select({
       ios: {
@@ -68,6 +65,13 @@ const styles = StyleSheet.create({
         elevation: 6,
       },
     }),
+  },
+  container: {
+    height: HEADER_HEIGHT,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   iconWrapper: {
     width: 32,

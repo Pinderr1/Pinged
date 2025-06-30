@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Text, TouchableOpacity, Alert } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
+import Header from '../components/Header';
 import AuthForm from '../components/AuthForm';
 import firebase from '../firebase';
 import { useOnboarding } from '../contexts/OnboardingContext';
@@ -9,6 +10,7 @@ import { isAllowedDomain } from '../utils/email';
 import getStyles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import PropTypes from 'prop-types';
+import { HEADER_SPACING } from '../layout';
 
 export default function EmailAuthScreen({ route, navigation }) {
   const mode = route.params?.mode || (route.name === 'Signup' ? 'signup' : 'login');
@@ -98,7 +100,8 @@ export default function EmailAuthScreen({ route, navigation }) {
   const onSubmit = mode === 'signup' ? handleSignup : handleLogin;
 
   return (
-    <GradientBackground>
+    <GradientBackground style={{ paddingTop: HEADER_SPACING }}>
+      <Header />
       <Text style={[styles.logoText, { color: theme.text }]}>
         {mode === 'signup' ? 'Create Account' : 'Log In'}
       </Text>

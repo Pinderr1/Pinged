@@ -3,8 +3,10 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Image, StatusBar, Text } from 'react-native';
 import LottieView from 'lottie-react-native';
 import GradientBackground from '../components/GradientBackground';
+import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import getStyles from '../styles';
+import { HEADER_SPACING } from '../layout';
 import PropTypes from 'prop-types';
 
 const splashDuration = 2000;
@@ -33,7 +35,8 @@ export default function SplashScreen({ onFinish }) {
   }, [onFinish]);
 
   return (
-    <GradientBackground colors={colors} style={styles.container}>
+    <GradientBackground colors={colors} style={[styles.container, { paddingTop: HEADER_SPACING }]}>
+      <Header />
       <StatusBar barStyle="light-content" />
       <Animated.View style={{ opacity: fadeAnim, alignItems: 'center' }}>
         <Image source={require('../assets/logo.png')} style={styles.logoImage} />

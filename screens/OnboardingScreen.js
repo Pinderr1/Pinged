@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import GradientBackground from '../components/GradientBackground';
+import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import firebase from '../firebase';
 import { uploadAvatarAsync } from '../utils/upload';
@@ -29,7 +30,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import MultiSelectList from '../components/MultiSelectList';
-import { FONT_SIZES, BUTTON_STYLE } from '../layout';
+import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import { allGames } from '../data/games';
 
 const questions = [
@@ -433,6 +434,7 @@ export default function OnboardingScreen() {
   };
   return (
     <GradientBackground colors={[styles.gradientStart, styles.gradientEnd]} style={styles.container}>
+      <Header />
       <SafeKeyboardView style={styles.inner}>
         <Text style={styles.progressText}>{`Step ${step + 1} of ${questions.length}`}</Text>
 
@@ -488,7 +490,7 @@ const getStyles = (theme) => {
   const accent = theme.accent;
 
   return StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: background },
+    container: { flex: 1, padding: 20, paddingTop: HEADER_SPACING, backgroundColor: background },
     inner: { flex: 1, justifyContent: 'center' },
     progressText: {
       color: textColor,

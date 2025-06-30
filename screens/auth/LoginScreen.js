@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Image, Text } from 'react-native';
 import Toast from 'react-native-toast-message';
 import GradientBackground from '../../components/GradientBackground';
+import Header from '../../components/Header';
 import GradientButton from '../../components/GradientButton';
 import getStyles from '../../styles';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -15,6 +16,7 @@ import { useOnboarding } from '../../contexts/OnboardingContext';
 import { useNavigation } from '@react-navigation/native';
 import { useDev } from '../../contexts/DevContext';
 import PropTypes from 'prop-types';
+import { HEADER_SPACING } from '../../layout';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -75,7 +77,8 @@ export default function LoginScreen() {
   };
 
   return (
-    <GradientBackground>
+    <GradientBackground style={{ paddingTop: HEADER_SPACING }}>
+      <Header />
       <Image source={require('../../assets/logo.png')} style={styles.logoImage} />
       <Text style={[styles.logoText, { color: theme.text }]}>Pinged</Text>
 
