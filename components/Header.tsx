@@ -1,8 +1,20 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
+import {
+  View,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  Text,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
+import {
+  HEADER_PADDING_TOP,
+  FONT_SIZE_SM,
+  BUTTON_BORDER_RADIUS,
+} from '../constants/layout';
 
 export interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
@@ -51,7 +63,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 60,
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 44 : 16,
+    paddingTop: HEADER_PADDING_TOP,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -96,7 +108,7 @@ const styles = StyleSheet.create({
     top: -2,
     right: -2,
     backgroundColor: 'red',
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     minWidth: 18,
     paddingHorizontal: 4,
     height: 18,
@@ -105,7 +117,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: FONT_SIZE_SM,
     fontWeight: 'bold',
   },
 });

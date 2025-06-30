@@ -1,4 +1,12 @@
 import { StyleSheet } from 'react-native';
+import {
+  BUTTON_PADDING,
+  BUTTON_BORDER_RADIUS,
+  FONT_SIZE_MD,
+  FONT_SIZE_SM,
+  FONT_SIZE_XL,
+  FONT_SIZE_LG,
+} from './constants/layout';
 
 const styles = StyleSheet.create({
   container: {
@@ -24,17 +32,17 @@ const styles = StyleSheet.create({
     width: '100%',
     borderColor: '#d81b60',
     borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 12,
+    borderRadius: BUTTON_BORDER_RADIUS,
+    paddingVertical: BUTTON_PADDING_SM,
     paddingHorizontal: 16,
-    fontSize: 16,
+    fontSize: FONT_SIZE_MD,
     marginBottom: 16,
     backgroundColor: '#fff'
   },
   googleBtn: {
     backgroundColor: '#4285F4',
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: BUTTON_PADDING,
+    borderRadius: BUTTON_BORDER_RADIUS,
     marginBottom: 20,
     width: '100%',
     alignItems: 'center',
@@ -46,8 +54,8 @@ const styles = StyleSheet.create({
   },
   emailBtn: {
     backgroundColor: '#d81b60',
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: BUTTON_PADDING,
+    borderRadius: BUTTON_BORDER_RADIUS,
     width: '100%',
     alignItems: 'center',
     marginBottom: 10,
@@ -59,12 +67,12 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: FONT_SIZE_MD,
     fontWeight: '600'
   },
   backLink: {
     color: '#666',
-    fontSize: 14,
+    fontSize: FONT_SIZE_SM,
     marginTop: 20,
     textDecorationLine: 'underline'
   },
@@ -89,7 +97,7 @@ const styles = StyleSheet.create({
     borderColor: '#d81b60'
   },
   genderText: {
-    fontSize: 16,
+    fontSize: FONT_SIZE_MD,
     color: '#333'
   },
   genderTextSelected: {
@@ -99,13 +107,13 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   uploadText: {
-    fontSize: 16,
+    fontSize: FONT_SIZE_MD,
     color: '#888',
     textDecorationLine: 'underline'
   },
   navBtn: {
     backgroundColor: '#222',
-    paddingVertical: 14,
+    paddingVertical: BUTTON_PADDING,
     paddingHorizontal: 40,
     borderRadius: 12,
     width: '100%',
@@ -119,7 +127,7 @@ const styles = StyleSheet.create({
   },
   navBtnText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: FONT_SIZE_MD,
     fontWeight: '600'
   },
   card: {
@@ -141,12 +149,12 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   cardName: {
-    fontSize: 24,
+    fontSize: FONT_SIZE_XL,
     fontWeight: 'bold',
     color: '#222'
   },
   cardBio: {
-    fontSize: 16,
+    fontSize: FONT_SIZE_MD,
     color: '#666',
     marginTop: 8,
     textAlign: 'center'
@@ -180,22 +188,22 @@ const styles = StyleSheet.create({
     marginRight: 16
   },
   gameTitle: {
-    fontSize: 18,
+    fontSize: FONT_SIZE_LG,
     fontWeight: '600'
   },
   notificationBox: {
     backgroundColor: '#ffe0ec',
     padding: 14,
     marginVertical: 6,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     width: '100%'
   },
   notificationText: {
-    fontSize: 16,
+    fontSize: FONT_SIZE_MD,
     color: '#d81b60'
   },
   settingText: {
-    fontSize: 16,
+    fontSize: FONT_SIZE_MD,
     color: '#666',
     marginBottom: 6
   },
