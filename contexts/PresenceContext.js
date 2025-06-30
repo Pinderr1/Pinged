@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { AppState } from 'react-native';
-import { auth, realtimeDB } from '../firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { ref, onValue, onDisconnect, set, serverTimestamp } from 'firebase/database';
+import firebase from '../firebase';
 
 const PresenceContext = createContext();
 
@@ -13,35 +11,35 @@ export const PresenceProvider = ({ children }) => {
     let appStateSubscription;
     const offline = {
       state: 'offline',
-      last_changed: serverTimestamp(),
+      last_changed: firebase.database.ServerValue.TIMESTAMP,
     };
     const online = {
       state: 'online',
-      last_changed: serverTimestamp(),
+      last_changed: firebase.database.ServerValue.TIMESTAMP,
     };
 
     const setup = (uid) => {
-      statusRef = ref(realtimeDB, 'status/' + uid);
-      const infoRef = ref(realtimeDB, '.info/connected');
-      onValue(infoRef, (snap) => {
+      statusRef = firebase.database().ref('status/' + uid);
+      const infoRef = firebase.database().ref('.info/connected');
+      infoRef.on('value', (snap) => {
         if (snap.val() === false) return;
-        onDisconnect(statusRef).set(offline).then(() => {
-          set(statusRef, online);
+        statusRef.onDisconnect().set(offline).then(() => {
+          statusRef.set(online);
         });
       });
       appStateHandler = (state) => {
         if (state === 'active') {
-          set(statusRef, online);
+          statusRef.set(online);
         } else {
-          set(statusRef, offline);
+          statusRef.set(offline);
         }
       };
       appStateSubscription = AppState.addEventListener('change', appStateHandler);
     };
 
-    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+    const unsubscribe = firebase.auth().onAuthStateChanged((fbUser) => {
       if (statusRef) {
-        set(statusRef, offline);
+        statusRef.set(offline);
         if (appStateSubscription?.remove) {
           appStateSubscription.remove();
         }
@@ -53,7 +51,7 @@ export const PresenceProvider = ({ children }) => {
     return () => {
       unsubscribe();
       if (statusRef) {
-        set(statusRef, offline);
+          statusRef.set(offline);
         if (appStateSubscription?.remove) {
           appStateSubscription.remove();
         }

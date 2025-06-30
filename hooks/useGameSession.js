@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { firestore } from '../firebase';
-import { serverTimestamp, arrayUnion } from 'firebase/firestore';
+import firebase from '../firebase';
 import { games } from '../games';
 import { useUser } from '../contexts/UserContext';
 import { snapshotExists } from '../utils/firestore';
@@ -15,7 +14,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
 
   useEffect(() => {
     if (!Game || !sessionId || !user?.uid) return;
-    const ref = firestore.collection('gameSessions').doc(sessionId);
+    const ref = firebase.firestore().collection('gameSessions').doc(sessionId);
     let initialized = false;
     const unsub = ref.onSnapshot(async (snap) => {
       if (snapshotExists(snap)) {
@@ -30,7 +29,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
           players: [user.uid, opponentId],
           state: Game.setup(),
           currentPlayer: '0',
-          createdAt: serverTimestamp(),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
     });
@@ -66,15 +65,16 @@ export default function useGameSession(sessionId, gameId, opponentId) {
 
     const gameover = Game.endIf ? Game.endIf({ G, ctx: { currentPlayer: nextPlayer } }) : undefined;
 
-    await firestore
+    await firebase
+      .firestore()
       .collection('gameSessions')
       .doc(sessionId)
       .update({
         state: G,
         currentPlayer: nextPlayer,
         gameover: gameover || null,
-        updatedAt: serverTimestamp(),
-        moves: arrayUnion({ action: moveName, player: String(idx), at: serverTimestamp() }),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        moves: firebase.firestore.FieldValue.arrayUnion({ action: moveName, player: String(idx), at: firebase.firestore.FieldValue.serverTimestamp() }),
       });
   }, [session, Game, sessionId, user?.uid]);
 

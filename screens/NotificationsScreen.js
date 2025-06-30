@@ -18,7 +18,7 @@ import GradientBackground from '../components/GradientBackground';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { useUser } from '../contexts/UserContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { firestore } from '../firebase';
+import firebase from '../firebase';
 import { games } from '../games';
 import PropTypes from 'prop-types';
 import useCardPressAnimation from '../hooks/useCardPressAnimation';
@@ -66,13 +66,14 @@ const NotificationsScreen = ({ navigation }) => {
     setLoadingId(invite.id);
     await acceptGameInvite(invite.id);
     try {
-      await firestore
+      await firebase
+        .firestore()
         .collection('users')
         .doc(user.uid)
         .collection('gameInvites')
         .doc(invite.id)
         .update({ status: 'accepted' });
-      const snap = await firestore.collection('users').doc(invite.from).get();
+      const snap = await firebase.firestore().collection('users').doc(invite.from).get();
       const opp = snap.data() || {};
       navigation.navigate('GameSession', {
         game: {
@@ -101,7 +102,8 @@ const NotificationsScreen = ({ navigation }) => {
   const handleDecline = async (invite) => {
     setLoadingId(invite.id + '_decline');
     cancelGameInvite(invite.id);
-    await firestore
+    await firebase
+      .firestore()
       .collection('users')
       .doc(user.uid)
       .collection('gameInvites')

@@ -14,8 +14,7 @@ import * as WebBrowser from 'expo-web-browser';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
-import { functions } from '../firebase';
-import { httpsCallable } from 'firebase/functions';
+import firebase from '../firebase';
 import PropTypes from 'prop-types';
 import { HEADER_SPACING, FONT_SIZES } from '../layout';
 
@@ -42,7 +41,9 @@ const PremiumScreen = ({ navigation, route }) => {
 
   const startCheckout = async () => {
     try {
-      const createSession = httpsCallable(functions, 'createCheckoutSession');
+      const createSession = firebase
+        .functions()
+        .httpsCallable('createCheckoutSession');
       const result = await createSession({
         successUrl: process.env.EXPO_PUBLIC_SUCCESS_URL,
         cancelUrl: process.env.EXPO_PUBLIC_CANCEL_URL,

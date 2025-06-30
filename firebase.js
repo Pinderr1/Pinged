@@ -1,10 +1,10 @@
 // firebase.js (Firebase v8 compat)
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/firestore';
-import 'firebase/storage';
-import 'firebase/functions';
-import 'firebase/database';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
+import 'firebase/compat/functions';
+import 'firebase/compat/database';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -22,9 +22,16 @@ if (!firebase.apps.length) {
   }
 }
 
-export const auth = firebase.auth();
-export const firestore = firebase.firestore();
-export const storage = firebase.storage();
-export const functions = firebase.functions();
-export const realtimeDB = firebase.database();
+const auth = firebase.auth();
+let firestore;
+try {
+  firestore = firebase.firestore();
+} catch (e) {
+  console.log('Firestore init error', e);
+}
+const storage = firebase.storage();
+const functions = firebase.functions();
+const realtimeDB = firebase.database();
+
+export { auth, firestore, storage, functions, realtimeDB };
 export default firebase;
