@@ -280,8 +280,7 @@ export const allGames = [
     category: 'International',
     description: 'Tile-matching challenge from China. Clear the board to win.',
     mode: 'versus',
-    speed: 'slow',
-    international: true
+    speed: 'slow'
   },
   {
     id: '26',
@@ -292,8 +291,7 @@ export const allGames = [
     category: 'International',
     description: 'Ancient territory game. Surround more area than your opponent.',
     mode: 'versus',
-    speed: 'slow',
-    international: true
+    speed: 'slow'
   },
   {
     id: '27',
@@ -304,8 +302,7 @@ export const allGames = [
     category: 'International',
     description: 'Chinese chess. Outsmart your rival on the river board.',
     mode: 'versus',
-    speed: 'slow',
-    international: true
+    speed: 'slow'
   },
   {
     id: '28',
@@ -316,8 +313,7 @@ export const allGames = [
     category: 'International',
     description: 'Japanese chess with piece promotion and drops.',
     mode: 'versus',
-    speed: 'slow',
-    international: true
+    speed: 'slow'
   },
   {
     id: '29',
@@ -328,8 +324,7 @@ export const allGames = [
     category: 'International',
     description: 'Race your tokens around the board. Family favourite worldwide.',
     mode: 'versus',
-    speed: 'medium',
-    international: true
+    speed: 'medium'
   },
   {
     id: '30',
@@ -340,8 +335,7 @@ export const allGames = [
     category: 'International',
     description: 'Flick discs into pockets in this popular Asian table game.',
     mode: 'versus',
-    speed: 'medium',
-    international: true
+    speed: 'medium'
   },
   {
     id: '31',
@@ -352,8 +346,7 @@ export const allGames = [
     category: 'International',
     description: 'Move your checkers off the board before your opponent does.',
     mode: 'versus',
-    speed: 'slow',
-    international: true
+    speed: 'slow'
   },
   {
     id: '32',
@@ -364,8 +357,7 @@ export const allGames = [
     category: 'International',
     description: 'Climb up ladders and avoid snakes in this luck-based race.',
     mode: 'versus',
-    speed: 'quick',
-    international: true
+    speed: 'quick'
   },
   {
     id: '33',
