@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Text, TouchableOpacity, Alert } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import AuthForm from '../components/AuthForm';
+import ScreenContainer from '../components/ScreenContainer';
 import firebase from '../firebase';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import { snapshotExists } from '../utils/firestore';
@@ -99,16 +100,17 @@ export default function EmailAuthScreen({ route, navigation }) {
 
   return (
     <GradientBackground>
-      <Text style={[styles.logoText, { color: theme.text }]}>
-        {mode === 'signup' ? 'Create Account' : 'Log In'}
-      </Text>
-      <AuthForm
-        email={email}
-        onEmailChange={setEmail}
-        password={password}
-        onPasswordChange={setPassword}
-        onSubmit={onSubmit}
-        submitLabel={submitLabel}
+      <ScreenContainer scroll contentContainerStyle={styles.container}>
+        <Text style={[styles.logoText, { color: theme.text }]}>
+          {mode === 'signup' ? 'Create Account' : 'Log In'}
+        </Text>
+        <AuthForm
+          email={email}
+          onEmailChange={setEmail}
+          password={password}
+          onPasswordChange={setPassword}
+          onSubmit={onSubmit}
+          submitLabel={submitLabel}
       >
         {mode === 'login' ? (
           <>
@@ -124,7 +126,8 @@ export default function EmailAuthScreen({ route, navigation }) {
             <Text style={{ color: theme.text }}>← Back to Login</Text>
           </TouchableOpacity>
         )}
-      </AuthForm>
+        </AuthForm>
+      </ScreenContainer>
     </GradientBackground>
   );
 }
