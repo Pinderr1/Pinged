@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDev } from './DevContext';
 import { useUser } from './UserContext';
-import { db } from '../firebase';
+import { firestore } from '../firebase';
 import { serverTimestamp } from 'firebase/firestore';
 import { useListeners } from './ListenerContext';
 import Toast from 'react-native-toast-message';
@@ -80,7 +80,7 @@ export const ChatProvider = ({ children }) => {
   const userUnsubs = useRef({});
   useEffect(() => {
     if (!user?.uid) return;
-    const q = db.collection('matches').where('users', 'array-contains', user.uid);
+    const q = firestore.collection('matches').where('users', 'array-contains', user.uid);
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
@@ -127,7 +127,7 @@ export const ChatProvider = ({ children }) => {
       // Subscribe to each user's profile for presence
       userIds.forEach((uid) => {
         if (!userUnsubs.current[uid]) {
-          userUnsubs.current[uid] = db
+          userUnsubs.current[uid] = firestore
             .collection('users')
             .doc(uid)
             .onSnapshot((doc) => {
@@ -183,7 +183,7 @@ export const ChatProvider = ({ children }) => {
   const sendMessage = async (matchId, text, sender = 'you') => {
     if (!text || !matchId || !user?.uid) return;
     try {
-      await db
+      await firestore
         .collection('matches')
         .doc(matchId)
         .collection('messages')
@@ -277,7 +277,7 @@ export const ChatProvider = ({ children }) => {
     if (!user?.uid) return;
     setLoading(true);
     try {
-      const snap = await db
+      const snap = await firestore
         .collection('matches')
         .where('users', 'array-contains', user.uid)
         .get();

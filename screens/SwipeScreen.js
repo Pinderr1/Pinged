@@ -24,7 +24,7 @@ import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { allGames } from '../data/games';
 import { icebreakers } from '../data/prompts';
 import { useChats } from '../contexts/ChatContext';
-import { db } from '../firebase';
+import { firestore } from '../firebase';
 import { serverTimestamp } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
@@ -140,7 +140,7 @@ const SwipeScreen = () => {
       }
       setLoadingUsers(true);
       try {
-        let userQuery = db
+        let userQuery = firestore
           .collection('users')
           .where('uid', '!=', currentUser.uid);
         if (currentUser.location) {
@@ -222,14 +222,14 @@ const handleSwipe = async (direction) => {
 
       if (currentUser?.uid && displayUser.id && !devMode) {
         try {
-          await db
+          await firestore
             .collection('likes')
             .doc(currentUser.uid)
             .collection('liked')
             .doc(displayUser.id)
             .set({ createdAt: serverTimestamp() });
 
-          const reciprocal = await db
+          const reciprocal = await firestore
             .collection('likes')
             .doc(displayUser.id)
             .collection('liked')
@@ -237,7 +237,7 @@ const handleSwipe = async (direction) => {
             .get();
 
           if (reciprocal.exists) {
-            const matchRef = await db
+            const matchRef = await firestore
               .collection('matches')
               .add({
                 users: [currentUser.uid, displayUser.id],

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { AppState } from 'react-native';
-import { auth, database } from '../firebase';
+import { auth, realtimeDB } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, onValue, onDisconnect, set, serverTimestamp } from 'firebase/database';
 
@@ -21,8 +21,8 @@ export const PresenceProvider = ({ children }) => {
     };
 
     const setup = (uid) => {
-      statusRef = ref(database, 'status/' + uid);
-      const infoRef = ref(database, '.info/connected');
+      statusRef = ref(realtimeDB, 'status/' + uid);
+      const infoRef = ref(realtimeDB, '.info/connected');
       onValue(infoRef, (snap) => {
         if (snap.val() === false) return;
         onDisconnect(statusRef).set(offline).then(() => {
