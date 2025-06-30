@@ -8,6 +8,9 @@ import {
   StyleSheet,
   Modal,
   RefreshControl,
+  Keyboard,
+  Animated,
+  Platform,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import { Ionicons } from '@expo/vector-icons';
@@ -69,6 +72,9 @@ function PrivateChat({ user }) {
   const [devPlayer, setDevPlayer] = useState('0');
   const [showControls, setShowControls] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const gameAnim = useRef(new Animated.Value(1)).current;
+  const [gameHeight, setGameHeight] = useState(0);
   const typingTimeout = useRef(null);
   const [otherUserId, setOtherUserId] = useState(null);
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
@@ -90,6 +96,30 @@ function PrivateChat({ user }) {
       gameList[Math.floor(Math.random() * gameList.length)] || null
     );
   }, []);
+
+  // Collapse the game board when the keyboard is shown
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setKeyboardVisible(true)
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardVisible(false)
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    Animated.timing(gameAnim, {
+      toValue: keyboardVisible ? 0 : 1,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
+  }, [keyboardVisible, gameAnim]);
 
   const sendChatMessage = async (msgText = '', sender = 'user', extras = {}) => {
     if (!msgText.trim() && !extras.voice) return;
@@ -350,22 +380,34 @@ function PrivateChat({ user }) {
 
   const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
   const gameSection = SelectedGameClient ? (
-    <View
+    <Animated.View
       style={{
-        padding: 10,
-        borderBottomWidth: 1,
-        borderColor: darkMode ? '#444' : '#ccc',
-        justifyContent: 'center',
-        alignItems: 'center',
+        overflow: 'hidden',
+        height: gameAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, gameHeight || 1],
+        }),
+        opacity: gameAnim,
+        transform: [{ scaleY: gameAnim }],
       }}
     >
-      {devMode && (
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <TouchableOpacity
-            onPress={() => setDevPlayer('0')}
-            style={{
-              backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
-              paddingHorizontal: 10,
+      <View
+        onLayout={(e) => setGameHeight(e.nativeEvent.layout.height)}
+        style={{
+          padding: 10,
+          borderBottomWidth: 1,
+          borderColor: darkMode ? '#444' : '#ccc',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        {devMode && (
+          <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+            <TouchableOpacity
+              onPress={() => setDevPlayer('0')}
+              style={{
+                backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
+                paddingHorizontal: 10,
               paddingVertical: 6,
               borderRadius: 8,
               marginRight: 8,
@@ -385,13 +427,14 @@ function PrivateChat({ user }) {
             <Text style={{ color: '#fff' }}>Player 2</Text>
           </TouchableOpacity>
         </View>
-      )}
-      <SelectedGameClient
-        matchID={user.id}
-        playerID={devMode ? devPlayer : '0'}
-        onGameEnd={handleGameEnd}
-      />
-    </View>
+        )}
+        <SelectedGameClient
+          matchID={user.id}
+          playerID={devMode ? devPlayer : '0'}
+          onGameEnd={handleGameEnd}
+        />
+      </View>
+    </Animated.View>
   ) : null;
 
   const chatSection = (
