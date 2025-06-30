@@ -1,23 +1,36 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
+import {
+  View,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  Text,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
 
-const Header = () => {
-  const navigation = useNavigation();
-  const { darkMode, theme } = useTheme();
+export interface HeaderProps {
+  /**
+   * When true only the central logo is displayed.
+   */
+  showLogoOnly?: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ showLogoOnly }) => {
+  const navigation = useNavigation<any>();
+  const { theme } = useTheme();
   const notificationCount = useUnreadNotifications();
 
   return (
     <View style={[styles.container, { backgroundColor: theme.headerBackground }]}>
       {/* Left icon - Gear */}
-      <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.iconWrapper}>
-        <Image
-          source={require('../assets/gear.png')}
-          style={[styles.icon, { tintColor: theme.text }]}
-        />
-      </TouchableOpacity>
+      {!showLogoOnly && (
+        <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.iconWrapper}>
+          <Image source={require('../assets/gear.png')} style={[styles.icon, { tintColor: theme.text }]} />
+        </TouchableOpacity>
+      )}
 
       {/* Center logo */}
       <Image
@@ -26,19 +39,18 @@ const Header = () => {
       />
 
       {/* Right icon - Bell with badge */}
-      <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.iconWrapper}>
-        <View style={styles.bellWrapper}>
-          <Image
-            source={require('../assets/bell.png')}
-            style={[styles.icon, { tintColor: theme.text }]}
-          />
-          {notificationCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{notificationCount}</Text>
-            </View>
-          )}
-        </View>
-      </TouchableOpacity>
+      {!showLogoOnly && (
+        <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.iconWrapper}>
+          <View style={styles.bellWrapper}>
+            <Image source={require('../assets/bell.png')} style={[styles.icon, { tintColor: theme.text }]} />
+            {notificationCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{notificationCount}</Text>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

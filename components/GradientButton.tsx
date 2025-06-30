@@ -1,8 +1,18 @@
-// components/GradientButton.js
+// components/GradientButton.tsx
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, StyleProp, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
+
+export interface GradientButtonProps {
+  text: string;
+  onPress: () => void;
+  width?: string | number;
+  marginVertical?: number;
+  icon?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  disabled?: boolean;
+}
 
 export default function GradientButton({
   text,
@@ -12,7 +22,7 @@ export default function GradientButton({
   icon,
   style,
   disabled,
-}) {
+}: GradientButtonProps) {
   const { theme } = useTheme();
   return (
     <Pressable onPress={onPress} style={{ width, marginVertical }} disabled={disabled}>
@@ -35,9 +45,7 @@ export default function GradientButton({
         ]}
       >
         {icon && <View style={{ marginRight: 8 }}>{icon}</View>}
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
-          {text}
-        </Text>
+        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{text}</Text>
       </LinearGradient>
     </Pressable>
   );
