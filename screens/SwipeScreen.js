@@ -25,6 +25,7 @@ import { useGameLimit } from '../contexts/GameLimitContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { allGames } from '../data/games';
 import { icebreakers } from '../data/prompts';
+import { devUsers } from '../data/devUsers';
 import { useChats } from '../contexts/ChatContext';
 import firebase from '../firebase';
 import { useNavigation } from '@react-navigation/native';
@@ -151,42 +152,7 @@ const SwipeScreen = () => {
         const snap = await userQuery.limit(50).get();
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         if (devMode) {
-          data = [
-            {
-              id: '__devUser1',
-              displayName: 'Dev One',
-              age: 21,
-              bio: 'Testing swipe 1',
-              photos: [require('../assets/user1.jpg')],
-              favoriteGames: ['Chess'],
-              gender: 'Other',
-              genderPref: 'Any',
-              location: 'Localhost',
-            },
-            {
-              id: '__devUser2',
-              displayName: 'Dev Two',
-              age: 22,
-              bio: 'Testing swipe 2',
-              photos: [require('../assets/user2.jpg')],
-              favoriteGames: ['Go'],
-              gender: 'Other',
-              genderPref: 'Any',
-              location: 'Localhost',
-            },
-            {
-              id: '__devUser3',
-              displayName: 'Dev Three',
-              age: 23,
-              bio: 'Testing swipe 3',
-              photos: [require('../assets/user3.jpg')],
-              favoriteGames: ['Checkers'],
-              gender: 'Other',
-              genderPref: 'Any',
-              location: 'Localhost',
-            },
-            ...data,
-          ];
+          data = [...devUsers, ...data];
         }
         const formatted = data.map((u) => {
           const imgs = Array.isArray(u.photos) && u.photos.length
