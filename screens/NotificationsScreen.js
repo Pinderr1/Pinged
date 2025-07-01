@@ -22,6 +22,7 @@ import firebase from '../firebase';
 import { games } from '../games';
 import PropTypes from 'prop-types';
 import useCardPressAnimation from '../hooks/useCardPressAnimation';
+import EmptyState from '../components/EmptyState';
 
 const AnimatedButton = ({ onPress, text, loading, disabled, style }) => {
   const {
@@ -122,7 +123,10 @@ const NotificationsScreen = ({ navigation }) => {
 
         {pendingInvites.length === 0 ? (
           invitesLoaded ? (
-            <Text style={[local.empty, { color: theme.textSecondary }]}>No invites right now.</Text>
+            <EmptyState
+              text="No invites right now."
+              image={require('../assets/bell.png')}
+            />
           ) : (
             [0, 1].map((i) => (
               <View
