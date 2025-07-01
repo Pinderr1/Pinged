@@ -41,7 +41,7 @@
     "expo-haptics": "~14.1.4",
     "expo-updates": "~0.28.15",
     "expo-blur": "~12.5.0",
-    "@react-navigation/stack": "^7.4.4"
+    "@react-navigation/stack": "^7.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
