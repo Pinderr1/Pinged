@@ -43,6 +43,8 @@ import EmptyState from '../components/EmptyState';
 
 // Available emoji reactions for group chats
 const REACTIONS = ['🔥', '😂', '❤️'];
+const INCH_TO_DP = 160;
+const INPUT_OFFSET = 1.5 * INCH_TO_DP;
 
 /*******************************
  * Private one-on-one chat UI *
@@ -78,6 +80,7 @@ function PrivateChat({ user }) {
   const typingTimeout = useRef(null);
   const [otherUserId, setOtherUserId] = useState(null);
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
+  const [showGame, setShowGame] = useState(true);
 
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
@@ -382,42 +385,68 @@ function PrivateChat({ user }) {
   };
 
   const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
-  const gameSection = SelectedGameClient ? (
-    <View style={{ flex: 1, padding: 10, borderBottomWidth: 1, borderColor: darkMode ? '#444' : '#ccc', justifyContent: 'center', alignItems: 'center' }}>
-      {devMode && (
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <TouchableOpacity
-            onPress={() => setDevPlayer('0')}
+  const gameSection = SelectedGameClient
+    ? showGame
+      ? (
+          <View
             style={{
-              backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 8,
-              marginRight: 8,
+              flex: 1,
+              padding: 10,
+              borderBottomWidth: 1,
+              borderColor: darkMode ? '#444' : '#ccc',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
-            <Text style={{ color: '#fff' }}>Player 1</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={privateStyles.closeBtn}
+              onPress={() => setShowGame(false)}
+            >
+              <Text style={privateStyles.closeBtnText}>X</Text>
+            </TouchableOpacity>
+            {devMode && (
+              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <TouchableOpacity
+                  onPress={() => setDevPlayer('0')}
+                  style={{
+                    backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: 8,
+                    marginRight: 8,
+                  }}
+                >
+                  <Text style={{ color: '#fff' }}>Player 1</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setDevPlayer('1')}
+                  style={{
+                    backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text style={{ color: '#fff' }}>Player 2</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            <SelectedGameClient
+              matchID={user.id}
+              playerID={devMode ? devPlayer : '0'}
+              onGameEnd={handleGameEnd}
+            />
+          </View>
+        )
+      : (
           <TouchableOpacity
-            onPress={() => setDevPlayer('1')}
-            style={{
-              backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 8,
-            }}
+            style={privateStyles.showBtn}
+            onPress={() => setShowGame(true)}
           >
-            <Text style={{ color: '#fff' }}>Player 2</Text>
+            <Text style={privateStyles.showBtnText}>Show Game</Text>
           </TouchableOpacity>
-        </View>
-      )}
-      <SelectedGameClient
-        matchID={user.id}
-        playerID={devMode ? devPlayer : '0'}
-        onGameEnd={handleGameEnd}
-      />
-    </View>
-  ) : null;
+        )
+    : null;
 
   const chatSection = (
     <View style={{ flex: 1 }}>
@@ -470,7 +499,7 @@ function PrivateChat({ user }) {
           <Text style={privateStyles.typingIndicator}>{user.displayName} is typing...</Text>
         )}
       </View>
-      <View style={privateStyles.inputBar}>
+      <View style={[privateStyles.inputBar, { marginBottom: keyboardOpen ? 0 : INPUT_OFFSET }]}>
         {activeGameId ? (
           <>
             <TouchableOpacity
@@ -664,6 +693,29 @@ const getPrivateStyles = (theme) =>
     fontSize: 12,
     color: '#666',
     marginBottom: 4,
+  },
+  closeBtn: {
+    alignSelf: 'flex-end',
+    backgroundColor: theme.accent,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  closeBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  showBtn: {
+    backgroundColor: '#607d8b',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  showBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   });
 
