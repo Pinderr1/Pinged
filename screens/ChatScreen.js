@@ -95,6 +95,7 @@ function PrivateChat({ user }) {
   const [firstLine, setFirstLine] = useState('');
   const [firstGame, setFirstGame] = useState(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const showPlaceholders = loading && messages.length === 0;
 
   useEffect(() => {
@@ -107,21 +108,20 @@ function PrivateChat({ user }) {
   }, []);
 
   useEffect(() => {
-    const show = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hide = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
-    const handleShow = () => {
+    const handleShow = (e) => {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setKeyboardOpen(true);
+      setKeyboardHeight(e.endCoordinates?.height || 0);
     };
 
     const handleHide = () => {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setKeyboardOpen(false);
+      setKeyboardHeight(0);
     };
 
-    const showSub = Keyboard.addListener(show, handleShow);
-    const hideSub = Keyboard.addListener(hide, handleHide);
+    const showSub = Keyboard.addListener('keyboardDidShow', handleShow);
+    const hideSub = Keyboard.addListener('keyboardDidHide', handleHide);
     return () => {
       showSub.remove();
       hideSub.remove();
@@ -513,8 +513,14 @@ function PrivateChat({ user }) {
     }
   };
 
+  const inputBarOffset = keyboardOpen ? keyboardHeight : 0;
   const inputBar = (
-      <View style={privateStyles.inputBar}>
+      <View
+        style={[
+          privateStyles.inputBar,
+          { marginBottom: inputBarOffset, paddingBottom: insets.bottom },
+        ]}
+      >
         <TouchableOpacity
           onLongPress={startRecording}
           onPressOut={handleVoiceFinish}
@@ -541,8 +547,8 @@ function PrivateChat({ user }) {
           style={privateStyles.playButton}
           onPress={handlePlayPress}
         >
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-            {activeGameId ? (showGame ? 'Hide Game' : 'Show Game') : 'Invite Game'}
+          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>
+            Play
           </Text>
         </TouchableOpacity>
       </View>
@@ -662,9 +668,9 @@ const getPrivateStyles = (theme) =>
   },
   playButton: {
     backgroundColor: '#009688',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 16,
     alignSelf: 'center',
     marginLeft: 8,
   },
@@ -704,6 +710,7 @@ const getPrivateStyles = (theme) =>
   chatSection: {
     flex: 1,
     paddingHorizontal: 10,
+    paddingBottom: INPUT_BAR_HEIGHT,
   },
   });
 
