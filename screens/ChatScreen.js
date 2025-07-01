@@ -104,23 +104,18 @@ function PrivateChat({ user }) {
     );
   }, []);
 
-  const prevGameVisibleRef = useRef(true);
-
   useEffect(() => {
     const show = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hide = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
 
     const handleShow = () => {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      prevGameVisibleRef.current = showGame;
       setKeyboardOpen(true);
-      setShowGame(false);
     };
 
     const handleHide = () => {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setKeyboardOpen(false);
-      setShowGame(prevGameVisibleRef.current);
     };
 
     const showSub = Keyboard.addListener(show, handleShow);
@@ -130,10 +125,6 @@ function PrivateChat({ user }) {
       hideSub.remove();
     };
   }, []);
-
-  useEffect(() => {
-    prevGameVisibleRef.current = showGame;
-  }, [showGame]);
 
   // Initial prompt and game suggestion
 
@@ -414,11 +405,13 @@ function PrivateChat({ user }) {
   };
 
   const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
+  const gameVisible = showGame && !keyboardOpen && !!SelectedGameClient;
   let gameSection = null;
-  if (SelectedGameClient && !keyboardOpen) {
-    gameSection = showGame ? (
-      <View style={privateStyles.gameWrapper}>
+  if (SelectedGameClient) {
+    gameSection = (
+      <View style={[privateStyles.gameWrapper, { flex: gameVisible ? 1 : 0 }]}>
         <GameContainer
+          visible={gameVisible}
           onToggleChat={() => setShowGame(false)}
           player={{ name: 'You' }}
           opponent={{ name: user.displayName }}
@@ -457,18 +450,16 @@ function PrivateChat({ user }) {
           />
         </GameContainer>
       </View>
-    ) : (
-      <TouchableOpacity
-        style={privateStyles.showBtn}
-        onPress={() => setShowGame(true)}
-      >
-        <Text style={privateStyles.showBtnText}>Show Game</Text>
-      </TouchableOpacity>
     );
   }
 
   const chatSection = (
-    <View style={[privateStyles.chatSection, { paddingBottom: INPUT_BAR_HEIGHT + insets.bottom }]}>
+    <View
+      style={[
+        privateStyles.chatSection,
+        { paddingBottom: INPUT_BAR_HEIGHT + (keyboardOpen ? 0 : insets.bottom) },
+      ]}
+    >
       <FlatList
         style={{ flex: 1 }}
         data={messages}
@@ -521,14 +512,14 @@ function PrivateChat({ user }) {
 
   const handlePlayPress = () => {
     if (activeGameId) {
-      setShowGame(true);
+      setShowGame((prev) => !prev);
     } else {
       setShowGameModal(true);
     }
   };
 
   const inputBarSection = (
-    <View style={[privateStyles.inputWrapper, { bottom: insets.bottom }]}>
+    <View style={[privateStyles.inputWrapper, { bottom: keyboardOpen ? 0 : insets.bottom }]}>
       <View style={privateStyles.inputBar}>
         <TouchableOpacity
           onLongPress={startRecording}
@@ -556,7 +547,9 @@ function PrivateChat({ user }) {
           style={privateStyles.playButton}
           onPress={handlePlayPress}
         >
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Play</Text>
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+            {activeGameId ? (showGame ? 'Hide Game' : 'Show Game') : 'Invite Game'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -618,6 +611,7 @@ const getPrivateStyles = (theme) =>
   },
   gameWrapper: {
     flex: 1,
+    overflow: 'hidden',
   },
   chatWrapper: {
     flex: 1,
@@ -730,29 +724,6 @@ const getPrivateStyles = (theme) =>
     right: 0,
     bottom: 0,
     backgroundColor: 'transparent',
-  },
-  closeBtn: {
-    alignSelf: 'flex-end',
-    backgroundColor: theme.accent,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  closeBtnText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  showBtn: {
-    backgroundColor: '#607d8b',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    alignSelf: 'center',
-    marginBottom: 10,
-  },
-  showBtnText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
   });
 
