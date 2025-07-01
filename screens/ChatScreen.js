@@ -105,9 +105,6 @@ function PrivateChat({ user }) {
   }, []);
 
   useEffect(() => {
-    const show = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hide = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
     const handleShow = () => {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setKeyboardOpen(true);
@@ -118,8 +115,8 @@ function PrivateChat({ user }) {
       setKeyboardOpen(false);
     };
 
-    const showSub = Keyboard.addListener(show, handleShow);
-    const hideSub = Keyboard.addListener(hide, handleHide);
+    const showSub = Keyboard.addListener('keyboardDidShow', handleShow);
+    const hideSub = Keyboard.addListener('keyboardDidHide', handleHide);
     return () => {
       showSub.remove();
       hideSub.remove();
@@ -409,7 +406,16 @@ function PrivateChat({ user }) {
   let gameSection = null;
   if (SelectedGameClient) {
     gameSection = (
-      <View style={[privateStyles.gameWrapper, { flex: gameVisible ? 1 : 0 }]}>
+      <View
+        style={[
+          privateStyles.gameWrapper,
+          {
+            flex: gameVisible ? 1 : 0,
+            height: gameVisible ? undefined : 0,
+            marginBottom: gameVisible ? 20 : 0,
+          },
+        ]}
+      >
         <GameContainer
           visible={gameVisible}
           onToggleChat={() => setShowGame(false)}
