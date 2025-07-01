@@ -27,6 +27,8 @@ export default function SyncedGame({ sessionId, gameId, opponent, onGameEnd }) {
       icon={meta?.icon}
       player={{ photo: user?.photoURL, online: true }}
       opponent={{ photo: opponent?.photo, online: opponent?.online }}
+      playerName={user?.displayName || 'You'}
+      opponentName={opponent?.displayName || 'Opponent'}
       turn={ctx.currentPlayer}
     >
       <Board G={G} ctx={ctx} moves={moves} onGameEnd={onGameEnd} />
