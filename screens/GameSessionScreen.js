@@ -25,7 +25,8 @@ import firebase from '../firebase';
 import * as Haptics from 'expo-haptics';
 import getGlobalStyles from '../styles';
 import { games } from '../games';
-import SyncedGame from '../components/SyncedGame';
+import useGameSession from '../hooks/useGameSession';
+import PlayerTurnIndicator from '../components/PlayerTurnIndicator';
 import GameOverModal from '../components/GameOverModal';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { snapshotExists } from '../utils/firestore';
@@ -72,6 +73,8 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const gameActive = showGame && !gameResult;
 
   const GameComponent = game?.id ? games[game.id]?.Client : null;
+  const { Board } = game?.id ? games[game.id] : {};
+  const { G, ctx, moves, loading } = useGameSession(inviteId, game.id, opponent.id);
   const isReady = devMode || inviteStatus === 'ready';
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const overlayOpacity = useRef(new Animated.Value(1)).current;
@@ -235,12 +238,27 @@ const LiveSessionScreen = ({ route, navigation }) => {
                 <GameComponent playerID={devPlayer} matchID="dev" />
               </>
             ) : (
-              <SyncedGame
-                sessionId={inviteId}
-                gameId={game.id}
-                opponentId={opponent.id}
-                onGameEnd={handleGameEnd}
-              />
+              loading || !G ? (
+                <View style={{ padding: 20 }}>
+                  <Loader />
+                </View>
+              ) : (
+                <>
+                  <View style={{ flexDirection: 'row', marginBottom: 20 }}>
+                    <PlayerTurnIndicator
+                      name="You"
+                      avatar={user?.photoURL}
+                      active={ctx?.currentPlayer === '0'}
+                    />
+                    <PlayerTurnIndicator
+                      name={opponent.displayName}
+                      avatar={opponent.photo}
+                      active={ctx?.currentPlayer === '1'}
+                    />
+                  </View>
+                  <Board G={G} ctx={ctx} moves={moves} onGameEnd={handleGameEnd} />
+                </>
+              )
             )}
           </View>
         )}
