@@ -18,6 +18,7 @@ import GameCard from '../components/GameCard';
 import GamePreviewModal from '../components/GamePreviewModal';
 import GameFilters from '../components/GameFilters';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import EmptyState from '../components/EmptyState';
 import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
 import { useTrending } from '../contexts/TrendingContext';
@@ -143,6 +144,12 @@ const PlayScreen = ({ navigation }) => {
         columnWrapperStyle={{ justifyContent: 'center' }}
         renderItem={renderItem}
         onScrollBeginDrag={Keyboard.dismiss}
+        ListEmptyComponent={
+          <EmptyState
+            text="No games found."
+            image={require('../assets/logo.png')}
+          />
+        }
       />
 
       <GamePreviewModal
