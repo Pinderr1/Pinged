@@ -11,7 +11,6 @@ import {
   Platform,
   KeyboardAvoidingView,
   Keyboard,
-  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GradientBackground from '../components/GradientBackground';
@@ -19,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import PropTypes from 'prop-types';
 import { avatarSource } from '../utils/avatar';
+import AvatarRing from '../components/AvatarRing';
 import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
@@ -339,7 +339,13 @@ function PrivateChat({ user }) {
         style={[privateStyles.messageRow, isUser ? privateStyles.rowRight : privateStyles.rowLeft]}
       >
         {!isUser && user.image && (
-          <Image source={avatarSource(user.image)} style={privateStyles.avatar} />
+          <AvatarRing
+            source={user.image}
+            size={32}
+            isMatch
+            isOnline={user.online}
+            style={privateStyles.avatar}
+          />
         )}
         <View
           style={[privateStyles.message, isUser ? privateStyles.right : privateStyles.left]}
