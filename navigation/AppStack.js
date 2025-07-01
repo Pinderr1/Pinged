@@ -18,7 +18,9 @@ const Stack = createNativeStackNavigator();
 
 export default function AppStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
+    >
       <Stack.Screen name="Main" component={MainTabs} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />

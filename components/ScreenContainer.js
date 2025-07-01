@@ -1,6 +1,8 @@
-import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, Animated } from 'react-native';
 import PropTypes from 'prop-types';
+
+const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 
 export default function ScreenContainer({
   children,
@@ -9,8 +11,18 @@ export default function ScreenContainer({
   contentContainerStyle,
   ...rest
 }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
+
   return (
-    <SafeAreaView style={[styles.container, style]}>
+    <AnimatedSafeAreaView style={[styles.container, style, { opacity: fadeAnim }]}>
       {scroll ? (
         <ScrollView
           contentContainerStyle={[styles.content, contentContainerStyle]}
@@ -21,7 +33,7 @@ export default function ScreenContainer({
       ) : (
         children
       )}
-    </SafeAreaView>
+    </AnimatedSafeAreaView>
   );
 }
 
