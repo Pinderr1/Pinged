@@ -519,7 +519,14 @@ function PrivateChat({ user }) {
   };
 
   const inputBarSection = (
-    <View style={[privateStyles.inputWrapper, { bottom: keyboardOpen ? 0 : insets.bottom }]}>
+    <View
+      style={[
+        privateStyles.inputWrapper,
+        {
+          bottom: (keyboardOpen ? 0 : insets.bottom) + 16,
+        },
+      ]}
+    >
       <View style={privateStyles.inputBar}>
         <TouchableOpacity
           onLongPress={startRecording}
