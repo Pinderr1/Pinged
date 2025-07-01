@@ -1,22 +1,32 @@
 import React, { useEffect } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Modal, View, Text, Image, Pressable, StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
+import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
+import { avatarSource } from '../utils/avatar';
+import useWinLossStats from '../hooks/useWinLossStats';
 
-export default function GameOverModal({ visible, winnerName, onRematch, onChat }) {
+export default function GameOverModal({
+  visible,
+  winnerName,
+  winnerAvatar,
+  winnerId,
+  onRematch,
+  onExit,
+}) {
+  const stats = useWinLossStats(winnerId);
   useEffect(() => {
     if (visible && winnerName) {
       Haptics.notificationAsync(
         Haptics.NotificationFeedbackType.Success
       ).catch(() => {});
-      // Play celebration sound here
     }
   }, [visible, winnerName]);
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.backdrop}>
-        <View style={styles.card}>
+        <View style={styles.animationContainer} pointerEvents="none">
           {winnerName && (
             <LottieView
               source={require('../assets/confetti.json')}
@@ -25,15 +35,32 @@ export default function GameOverModal({ visible, winnerName, onRematch, onChat }
               style={styles.animation}
             />
           )}
-          <Text style={styles.emoji}>🏆</Text>
-          <Text style={styles.title}>{winnerName ? `${winnerName} wins!` : 'Draw'}</Text>
-          <TouchableOpacity style={styles.rematchBtn} onPress={onRematch}>
-            <Text style={styles.rematchText}>Rematch</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.chatBtn} onPress={onChat}>
-            <Text style={styles.chatText}>Chat</Text>
-          </TouchableOpacity>
         </View>
+        <BlurView intensity={80} tint="dark" style={styles.card}>
+          {winnerAvatar && (
+            <Image source={avatarSource(winnerAvatar)} style={styles.avatar} />
+          )}
+          <Text style={styles.title}>
+            {winnerName ? `${winnerName} wins!` : 'Draw'}
+          </Text>
+          {!stats.loading && (
+            <Text style={styles.stats}>{`Wins: ${stats.wins}  Losses: ${stats.losses}`}</Text>
+          )}
+          <Pressable
+            onPress={onRematch}
+            android_ripple={{ color: '#fff' }}
+            style={styles.rematchBtn}
+          >
+            <Text style={styles.btnText}>Rematch</Text>
+          </Pressable>
+          <Pressable
+            onPress={onExit}
+            android_ripple={{ color: '#fff' }}
+            style={styles.exitBtn}
+          >
+            <Text style={styles.btnText}>Exit</Text>
+          </Pressable>
+        </BlurView>
       </View>
     </Modal>
   );
@@ -42,8 +69,10 @@ export default function GameOverModal({ visible, winnerName, onRematch, onChat }
 GameOverModal.propTypes = {
   visible: PropTypes.bool.isRequired,
   winnerName: PropTypes.string,
+  winnerAvatar: PropTypes.any,
+  winnerId: PropTypes.string,
   onRematch: PropTypes.func.isRequired,
-  onChat: PropTypes.func.isRequired,
+  onExit: PropTypes.func.isRequired,
 };
 
 const styles = StyleSheet.create({
@@ -53,50 +82,62 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  card: {
-    backgroundColor: '#fff',
-    padding: 30,
-    borderRadius: 20,
+  animationContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
     alignItems: 'center',
-    width: 260,
   },
-  emoji: {
-    fontSize: 50,
+  animation: {
+    width: '100%',
+    height: '100%',
+  },
+  card: {
+    padding: 24,
+    borderRadius: 20,
+    width: 280,
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     marginBottom: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#fff',
+    marginBottom: 6,
     textAlign: 'center',
+  },
+  stats: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 16,
   },
   rematchBtn: {
     backgroundColor: '#28c76f',
     paddingVertical: 12,
     paddingHorizontal: 40,
-    borderRadius: 14,
+    borderRadius: 16,
+    width: '100%',
     marginBottom: 12,
+    overflow: 'hidden',
   },
-  rematchText: {
+  exitBtn: {
+    backgroundColor: '#e74c3c',
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 16,
+    width: '100%',
+    overflow: 'hidden',
+  },
+  btnText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
-  },
-  chatBtn: {
-    backgroundColor: '#facc15',
-    paddingVertical: 10,
-    paddingHorizontal: 40,
-    borderRadius: 14,
-  },
-  chatText: {
-    color: '#000',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  animation: {
-    position: 'absolute',
-    top: -30,
-    width: 200,
-    height: 200,
+    textAlign: 'center',
   },
 });
