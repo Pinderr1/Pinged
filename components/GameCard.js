@@ -6,9 +6,10 @@ import { useTheme } from '../contexts/ThemeContext';
 import GameCardBase from './GameCardBase';
 import FavoriteStar from './FavoriteStar';
 import PremiumBadge from './PremiumBadge';
+import TrendingBadge from './TrendingBadge';
 import useCardPressAnimation from '../hooks/useCardPressAnimation';
 
-export default function GameCard({ item, onPress, toggleFavorite, isFavorite }) {
+export default function GameCard({ item, onPress, toggleFavorite, isFavorite, trending }) {
   const { theme } = useTheme();
   const { scale, handlePressIn, handlePressOut } = useCardPressAnimation();
 
@@ -26,6 +27,7 @@ export default function GameCard({ item, onPress, toggleFavorite, isFavorite }) 
         route={item.route}
         accent={theme.accent}
       />
+      <TrendingBadge trending={trending} />
 
       {item.premium && (
         <Ionicons
@@ -54,4 +56,5 @@ GameCard.propTypes = {
   onPress: PropTypes.func.isRequired,
   toggleFavorite: PropTypes.func.isRequired,
   isFavorite: PropTypes.bool.isRequired,
+  trending: PropTypes.bool,
 };
