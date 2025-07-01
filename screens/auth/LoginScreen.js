@@ -1,10 +1,10 @@
 // screens/LoginScreen.js
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import Toast from 'react-native-toast-message';
 import GradientBackground from '../../components/GradientBackground';
 import GradientButton from '../../components/GradientButton';
-import Header from '../../components/Header';
+import { Animated, Easing, Image, Text } from 'react-native';
 import ScreenContainer from '../../components/ScreenContainer';
 import { HEADER_SPACING } from '../../layout';
 import getStyles from '../../styles';
@@ -77,10 +77,26 @@ export default function LoginScreen() {
     }
   };
 
+  const anim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: 1,
+      duration: 400,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  }, [anim]);
+
+  const scale = anim.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] });
+
   return (
     <GradientBackground>
-      <Header showLogoOnly />
-      <ScreenContainer scroll contentContainerStyle={[styles.container, { paddingTop: HEADER_SPACING }]}>
+      <ScreenContainer scroll contentContainerStyle={[styles.container, { paddingTop: HEADER_SPACING, alignItems: 'center' }]}>
+        <Animated.View style={{ alignItems: 'center', opacity: anim, transform: [{ scale }] }}>
+          <Image source={require('../../assets/logo.png')} style={styles.logoImage} />
+          <Text style={[styles.logoText, { color: theme.text }]}>Pinged</Text>
+        </Animated.View>
 
         <GradientButton
           text="Sign in with Google"
