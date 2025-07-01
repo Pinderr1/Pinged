@@ -12,6 +12,7 @@ import {
   Animated,
   Platform,
   KeyboardAvoidingView,
+  useWindowDimensions,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import { Ionicons } from '@expo/vector-icons';
@@ -75,7 +76,9 @@ function PrivateChat({ user }) {
   const [isTyping, setIsTyping] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const gameAnim = useRef(new Animated.Value(1)).current;
-  const [gameHeight, setGameHeight] = useState(0);
+  const { height: windowHeight } = useWindowDimensions();
+  const [gameHeight, setGameHeight] = useState(windowHeight * 0.5);
+  const inputRef = useRef(null);
   const typingTimeout = useRef(null);
   const [otherUserId, setOtherUserId] = useState(null);
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
@@ -121,6 +124,16 @@ function PrivateChat({ user }) {
       useNativeDriver: false,
     }).start();
   }, [keyboardVisible, gameAnim]);
+
+  useEffect(() => {
+    setGameHeight(windowHeight * 0.5);
+  }, [windowHeight]);
+
+  useEffect(() => {
+    if (keyboardVisible && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [keyboardVisible]);
 
   const sendChatMessage = async (msgText = '', sender = 'user', extras = {}) => {
     if (!msgText.trim() && !extras.voice) return;
@@ -384,6 +397,7 @@ function PrivateChat({ user }) {
     <Animated.View
       style={{
         overflow: 'hidden',
+        width: '100%',
         height: gameAnim.interpolate({
           inputRange: [0, 1],
           outputRange: [0, gameHeight || 1],
@@ -393,7 +407,7 @@ function PrivateChat({ user }) {
       }}
     >
       <View
-        onLayout={(e) => setGameHeight(e.nativeEvent.layout.height)}
+        onLayout={() => setGameHeight(windowHeight * 0.5)}
         style={{
           padding: 10,
           borderBottomWidth: 1,
@@ -547,6 +561,7 @@ function PrivateChat({ user }) {
           />
         </TouchableOpacity>
         <TextInput
+          ref={inputRef}
           placeholder="Type a message..."
           style={privateStyles.textInput}
           value={text}
@@ -612,7 +627,7 @@ const getPrivateStyles = (theme) =>
   StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'stretch',
     justifyContent: 'flex-start',
   },
   messageBubble: {
@@ -973,7 +988,7 @@ const getGroupStyles = (theme) =>
   StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'stretch',
     justifyContent: 'flex-start',
   },
   eventTitle: {
