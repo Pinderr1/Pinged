@@ -74,6 +74,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
         await admin.firestore().collection('users').doc(uid).update({
           isPremium: true,
           premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          badges: admin.firestore.FieldValue.arrayUnion('premiumMember'),
         });
       } catch (e) {
         console.error('Failed to update premium status', e);

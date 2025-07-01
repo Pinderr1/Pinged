@@ -6,6 +6,7 @@ import firebase from "../firebase";
 import { useDev } from "./DevContext";
 import { useOnboarding, clearStoredOnboarding } from "./OnboardingContext";
 import { snapshotExists } from "../utils/firestore";
+import { computeBadges } from "../utils/badges";
 
 const UserContext = createContext();
 
@@ -24,6 +25,7 @@ export const UserProvider = ({ children }) => {
     photoURL: null,
     xp: 0,
     streak: 0,
+    badges: [],
   };
 
   useEffect(() => {
@@ -53,6 +55,7 @@ export const UserProvider = ({ children }) => {
                 uid: fbUser.uid,
                 email: fbUser.email,
                 isPremium: !!data.isPremium,
+                badges: data.badges || [],
                 ...data,
               });
             } else if (devMode) {
@@ -111,9 +114,15 @@ export const UserProvider = ({ children }) => {
     }
 
     const newXP = (user.xp || 0) + amount;
+    const newBadges = computeBadges({
+      xp: newXP,
+      streak: newStreak,
+      badges: user.badges || [],
+      isPremium: user.isPremium,
+    });
     const updates = { xp: newXP, streak: newStreak, lastActiveAt: new Date() };
     if (opts.markPlayed) updates.lastPlayedAt = new Date();
-    updateUser(updates);
+    updateUser({ ...updates, badges: newBadges });
     try {
       await firebase
         .firestore()
@@ -125,6 +134,9 @@ export const UserProvider = ({ children }) => {
         ...(opts.markPlayed
           ? { lastPlayedAt: firebase.firestore.FieldValue.serverTimestamp() }
           : {}),
+        badges: firebase.firestore.FieldValue.arrayUnion(
+          ...newBadges.filter((b) => !(user.badges || []).includes(b))
+        ),
       });
     } catch (e) {
       console.warn("Failed to update XP", e);

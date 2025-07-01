@@ -97,10 +97,27 @@ const CommunityScreen = () => {
     : events.filter((e) => e.category === activeFilter);
   const displayEvents = filteredEvents.slice(0, 4);
 
-  const toggleJoin = (id) => {
+  const toggleJoin = async (id) => {
     const isJoined = joinedEvents.includes(id);
-    if (!isJoined && joinedEvents.length === 0) setFirstJoin(true);
-    setJoinedEvents(isJoined ? joinedEvents.filter(e => e !== id) : [...joinedEvents, id]);
+    if (!isJoined && joinedEvents.length === 0) {
+      setFirstJoin(true);
+      if (user?.uid && !(user.badges || []).includes('socialButterfly')) {
+        try {
+          await firebase
+            .firestore()
+            .collection('users')
+            .doc(user.uid)
+            .update({
+              badges: firebase.firestore.FieldValue.arrayUnion('socialButterfly'),
+            });
+        } catch (e) {
+          console.warn('Failed to award badge', e);
+        }
+      }
+    }
+    setJoinedEvents(
+      isJoined ? joinedEvents.filter((e) => e !== id) : [...joinedEvents, id]
+    );
     Alert.alert(
       isJoined ? 'RSVP Cancelled' : 'Event Joined',
       isJoined ? 'You left the event.' : 'You’re in! XP applied.'

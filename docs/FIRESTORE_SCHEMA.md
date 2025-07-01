@@ -29,6 +29,7 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `expoPushToken` (string)
 - `online` (boolean)
 - `lastOnline` (timestamp) – last presence update time
+- `badges` (array of string) – earned badge IDs
 
 ### Subcollections
 - **gameInvites** – invitations sent or received by the user. Each invite document mirrors the root `gameInvites` collection.
@@ -85,6 +86,12 @@ A copy of each invite is also stored under `users/{uid}/gameInvites/{inviteId}` 
 - `winner` (string|null) – uid of the winner or `null`
 - `moves` (array of map) – `{ action, player, at }`
 - `loggedAt` (timestamp)
+
+## Badges (`badges/{badgeId}`)
+- `name` (string)
+- `description` (string)
+- `icon` (string) – Ionicons icon name
+- `premium` (boolean) – if true, badge is exclusive to Premium members
 
 ## Chats
 Chat conversations occur inside match documents under the `messages` subcollection (see **Matches** above). Each event also has a chat stored at `events/{eventId}/messages` following the same message shape.
