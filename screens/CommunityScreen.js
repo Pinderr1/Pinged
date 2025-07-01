@@ -29,9 +29,6 @@ import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 import * as Haptics from 'expo-haptics';
 import EmptyState from '../components/EmptyState';
 
-const screenWidth = Dimensions.get('window').width;
-const cardWidth = (screenWidth - 48) / 2;
-
 
 const FILTERS = ['All', 'Tonight', 'Flirty', 'Tournaments'];
 
@@ -127,57 +124,29 @@ const CommunityScreen = () => {
     setRefreshing(false);
   };
 
-  const renderEventCard = (event, idx) => {
+  const renderEventCard = (event) => {
     const isJoined = joinedEvents.includes(event.id);
     return (
-      <Card
+      <EventFlyer
         key={event.id}
-        style={[
-          local.card,
-          {
-            backgroundColor: darkMode ? '#444' : '#fff',
-            marginRight: idx % 2 === 0 ? 8 : 0,
-            marginLeft: idx % 2 !== 0 ? 8 : 0
-          }
-        ]}
-      >
-        <Image source={eventImageSource(event.image)} style={local.image} />
-        <TouchableOpacity
-          style={local.moreBtn}
-          onPress={() => {
-            setOptionsEvent({ event, isJoined });
-            setShowOptionsModal(true);
-          }}
-        >
-          <Text style={local.moreText}>⋯</Text>
-        </TouchableOpacity>
-        <Text style={local.title}>{event.title}</Text>
-        <Text style={local.time}>{event.time}</Text>
-        <Text style={local.desc}>{event.description}</Text>
-        {isJoined && (
-          <Text style={local.badge}>🎯 Joined • +10 XP</Text>
-        )}
-      </Card>
+        event={event}
+        joined={isJoined}
+        onJoin={() => toggleJoin(event.id)}
+      />
     );
   };
 
   const renderEventSkeleton = (idx) => (
     <Card
       key={`event-skel-${idx}`}
-      style={[
-        local.card,
-        {
-          backgroundColor: darkMode ? '#444' : '#fff',
-          marginRight: idx % 2 === 0 ? 8 : 0,
-          marginLeft: idx % 2 !== 0 ? 8 : 0,
-        },
-      ]}
+      style={[local.flyerCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}
     >
-      <View style={[local.image, { backgroundColor: skeletonColor }]} />
-      <View style={[local.skelLine, { width: '60%', marginBottom: 6 }]} />
-      <View style={[local.skelLine, { width: '40%', marginBottom: 6 }]} />
-      <View style={[local.skelLine, { width: '80%', marginBottom: 8 }]} />
-      <View style={local.skelButton} />
+      <View style={[local.flyerImage, { backgroundColor: skeletonColor }]} />
+      <View style={{ flex: 1 }}>
+        <View style={[local.skelLine, { width: '70%', marginBottom: 6 }]} />
+        <View style={[local.skelLine, { width: '40%', marginBottom: 6 }]} />
+        <View style={[local.skelButton, { width: 80 }]} />
+      </View>
     </Card>
   );
 
@@ -229,9 +198,9 @@ const CommunityScreen = () => {
           <Text style={local.bannerText}>Truth or Dare Night — Friday @ 9PM</Text>
         </Card>
 
-        {/* Event grid */}
+        {/* Events */}
         {loadingEvents ? (
-          <View style={local.grid}>
+          <View style={local.flyerList}>
             {[...Array(4)].map((_, idx) => renderEventSkeleton(idx))}
           </View>
         ) : filteredEvents.length === 0 ? (
@@ -240,8 +209,8 @@ const CommunityScreen = () => {
             image={require('../assets/logo.png')}
           />
         ) : (
-          <View style={local.grid}>
-            {displayEvents.map((event, idx) => renderEventCard(event, idx))}
+          <View style={local.flyerList}>
+            {displayEvents.map((event) => renderEventCard(event))}
           </View>
         )}
 
@@ -478,44 +447,22 @@ const getStyles = (theme, skeletonColor) =>
     fontSize: FONT_SIZES.SM,
     color: '#555'
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16
+  flyerList: {
+    paddingHorizontal: 16,
   },
-  card: {
-    width: cardWidth,
+  flyerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 16,
-    marginBottom: 20,
-    padding: 12,
+    padding: 16,
+    marginBottom: 16,
     ...CARD_STYLE,
   },
-  image: {
-    width: '100%',
-    height: 90,
-    borderRadius: 10,
-    marginBottom: 6
-  },
-  title: {
-    fontSize: FONT_SIZES.SM,
-    fontWeight: 'bold'
-  },
-  time: {
-    fontSize: FONT_SIZES.SM - 2,
-    color: theme.accent,
-    marginBottom: 2
-  },
-  desc: {
-    fontSize: FONT_SIZES.SM - 2,
-    color: '#666'
-  },
-  chatBtn: {
-    marginTop: 6
-  },
-  chatText: {
-    fontSize: FONT_SIZES.SM - 2,
-    color: '#4287f5'
+  flyerImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 12,
+    marginRight: 12,
   },
   badge: {
     fontSize: FONT_SIZES.SM - 2,
@@ -605,16 +552,6 @@ const getStyles = (theme, skeletonColor) =>
     fontSize: 13,
     marginBottom: 10
   },
-  moreBtn: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    padding: 4
-  },
-  moreText: {
-    fontSize: 18,
-    color: '#666'
-  },
   fab: {
     position: 'absolute',
     bottom: 20,
@@ -625,12 +562,12 @@ const getStyles = (theme, skeletonColor) =>
     backgroundColor: theme.accent,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5
+    elevation: 5,
   },
   fabIcon: {
     color: '#fff',
     fontSize: 28,
-    lineHeight: 28
+    lineHeight: 28,
   },
   fabMenu: {
     position: 'absolute',
@@ -638,11 +575,11 @@ const getStyles = (theme, skeletonColor) =>
     right: 20,
     backgroundColor: theme.accent,
     borderRadius: 8,
-    padding: 8
+    padding: 8,
   },
   fabItem: {
     color: '#fff',
-    paddingVertical: 6
+    paddingVertical: 6,
   }
 });
 

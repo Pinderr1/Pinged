@@ -22,6 +22,7 @@ import PropTypes from 'prop-types';
 import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
 import Card from '../components/Card';
+import EventFlyer from "../components/EventFlyer";
 import GradientButton from '../components/GradientButton';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { eventImageSource } from '../utils/avatar';
@@ -156,36 +157,13 @@ const HomeScreen = ({ navigation }) => {
 
           <View style={local.communityBoard}>
             <Text style={local.sectionTitle}>Community Board</Text>
-            <Card
-              gradientColors={[theme.gradientStart, theme.gradientEnd]}
-              style={[local.bulletinCard, { backgroundColor: theme.card }]}
-            >
-              <Image source={eventImageSource(SAMPLE_EVENTS[1].image)} style={local.bulletinImage} />
-              <View style={local.bulletinContent}>
-                <Text style={[local.bulletinTitle, { color: theme.text }]}>Checkers Blitz Tournament</Text>
-                <Text style={[local.bulletinDesc, { color: theme.textSecondary }]}>Fast 1v1 matches this Saturday at 7PM.</Text>
-              </View>
-            </Card>
-            <Card
-              gradientColors={[theme.gradientStart, theme.gradientEnd]}
-              style={[local.bulletinCard, { backgroundColor: theme.card }]}
-            >
-              <Image source={eventImageSource(SAMPLE_EVENTS[0].image)} style={local.bulletinImage} />
-              <View style={local.bulletinContent}>
-                <Text style={[local.bulletinTitle, { color: theme.text }]}>Speed Dating Night</Text>
-                <Text style={[local.bulletinDesc, { color: theme.textSecondary }]}>Meet singles in quick 5 minute chats this Friday.</Text>
-              </View>
-            </Card>
-            <Card
-              gradientColors={[theme.gradientStart, theme.gradientEnd]}
-              style={[local.bulletinCard, { backgroundColor: theme.card }]}
-            >
-              <Image source={eventImageSource(SAMPLE_EVENTS[3].image)} style={local.bulletinImage} />
-              <View style={local.bulletinContent}>
-                <Text style={[local.bulletinTitle, { color: theme.text }]}>App Announcement</Text>
-                <Text style={[local.bulletinDesc, { color: theme.textSecondary }]}>Check out the newest features rolling out this week.</Text>
-              </View>
-            </Card>
+            {SAMPLE_EVENTS.slice(0, 3).map((ev) => (
+              <EventFlyer
+                key={ev.id}
+                event={ev}
+                onJoin={() => navigation.navigate('Community')}
+              />
+            ))}
           </View>
         </ScrollView>
         <View style={local.swipeButtonContainer}>
@@ -393,49 +371,6 @@ const getStyles = (theme) =>
     communityBoard: {
       width: '100%',
       marginBottom: 24,
-    },
-    communityCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 12,
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowOffset: { width: 0, height: 2 },
-      shadowRadius: 6,
-      elevation: 3,
-      alignSelf: 'stretch',
-    },
-    bulletinCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderRadius: 20,
-      padding: 20,
-      marginBottom: 20,
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowOffset: { width: 0, height: 2 },
-      shadowRadius: 6,
-      elevation: 3,
-      alignSelf: 'stretch',
-    },
-    bulletinImage: {
-      width: 60,
-      height: 60,
-      borderRadius: 12,
-      marginRight: 12,
-    },
-    bulletinContent: {
-      flex: 1,
-    },
-    bulletinTitle: {
-      fontSize: 15,
-      fontWeight: 'bold',
-    },
-    bulletinDesc: {
-      fontSize: 13,
-      marginTop: 4,
     },
   });
 
