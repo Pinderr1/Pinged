@@ -421,13 +421,13 @@ function PrivateChat({ user }) {
 
   const chatSection = (
     <View style={{ flex: 1 }}>
-      <View style={{ flex: 1, padding: 10 }}>
+      <View style={{ flex: 1, paddingTop: 10, paddingHorizontal: 10 }}>
         <FlatList
           style={{ flex: 1 }}
           data={messages}
           keyExtractor={(item) => item.id}
           renderItem={renderMessage}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 0 }}
           inverted
           keyboardShouldPersistTaps="handled"
           refreshControl={
@@ -871,6 +871,7 @@ function GroupChat({ event }) {
               data={messages}
               keyExtractor={(item) => item.id}
               renderItem={renderMessage}
+              style={{ flex: 1 }}
               contentContainerStyle={{ padding: 16 }}
               refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
