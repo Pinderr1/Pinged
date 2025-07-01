@@ -11,6 +11,8 @@ import {
   Platform,
   KeyboardAvoidingView,
   Keyboard,
+  LayoutAnimation,
+  UIManager,
   Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -93,6 +95,7 @@ function PrivateChat({ user }) {
   const [firstLine, setFirstLine] = useState('');
   const [firstGame, setFirstGame] = useState(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [hideGameForKeyboard, setHideGameForKeyboard] = useState(false);
   const showPlaceholders = loading && messages.length === 0;
 
   useEffect(() => {
@@ -105,10 +108,26 @@ function PrivateChat({ user }) {
   }, []);
 
   useEffect(() => {
+    if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
     const show = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hide = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const showSub = Keyboard.addListener(show, () => setKeyboardOpen(true));
-    const hideSub = Keyboard.addListener(hide, () => setKeyboardOpen(false));
+
+    const onShow = () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setKeyboardOpen(true);
+      setHideGameForKeyboard(true);
+    };
+
+    const onHide = () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setKeyboardOpen(false);
+      setHideGameForKeyboard(false);
+    };
+
+    const showSub = Keyboard.addListener(show, onShow);
+    const hideSub = Keyboard.addListener(hide, onHide);
     return () => {
       showSub.remove();
       hideSub.remove();
@@ -388,57 +407,66 @@ function PrivateChat({ user }) {
   };
 
   const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
-  const gameSection = SelectedGameClient
-    ? showGame
-      ? (
-          <GameContainer
-            onToggleChat={() => setShowGame(false)}
-            player={{ name: 'You' }}
-            opponent={{ name: user.displayName }}
-          >
-            {devMode && (
-              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-                <TouchableOpacity
-                  onPress={() => setDevPlayer('0')}
-                  style={{
-                    backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
-                    paddingHorizontal: 10,
-                    paddingVertical: 6,
-                    borderRadius: 8,
-                    marginRight: 8,
-                  }}
-                >
-                  <Text style={{ color: '#fff' }}>Player 1</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setDevPlayer('1')}
-                  style={{
-                    backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
-                    paddingHorizontal: 10,
-                    paddingVertical: 6,
-                    borderRadius: 8,
-                  }}
-                >
-                  <Text style={{ color: '#fff' }}>Player 2</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            <SelectedGameClient
-              matchID={user.id}
-              playerID={devMode ? devPlayer : '0'}
-              onGameEnd={handleGameEnd}
-            />
-          </GameContainer>
-        )
-      : (
-          <TouchableOpacity
-            style={privateStyles.showBtn}
-            onPress={() => setShowGame(true)}
-          >
-            <Text style={privateStyles.showBtnText}>Show Game</Text>
-          </TouchableOpacity>
-        )
-    : null;
+  const gameSection =
+    SelectedGameClient && !hideGameForKeyboard
+      ? showGame
+        ? (
+            <GameContainer
+              onToggleChat={() => {
+                LayoutAnimation.configureNext(
+                  LayoutAnimation.Presets.easeInEaseOut
+                );
+                setShowGame(false);
+              }}
+              player={{ name: 'You' }}
+              opponent={{ name: user.displayName }}
+            >
+              {devMode && (
+                <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                  <TouchableOpacity
+                    onPress={() => setDevPlayer('0')}
+                    style={{
+                      backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      borderRadius: 8,
+                      marginRight: 8,
+                    }}
+                  >
+                    <Text style={{ color: '#fff' }}>Player 1</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setDevPlayer('1')}
+                    style={{
+                      backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Text style={{ color: '#fff' }}>Player 2</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              <SelectedGameClient
+                matchID={user.id}
+                playerID={devMode ? devPlayer : '0'}
+                onGameEnd={handleGameEnd}
+              />
+            </GameContainer>
+          )
+        : (
+            <TouchableOpacity
+              style={privateStyles.showBtn}
+              onPress={() => {
+                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setShowGame(true);
+              }}
+            >
+              <Text style={privateStyles.showBtnText}>Show Game</Text>
+            </TouchableOpacity>
+          )
+      : null;
 
   const chatSection = (
     <View style={{ flex: 1 }}>
@@ -573,7 +601,7 @@ function PrivateChat({ user }) {
           keyboardVerticalOffset={HEADER_SPACING}
         >
           <View style={{ flex: 1, paddingTop: HEADER_SPACING }}>
-            {!keyboardOpen && gameSection}
+            {!hideGameForKeyboard && gameSection}
             <View style={privateStyles.container}>
               {showPlaceholders ? (
                 <PlaceholderBubbles />
