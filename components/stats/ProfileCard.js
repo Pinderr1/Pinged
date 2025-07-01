@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
 import PropTypes from 'prop-types';
-import { avatarSource } from '../../utils/avatar';
+import AvatarRing from '../AvatarRing';
 
 const ProfileCard = ({ user, isPremium, styles, accent }) => (
   <View style={styles.profileCard}>
-    <Image source={avatarSource(user?.photoURL)} style={styles.avatar} />
+    <AvatarRing source={user?.photoURL} size={90} isPremium={isPremium} />
     <Text style={styles.name}>{user?.displayName || 'User'}</Text>
     {isPremium && (
       <Text style={[styles.premiumBadge, { backgroundColor: accent }]}>★ Premium</Text>
@@ -21,3 +21,4 @@ ProfileCard.propTypes = {
 };
 
 export default ProfileCard;
+

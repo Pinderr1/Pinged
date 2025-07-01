@@ -100,6 +100,7 @@ export const ChatProvider = ({ children }) => {
             age: prevMatch.age || 0,
             image: prevMatch.image || require('../assets/user1.jpg'),
             online: prevMatch.online || false,
+            isPremium: prevMatch.isPremium || false,
             messages: prevMatch.messages || [],
             matchedAt: m.createdAt
               ? m.createdAt.toDate?.().toISOString()
@@ -140,12 +141,13 @@ export const ChatProvider = ({ children }) => {
                   m.otherUserId === uid
                     ? {
                         ...m,
-            displayName: info.displayName || 'User',
+                        displayName: info.displayName || 'User',
                         age: info.age || 0,
                         image: info.photoURL
                           ? { uri: info.photoURL }
                           : require('../assets/user1.jpg'),
                         online: !!info.online,
+                        isPremium: !!info.isPremium,
                       }
                     : m
                 )
@@ -301,6 +303,7 @@ export const ChatProvider = ({ children }) => {
             age: prevMatch.age || 0,
             image: prevMatch.image || require('../assets/user1.jpg'),
             online: prevMatch.online || false,
+            isPremium: prevMatch.isPremium || false,
             messages: prevMatch.messages || [],
             matchedAt: m.createdAt
               ? m.createdAt.toDate?.().toISOString()

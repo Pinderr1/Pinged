@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  Image,
   StyleSheet,
   RefreshControl,
 } from 'react-native';
@@ -17,6 +16,7 @@ import { useChats } from '../contexts/ChatContext';
 import PropTypes from 'prop-types';
 import { HEADER_SPACING } from '../layout';
 import EmptyState from '../components/EmptyState';
+import AvatarRing from '../components/AvatarRing';
 
 const SKELETON_NEW_COUNT = 5;
 const SKELETON_CHAT_COUNT = 5;
@@ -92,7 +92,13 @@ const MatchesScreen = ({ navigation }) => {
       style={styles.newMatch}
       onPress={() => navigation.navigate('Chat', { user: item })}
     >
-      <Image source={item.image} style={styles.newAvatar} />
+      <AvatarRing
+        source={item.image}
+        size={64}
+        isOnline={item.online}
+        isPremium={item.isPremium}
+        isMatch
+      />
       <Text style={[styles.newName, { color: theme.text }]} numberOfLines={1}>
         {item.displayName}
       </Text>
@@ -105,7 +111,12 @@ const MatchesScreen = ({ navigation }) => {
       style={[styles.chatItem, { backgroundColor: theme.card }]}
     >
       <View style={styles.avatarColumn}>
-        <Image source={item.image} style={styles.chatAvatar} />
+        <AvatarRing
+          source={item.image}
+          size={48}
+          isOnline={item.online}
+          isPremium={item.isPremium}
+        />
         <Text
           style={[styles.avatarName, { color: theme.text }]}
           numberOfLines={1}

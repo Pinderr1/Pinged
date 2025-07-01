@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, Image, Animated, Easing } from 'react-native';
+import { View, StyleSheet, Text, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import PropTypes from 'prop-types';
-import { avatarSource } from '../utils/avatar';
+import AvatarRing from './AvatarRing';
 import CountdownRing from './CountdownRing';
 
 export default function ArcadeGameWrapper({
@@ -75,7 +75,12 @@ export default function ArcadeGameWrapper({
       <View style={styles.playersRow}>
         <View style={styles.playerBox}>
           <View style={styles.avatarWrapper}>
-            <Image source={avatarSource(player?.photo)} style={styles.avatar} />
+            <AvatarRing
+              source={player?.photo}
+              size={40}
+              isOnline={player?.online}
+              isPremium={player?.isPremium}
+            />
             {turn === '0' && (
               <Animated.View
                 pointerEvents="none"
@@ -91,9 +96,6 @@ export default function ArcadeGameWrapper({
                 style={styles.countdownRing}
               />
             )}
-            <View
-              style={[styles.dot, { backgroundColor: player?.online ? '#2ecc71' : '#999' }]}
-            />
           </View>
           <Animated.Text
             style={[
@@ -114,7 +116,12 @@ export default function ArcadeGameWrapper({
         </Animated.Text>
         <View style={styles.playerBox}>
           <View style={styles.avatarWrapper}>
-            <Image source={avatarSource(opponent?.photo)} style={styles.avatar} />
+            <AvatarRing
+              source={opponent?.photo}
+              size={40}
+              isOnline={opponent?.online}
+              isPremium={opponent?.isPremium}
+            />
             {turn === '1' && (
               <Animated.View
                 pointerEvents="none"
@@ -130,9 +137,6 @@ export default function ArcadeGameWrapper({
                 style={styles.countdownRing}
               />
             )}
-            <View
-              style={[styles.dot, { backgroundColor: opponent?.online ? '#2ecc71' : '#999' }]}
-            />
           </View>
           <Animated.Text
             style={[
@@ -191,16 +195,6 @@ const getStyles = (theme) =>
       position: 'absolute',
       top: -6,
       left: -6,
-    },
-    dot: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
-      position: 'absolute',
-      bottom: 2,
-      right: 2,
-      borderWidth: 1,
-      borderColor: '#fff',
     },
     nameText: { fontWeight: '600', marginTop: 4, fontSize: 12 },
     turnText: { fontWeight: 'bold' },

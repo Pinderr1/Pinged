@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { Modal, View, Text, Image, Pressable, StyleSheet } from 'react-native';
+import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
-import { avatarSource } from '../utils/avatar';
+import AvatarRing from './AvatarRing';
 import useWinLossStats from '../hooks/useWinLossStats';
 
 export default function GameOverModal({
@@ -38,7 +38,7 @@ export default function GameOverModal({
         </View>
         <BlurView intensity={80} tint="dark" style={styles.card}>
           {winnerAvatar && (
-            <Image source={avatarSource(winnerAvatar)} style={styles.avatar} />
+            <AvatarRing source={winnerAvatar} size={80} />
           )}
           <Text style={styles.title}>
             {winnerName ? `${winnerName} wins!` : 'Draw'}
@@ -97,12 +97,6 @@ const styles = StyleSheet.create({
     width: 280,
     alignItems: 'center',
     overflow: 'hidden',
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 10,
   },
   title: {
     fontSize: 22,

@@ -25,8 +25,8 @@ export default function SyncedGame({ sessionId, gameId, opponent, onGameEnd }) {
     <ArcadeGameWrapper
       title={meta?.title}
       icon={meta?.icon}
-      player={{ photo: user?.photoURL, online: true }}
-      opponent={{ photo: opponent?.photo, online: opponent?.online }}
+      player={{ photo: user?.photoURL, online: true, isPremium: user?.isPremium }}
+      opponent={{ photo: opponent?.photo, online: opponent?.online, isPremium: opponent?.isPremium }}
       playerName={user?.displayName || 'You'}
       opponentName={opponent?.displayName || 'Opponent'}
       turn={ctx.currentPlayer}
