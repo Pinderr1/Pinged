@@ -37,6 +37,7 @@ import useBotGame from "../hooks/useBotGame";
 import { getBotMove } from "../ai/botMoves";
 import SafeKeyboardView from "../components/SafeKeyboardView";
 import Loader from "../components/Loader";
+import EmptyState from '../components/EmptyState';
 import { logGameStats } from '../utils/gameStats';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import PropTypes from 'prop-types';
@@ -503,6 +504,12 @@ function BotSessionScreen({ route }) {
               renderItem={renderMessage}
               inverted
               contentContainerStyle={{ paddingBottom: 40 }}
+              ListEmptyComponent={
+                <EmptyState
+                  text="No messages yet."
+                  image={require('../assets/logo.png')}
+                />
+              }
             />
             <SafeKeyboardView>
               <View style={botStyles.inputBar}>
