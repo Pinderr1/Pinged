@@ -1,8 +1,10 @@
+import React from 'react';
 import TicTacToeClient, { Game as ticTacToeGame, Board as TicTacToeBoard, meta as ticTacToeMeta } from './tic-tac-toe';
 import RPSClient, { Game as rpsGame, Board as RPSBoard, meta as rpsMeta } from './rock-paper-scissors';
 import ConnectFourClient, { Game as connectFourGame, Board as ConnectFourBoard, meta as connectFourMeta } from './connect-four';
 import GomokuClient, { Game as gomokuGame, Board as GomokuBoard, meta as gomokuMeta } from './gomoku';
 import MemoryMatchClient, { Game as memoryMatchGame, Board as MemoryMatchBoard, meta as memoryMatchMeta } from './memory-match';
+import GameContainer from '../components/GameContainer';
 import HangmanClient, { Game as hangmanGame, Board as HangmanBoard, meta as hangmanMeta } from './hangman';
 import MinesweeperClient, { Game as minesweeperGame, Board as MinesweeperBoard, meta as minesweeperMeta } from './minesweeper';
 import SudokuClient, { Game as sudokuGame, Board as SudokuBoard, meta as sudokuMeta } from './sudoku';
@@ -19,105 +21,136 @@ import PigClient, { Game as pigGame, Board as PigBoard, meta as pigMeta } from '
 import CoinTossClient, { Game as coinTossGame, Board as CoinTossBoard, meta as coinTossMeta } from './coin-toss';
 import FlirtyQuestionsClient, { Game as flirtyQuestionsGame, Board as FlirtyQuestionsBoard, meta as flirtyQuestionsMeta } from './flirty-questions';
 
+const withContainer = (Board) => (props) => (
+  <GameContainer
+    player1={props.player1}
+    player2={props.player2}
+    onToggleChat={props.onToggleChat}
+    visible={props.visible}
+  >
+    <Board {...props} />
+  </GameContainer>
+);
+
 export const games = {
   [ticTacToeMeta.id]: {
     Client: TicTacToeClient,
     Game: ticTacToeGame,
-    Board: TicTacToeBoard,
+    Board: withContainer(TicTacToeBoard),
     meta: ticTacToeMeta,
   },
-  [rpsMeta.id]: { Client: RPSClient, Game: rpsGame, Board: RPSBoard, meta: rpsMeta },
+  [rpsMeta.id]: {
+    Client: RPSClient,
+    Game: rpsGame,
+    Board: withContainer(RPSBoard),
+    meta: rpsMeta,
+  },
   [connectFourMeta.id]: {
     Client: ConnectFourClient,
     Game: connectFourGame,
-    Board: ConnectFourBoard,
+    Board: withContainer(ConnectFourBoard),
     meta: connectFourMeta,
   },
-  [gomokuMeta.id]: { Client: GomokuClient, Game: gomokuGame, Board: GomokuBoard, meta: gomokuMeta },
+  [gomokuMeta.id]: {
+    Client: GomokuClient,
+    Game: gomokuGame,
+    Board: withContainer(GomokuBoard),
+    meta: gomokuMeta,
+  },
   [memoryMatchMeta.id]: {
     Client: MemoryMatchClient,
     Game: memoryMatchGame,
-    Board: MemoryMatchBoard,
+    Board: withContainer(MemoryMatchBoard),
     meta: memoryMatchMeta,
   },
-  [hangmanMeta.id]: { Client: HangmanClient, Game: hangmanGame, Board: HangmanBoard, meta: hangmanMeta },
+  [hangmanMeta.id]: {
+    Client: HangmanClient,
+    Game: hangmanGame,
+    Board: withContainer(HangmanBoard),
+    meta: hangmanMeta,
+  },
   [minesweeperMeta.id]: {
     Client: MinesweeperClient,
     Game: minesweeperGame,
-    Board: MinesweeperBoard,
+    Board: withContainer(MinesweeperBoard),
     meta: minesweeperMeta,
   },
-  [sudokuMeta.id]: { Client: SudokuClient, Game: sudokuGame, Board: SudokuBoard, meta: sudokuMeta },
+  [sudokuMeta.id]: {
+    Client: SudokuClient,
+    Game: sudokuGame,
+    Board: withContainer(SudokuBoard),
+    meta: sudokuMeta,
+  },
   [guessNumberMeta.id]: {
     Client: GuessNumberClient,
     Game: guessNumberGame,
-    Board: GuessNumberBoard,
+    Board: withContainer(GuessNumberBoard),
     meta: guessNumberMeta,
   },
   [checkersMeta.id]: {
     Client: CheckersClient,
     Game: checkersGame,
-    Board: CheckersBoard,
+    Board: withContainer(CheckersBoard),
     meta: checkersMeta,
   },
   [dominoesMeta.id]: {
     Client: DominoesClient,
     Game: dominoesGame,
-    Board: DominoesBoard,
+    Board: withContainer(DominoesBoard),
     meta: dominoesMeta,
   },
   [battleshipMeta.id]: {
     Client: BattleshipClient,
     Game: battleshipGame,
-    Board: BattleshipBoard,
+    Board: withContainer(BattleshipBoard),
     meta: battleshipMeta,
   },
   [dotsBoxesMeta.id]: {
     Client: DotsBoxesClient,
     Game: dotsBoxesGame,
-    Board: DotsBoxesBoard,
+    Board: withContainer(DotsBoxesBoard),
     meta: dotsBoxesMeta,
   },
   [mancalaMeta.id]: {
     Client: MancalaClient,
     Game: mancalaGame,
-    Board: MancalaBoard,
+    Board: withContainer(MancalaBoard),
     meta: mancalaMeta,
   },
   [snakesLaddersMeta.id]: {
     Client: SnakesLaddersClient,
     Game: snakesLaddersGame,
-    Board: SnakesLaddersBoard,
+    Board: withContainer(SnakesLaddersBoard),
     meta: snakesLaddersMeta,
   },
   [blackjackMeta.id]: {
     Client: BlackjackClient,
     Game: blackjackGame,
-    Board: BlackjackBoard,
+    Board: withContainer(BlackjackBoard),
     meta: blackjackMeta,
   },
   [nimMeta.id]: {
     Client: NimClient,
     Game: nimGame,
-    Board: NimBoard,
+    Board: withContainer(NimBoard),
     meta: nimMeta,
   },
   [pigMeta.id]: {
     Client: PigClient,
     Game: pigGame,
-    Board: PigBoard,
+    Board: withContainer(PigBoard),
     meta: pigMeta,
   },
   [flirtyQuestionsMeta.id]: {
     Client: FlirtyQuestionsClient,
     Game: flirtyQuestionsGame,
-    Board: FlirtyQuestionsBoard,
+    Board: withContainer(FlirtyQuestionsBoard),
     meta: flirtyQuestionsMeta,
   },
   [coinTossMeta.id]: {
     Client: CoinTossClient,
     Game: coinTossGame,
-    Board: CoinTossBoard,
+    Board: withContainer(CoinTossBoard),
     meta: coinTossMeta,
   },
 };

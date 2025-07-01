@@ -232,7 +232,15 @@ const LiveSessionScreen = ({ route, navigation }) => {
                     <Text style={{ color: '#fff' }}>Player 2</Text>
                   </TouchableOpacity>
                 </View>
-                <GameComponent playerID={devPlayer} matchID="dev" />
+                <GameComponent
+                  playerID={devPlayer}
+                  matchID="dev"
+                  boardProps={{
+                    player1: { name: 'Player 1' },
+                    player2: { name: 'Player 2' },
+                    visible: true,
+                  }}
+                />
               </>
             ) : (
               <SyncedGame
@@ -240,6 +248,15 @@ const LiveSessionScreen = ({ route, navigation }) => {
                 gameId={game.id}
                 opponentId={opponent.id}
                 onGameEnd={handleGameEnd}
+                player1={{ name: user.displayName, avatar: user.photo }}
+                player2={{ name: opponent.displayName, avatar: opponent.photo }}
+                visible={showGame}
+                onToggleChat={() =>
+                  navigation.navigate('Chat', {
+                    user: { id: opponent.id, displayName: opponent.displayName, image: opponent.photo },
+                    gameId: game.id,
+                  })
+                }
               />
             )}
           </View>
@@ -471,6 +488,10 @@ function BotSessionScreen({ route }) {
                     ctx={ctx}
                     moves={moves}
                     onGameEnd={(res) => handleGameEnd(res, game)}
+                    player1={{ name: 'You' }}
+                    player2={{ name: bot.name }}
+                    visible={showBoard}
+                    onToggleChat={() => setShowBoard(false)}
                   />
                 </View>
                 <TouchableOpacity style={botStyles.resetBtn} onPress={reset}>
