@@ -649,7 +649,6 @@ const getPrivateStyles = (theme) =>
     color: '#666',
     marginBottom: 4,
   },
-  },
   });
 
 /********************
