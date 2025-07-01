@@ -3,10 +3,12 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import firebase from '../firebase';
 import { games } from '../games';
 import { useUser } from '../contexts/UserContext';
+import { useSound } from '../contexts/SoundContext';
 import { snapshotExists } from '../utils/firestore';
 
 export default function useGameSession(sessionId, gameId, opponentId) {
   const { user } = useUser();
+  const { play } = useSound();
   const gameEntry = games[gameId];
   const Game = gameEntry?.Game;
 
@@ -76,6 +78,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         moves: firebase.firestore.FieldValue.arrayUnion({ action: moveName, player: String(idx), at: firebase.firestore.FieldValue.serverTimestamp() }),
       });
+    play('game_move');
   }, [session, Game, sessionId, user?.uid]);
 
   const moves = {};

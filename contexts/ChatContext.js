@@ -6,6 +6,7 @@ import firebase from '../firebase';
 import { useListeners } from './ListenerContext';
 import Toast from 'react-native-toast-message';
 import * as Haptics from 'expo-haptics';
+import { useSound } from './SoundContext';
 
 const ChatContext = createContext();
 
@@ -17,6 +18,7 @@ export const ChatProvider = ({ children }) => {
   const { devMode } = useDev();
   const { user } = useUser();
   const { getMessages } = useListeners();
+  const { play } = useSound();
   const devMatch = {
     id: '__testMatch',
     displayName: 'Dev Tester',
@@ -198,6 +200,7 @@ export const ChatProvider = ({ children }) => {
         });
       if (sender === 'you') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        play('message');
         Toast.show({ type: 'success', text1: 'Message sent' });
       }
     } catch (e) {

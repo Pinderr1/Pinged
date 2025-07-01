@@ -12,31 +12,34 @@ import { ChatProvider } from './ChatContext';
 import { MatchmakingProvider } from './MatchmakingContext';
 import { GameSessionProvider } from './GameSessionContext';
 import { TrendingProvider } from './TrendingContext';
+import { SoundProvider } from './SoundContext';
 
 const Providers = ({ children }) => (
   <DevProvider>
     <ThemeProvider>
-      <AuthProvider>
-        <PresenceProvider>
-          <NotificationProvider>
-            <OnboardingProvider>
-            <UserProvider>
-              <ListenerProvider>
-                <GameLimitProvider>
-                  <ChatProvider>
-                    <MatchmakingProvider>
-                      <TrendingProvider>
-                        <GameSessionProvider>{children}</GameSessionProvider>
-                      </TrendingProvider>
-                    </MatchmakingProvider>
-                  </ChatProvider>
-                </GameLimitProvider>
-              </ListenerProvider>
-            </UserProvider>
-          </OnboardingProvider>
-        </NotificationProvider>
-        </PresenceProvider>
-      </AuthProvider>
+      <SoundProvider>
+        <AuthProvider>
+          <PresenceProvider>
+            <NotificationProvider>
+              <OnboardingProvider>
+                <UserProvider>
+                  <ListenerProvider>
+                    <GameLimitProvider>
+                      <ChatProvider>
+                        <MatchmakingProvider>
+                          <TrendingProvider>
+                            <GameSessionProvider>{children}</GameSessionProvider>
+                          </TrendingProvider>
+                        </MatchmakingProvider>
+                      </ChatProvider>
+                    </GameLimitProvider>
+                  </ListenerProvider>
+                </UserProvider>
+              </OnboardingProvider>
+            </NotificationProvider>
+          </PresenceProvider>
+        </AuthProvider>
+      </SoundProvider>
     </ThemeProvider>
   </DevProvider>
 );

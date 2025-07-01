@@ -38,6 +38,7 @@ import useBotGame from "../hooks/useBotGame";
 import { getBotMove } from "../ai/botMoves";
 import SafeKeyboardView from "../components/SafeKeyboardView";
 import Loader from "../components/Loader";
+import { useSound } from '../contexts/SoundContext';
 import EmptyState from '../components/EmptyState';
 import useGameSession from '../hooks/useGameSession';
 import { logGameStats } from '../utils/gameStats';
@@ -340,6 +341,7 @@ function BotSessionScreen({ route }) {
   const { theme } = useTheme();
   const botStyles = getBotStyles(theme);
   const { user } = useUser();
+  const { play } = useSound();
   const [game, setGame] = useState(initialGame);
 
   const aiKeyMap = { rockPaperScissors: 'rps' };
@@ -406,6 +408,7 @@ function BotSessionScreen({ route }) {
     sendMessage(t);
     setText('');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    play('message');
   };
 
   const playAgain = () => {
