@@ -4,7 +4,7 @@ import Loader from './Loader';
 import useGameSession from '../hooks/useGameSession';
 import { games } from '../games';
 import PropTypes from 'prop-types';
-import ArcadeGameWrapper from './ArcadeGameWrapper';
+import GameContainer from './GameContainer';
 import { useUser } from '../contexts/UserContext';
 
 export default function SyncedGame({ sessionId, gameId, opponent, onGameEnd }) {
@@ -22,15 +22,13 @@ export default function SyncedGame({ sessionId, gameId, opponent, onGameEnd }) {
   }
 
   return (
-    <ArcadeGameWrapper
-      title={meta?.title}
-      icon={meta?.icon}
-      player={{ photo: user?.photoURL, online: true }}
-      opponent={{ photo: opponent?.photo, online: opponent?.online }}
-      turn={ctx.currentPlayer}
+    <GameContainer
+      player={{ name: 'You', xp: user?.xp || 0 }}
+      opponent={{ name: opponent?.displayName || 'Opponent', xp: 0 }}
+      active={!ctx.gameover}
     >
       <Board G={G} ctx={ctx} moves={moves} onGameEnd={onGameEnd} />
-    </ArcadeGameWrapper>
+    </GameContainer>
   );
 }
 
