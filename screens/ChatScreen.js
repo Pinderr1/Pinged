@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   LayoutAnimation,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GradientBackground from '../components/GradientBackground';
@@ -60,6 +61,7 @@ function PrivateChat({ user }) {
   const { setActiveGame, getActiveGame, getPendingInvite, startLocalGame } = useChats();
   const { darkMode, theme } = useTheme();
   const privateStyles = getPrivateStyles(theme);
+  const BOARD_HEIGHT = Dimensions.get('window').height / 2;
   const { showNotification } = useNotification();
   const insets = useSafeAreaInsets();
 
@@ -409,7 +411,12 @@ function PrivateChat({ user }) {
   let gameSection = null;
   if (SelectedGameClient) {
     gameSection = (
-      <View style={[privateStyles.gameWrapper, { flex: gameVisible ? 1 : 0 }]}>
+      <View
+        style={[
+          privateStyles.gameWrapper,
+          { height: gameVisible ? BOARD_HEIGHT : 0 },
+        ]}
+      >
         <GameContainer
           visible={gameVisible}
           onToggleChat={() => setShowGame(false)}
@@ -617,9 +624,7 @@ const getPrivateStyles = (theme) =>
     flex: 1,
   },
   gameWrapper: {
-    flex: 1,
     overflow: 'hidden',
-    marginBottom: 20,
   },
   chatWrapper: {
     flex: 1,

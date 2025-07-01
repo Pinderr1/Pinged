@@ -82,6 +82,6 @@ const getStyles = (theme) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 16,
+      padding: 0,
     },
   });
