@@ -23,6 +23,7 @@ const useFadeIn = (duration = 1000) => {
 
 export default function SplashScreen({ onFinish }) {
   const fadeAnim = useFadeIn();
+  const showEgg = useRef(Math.random() < 0.02).current;
   const { darkMode, theme } = useTheme();
   const styles = getStyles(theme);
   const colors = [theme.gradientStart, theme.gradientEnd];
@@ -39,8 +40,17 @@ export default function SplashScreen({ onFinish }) {
         <Image source={require('../assets/logo.png')} style={styles.logoImage} />
         <Text style={[styles.logoText, { color: '#fff' }]}>Pinged</Text>
         <Text style={{ color: '#fff', fontSize: 16 }}>Find your next ping...</Text>
+        {showEgg && (
+          <Text style={{ color: '#fff', fontSize: 14, marginTop: 4 }}>
+            Lucky day! Try the secret mini-game: Strip RPS 😉
+          </Text>
+        )}
         <LottieView
-          source={require('../assets/hearts.json')}
+          source={
+            showEgg
+              ? require('../assets/confetti.json')
+              : require('../assets/hearts.json')
+          }
           autoPlay
           loop
           style={{ width: 200, height: 200, position: 'absolute', bottom: -20 }}
