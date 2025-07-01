@@ -1,9 +1,11 @@
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { Client } from 'boardgame.io/client';
+import { useSound } from '../contexts/SoundContext';
 
 export default function useBotGame(game, getBotMove, onGameEnd) {
   const getBotMoveRef = useRef(getBotMove);
   const onGameEndRef = useRef(onGameEnd);
+  const { play } = useSound();
 
   // Keep latest callbacks without re-creating the client
   useEffect(() => {
@@ -40,5 +42,16 @@ export default function useBotGame(game, getBotMove, onGameEnd) {
     return () => unsub();
   }, [client]);
 
-  return { G: state.G, ctx: state.ctx, moves: client.moves, reset: client.reset };
+  const moves = useMemo(() => {
+    const obj = {};
+    for (const name of Object.keys(client.moves)) {
+      obj[name] = (...args) => {
+        client.moves[name](...args);
+        play('game_move');
+      };
+    }
+    return obj;
+  }, [client, play]);
+
+  return { G: state.G, ctx: state.ctx, moves, reset: client.reset };
 }
