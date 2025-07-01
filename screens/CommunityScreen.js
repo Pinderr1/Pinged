@@ -27,6 +27,7 @@ import firebase from '../firebase';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 import * as Haptics from 'expo-haptics';
+import EmptyState from '../components/EmptyState';
 
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = (screenWidth - 48) / 2;
@@ -234,9 +235,10 @@ const CommunityScreen = () => {
             {[...Array(4)].map((_, idx) => renderEventSkeleton(idx))}
           </View>
         ) : filteredEvents.length === 0 ? (
-          <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
-            No events found.
-          </Text>
+          <EmptyState
+            text="No events found."
+            image={require('../assets/logo.png')}
+          />
         ) : (
           <View style={local.grid}>
             {displayEvents.map((event, idx) => renderEventCard(event, idx))}
@@ -247,9 +249,10 @@ const CommunityScreen = () => {
         {loadingPosts ? (
           [...Array(3)].map((_, idx) => renderPostSkeleton(idx))
         ) : posts.length === 0 ? (
-          <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
-            No posts yet.
-          </Text>
+          <EmptyState
+            text="No posts yet."
+            image={require('../assets/logo.png')}
+          />
         ) : (
           posts.map((p) => (
             <Card key={p.id} style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>

@@ -36,6 +36,7 @@ import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import PropTypes from 'prop-types';
 import * as Haptics from 'expo-haptics';
 import SkeletonUserCard from '../components/SkeletonUserCard';
+import EmptyState from '../components/EmptyState';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -481,7 +482,10 @@ const handleSwipe = async (direction) => {
             <SkeletonUserCard />
           ) : (
             <View style={styles.noMoreWrapper}>
-              <Text style={styles.noMoreText}>No more swipes</Text>
+              <EmptyState
+                text="No more swipes"
+                animation={require('../assets/hearts.json')}
+              />
               <GradientButton
                 text="Boost"
                 width={180}

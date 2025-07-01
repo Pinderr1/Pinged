@@ -23,6 +23,7 @@ import getGlobalStyles from '../styles';
 import { useChats } from '../contexts/ChatContext';
 import { useUser } from '../contexts/UserContext';
 import Toast from 'react-native-toast-message';
+import EmptyState from '../components/EmptyState';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import InviteUserCard from '../components/InviteUserCard';
 
@@ -210,6 +211,14 @@ const GameInviteScreen = ({ route, navigation }) => {
             }}
             removeClippedSubviews={false}
             keyboardShouldPersistTaps="handled"
+            ListEmptyComponent={
+              !matchesLoading && displayed.length === 0 ? (
+                <EmptyState
+                  text="No matches found."
+                  image={require('../assets/logo.png')}
+                />
+              ) : null
+            }
             ListFooterComponent={
               showMore ? (
                 <TouchableOpacity

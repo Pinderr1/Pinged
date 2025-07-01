@@ -9,6 +9,7 @@ import { useUser } from '../contexts/UserContext';
 import { games } from '../games';
 import firebase from '../firebase';
 import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
 import { HEADER_SPACING } from '../layout';
 
 const ActiveGamesScreen = ({ navigation }) => {
@@ -83,9 +84,10 @@ const ActiveGamesScreen = ({ navigation }) => {
               renderItem={renderItem}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
               ListEmptyComponent={
-                <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
-                  No active games.
-                </Text>
+                <EmptyState
+                  text="No active games."
+                  image={require('../assets/logo.png')}
+                />
               }
               contentContainerStyle={{ paddingBottom: 120 }}
             />

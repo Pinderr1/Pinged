@@ -37,6 +37,7 @@ import useVoiceRecorder from '../hooks/useVoiceRecorder';
 // TODO: add support for sending short voice or video intro clips in chat
 import Toast from 'react-native-toast-message';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import EmptyState from '../components/EmptyState';
 
 // Available emoji reactions for group chats
 const REACTIONS = ['🔥', '😂', '❤️'];
@@ -420,9 +421,10 @@ function PrivateChat({ user }) {
         ListEmptyComponent={
           !loading && (
             <View style={{ alignItems: 'center', marginTop: 20 }}>
-              <Text style={{ textAlign: 'center', color: theme.text }}>
-                No messages yet.
-              </Text>
+              <EmptyState
+                text="No messages yet."
+                image={require('../assets/logo.png')}
+              />
               {firstLine ? (
                 <Text
                   style={{
@@ -858,9 +860,10 @@ function GroupChat({ event }) {
                 <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
               }
               ListEmptyComponent={
-                <Text style={{ textAlign: 'center', marginTop: 20, color: theme.text }}>
-                  No messages yet.
-                </Text>
+                <EmptyState
+                  text="No messages yet."
+                  image={require('../assets/logo.png')}
+                />
               }
             />
           </>
@@ -1001,9 +1004,11 @@ export default function ChatScreen({ route }) {
     return (
       <GradientBackground style={{ flex: 1 }}>
         <Header />
-        <Text style={{ marginTop: 80, textAlign: 'center', color: theme.text }}>
-          No match found.
-        </Text>
+        <EmptyState
+          text="No match found."
+          image={require('../assets/logo.png')}
+          style={{ marginTop: 40 }}
+        />
       </GradientBackground>
     );
   }

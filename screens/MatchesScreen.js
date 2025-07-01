@@ -16,6 +16,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
 import PropTypes from 'prop-types';
 import { HEADER_SPACING } from '../layout';
+import EmptyState from '../components/EmptyState';
 
 const SKELETON_NEW_COUNT = 5;
 const SKELETON_CHAT_COUNT = 5;
@@ -147,12 +148,11 @@ const MatchesScreen = ({ navigation }) => {
             </>
           ) : newMatches.length === 0 && activeChats.length === 0 ? (
             <>
-              <Text style={{ textAlign: 'center', marginTop: 40, color: theme.text }}>
-                No matches yet.
-              </Text>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('GameWithBot')}
-              >
+              <EmptyState
+                text="No matches yet."
+                animation={require('../assets/hearts.json')}
+              />
+              <TouchableOpacity onPress={() => navigation.navigate('GameWithBot')}>
                 <Text
                   style={{
                     textAlign: 'center',
@@ -188,9 +188,10 @@ const MatchesScreen = ({ navigation }) => {
                   <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
                 }
                 ListEmptyComponent={
-                  <Text style={{ textAlign: 'center', marginTop: 20, color: theme.text }}>
-                    No chats yet.
-                  </Text>
+                  <EmptyState
+                    text="No chats yet."
+                    image={require('../assets/logo.png')}
+                  />
                 }
                 contentContainerStyle={{ paddingBottom: 120 }}
                 showsVerticalScrollIndicator={false}
