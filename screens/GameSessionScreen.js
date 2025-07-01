@@ -298,13 +298,22 @@ const LiveSessionScreen = ({ route, navigation }) => {
             ? opponent.displayName
             : null
         }
-        onRematch={handleRematch}
-        onChat={() =>
-          navigation.navigate('Chat', {
-            user: { id: opponent.id, displayName: opponent.displayName, image: opponent.photo },
-            gameId: game.id,
-          })
+        winnerAvatar={
+          gameResult?.winner === '0'
+            ? user.photoURL
+            : gameResult?.winner === '1'
+            ? opponent.photo
+            : null
         }
+        winnerId={
+          gameResult?.winner === '0'
+            ? user.uid
+            : gameResult?.winner === '1'
+            ? opponent.id
+            : null
+        }
+        onRematch={handleRematch}
+        onExit={() => navigation.goBack()}
       />
     </GradientBackground>
   );
