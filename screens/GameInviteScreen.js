@@ -23,6 +23,7 @@ import getGlobalStyles from '../styles';
 import { useChats } from '../contexts/ChatContext';
 import { useUser } from '../contexts/UserContext';
 import Toast from 'react-native-toast-message';
+import { HEADER_SPACING } from '../layout';
 import EmptyState from '../components/EmptyState';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import InviteUserCard from '../components/InviteUserCard';
@@ -156,7 +157,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   return (
     <GradientBackground style={styles.swipeScreen}>
       <Header showLogoOnly />
-      <ScreenContainer style={{ paddingBottom: 100 }}>
+      <ScreenContainer style={{ paddingTop: HEADER_SPACING, paddingBottom: 100 }}>
         <SafeKeyboardView style={{ flex: 1 }}>
           <Text
             style={{

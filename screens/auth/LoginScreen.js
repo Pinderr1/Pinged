@@ -6,6 +6,7 @@ import GradientBackground from '../../components/GradientBackground';
 import GradientButton from '../../components/GradientButton';
 import { Animated, Easing, Image, Text } from 'react-native';
 import ScreenContainer from '../../components/ScreenContainer';
+import Header from '../../components/Header';
 import { HEADER_SPACING } from '../../layout';
 import getStyles from '../../styles';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -92,7 +93,14 @@ export default function LoginScreen() {
 
   return (
     <GradientBackground>
-      <ScreenContainer scroll contentContainerStyle={[styles.container, { paddingTop: HEADER_SPACING, alignItems: 'center' }]}>
+      <Header showLogoOnly />
+      <ScreenContainer
+        scroll
+        contentContainerStyle={[
+          styles.container,
+          { paddingTop: HEADER_SPACING, alignItems: 'center' },
+        ]}
+      >
         <Animated.View style={{ alignItems: 'center', opacity: anim, transform: [{ scale }] }}>
           <Image source={require('../../assets/logo.png')} style={styles.logoImage} />
           <Text style={[styles.logoText, { color: theme.text }]}>Pinged</Text>

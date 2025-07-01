@@ -21,6 +21,7 @@ import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
 import { useTrending } from '../contexts/TrendingContext';
+import { HEADER_SPACING } from '../layout';
 
 
 const getAllCategories = () => {
@@ -108,7 +109,7 @@ const PlayScreen = ({ navigation }) => {
   return (
     <GradientBackground style={styles.swipeScreen}>
       <Header showLogoOnly />
-      <SafeKeyboardView style={{ flex: 1 }}>
+      <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
 
       <Text
         style={{

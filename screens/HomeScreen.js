@@ -14,6 +14,7 @@ import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
+import { HEADER_SPACING } from '../layout';
 
 import { allGames } from '../data/games';
 import { games as gameRegistry } from '../games';
@@ -106,7 +107,12 @@ const HomeScreen = ({ navigation }) => {
     <GradientBackground style={{ flex: 1 }}>
       <ScreenContainer>
         <Header showLogoOnly />
-        <ScrollView contentContainerStyle={[local.container, { paddingBottom: 100 }]}>
+        <ScrollView
+          contentContainerStyle={[
+            local.container,
+            { paddingTop: HEADER_SPACING, paddingBottom: 100 },
+          ]}
+        >
           <Text style={[local.welcome, { color: theme.text }]}>
             {`Welcome${user?.displayName ? `, ${user.displayName}` : ''}!`}
           </Text>
