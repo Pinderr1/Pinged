@@ -11,6 +11,7 @@ import { GameLimitProvider } from './GameLimitContext';
 import { ChatProvider } from './ChatContext';
 import { MatchmakingProvider } from './MatchmakingContext';
 import { GameSessionProvider } from './GameSessionContext';
+import { TrendingProvider } from './TrendingContext';
 
 const Providers = ({ children }) => (
   <DevProvider>
@@ -24,7 +25,9 @@ const Providers = ({ children }) => (
                 <GameLimitProvider>
                   <ChatProvider>
                     <MatchmakingProvider>
-                      <GameSessionProvider>{children}</GameSessionProvider>
+                      <TrendingProvider>
+                        <GameSessionProvider>{children}</GameSessionProvider>
+                      </TrendingProvider>
                     </MatchmakingProvider>
                   </ChatProvider>
                 </GameLimitProvider>

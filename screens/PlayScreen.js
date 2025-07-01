@@ -20,6 +20,7 @@ import GameFilters from '../components/GameFilters';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
+import { useTrending } from '../contexts/TrendingContext';
 
 
 const getAllCategories = () => {
@@ -35,6 +36,7 @@ const PlayScreen = ({ navigation }) => {
   const { gamesLeft } = useGameLimit();
   const isPremiumUser = !!user?.isPremium;
   const requireCredits = useRequireGameCredits();
+  const { trendingMap } = useTrending();
   const [filter, setFilter] = useState('All');
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
@@ -92,6 +94,7 @@ const PlayScreen = ({ navigation }) => {
       <GameCard
         item={item}
         isFavorite={favorites.includes(item.id)}
+        trending={!!trendingMap[item.id]}
         toggleFavorite={() => toggleFavorite(item.id)}
         onPress={() => {
           Keyboard.dismiss();
