@@ -468,7 +468,7 @@ function PrivateChat({ user }) {
   }
 
   const chatSection = (
-    <View style={privateStyles.chatSection}>
+    <View style={[privateStyles.chatSection, { paddingBottom: INPUT_BAR_HEIGHT + insets.bottom }]}>
       <FlatList
         style={{ flex: 1 }}
         data={messages}
@@ -519,8 +519,16 @@ function PrivateChat({ user }) {
     </View>
   );
 
+  const handlePlayPress = () => {
+    if (activeGameId) {
+      setShowGame(true);
+    } else {
+      setShowGameModal(true);
+    }
+  };
+
   const inputBarSection = (
-    <View style={[privateStyles.inputWrapper, { paddingBottom: insets.bottom }]}>
+    <View style={[privateStyles.inputWrapper, { bottom: insets.bottom }]}>
       <View style={privateStyles.inputBar}>
         <TouchableOpacity
           onLongPress={startRecording}
@@ -543,6 +551,12 @@ function PrivateChat({ user }) {
         />
         <TouchableOpacity style={privateStyles.sendBtn} onPress={handleSend}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={privateStyles.playButton}
+          onPress={handlePlayPress}
+        >
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Play</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -670,6 +684,7 @@ const getPrivateStyles = (theme) =>
     paddingHorizontal: 16,
     borderRadius: 20,
     alignSelf: 'center',
+    marginLeft: 8,
   },
   avatar: {
     width: 40,
@@ -708,7 +723,6 @@ const getPrivateStyles = (theme) =>
     flex: 1,
     paddingTop: 10,
     paddingHorizontal: 10,
-    paddingBottom: INPUT_BAR_HEIGHT,
   },
   inputWrapper: {
     position: 'absolute',
