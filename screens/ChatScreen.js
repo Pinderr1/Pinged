@@ -8,11 +8,9 @@ import {
   StyleSheet,
   Modal,
   RefreshControl,
-  Keyboard,
-  Animated,
   Platform,
   KeyboardAvoidingView,
-  useWindowDimensions,
+  Image,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import { Ionicons } from '@expo/vector-icons';
@@ -72,12 +70,7 @@ function PrivateChat({ user }) {
   const [showGameModal, setShowGameModal] = useState(false);
   const [text, setText] = useState('');
   const [devPlayer, setDevPlayer] = useState('0');
-  const [showControls, setShowControls] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const gameAnim = useRef(new Animated.Value(1)).current;
-  const { height: windowHeight } = useWindowDimensions();
-  const [gameHeight, setGameHeight] = useState(windowHeight * 0.5);
   const inputRef = useRef(null);
   const typingTimeout = useRef(null);
   const [otherUserId, setOtherUserId] = useState(null);
@@ -101,39 +94,7 @@ function PrivateChat({ user }) {
     );
   }, []);
 
-  // Collapse the game board when the keyboard is shown
-  useEffect(() => {
-    const showSub = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      () => setKeyboardVisible(true)
-    );
-    const hideSub = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => setKeyboardVisible(false)
-    );
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    Animated.timing(gameAnim, {
-      toValue: keyboardVisible ? 0 : 1,
-      duration: 250,
-      useNativeDriver: false,
-    }).start();
-  }, [keyboardVisible, gameAnim]);
-
-  useEffect(() => {
-    setGameHeight(windowHeight * 0.5);
-  }, [windowHeight]);
-
-  useEffect(() => {
-    if (keyboardVisible && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [keyboardVisible]);
+  // Initial prompt and game suggestion
 
   const sendChatMessage = async (msgText = '', sender = 'user', extras = {}) => {
     if (!msgText.trim() && !extras.voice) return;
@@ -311,11 +272,6 @@ function PrivateChat({ user }) {
     setActiveGame(user.id, null);
   };
 
-  const endGameEarly = () => {
-    sendChatMessage('Game ended.', 'system');
-    setActiveGame(user.id, null);
-    setShowControls(false);
-  };
 
   const handleGameSelect = (gameId) => {
     const isPremiumUser = !!currentUser?.isPremium;
@@ -344,26 +300,37 @@ function PrivateChat({ user }) {
         />
       );
     }
+
+    if (item.sender === 'system') {
+      return (
+        <View style={[privateStyles.messageRow, privateStyles.rowCenter]}>
+          <View style={[privateStyles.message, privateStyles.system]}>
+            <Text style={privateStyles.sender}>System</Text>
+            <Text style={privateStyles.text}>{item.text}</Text>
+          </View>
+        </View>
+      );
+    }
+
+    const isUser = item.sender === 'you';
     return (
       <View
-        style={[
-          privateStyles.messageBubble,
-          item.sender === 'you'
-            ? privateStyles.messageRight
-            : item.sender === 'system'
-            ? privateStyles.messageSystem
-            : privateStyles.messageLeft,
-        ]}
+        style={[privateStyles.messageRow, isUser ? privateStyles.rowRight : privateStyles.rowLeft]}
       >
-        <Text style={privateStyles.sender}>
-          {item.sender === 'you' ? 'You' : item.sender === 'system' ? 'System' : user.displayName}
-        </Text>
-        <Text style={privateStyles.messageText}>{item.text}</Text>
-        {item.sender === 'you' && (
-          <Text style={privateStyles.readReceipt}>
-            {item.readBy.includes(otherUserId) ? '✓✓' : '✓'}
-          </Text>
+        {!isUser && user.image && (
+          <Image source={user.image} style={privateStyles.avatar} />
         )}
+        <View
+          style={[privateStyles.message, isUser ? privateStyles.right : privateStyles.left]}
+        >
+          <Text style={privateStyles.sender}>{isUser ? 'You' : user.displayName}</Text>
+          <Text style={privateStyles.text}>{item.text}</Text>
+          {isUser && (
+            <Text style={privateStyles.readReceipt}>
+              {item.readBy.includes(otherUserId) ? '✓✓' : '✓'}
+            </Text>
+          )}
+        </View>
       </View>
     );
   };
@@ -382,11 +349,18 @@ function PrivateChat({ user }) {
           <View
             key={i}
             style={[
-              privateStyles.messageBubble,
-              i % 2 === 0 ? privateStyles.messageLeft : privateStyles.messageRight,
-              { backgroundColor: darkMode ? '#444' : '#ddd', width: w, height: 20 },
+              privateStyles.messageRow,
+              i % 2 === 0 ? privateStyles.rowLeft : privateStyles.rowRight,
             ]}
-          />
+          >
+            <View
+              style={[
+                privateStyles.message,
+                i % 2 === 0 ? privateStyles.left : privateStyles.right,
+                { backgroundColor: darkMode ? '#444' : '#ddd', width: w, height: 20 },
+              ]}
+            />
+          </View>
         ))}
       </View>
     );
@@ -394,35 +368,14 @@ function PrivateChat({ user }) {
 
   const SelectedGameClient = activeGameId ? games[activeGameId].Client : null;
   const gameSection = SelectedGameClient ? (
-    <Animated.View
-      style={{
-        overflow: 'hidden',
-        width: '100%',
-        height: gameAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, gameHeight || 1],
-        }),
-        opacity: gameAnim,
-        transform: [{ scaleY: gameAnim }],
-      }}
-    >
-      <View
-        onLayout={() => setGameHeight(windowHeight * 0.5)}
-        style={{
-          padding: 10,
-          borderBottomWidth: 1,
-          borderColor: darkMode ? '#444' : '#ccc',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        {devMode && (
-          <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-            <TouchableOpacity
-              onPress={() => setDevPlayer('0')}
-              style={{
-                backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
-                paddingHorizontal: 10,
+    <View style={{ flex: 1, padding: 10, borderBottomWidth: 1, borderColor: darkMode ? '#444' : '#ccc', justifyContent: 'center', alignItems: 'center' }}>
+      {devMode && (
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          <TouchableOpacity
+            onPress={() => setDevPlayer('0')}
+            style={{
+              backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
+              paddingHorizontal: 10,
               paddingVertical: 6,
               borderRadius: 8,
               marginRight: 8,
@@ -442,14 +395,13 @@ function PrivateChat({ user }) {
             <Text style={{ color: '#fff' }}>Player 2</Text>
           </TouchableOpacity>
         </View>
-        )}
-        <SelectedGameClient
-          matchID={user.id}
-          playerID={devMode ? devPlayer : '0'}
-          onGameEnd={handleGameEnd}
-        />
-      </View>
-    </Animated.View>
+      )}
+      <SelectedGameClient
+        matchID={user.id}
+        playerID={devMode ? devPlayer : '0'}
+        onGameEnd={handleGameEnd}
+      />
+    </View>
   ) : null;
 
   const chatSection = (
@@ -498,80 +450,49 @@ function PrivateChat({ user }) {
         }
       />
       {isTyping && <Text style={privateStyles.typingIndicator}>{user.displayName} is typing...</Text>}
-      <View style={privateStyles.gameBar}>
-        {activeGameId ? (
-          <>
-            {showControls && (
-              <>
-                <TouchableOpacity
-                  style={privateStyles.changeButton}
-                  onPress={() => {
-                    if (!requireCredits()) return;
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                    setShowGameModal(true);
-                    setShowControls(false);
-                  }}
-                >
-                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>Change Game</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={privateStyles.endButton}
-                  onPress={endGameEarly}
-                >
-                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>End Game</Text>
-                </TouchableOpacity>
-              </>
-            )}
-            <TouchableOpacity
-              onPress={() => setShowControls(!showControls)}
-              style={privateStyles.menuButton}
-            >
-              <Ionicons
-                name={showControls ? 'close' : 'ellipsis-horizontal'}
-                size={20}
-                color="#fff"
+      <SafeKeyboardView>
+        <View style={privateStyles.inputBar}>
+          {activeGameId ? (
+            <>
+              <TouchableOpacity
+                onLongPress={startRecording}
+                onPressOut={handleVoiceFinish}
+                style={{ marginRight: 6 }}
+              >
+                <Ionicons
+                  name={isRecording ? 'mic' : 'mic-outline'}
+                  size={22}
+                  color={theme.text}
+                />
+              </TouchableOpacity>
+              <TextInput
+                ref={inputRef}
+                placeholder="Type a message..."
+                style={privateStyles.input}
+                value={text}
+                onChangeText={handleTextChange}
+                placeholderTextColor="#888"
               />
+              <TouchableOpacity style={privateStyles.sendBtn} onPress={handleSend}>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <TouchableOpacity
+              style={privateStyles.playButton}
+              onPress={() => {
+                if (!requireCredits()) {
+                  return;
+                }
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                setShowGameModal(true);
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Invite Game</Text>
             </TouchableOpacity>
-          </>
-        ) : (
-          <TouchableOpacity
-            style={privateStyles.playButton}
-            onPress={() => {
-              if (!requireCredits()) {
-                return;
-              }
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-              setShowGameModal(true);
-            }}
-          >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Invite Game</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      <View style={privateStyles.inputBar}>
-        <TouchableOpacity
-          onLongPress={startRecording}
-          onPressOut={handleVoiceFinish}
-          style={{ marginRight: 6 }}
-        >
-          <Ionicons
-            name={isRecording ? 'mic' : 'mic-outline'}
-            size={22}
-            color={theme.text}
-          />
-        </TouchableOpacity>
-        <TextInput
-          ref={inputRef}
-          placeholder="Type a message..."
-          style={privateStyles.textInput}
-          value={text}
-          onChangeText={handleTextChange}
-          placeholderTextColor="#888"
-        />
-        <TouchableOpacity style={privateStyles.sendButton} onPress={handleSend}>
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
-        </TouchableOpacity>
-      </View>
+          )}
+        </View>
+      </SafeKeyboardView>
     </View>
   );
 
@@ -589,7 +510,7 @@ function PrivateChat({ user }) {
           <View style={privateStyles.modalContent}>
             <FlatList data={gameList} keyExtractor={(item) => item.id} renderItem={renderGameOption} />
             <TouchableOpacity
-              style={[privateStyles.sendButton, { marginTop: 10 }]}
+              style={[privateStyles.sendBtn, { marginTop: 10 }]}
               onPress={() => setShowGameModal(false)}
             >
               <Text style={{ color: '#fff', fontWeight: 'bold' }}>Close</Text>
@@ -630,91 +551,73 @@ const getPrivateStyles = (theme) =>
     alignItems: 'stretch',
     justifyContent: 'flex-start',
   },
-  messageBubble: {
-    padding: 10,
+  messageRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginVertical: 4,
+  },
+  rowLeft: { justifyContent: 'flex-start' },
+  rowRight: { justifyContent: 'flex-end' },
+  rowCenter: { justifyContent: 'center' },
+  message: {
+    padding: 8,
     borderRadius: 10,
     maxWidth: '80%',
-    marginVertical: 5,
   },
-  messageLeft: {
+  left: {
     alignSelf: 'flex-start',
-    backgroundColor: '#eee',
+    backgroundColor: '#f9f9f9',
   },
-  messageRight: {
+  right: {
     alignSelf: 'flex-end',
     backgroundColor: '#ffb6c1',
   },
-  messageSystem: {
+  system: {
     alignSelf: 'center',
-    backgroundColor: '#ddd',
-  },
-  messageText: {
-    fontSize: 15,
-    color: '#333',
+    backgroundColor: '#eee',
   },
   sender: {
     fontSize: 11,
     fontWeight: 'bold',
     marginBottom: 2,
-    color: '#555',
   },
+  text: { fontSize: 15 },
   readReceipt: {
     fontSize: 10,
-    color: '#555',
     alignSelf: 'flex-end',
     marginTop: 2,
   },
   inputBar: {
     flexDirection: 'row',
-    padding: 10,
-    borderTopWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
     alignItems: 'center',
-    width: '100%',
+    paddingVertical: 8,
   },
-  textInput: {
+  input: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 6,
-    fontSize: 16,
-    marginRight: 10,
+    marginRight: 8,
   },
-  sendButton: {
+  sendBtn: {
     backgroundColor: theme.accent,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
-    marginLeft: 8,
   },
   playButton: {
     backgroundColor: '#009688',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 20,
-    marginLeft: 8,
+    alignSelf: 'center',
   },
-  changeButton: {
-    backgroundColor: '#607d8b',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginLeft: 8,
-  },
-  endButton: {
-    backgroundColor: '#d32f2f',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginLeft: 8,
-  },
-  menuButton: {
-    backgroundColor: '#607d8b',
-    padding: 6,
-    borderRadius: 20,
-    marginLeft: 8,
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginHorizontal: 6,
   },
   modalOverlay: {
     flex: 1,
@@ -743,12 +646,8 @@ const getPrivateStyles = (theme) =>
     color: '#666',
     marginBottom: 4,
   },
-  gameBar: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: 6,
   },
-});
+  });
 
 /********************
  * Group chat view *
