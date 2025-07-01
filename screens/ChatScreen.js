@@ -13,6 +13,7 @@ import {
   Keyboard,
   Image,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GradientBackground from '../components/GradientBackground';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -59,6 +60,7 @@ function PrivateChat({ user }) {
   const { darkMode, theme } = useTheme();
   const privateStyles = getPrivateStyles(theme);
   const { showNotification } = useNotification();
+  const insets = useSafeAreaInsets();
 
   if (!user) {
     return (
@@ -499,7 +501,16 @@ function PrivateChat({ user }) {
           <Text style={privateStyles.typingIndicator}>{user.displayName} is typing...</Text>
         )}
       </View>
-      <View style={[privateStyles.inputBar, { marginBottom: keyboardOpen ? 0 : INPUT_OFFSET }]}>
+      <View
+        style={[
+          privateStyles.inputBar,
+          {
+            marginBottom: keyboardOpen
+              ? insets.bottom
+              : Math.max(INPUT_OFFSET - insets.bottom, 0),
+          },
+        ]}
+      >
         {activeGameId ? (
           <>
             <TouchableOpacity
