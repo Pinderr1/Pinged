@@ -409,8 +409,9 @@ function PrivateChat({ user }) {
   let gameSection = null;
   if (SelectedGameClient) {
     gameSection = (
-      <View style={[privateStyles.gameWrapper, { flex: gameVisible ? 1 : 0 }]}>
+      <View style={[privateStyles.gameWrapper, gameVisible ? null : { height: 0 }]}>
         <GameContainer
+          style={{ flex: 0 }}
           visible={gameVisible}
           onToggleChat={() => setShowGame(false)}
           player={{ name: 'You' }}
@@ -617,7 +618,6 @@ const getPrivateStyles = (theme) =>
     flex: 1,
   },
   gameWrapper: {
-    flex: 1,
     overflow: 'hidden',
     marginBottom: 20,
   },

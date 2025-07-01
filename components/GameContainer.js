@@ -14,6 +14,7 @@ export default function GameContainer({
   opponent = {},
   onToggleChat,
   visible = true,
+  style,
 }) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
@@ -28,7 +29,7 @@ export default function GameContainer({
   }, [visible, anim]);
 
   return (
-    <GradientBackground style={styles.container}>
+    <GradientBackground style={[styles.container, style]}>
       <View style={styles.header}>
         <PlayerInfoBar
           name={player.name || 'You'}
@@ -65,6 +66,7 @@ GameContainer.propTypes = {
   opponent: PropTypes.object,
   onToggleChat: PropTypes.func,
   visible: PropTypes.bool,
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
 };
 
 const getStyles = (theme) =>
