@@ -197,7 +197,7 @@ export const allGames = [
   {
     id: '35',
     title: 'Coin Toss',
-    icon: <MaterialCommunityIcons name="coin" size={30} />,
+    icon: <MaterialCommunityIcons name="cash" size={30} />,
     route: 'CoinToss',
     premium: false,
     category: 'Quick',

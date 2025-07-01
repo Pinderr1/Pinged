@@ -61,7 +61,7 @@ const PremiumScreen = ({ navigation, route }) => {
     return (
       <GradientBackground style={{ flex: 1 }}>
         <Header />
-        <ScreenContainer scroll contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 100 }}>
+        <ScreenContainer style={{ paddingTop: HEADER_SPACING, paddingBottom: 100 }}>
           <View style={upgradeStyles.container}>
             <Text style={upgradeStyles.title}>Upgrade to Premium</Text>
             <Text style={upgradeStyles.subtitle}>
@@ -92,7 +92,7 @@ const PremiumScreen = ({ navigation, route }) => {
   return (
     <GradientBackground style={{ flex: 1 }}>
       <Header />
-      <ScreenContainer scroll contentContainerStyle={paywallStyles.container}>
+      <ScreenContainer style={paywallStyles.container}>
         {user?.isPremium && user.premiumUpdatedAt && (
           <Text style={paywallStyles.memberSince}>{
             `Member since ${new Date(

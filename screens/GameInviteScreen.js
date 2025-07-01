@@ -156,7 +156,7 @@ const GameInviteScreen = ({ route, navigation }) => {
   return (
     <GradientBackground style={styles.swipeScreen}>
       <Header showLogoOnly />
-      <ScreenContainer scroll contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScreenContainer style={{ paddingBottom: 100 }}>
         <SafeKeyboardView style={{ flex: 1 }}>
           <Text
             style={{
