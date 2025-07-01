@@ -33,6 +33,7 @@ import LottieView from 'lottie-react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
+import { computePriority } from '../utils/priority';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import PropTypes from 'prop-types';
 import * as Haptics from 'expo-haptics';
@@ -193,6 +194,8 @@ const SwipeScreen = () => {
             gender: u.gender || '',
             genderPref: u.genderPref || '',
             location: u.location || '',
+            priorityScore: u.priorityScore || 0,
+            boostUntil: u.boostUntil || null,
             images,
           };
         });
@@ -213,12 +216,15 @@ const SwipeScreen = () => {
           );
         }
 
-        // Sort by compatibility score so higher matches appear first
-        formatted.sort(
-          (aUser, bUser) =>
+        // Sort by priority then compatibility so premium/boosted users surface first
+        formatted.sort((aUser, bUser) => {
+          const prioDiff = computePriority(bUser) - computePriority(aUser);
+          if (prioDiff !== 0) return prioDiff;
+          return (
             computeMatchPercent(currentUser, bUser) -
             computeMatchPercent(currentUser, aUser)
-        );
+          );
+        });
 
         setUsers(formatted);
       } catch (e) {

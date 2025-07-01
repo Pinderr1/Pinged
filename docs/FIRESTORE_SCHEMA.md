@@ -17,6 +17,8 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `createdAt` (timestamp)
 - `isPremium` (boolean)
 - `premiumUpdatedAt` (timestamp)
+- `priorityScore` (number) – higher values surface the user more often
+- `boostUntil` (timestamp|null) – temporary boost end time
 - `xp` (number)
 - `streak` (number)
 - `lastActiveAt` (timestamp) – last login or game completion
