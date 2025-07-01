@@ -23,6 +23,7 @@ import PropTypes from 'prop-types';
 import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
 import Card from '../components/Card';
+import GradientButton from '../components/GradientButton';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { eventImageSource } from '../utils/avatar';
 
@@ -190,22 +191,32 @@ const HomeScreen = ({ navigation }) => {
 
           <View style={local.group}>
             <Text style={local.sectionTitle}>Community Board</Text>
-            <FlatList
-              data={SAMPLE_EVENTS}
-              keyExtractor={(item) => item.id.toString()}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={local.carousel}
-              renderItem={({ item }) => (
-                <Card style={[local.eventCard, { backgroundColor: theme.card }]}>
-                  <Image source={eventImageSource(item.image)} style={local.eventImage} />
-                  <View style={{ marginLeft: 10 }}>
-                    <Text style={[local.eventTitle, { color: theme.text }]}>{item.title}</Text>
-                    <Text style={local.eventTime}>{item.time}</Text>
-                  </View>
-                </Card>
-              )}
-            />
+            {SAMPLE_EVENTS.slice(0, 3).map((item) => (
+              <Card
+                key={`e-${item.id}`}
+                style={[local.featuredEventCard, { backgroundColor: theme.card }]}
+              >
+                <Image
+                  source={eventImageSource(item.image)}
+                  style={local.eventImage}
+                />
+                <View style={local.featuredEventContent}>
+                  <Text style={[local.eventTitle, { color: theme.text }]}>
+                    {item.title}
+                  </Text>
+                  <Text
+                    style={[local.eventDesc, { color: theme.textSecondary }]}
+                  >
+                    {item.description}
+                  </Text>
+                  <GradientButton
+                    text="View"
+                    onPress={() => navigation.navigate('Community')}
+                    style={{ alignSelf: 'flex-start', marginTop: 4 }}
+                  />
+                </View>
+              </Card>
+            ))}
           </View>
           {SAMPLE_POSTS.map((post) => (
             <Card
@@ -218,6 +229,12 @@ const HomeScreen = ({ navigation }) => {
             </Card>
           ))}
         </ScrollView>
+        <View style={local.swipeButtonContainer}>
+          <GradientButton
+            text="Swipe Now"
+            onPress={() => navigation.navigate('Explore')}
+          />
+        </View>
 
         <Modal visible={gamePickerVisible} transparent animationType="fade">
           <View style={local.modalBackdrop}>
@@ -390,6 +407,29 @@ const getStyles = (theme) =>
     },
     eventDesc: {
       fontSize: 12,
+    },
+    featuredEventCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: 12,
+      padding: 12,
+      marginBottom: 12,
+      alignSelf: 'stretch',
+      shadowColor: '#000',
+      shadowOpacity: 0.1,
+      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    featuredEventContent: {
+      flex: 1,
+      marginLeft: 10,
+    },
+    swipeButtonContainer: {
+      position: 'absolute',
+      left: 20,
+      right: 20,
+      bottom: 90,
     },
     postCardPreview: {
       borderRadius: 12,
