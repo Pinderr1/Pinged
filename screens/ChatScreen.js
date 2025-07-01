@@ -417,44 +417,46 @@ function PrivateChat({ user }) {
   let gameSection = null;
   if (SelectedGameClient && !keyboardOpen) {
     gameSection = showGame ? (
-      <GameContainer
-        onToggleChat={() => setShowGame(false)}
-        player={{ name: 'You' }}
-        opponent={{ name: user.displayName }}
-      >
-        {devMode && (
-          <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-            <TouchableOpacity
-              onPress={() => setDevPlayer('0')}
-              style={{
-                backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: 8,
-                marginRight: 8,
-              }}
-            >
-              <Text style={{ color: '#fff' }}>Player 1</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setDevPlayer('1')}
-              style={{
-                backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: 8,
-              }}
-            >
-              <Text style={{ color: '#fff' }}>Player 2</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        <SelectedGameClient
-          matchID={user.id}
-          playerID={devMode ? devPlayer : '0'}
-          onGameEnd={handleGameEnd}
-        />
-      </GameContainer>
+      <View style={privateStyles.gameWrapper}>
+        <GameContainer
+          onToggleChat={() => setShowGame(false)}
+          player={{ name: 'You' }}
+          opponent={{ name: user.displayName }}
+        >
+          {devMode && (
+            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+              <TouchableOpacity
+                onPress={() => setDevPlayer('0')}
+                style={{
+                  backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 8,
+                  marginRight: 8,
+                }}
+              >
+                <Text style={{ color: '#fff' }}>Player 1</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setDevPlayer('1')}
+                style={{
+                  backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 8,
+                }}
+              >
+                <Text style={{ color: '#fff' }}>Player 2</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          <SelectedGameClient
+            matchID={user.id}
+            playerID={devMode ? devPlayer : '0'}
+            onGameEnd={handleGameEnd}
+          />
+        </GameContainer>
+      </View>
     ) : (
       <TouchableOpacity
         style={privateStyles.showBtn}
@@ -574,9 +576,9 @@ function PrivateChat({ user }) {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={HEADER_SPACING}
         >
-          <View style={{ flex: 1, paddingTop: HEADER_SPACING }}>
+          <View style={[privateStyles.content, { paddingTop: HEADER_SPACING }]}>
             {gameSection}
-            <View style={privateStyles.container}>
+            <View style={privateStyles.chatWrapper}>
               {showPlaceholders ? (
                 <PlaceholderBubbles />
               ) : loading ? (
@@ -597,10 +599,14 @@ function PrivateChat({ user }) {
 
 const getPrivateStyles = (theme) =>
   StyleSheet.create({
-  container: {
+  content: {
     flex: 1,
-    alignItems: 'stretch',
-    justifyContent: 'flex-start',
+  },
+  gameWrapper: {
+    flex: 1,
+  },
+  chatWrapper: {
+    flex: 1,
   },
   messageRow: {
     flexDirection: 'row',
