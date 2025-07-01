@@ -89,6 +89,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
     G: session?.state,
     ctx: { currentPlayer: session?.currentPlayer, gameover: session?.gameover },
     moves,
+    moveHistory: session?.moves || [],
     loading: !session,
   };
 }
