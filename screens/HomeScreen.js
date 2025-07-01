@@ -148,26 +148,21 @@ const HomeScreen = ({ navigation }) => {
             </Card>
           </View>
 
-          <View style={local.group}>
+          <View style={local.communityBoard}>
             <Text style={local.sectionTitle}>Community Board</Text>
             {SAMPLE_EVENTS.slice(0, 3).map((item) => (
               <Card
                 key={`e-${item.id}`}
-                style={[local.featuredEventCard, { backgroundColor: theme.card }]}
+                gradientColors={[theme.gradientStart, theme.gradientEnd]}
+                style={[local.communityCard, { backgroundColor: theme.card }]}
               >
                 <Image
                   source={eventImageSource(item.image)}
                   style={local.eventImage}
                 />
                 <View style={local.featuredEventContent}>
-                  <Text style={[local.eventTitle, { color: theme.text }]}>
-                    {item.title}
-                  </Text>
-                  <Text
-                    style={[local.eventDesc, { color: theme.textSecondary }]}
-                  >
-                    {item.description}
-                  </Text>
+                  <Text style={[local.eventTitle, { color: theme.text }]}> {item.title} </Text>
+                  <Text style={[local.eventDesc, { color: theme.textSecondary }]}> {item.description} </Text>
                   <GradientButton
                     text="View"
                     onPress={() => navigation.navigate('Community')}
@@ -176,17 +171,18 @@ const HomeScreen = ({ navigation }) => {
                 </View>
               </Card>
             ))}
+            {SAMPLE_POSTS.map((post) => (
+              <Card
+                key={`p-${post.id}`}
+                gradientColors={[theme.gradientStart, theme.gradientEnd]}
+                style={[local.communityCard, { backgroundColor: theme.card }]}
+              >
+                <Text style={[local.postTitle, { color: theme.text }]}>{post.title}</Text>
+                <Text style={local.postTime}>{post.time}</Text>
+                <Text style={[local.postDesc, { color: theme.textSecondary }]}>{post.description}</Text>
+              </Card>
+            ))}
           </View>
-          {SAMPLE_POSTS.map((post) => (
-            <Card
-              key={`p-${post.id}`}
-              style={[local.postCardPreview, { backgroundColor: theme.card }]}
-            >
-              <Text style={[local.postTitle, { color: theme.text }]}>{post.title}</Text>
-              <Text style={local.postTime}>{post.time}</Text>
-              <Text style={[local.postDesc, { color: theme.textSecondary }]}>{post.description}</Text>
-            </Card>
-          ))}
         </ScrollView>
         <View style={local.swipeButtonContainer}>
           <GradientButton
@@ -229,7 +225,7 @@ const getStyles = (theme) =>
   StyleSheet.create({
     container: {
       alignItems: 'stretch',
-      paddingHorizontal: 0,
+      paddingHorizontal: 16,
       paddingVertical: 20,
     },
     welcome: {
@@ -258,7 +254,7 @@ const getStyles = (theme) =>
     },
     group: {
       marginBottom: 24,
-      alignItems: 'center',
+      alignItems: 'stretch',
       width: '100%',
     },
     levelText: {
@@ -287,7 +283,7 @@ const getStyles = (theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       paddingVertical: 18,
-      paddingHorizontal: 20,
+      paddingHorizontal: 16,
       borderRadius: 12,
       marginBottom: 12,
     },
@@ -325,12 +321,12 @@ const getStyles = (theme) =>
       borderBottomWidth: 1,
     },
     eventCard: {
-      flexDirection: "row",
+      flexDirection: 'row',
       borderRadius: 12,
       padding: 12,
-      width: CARD_SIZE + 40,
+      width: '100%',
       marginRight: 12,
-      alignItems: "center",
+      alignItems: 'center',
     },
     eventImage: {
       width: 50,
@@ -389,6 +385,23 @@ const getStyles = (theme) =>
     },
     postDesc: {
       fontSize: 12,
+    },
+    communityBoard: {
+      width: '100%',
+      marginBottom: 24,
+    },
+    communityCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 12,
+      shadowColor: '#000',
+      shadowOpacity: 0.1,
+      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: 6,
+      elevation: 3,
+      alignSelf: 'stretch',
     },
   });
 
