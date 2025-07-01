@@ -1,7 +1,7 @@
 // components/GradientButton.tsx
-import React from 'react';
+import React, { useRef } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Animated } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
@@ -30,23 +30,38 @@ export default function GradientButton({
   onPressOut,
 }: GradientButtonProps) {
   const { theme } = useTheme();
+  const scale = useRef(new Animated.Value(1)).current;
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     onPress?.();
   };
+  const handlePressIn = () => {
+    Animated.spring(scale, {
+      toValue: 0.97,
+      useNativeDriver: true,
+    }).start();
+    onPressIn?.();
+  };
+  const handlePressOut = () => {
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+    onPressOut?.();
+  };
   return (
-    <Pressable
-      onPress={handlePress}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      style={{ width, marginVertical }}
-      disabled={disabled}
-    >
-      <LinearGradient
-        colors={[theme.gradientStart, theme.gradientEnd]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={[
+    <Animated.View style={{ transform: [{ scale }], width, marginVertical }}>
+      <Pressable
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+      >
+        <LinearGradient
+          colors={[theme.gradientStart, theme.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[
           {
             borderRadius: 30,
             paddingVertical: BUTTON_STYLE.paddingVertical,
@@ -65,7 +80,8 @@ export default function GradientButton({
           {text}
         </Text>
       </LinearGradient>
-    </Pressable>
+      </Pressable>
+    </Animated.View>
   );
 }
 
