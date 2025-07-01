@@ -4,12 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import ProgressBar from './ProgressBar';
 import { useTheme } from '../contexts/ThemeContext';
 import PropTypes from 'prop-types';
+import { BADGE_LIST, getBadgeMeta } from '../utils/badges';
 
-const BADGES = [
-  { id: 'firstWin', icon: 'trophy-outline', title: 'First Win', desc: 'Win your first game.' },
-  { id: 'perfectGame', icon: 'star-outline', title: 'Perfect Game', desc: 'Win without mistakes.' },
-  { id: 'dailyStreak', icon: 'flame-outline', title: 'Daily Streak', desc: 'Play 7 days in a row.' },
-];
 
 export default function PlayerInfoBar({ name, xp = 0, badges = [] }) {
   const { theme } = useTheme();
@@ -26,16 +22,17 @@ export default function PlayerInfoBar({ name, xp = 0, badges = [] }) {
       <Text style={{ fontSize: 12, color: theme.textSecondary }}>Level {level}</Text>
       <ProgressBar value={progress} max={100} color={theme.accent} />
       <View style={{ flexDirection: 'row', marginTop: 4 }}>
-        {BADGES.map((badge) => {
+        {BADGE_LIST.map((badge) => {
           const earned = badges.includes(badge.id);
+          const meta = getBadgeMeta(badge.id) || badge;
           return (
             <TouchableOpacity
               key={badge.id}
-              onPress={() => showInfo(badge)}
+              onPress={() => showInfo(meta)}
               style={{ marginHorizontal: 4, opacity: earned ? 1 : 0.3 }}
             >
               <Ionicons
-                name={badge.icon}
+                name={meta.icon}
                 size={20}
                 color={earned ? theme.accent : theme.textSecondary}
               />

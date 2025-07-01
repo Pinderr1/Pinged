@@ -55,6 +55,13 @@ const SettingsScreen = ({ navigation }) => {
         />
       )}
 
+      {isPremium && (
+        <GradientButton
+          text="People Who Liked You"
+          onPress={() => navigation.navigate('LikedYou')}
+        />
+      )}
+
       <GradientButton text="Edit Profile" onPress={handleEditProfile} />
 
       <GradientButton

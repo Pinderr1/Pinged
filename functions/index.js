@@ -56,31 +56,7 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
   }
 });
 
-exports.stripeWebhook = functions.https.onRequest((req, res) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(req.rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    console.error('Webhook signature verification failed', err);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const uid = session.metadata && session.metadata.uid;
-    if (uid) {
-      admin.firestore().collection('users').doc(uid).update({
-        isPremium: true,
-        premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      }).catch(e => console.error('Failed to update premium status', e));
-    }
-  }
-
-  res.status(200).send('ok');
-});
-
-exports.handleStripeWebhook = functions.https.onRequest(async (req, res) => {
+exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
   try {
@@ -98,6 +74,7 @@ exports.handleStripeWebhook = functions.https.onRequest(async (req, res) => {
         await admin.firestore().collection('users').doc(uid).update({
           isPremium: true,
           premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          badges: admin.firestore.FieldValue.arrayUnion('premiumMember'),
         });
       } catch (e) {
         console.error('Failed to update premium status', e);

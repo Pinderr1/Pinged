@@ -46,14 +46,7 @@ import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import PlayerInfoBar from '../components/PlayerInfoBar';
 import useUserProfile from '../hooks/useUserProfile';
 import PropTypes from 'prop-types';
-
-const computeBadges = (xp = 0, streak = 0) => {
-  const res = [];
-  if (xp >= 10) res.push('firstWin');
-  if (xp >= 50) res.push('perfectGame');
-  if (streak >= 7) res.push('dailyStreak');
-  return res;
-};
+import { computeBadges } from '../utils/badges';
 const GameSessionScreen = ({ route, navigation, sessionType }) => {
   const type =
     sessionType || route.params?.sessionType ||
@@ -94,8 +87,18 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const overlayOpacity = useRef(new Animated.Value(1)).current;
   const opponentProfile = useUserProfile(opponent?.id);
 
-  const userBadges = computeBadges(user?.xp, user?.streak);
-  const oppBadges = computeBadges(opponentProfile?.xp, opponentProfile?.streak);
+  const userBadges = computeBadges({
+    xp: user?.xp,
+    streak: user?.streak,
+    badges: user?.badges || [],
+    isPremium: user?.isPremium,
+  });
+  const oppBadges = computeBadges({
+    xp: opponentProfile?.xp,
+    streak: opponentProfile?.streak,
+    badges: opponentProfile?.badges || [],
+    isPremium: opponentProfile?.isPremium,
+  });
 
   // Listen for Firestore invite status
   useEffect(() => {
@@ -481,7 +484,16 @@ function BotSessionScreen({ route }) {
       <GradientBackground style={{ flex: 1 }}>
         <Header />
         <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 10 }}>
-          <PlayerInfoBar name="You" xp={user?.xp || 0} badges={computeBadges(user?.xp, user?.streak)} />
+          <PlayerInfoBar
+            name="You"
+            xp={user?.xp || 0}
+            badges={computeBadges({
+              xp: user?.xp,
+              streak: user?.streak,
+              badges: user?.badges || [],
+              isPremium: user?.isPremium,
+            })}
+          />
           <PlayerInfoBar name={bot.name} xp={0} badges={[]} />
         </View>
         <KeyboardAvoidingView

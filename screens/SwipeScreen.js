@@ -33,12 +33,14 @@ import LottieView from 'lottie-react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
+import { computePriority } from '../utils/priority';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import PropTypes from 'prop-types';
 import * as Haptics from 'expo-haptics';
 import SkeletonUserCard from '../components/SkeletonUserCard';
 import EmptyState from '../components/EmptyState';
 import { useSound } from '../contexts/SoundContext';
+import { useFilters } from '../contexts/FilterContext';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -93,6 +95,7 @@ const SwipeScreen = () => {
   const { sendGameInvite } = useMatchmaking();
   const isPremiumUser = !!currentUser?.isPremium;
   const requireCredits = useRequireGameCredits();
+  const { location: filterLocation, ageRange, interests } = useFilters();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likesUsed, setLikesUsed] = useState(0);
@@ -150,15 +153,32 @@ const SwipeScreen = () => {
           .firestore()
           .collection('users')
           .where('uid', '!=', currentUser.uid);
-        if (currentUser.location) {
+
+        if (filterLocation) {
+          userQuery = userQuery.where('location', '==', filterLocation);
+        } else if (currentUser.location) {
           userQuery = userQuery.where('location', '==', currentUser.location);
+        }
+
+        if (Array.isArray(ageRange) && ageRange.length === 2) {
+          userQuery = userQuery
+            .where('age', '>=', ageRange[0])
+            .where('age', '<=', ageRange[1]);
+        }
+
+        if (Array.isArray(interests) && interests.length) {
+          userQuery = userQuery.where(
+            'favoriteGames',
+            'array-contains-any',
+            interests.slice(0, 10)
+          );
         }
         const snap = await userQuery.limit(50).get();
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         if (devMode) {
           data = [...devUsers, ...data];
         }
-        const formatted = data.map((u) => {
+        let formatted = data.map((u) => {
           const imgs = Array.isArray(u.photos) && u.photos.length
             ? u.photos
             : [u.photoURL];
@@ -174,16 +194,37 @@ const SwipeScreen = () => {
             gender: u.gender || '',
             genderPref: u.genderPref || '',
             location: u.location || '',
+            priorityScore: u.priorityScore || 0,
+            boostUntil: u.boostUntil || null,
             images,
           };
         });
 
-        // Sort by compatibility score so higher matches appear first
-        formatted.sort(
-          (aUser, bUser) =>
+        if (filterLocation) {
+          formatted = formatted.filter((u) => u.location === filterLocation);
+        }
+
+        if (Array.isArray(ageRange) && ageRange.length === 2) {
+          formatted = formatted.filter(
+            (u) => u.age >= ageRange[0] && u.age <= ageRange[1]
+          );
+        }
+
+        if (Array.isArray(interests) && interests.length) {
+          formatted = formatted.filter((u) =>
+            u.favoriteGames.some((g) => interests.includes(g))
+          );
+        }
+
+        // Sort by priority then compatibility so premium/boosted users surface first
+        formatted.sort((aUser, bUser) => {
+          const prioDiff = computePriority(bUser) - computePriority(aUser);
+          if (prioDiff !== 0) return prioDiff;
+          return (
             computeMatchPercent(currentUser, bUser) -
             computeMatchPercent(currentUser, aUser)
-        );
+          );
+        });
 
         setUsers(formatted);
       } catch (e) {
@@ -192,7 +233,7 @@ const SwipeScreen = () => {
       setLoadingUsers(false);
     };
     fetchUsers();
-  }, [currentUser?.uid, devMode]);
+  }, [currentUser?.uid, devMode, filterLocation, ageRange, interests]);
 
   // Reset card position whenever the index changes
   useEffect(() => {
@@ -223,6 +264,14 @@ const handleSwipe = async (direction) => {
             .doc(currentUser.uid)
             .collection('liked')
             .doc(displayUser.id)
+            .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+
+          await firebase
+            .firestore()
+            .collection('likes')
+            .doc(displayUser.id)
+            .collection('likedBy')
+            .doc(currentUser.uid)
             .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
 
           const reciprocal = await firebase

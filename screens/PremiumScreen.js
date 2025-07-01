@@ -20,17 +20,15 @@ import { HEADER_SPACING, FONT_SIZES } from '../layout';
 
 const upgradeFeatures = [
   { icon: require('../assets/icons/unlimited.png'), text: 'Unlimited Game Invites' },
-  { icon: require('../assets/icons/boost.png'), text: 'Priority Swiping & Game Boosts' },
-  { icon: require('../assets/icons/badge.png'), text: 'Exclusive Badges & Titles' },
-  { icon: require('../assets/icons/filters.png'), text: 'Advanced Filters & Preferences' },
-  { icon: require('../assets/icons/star.png'), text: 'Support New Game Events' }
+  { icon: require('../assets/icons/games.png'), text: 'All Games Unlocked' },
+  { icon: require('../assets/icons/badge.png'), text: 'Premium Profile Badge' },
+  { icon: require('../assets/icons/star.png'), text: 'Support New Game Development' }
 ];
 
 const paywallFeatures = [
   { icon: require('../assets/icons/unlimited.png'), text: 'Unlimited Game Invites' },
-  { icon: require('../assets/icons/boost.png'), text: 'Priority Swipes & Boosts' },
-  { icon: require('../assets/icons/games.png'), text: 'All 100+ Games Unlocked' },
-  { icon: require('../assets/icons/heart.png'), text: 'See Who Liked You' }
+  { icon: require('../assets/icons/games.png'), text: 'All Games Unlocked' },
+  { icon: require('../assets/icons/badge.png'), text: 'Premium Profile Badge' }
 ];
 
 const PremiumScreen = ({ navigation, route }) => {
