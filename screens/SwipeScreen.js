@@ -30,6 +30,7 @@ import { useChats } from '../contexts/ChatContext';
 import firebase from '../firebase';
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import { BlurView } from 'expo-blur';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
@@ -562,7 +563,7 @@ const handleSwipe = async (direction) => {
 
         {matchedUser && (
           <Modal visible={showFireworks} transparent animationType="fade">
-            <View style={styles.fireworksOverlay}>
+            <BlurView intensity={50} tint="dark" style={styles.fireworksOverlay}>
               <LottieView
                 source={require('../assets/confetti.json')}
                 autoPlay
@@ -576,7 +577,7 @@ const handleSwipe = async (direction) => {
               {matchGame ? (
                 <Text style={styles.suggestText}>{`Or invite them to play ${matchGame.title}`}</Text>
               ) : null}
-            </View>
+            </BlurView>
           </Modal>
         )}
       </ScreenContainer>
