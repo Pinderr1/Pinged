@@ -238,7 +238,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
               <SyncedGame
                 sessionId={inviteId}
                 gameId={game.id}
-                opponentId={opponent.id}
+                opponent={{ id: opponent.id, photo: opponent.photo, online: true }}
                 onGameEnd={handleGameEnd}
               />
             )}

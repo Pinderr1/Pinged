@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Client } from 'boardgame.io/react-native';
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { View, Text, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Animated } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
 
@@ -54,6 +54,19 @@ const TicTacToeBoard = ({ G, ctx, moves, onGameEnd }) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
+  const anim = useRef(Array.from({ length: 9 }, () => new Animated.Value(0))).current;
+  const prevCells = useRef([...G.cells]);
+
+  useEffect(() => {
+    G.cells.forEach((v, i) => {
+      if (v !== null && prevCells.current[i] === null) {
+        anim[i].setValue(0.5);
+        Animated.spring(anim[i], { toValue: 1, friction: 4, useNativeDriver: true }).start();
+      }
+    });
+    prevCells.current = [...G.cells];
+  }, [G.cells, anim]);
+
   const disabled = !!ctx.gameover;
 
   let resultText = '';
@@ -69,11 +82,6 @@ const TicTacToeBoard = ({ G, ctx, moves, onGameEnd }) => {
 
   return (
     <View style={{ alignItems: 'center' }}>
-      {!ctx.gameover && (
-        <Text style={styles.statusText}>
-          {ctx.currentPlayer === '0' ? 'Your turn' : 'Waiting for opponent'}
-        </Text>
-      )}
       <View style={styles.boardContainer}>
         {[0, 1, 2].map((row) => (
           <View key={row} style={styles.row}>
@@ -87,9 +95,14 @@ const TicTacToeBoard = ({ G, ctx, moves, onGameEnd }) => {
                   disabled={disabled}
                   style={styles.cell}
                 >
-                  <Text style={[styles.mark, { fontSize: CELL_SIZE * 0.6 }] }>
+                  <Animated.Text
+                    style={[
+                      styles.mark,
+                      { fontSize: CELL_SIZE * 0.6, transform: [{ scale: anim[idx] }] },
+                    ]}
+                  >
                     {cell === '0' ? 'X' : cell === '1' ? 'O' : ''}
-                  </Text>
+                  </Animated.Text>
                 </TouchableOpacity>
               );
             })}
@@ -114,19 +127,20 @@ const getStyles = (theme) =>
     borderWidth: 2,
     borderColor: theme.accent,
     borderRadius: 16,
-    backgroundColor: '#fff',
+    backgroundColor: theme.card,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: theme.accent,
+    shadowOpacity: 0.6,
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 12,
+    elevation: 6,
   },
   cell: {
     width: CELL_SIZE,
     height: CELL_SIZE,
     borderWidth: 1,
     borderColor: '#ccc',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -135,9 +149,9 @@ const getStyles = (theme) =>
   },
   mark: {
     fontWeight: 'bold',
+    color: theme.accent,
   },
-  statusText: { marginBottom: 12, fontWeight: 'bold' },
-  resultText: { marginTop: 12, fontWeight: 'bold', fontSize: 18 },
+  resultText: { marginTop: 12, fontWeight: 'bold', fontSize: 18, color: theme.text },
 });
 
 const TicTacToeClient = Client({
