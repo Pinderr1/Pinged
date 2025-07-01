@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  Image,
   StyleSheet,
   RefreshControl,
 } from 'react-native';
@@ -12,6 +11,7 @@ import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import ScreenContainer from '../components/ScreenContainer';
 import Card from '../components/Card';
+import AvatarRing from '../components/AvatarRing';
 import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
 import PropTypes from 'prop-types';
@@ -92,7 +92,13 @@ const MatchesScreen = ({ navigation }) => {
       style={styles.newMatch}
       onPress={() => navigation.navigate('Chat', { user: item })}
     >
-      <Image source={item.image} style={styles.newAvatar} />
+      <AvatarRing
+        source={item.image}
+        size={56}
+        isMatch
+        isOnline={item.online}
+        style={styles.newAvatar}
+      />
       <Text style={[styles.newName, { color: theme.text }]} numberOfLines={1}>
         {item.displayName}
       </Text>
@@ -105,7 +111,13 @@ const MatchesScreen = ({ navigation }) => {
       style={[styles.chatItem, { backgroundColor: theme.card }]}
     >
       <View style={styles.avatarColumn}>
-        <Image source={item.image} style={styles.chatAvatar} />
+        <AvatarRing
+          source={item.image}
+          size={48}
+          isMatch
+          isOnline={item.online}
+          style={styles.chatAvatar}
+        />
         <Text
           style={[styles.avatarName, { color: theme.text }]}
           numberOfLines={1}

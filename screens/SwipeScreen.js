@@ -38,6 +38,7 @@ import PropTypes from 'prop-types';
 import * as Haptics from 'expo-haptics';
 import SkeletonUserCard from '../components/SkeletonUserCard';
 import EmptyState from '../components/EmptyState';
+import { useSound } from '../contexts/SoundContext';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -85,6 +86,7 @@ const SwipeScreen = () => {
   const navigation = useNavigation();
   const { showNotification } = useNotification();
   const { user: currentUser } = useUser();
+  const { play } = useSound();
   const { devMode } = useDev();
   const { addMatch } = useChats();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
@@ -202,6 +204,7 @@ const handleSwipe = async (direction) => {
 
   // Provide light haptic feedback on every swipe
   Haptics.selectionAsync().catch(() => {});
+  play(direction === 'left' ? 'swipe_left' : 'swipe_right');
 
     if (direction === 'right') {
       if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
@@ -261,7 +264,7 @@ const handleSwipe = async (direction) => {
             Haptics.notificationAsync(
               Haptics.NotificationFeedbackType.Success
             ).catch(() => {});
-            // Placeholder: play short match sound here
+            play('match');
             Toast.show({ type: 'success', text1: "It's a match!" });
             setShowFireworks(true);
             setTimeout(() => setShowFireworks(false), 2000);
@@ -290,7 +293,7 @@ const handleSwipe = async (direction) => {
         Haptics.notificationAsync(
           Haptics.NotificationFeedbackType.Success
         ).catch(() => {});
-        // Placeholder: play short match sound here
+        play('match');
         Toast.show({ type: 'success', text1: "It's a match!" });
         setShowFireworks(true);
         setTimeout(() => setShowFireworks(false), 2000);
