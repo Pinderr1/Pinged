@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Platform,
   KeyboardAvoidingView,
+  Keyboard,
   Image,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
@@ -85,6 +86,7 @@ function PrivateChat({ user }) {
   const [refreshing, setRefreshing] = useState(false);
   const [firstLine, setFirstLine] = useState('');
   const [firstGame, setFirstGame] = useState(null);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
   const showPlaceholders = loading && messages.length === 0;
 
   useEffect(() => {
@@ -94,6 +96,17 @@ function PrivateChat({ user }) {
     setFirstGame(
       gameList[Math.floor(Math.random() * gameList.length)] || null
     );
+  }, []);
+
+  useEffect(() => {
+    const show = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hide = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const showSub = Keyboard.addListener(show, () => setKeyboardOpen(true));
+    const hideSub = Keyboard.addListener(hide, () => setKeyboardOpen(false));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
   }, []);
 
   // Initial prompt and game suggestion
@@ -407,95 +420,97 @@ function PrivateChat({ user }) {
   ) : null;
 
   const chatSection = (
-    <View style={{ flex: 4, padding: 10 }}>
-      <FlatList
-        style={{ flex: 1 }}
-        data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={renderMessage}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        inverted
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
-        ListEmptyComponent={
-          !loading && (
-            <View style={{ alignItems: 'center', marginTop: 20 }}>
-              <EmptyState
-                text="No messages yet."
-                image={require('../assets/logo.png')}
-              />
-              {firstLine ? (
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    color: theme.textSecondary,
-                    marginTop: 4,
-                  }}
-                >
-                  {`Try: "${firstLine}"`}
-                </Text>
-              ) : null}
-              {firstGame ? (
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    color: theme.textSecondary,
-                    marginTop: 2,
-                  }}
-                >
-                  {`Or invite them to play ${firstGame.title}`}
-                </Text>
-              ) : null}
-            </View>
-          )
-        }
-      />
-      {isTyping && <Text style={privateStyles.typingIndicator}>{user.displayName} is typing...</Text>}
-      <SafeKeyboardView>
-        <View style={privateStyles.inputBar}>
-          {activeGameId ? (
-            <>
-              <TouchableOpacity
-                onLongPress={startRecording}
-                onPressOut={handleVoiceFinish}
-                style={{ marginRight: 6 }}
-              >
-                <Ionicons
-                  name={isRecording ? 'mic' : 'mic-outline'}
-                  size={22}
-                  color={theme.text}
+    <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, padding: 10 }}>
+        <FlatList
+          style={{ flex: 1 }}
+          data={messages}
+          keyExtractor={(item) => item.id}
+          renderItem={renderMessage}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          inverted
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+          ListEmptyComponent={
+            !loading && (
+              <View style={{ alignItems: 'center', marginTop: 20 }}>
+                <EmptyState
+                  text="No messages yet."
+                  image={require('../assets/logo.png')}
                 />
-              </TouchableOpacity>
-              <TextInput
-                ref={inputRef}
-                placeholder="Type a message..."
-                style={privateStyles.input}
-                value={text}
-                onChangeText={handleTextChange}
-                placeholderTextColor="#888"
-              />
-              <TouchableOpacity style={privateStyles.sendBtn} onPress={handleSend}>
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
+                {firstLine ? (
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      color: theme.textSecondary,
+                      marginTop: 4,
+                    }}
+                  >
+                    {`Try: "${firstLine}"`}
+                  </Text>
+                ) : null}
+                {firstGame ? (
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      color: theme.textSecondary,
+                      marginTop: 2,
+                    }}
+                  >
+                    {`Or invite them to play ${firstGame.title}`}
+                  </Text>
+                ) : null}
+              </View>
+            )
+          }
+        />
+        {isTyping && (
+          <Text style={privateStyles.typingIndicator}>{user.displayName} is typing...</Text>
+        )}
+      </View>
+      <View style={privateStyles.inputBar}>
+        {activeGameId ? (
+          <>
             <TouchableOpacity
-              style={privateStyles.playButton}
-              onPress={() => {
-                if (!requireCredits()) {
-                  return;
-                }
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                setShowGameModal(true);
-              }}
+              onLongPress={startRecording}
+              onPressOut={handleVoiceFinish}
+              style={{ marginRight: 6 }}
             >
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Invite Game</Text>
+              <Ionicons
+                name={isRecording ? 'mic' : 'mic-outline'}
+                size={22}
+                color={theme.text}
+              />
             </TouchableOpacity>
-          )}
-        </View>
-      </SafeKeyboardView>
+            <TextInput
+              ref={inputRef}
+              placeholder="Type a message..."
+              style={privateStyles.input}
+              value={text}
+              onChangeText={handleTextChange}
+              placeholderTextColor="#888"
+            />
+            <TouchableOpacity style={privateStyles.sendBtn} onPress={handleSend}>
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <TouchableOpacity
+            style={privateStyles.playButton}
+            onPress={() => {
+              if (!requireCredits()) {
+                return;
+              }
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              setShowGameModal(true);
+            }}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Invite Game</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 
@@ -522,13 +537,13 @@ function PrivateChat({ user }) {
         </View>
       </Modal>
       <ScreenContainer>
-        <View style={{ flex: 1, paddingTop: HEADER_SPACING }}>
-          {gameSection}
-          <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={HEADER_SPACING}
-          >
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={HEADER_SPACING}
+        >
+          <View style={{ flex: 1, paddingTop: HEADER_SPACING }}>
+            {!keyboardOpen && gameSection}
             <View style={privateStyles.container}>
               {showPlaceholders ? (
                 <PlaceholderBubbles />
@@ -540,8 +555,8 @@ function PrivateChat({ user }) {
                 chatSection
               )}
             </View>
-          </KeyboardAvoidingView>
-        </View>
+          </View>
+        </KeyboardAvoidingView>
       </ScreenContainer>
     </GradientBackground>
   );
@@ -594,6 +609,7 @@ const getPrivateStyles = (theme) =>
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
+    paddingHorizontal: 10,
   },
   input: {
     flex: 1,
