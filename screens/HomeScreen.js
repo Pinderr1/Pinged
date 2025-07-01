@@ -150,38 +150,36 @@ const HomeScreen = ({ navigation }) => {
 
           <View style={local.communityBoard}>
             <Text style={local.sectionTitle}>Community Board</Text>
-            {SAMPLE_EVENTS.slice(0, 3).map((item) => (
-              <Card
-                key={`e-${item.id}`}
-                gradientColors={[theme.gradientStart, theme.gradientEnd]}
-                style={[local.communityCard, { backgroundColor: theme.card }]}
-              >
-                <Image
-                  source={eventImageSource(item.image)}
-                  style={local.eventImage}
-                />
-                <View style={local.featuredEventContent}>
-                  <Text style={[local.eventTitle, { color: theme.text }]}> {item.title} </Text>
-                  <Text style={[local.eventDesc, { color: theme.textSecondary }]}> {item.description} </Text>
-                  <GradientButton
-                    text="View"
-                    onPress={() => navigation.navigate('Community')}
-                    style={{ alignSelf: 'flex-start', marginTop: 4 }}
-                  />
-                </View>
-              </Card>
-            ))}
-            {SAMPLE_POSTS.map((post) => (
-              <Card
-                key={`p-${post.id}`}
-                gradientColors={[theme.gradientStart, theme.gradientEnd]}
-                style={[local.communityCard, { backgroundColor: theme.card }]}
-              >
-                <Text style={[local.postTitle, { color: theme.text }]}>{post.title}</Text>
-                <Text style={local.postTime}>{post.time}</Text>
-                <Text style={[local.postDesc, { color: theme.textSecondary }]}>{post.description}</Text>
-              </Card>
-            ))}
+            <Card
+              gradientColors={[theme.gradientStart, theme.gradientEnd]}
+              style={[local.bulletinCard, { backgroundColor: theme.card }]}
+            >
+              <Image source={eventImageSource(SAMPLE_EVENTS[1].image)} style={local.bulletinImage} />
+              <View style={local.bulletinContent}>
+                <Text style={[local.bulletinTitle, { color: theme.text }]}>Checkers Blitz Tournament</Text>
+                <Text style={[local.bulletinDesc, { color: theme.textSecondary }]}>Fast 1v1 matches this Saturday at 7PM.</Text>
+              </View>
+            </Card>
+            <Card
+              gradientColors={[theme.gradientStart, theme.gradientEnd]}
+              style={[local.bulletinCard, { backgroundColor: theme.card }]}
+            >
+              <Image source={eventImageSource(SAMPLE_EVENTS[0].image)} style={local.bulletinImage} />
+              <View style={local.bulletinContent}>
+                <Text style={[local.bulletinTitle, { color: theme.text }]}>Speed Dating Night</Text>
+                <Text style={[local.bulletinDesc, { color: theme.textSecondary }]}>Meet singles in quick 5 minute chats this Friday.</Text>
+              </View>
+            </Card>
+            <Card
+              gradientColors={[theme.gradientStart, theme.gradientEnd]}
+              style={[local.bulletinCard, { backgroundColor: theme.card }]}
+            >
+              <Image source={eventImageSource(SAMPLE_EVENTS[3].image)} style={local.bulletinImage} />
+              <View style={local.bulletinContent}>
+                <Text style={[local.bulletinTitle, { color: theme.text }]}>App Announcement</Text>
+                <Text style={[local.bulletinDesc, { color: theme.textSecondary }]}>Check out the newest features rolling out this week.</Text>
+              </View>
+            </Card>
           </View>
         </ScrollView>
         <View style={local.swipeButtonContainer}>
@@ -366,7 +364,7 @@ const getStyles = (theme) =>
       position: 'absolute',
       left: 20,
       right: 20,
-      bottom: 70,
+      bottom: 20,
     },
     postCardPreview: {
       borderRadius: 12,
@@ -402,6 +400,36 @@ const getStyles = (theme) =>
       shadowRadius: 6,
       elevation: 3,
       alignSelf: 'stretch',
+    },
+    bulletinCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: 20,
+      padding: 20,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOpacity: 0.1,
+      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: 6,
+      elevation: 3,
+      alignSelf: 'stretch',
+    },
+    bulletinImage: {
+      width: 60,
+      height: 60,
+      borderRadius: 12,
+      marginRight: 12,
+    },
+    bulletinContent: {
+      flex: 1,
+    },
+    bulletinTitle: {
+      fontSize: 15,
+      fontWeight: 'bold',
+    },
+    bulletinDesc: {
+      fontSize: 13,
+      marginTop: 4,
     },
   });
 
