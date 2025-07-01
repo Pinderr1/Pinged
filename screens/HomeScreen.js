@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-  Image,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
@@ -22,8 +21,8 @@ import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
 import Card from '../components/Card';
 import GradientButton from '../components/GradientButton';
+import EventFlyer from '../components/EventFlyer';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
-import { eventImageSource } from '../utils/avatar';
 
 // Map app game IDs to boardgame registry keys for AI play
 const aiGameMap = allGames.reduce((acc, g) => {
@@ -150,36 +149,9 @@ const HomeScreen = ({ navigation }) => {
 
           <View style={local.communityBoard}>
             <Text style={local.sectionTitle}>Community Board</Text>
-            <Card
-              gradientColors={[theme.gradientStart, theme.gradientEnd]}
-              style={[local.bulletinCard, { backgroundColor: theme.card }]}
-            >
-              <Image source={eventImageSource(SAMPLE_EVENTS[1].image)} style={local.bulletinImage} />
-              <View style={local.bulletinContent}>
-                <Text style={[local.bulletinTitle, { color: theme.text }]}>Checkers Blitz Tournament</Text>
-                <Text style={[local.bulletinDesc, { color: theme.textSecondary }]}>Fast 1v1 matches this Saturday at 7PM.</Text>
-              </View>
-            </Card>
-            <Card
-              gradientColors={[theme.gradientStart, theme.gradientEnd]}
-              style={[local.bulletinCard, { backgroundColor: theme.card }]}
-            >
-              <Image source={eventImageSource(SAMPLE_EVENTS[0].image)} style={local.bulletinImage} />
-              <View style={local.bulletinContent}>
-                <Text style={[local.bulletinTitle, { color: theme.text }]}>Speed Dating Night</Text>
-                <Text style={[local.bulletinDesc, { color: theme.textSecondary }]}>Meet singles in quick 5 minute chats this Friday.</Text>
-              </View>
-            </Card>
-            <Card
-              gradientColors={[theme.gradientStart, theme.gradientEnd]}
-              style={[local.bulletinCard, { backgroundColor: theme.card }]}
-            >
-              <Image source={eventImageSource(SAMPLE_EVENTS[3].image)} style={local.bulletinImage} />
-              <View style={local.bulletinContent}>
-                <Text style={[local.bulletinTitle, { color: theme.text }]}>App Announcement</Text>
-                <Text style={[local.bulletinDesc, { color: theme.textSecondary }]}>Check out the newest features rolling out this week.</Text>
-              </View>
-            </Card>
+            {SAMPLE_EVENTS.slice(0, 3).map((evt) => (
+              <EventFlyer key={evt.id} event={evt} />
+            ))}
           </View>
         </ScrollView>
         <View style={local.swipeButtonContainer}>
@@ -318,31 +290,6 @@ const getStyles = (theme) =>
       borderBottomColor: '#eee',
       borderBottomWidth: 1,
     },
-    eventCard: {
-      flexDirection: 'row',
-      borderRadius: 12,
-      padding: 12,
-      width: '100%',
-      marginRight: 12,
-      alignItems: 'center',
-    },
-    eventImage: {
-      width: 50,
-      height: 50,
-      borderRadius: 8,
-    },
-    eventTitle: {
-      fontSize: 14,
-      fontWeight: 'bold',
-    },
-    eventTime: {
-      fontSize: 12,
-      color: theme.accent,
-      marginBottom: 2,
-    },
-    eventDesc: {
-      fontSize: 12,
-    },
     featuredEventCard: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -387,49 +334,6 @@ const getStyles = (theme) =>
     communityBoard: {
       width: '100%',
       marginBottom: 24,
-    },
-    communityCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 12,
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowOffset: { width: 0, height: 2 },
-      shadowRadius: 6,
-      elevation: 3,
-      alignSelf: 'stretch',
-    },
-    bulletinCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderRadius: 20,
-      padding: 20,
-      marginBottom: 20,
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowOffset: { width: 0, height: 2 },
-      shadowRadius: 6,
-      elevation: 3,
-      alignSelf: 'stretch',
-    },
-    bulletinImage: {
-      width: 60,
-      height: 60,
-      borderRadius: 12,
-      marginRight: 12,
-    },
-    bulletinContent: {
-      flex: 1,
-    },
-    bulletinTitle: {
-      fontSize: 15,
-      fontWeight: 'bold',
-    },
-    bulletinDesc: {
-      fontSize: 13,
-      marginTop: 4,
     },
   });
 

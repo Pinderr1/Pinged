@@ -9,13 +9,13 @@ import {
   Alert,
   Modal,
   TextInput,
-  Dimensions,
   Animated,
   Easing,
   RefreshControl
 } from 'react-native';
 import GradientButton from '../components/GradientButton';
 import Card from '../components/Card';
+import EventFlyer from '../components/EventFlyer';
 import ScreenContainer from '../components/ScreenContainer';
 import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
@@ -28,10 +28,6 @@ import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 import * as Haptics from 'expo-haptics';
 import EmptyState from '../components/EmptyState';
-
-const screenWidth = Dimensions.get('window').width;
-const cardWidth = (screenWidth - 48) / 2;
-
 
 const FILTERS = ['All', 'Tonight', 'Flirty', 'Tournaments'];
 
@@ -95,10 +91,11 @@ const CommunityScreen = () => {
     return unsub;
   }, []);
 
-  const filteredEvents = activeFilter === 'All'
-    ? events
-    : events.filter((e) => e.category === activeFilter);
-  const displayEvents = filteredEvents.slice(0, 4);
+  const filteredEvents =
+    activeFilter === 'All'
+      ? events
+      : events.filter((e) => e.category === activeFilter);
+  const displayEvents = filteredEvents;
 
   const toggleJoin = (id) => {
     const isJoined = joinedEvents.includes(id);
@@ -127,57 +124,30 @@ const CommunityScreen = () => {
     setRefreshing(false);
   };
 
-  const renderEventCard = (event, idx) => {
+  const renderEventFlyer = (event) => {
     const isJoined = joinedEvents.includes(event.id);
     return (
-      <Card
+      <EventFlyer
         key={event.id}
-        style={[
-          local.card,
-          {
-            backgroundColor: darkMode ? '#444' : '#fff',
-            marginRight: idx % 2 === 0 ? 8 : 0,
-            marginLeft: idx % 2 !== 0 ? 8 : 0
-          }
-        ]}
-      >
-        <Image source={eventImageSource(event.image)} style={local.image} />
-        <TouchableOpacity
-          style={local.moreBtn}
-          onPress={() => {
-            setOptionsEvent({ event, isJoined });
-            setShowOptionsModal(true);
-          }}
-        >
-          <Text style={local.moreText}>⋯</Text>
-        </TouchableOpacity>
-        <Text style={local.title}>{event.title}</Text>
-        <Text style={local.time}>{event.time}</Text>
-        <Text style={local.desc}>{event.description}</Text>
-        {isJoined && (
-          <Text style={local.badge}>🎯 Joined • +10 XP</Text>
-        )}
-      </Card>
+        event={event}
+        onPress={() => toggleJoin(event.id)}
+        joined={isJoined}
+      />
     );
   };
 
   const renderEventSkeleton = (idx) => (
     <Card
       key={`event-skel-${idx}`}
-      style={[
-        local.card,
-        {
-          backgroundColor: darkMode ? '#444' : '#fff',
-          marginRight: idx % 2 === 0 ? 8 : 0,
-          marginLeft: idx % 2 !== 0 ? 8 : 0,
-        },
-      ]}
+      style={[local.flyer, { backgroundColor: darkMode ? '#444' : '#fff' }]}
     >
-      <View style={[local.image, { backgroundColor: skeletonColor }]} />
-      <View style={[local.skelLine, { width: '60%', marginBottom: 6 }]} />
-      <View style={[local.skelLine, { width: '40%', marginBottom: 6 }]} />
-      <View style={[local.skelLine, { width: '80%', marginBottom: 8 }]} />
-      <View style={local.skelButton} />
+      <View style={[local.flyerImage, { backgroundColor: skeletonColor }]} />
+      <View style={{ flex: 1 }}>
+        <View style={[local.skelLine, { width: '60%', marginBottom: 6 }]} />
+        <View style={[local.skelLine, { width: '40%', marginBottom: 6 }]} />
+        <View style={[local.skelLine, { width: '80%', marginBottom: 8 }]} />
+        <View style={local.skelButton} />
+      </View>
     </Card>
   );
 
@@ -229,9 +199,9 @@ const CommunityScreen = () => {
           <Text style={local.bannerText}>Truth or Dare Night — Friday @ 9PM</Text>
         </Card>
 
-        {/* Event grid */}
+        {/* Event list */}
         {loadingEvents ? (
-          <View style={local.grid}>
+          <View style={{ paddingHorizontal: 16 }}>
             {[...Array(4)].map((_, idx) => renderEventSkeleton(idx))}
           </View>
         ) : filteredEvents.length === 0 ? (
@@ -240,9 +210,7 @@ const CommunityScreen = () => {
             image={require('../assets/logo.png')}
           />
         ) : (
-          <View style={local.grid}>
-            {displayEvents.map((event, idx) => renderEventCard(event, idx))}
-          </View>
+          displayEvents.map((event) => renderEventFlyer(event))
         )}
 
         {/* Posts */}
@@ -478,44 +446,32 @@ const getStyles = (theme, skeletonColor) =>
     fontSize: FONT_SIZES.SM,
     color: '#555'
   },
-  grid: {
+  flyer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16
-  },
-  card: {
-    width: cardWidth,
+    alignItems: 'center',
     borderRadius: 16,
-    marginBottom: 20,
-    padding: 12,
-    
+    padding: 14,
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
-  image: {
-    width: '100%',
-    height: 90,
-    borderRadius: 10,
-    marginBottom: 6
+  flyerImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    marginRight: 12,
   },
   title: {
     fontSize: FONT_SIZES.SM,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   time: {
     fontSize: FONT_SIZES.SM - 2,
     color: theme.accent,
-    marginBottom: 2
+    marginBottom: 2,
   },
   desc: {
     fontSize: FONT_SIZES.SM - 2,
-    color: '#666'
-  },
-  chatBtn: {
-    marginTop: 6
-  },
-  chatText: {
-    fontSize: FONT_SIZES.SM - 2,
-    color: '#4287f5'
+    color: '#666',
   },
   badge: {
     fontSize: FONT_SIZES.SM - 2,
