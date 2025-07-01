@@ -16,6 +16,7 @@ import GradientBackground from '../components/GradientBackground';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import PropTypes from 'prop-types';
+import { avatarSource } from '../utils/avatar';
 import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
@@ -319,7 +320,7 @@ function PrivateChat({ user }) {
         style={[privateStyles.messageRow, isUser ? privateStyles.rowRight : privateStyles.rowLeft]}
       >
         {!isUser && user.image && (
-          <Image source={user.image} style={privateStyles.avatar} />
+          <Image source={avatarSource(user.image)} style={privateStyles.avatar} />
         )}
         <View
           style={[privateStyles.message, isUser ? privateStyles.right : privateStyles.left]}
@@ -616,9 +617,9 @@ const getPrivateStyles = (theme) =>
     alignSelf: 'center',
   },
   avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginHorizontal: 6,
   },
   modalOverlay: {
