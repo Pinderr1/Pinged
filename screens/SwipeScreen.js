@@ -34,6 +34,7 @@ import { BlurView } from 'expo-blur';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import { computeMatchPercent, sortUsers } from '../utils/userRanking';
 import PropTypes from 'prop-types';
 import * as Haptics from 'expo-haptics';
 import SkeletonUserCard from '../components/SkeletonUserCard';
@@ -45,40 +46,6 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const CARD_HEIGHT = SCREEN_HEIGHT * 0.75;
 const MAX_LIKES = 100;
 const BUTTON_ROW_BOTTOM = SCREEN_HEIGHT * 0.05;
-
-const computeMatchPercent = (a, b) => {
-  if (!a || !b) return 0;
-  let total = 0;
-  let score = 0;
-
-  // Shared favorite games
-  if (Array.isArray(a.favoriteGames) && Array.isArray(b.favoriteGames)) {
-    total += 1;
-    if (a.favoriteGames.some((g) => b.favoriteGames.includes(g))) score += 1;
-  }
-
-  // User A's gender preference towards B
-  if (a.genderPref && b.gender) {
-    total += 1;
-    if (a.genderPref === 'Any' || a.genderPref === b.gender) score += 1;
-  }
-
-  // User B's gender preference towards A
-  if (b.genderPref && a.gender) {
-    total += 1;
-    if (b.genderPref === 'Any' || b.genderPref === a.gender) score += 1;
-  }
-
-  // Similar age (within 3 years)
-  if (a.age && b.age) {
-    total += 1;
-    if (Math.abs(a.age - b.age) <= 3) score += 1;
-  }
-
-  if (total === 0) return 0;
-  return Math.round((score / total) * 100);
-};
-
 
 const SwipeScreen = () => {
   const { theme } = useTheme();
@@ -174,16 +141,15 @@ const SwipeScreen = () => {
             gender: u.gender || '',
             genderPref: u.genderPref || '',
             location: u.location || '',
+            isPremium: !!u.isPremium,
+            priorityScore: u.priorityScore || 0,
+            boostUntil: u.boostUntil || null,
             images,
           };
         });
 
-        // Sort by compatibility score so higher matches appear first
-        formatted.sort(
-          (aUser, bUser) =>
-            computeMatchPercent(currentUser, bUser) -
-            computeMatchPercent(currentUser, aUser)
-        );
+        // Sort by priority followed by compatibility score
+        sortUsers(currentUser, formatted);
 
         setUsers(formatted);
       } catch (e) {

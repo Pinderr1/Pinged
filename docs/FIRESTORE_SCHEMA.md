@@ -27,6 +27,8 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `expoPushToken` (string)
 - `online` (boolean)
 - `lastOnline` (timestamp) – last presence update time
+- `priorityScore` (number) – optional weight for user ranking
+- `boostUntil` (timestamp) – if set, user is boosted until this time
 
 ### Subcollections
 - **gameInvites** – invitations sent or received by the user. Each invite document mirrors the root `gameInvites` collection.
