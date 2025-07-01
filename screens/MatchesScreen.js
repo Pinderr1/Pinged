@@ -207,9 +207,9 @@ const MatchesScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'stretch',
     justifyContent: 'flex-start',
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
   },
   sectionTitle: {
     fontSize: 16,

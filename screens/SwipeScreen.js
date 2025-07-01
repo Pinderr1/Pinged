@@ -589,8 +589,8 @@ const getStyles = (theme) =>
   container: {
     flex: 1,
     paddingTop: HEADER_SPACING,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'stretch',
   },
   card: {
     position: 'absolute',

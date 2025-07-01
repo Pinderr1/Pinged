@@ -228,8 +228,8 @@ HomeScreen.propTypes = {
 const getStyles = (theme) =>
   StyleSheet.create({
     container: {
-      alignItems: 'center',
-      paddingHorizontal: 20,
+      alignItems: 'stretch',
+      paddingHorizontal: 0,
       paddingVertical: 20,
     },
     welcome: {

@@ -128,7 +128,8 @@ const PremiumScreen = ({ navigation, route }) => {
 
 const upgradeStyles = StyleSheet.create({
   container: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 0,
+    alignItems: 'stretch',
   },
   title: {
     fontSize: 24,
@@ -171,8 +172,8 @@ const getPaywallStyles = (theme) =>
   StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 24,
+    alignItems: 'stretch',
+    paddingHorizontal: 0,
     paddingTop: HEADER_SPACING,
   },
   title: {

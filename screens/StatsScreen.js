@@ -183,7 +183,8 @@ const getStyles = (theme) => StyleSheet.create({
   container: {
     paddingBottom: 80,
     paddingTop: HEADER_SPACING,
-    paddingHorizontal: 20
+    paddingHorizontal: 0,
+    alignItems: 'stretch',
   },
   profileCard: {
     alignItems: 'center',

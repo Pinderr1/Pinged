@@ -4,9 +4,9 @@ import { BUTTON_STYLE, FONT_SIZES } from './layout';
 const getStyles = (theme) =>
   StyleSheet.create({
     container: {
-      flexGrow: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'flex-start',
+      alignItems: 'stretch',
       paddingVertical: 20,
     },
     logoImage: {
@@ -206,8 +206,8 @@ const getStyles = (theme) =>
     },
   swipeScreen: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'stretch',
     paddingTop: 40
   },
   swipeButtons: {
