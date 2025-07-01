@@ -40,7 +40,17 @@ import Loader from "../components/Loader";
 import EmptyState from '../components/EmptyState';
 import { logGameStats } from '../utils/gameStats';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import PlayerInfoBar from '../components/PlayerInfoBar';
+import useUserProfile from '../hooks/useUserProfile';
 import PropTypes from 'prop-types';
+
+const computeBadges = (xp = 0, streak = 0) => {
+  const res = [];
+  if (xp >= 10) res.push('firstWin');
+  if (xp >= 50) res.push('perfectGame');
+  if (streak >= 7) res.push('dailyStreak');
+  return res;
+};
 const GameSessionScreen = ({ route, navigation, sessionType }) => {
   const type = sessionType || route.params?.sessionType || (route.params?.botId ? "bot" : "live");
   return type === "bot" ? (
@@ -75,6 +85,10 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const isReady = devMode || inviteStatus === 'ready';
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const overlayOpacity = useRef(new Animated.Value(1)).current;
+  const opponentProfile = useUserProfile(opponent?.id);
+
+  const userBadges = computeBadges(user?.xp, user?.streak);
+  const oppBadges = computeBadges(opponentProfile?.xp, opponentProfile?.streak);
 
   // Listen for Firestore invite status
   useEffect(() => {
@@ -202,6 +216,15 @@ const LiveSessionScreen = ({ route, navigation }) => {
     <GradientBackground style={globalStyles.swipeScreen}>
       <Header showLogoOnly />
 
+      <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 10 }}>
+        <PlayerInfoBar name="You" xp={user?.xp || 0} badges={userBadges} />
+        <PlayerInfoBar
+          name={opponent.displayName}
+          xp={opponentProfile?.xp || 0}
+          badges={oppBadges}
+        />
+      </View>
+
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         {GameComponent && gameActive && (
           <View style={{ alignItems: 'center' }}>
@@ -296,6 +319,7 @@ function BotSessionScreen({ route }) {
   );
   const { theme } = useTheme();
   const botStyles = getBotStyles(theme);
+  const { user } = useUser();
   const [game, setGame] = useState(initialGame);
 
   const aiKeyMap = { rockPaperScissors: 'rps' };
@@ -433,6 +457,10 @@ function BotSessionScreen({ route }) {
   return (
       <GradientBackground style={{ flex: 1 }}>
         <Header />
+        <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 10 }}>
+          <PlayerInfoBar name="You" xp={user?.xp || 0} badges={computeBadges(user?.xp, user?.streak)} />
+          <PlayerInfoBar name={bot.name} xp={0} badges={[]} />
+        </View>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
