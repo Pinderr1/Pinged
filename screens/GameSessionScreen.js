@@ -9,13 +9,13 @@ import {
   FlatList,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   Easing,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
+import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
@@ -437,7 +437,7 @@ function BotSessionScreen({ route }) {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           keyboardVerticalOffset={80}
         >
-        <SafeAreaView style={{ flex: 1, paddingTop: HEADER_SPACING, paddingHorizontal: 10, paddingBottom: 20 }}>
+        <ScreenContainer style={{ paddingTop: HEADER_SPACING, paddingBottom: 20 }}>
         <View style={botStyles.gameTabs}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {Object.entries(gameMap).map(([key, val]) => (
@@ -519,7 +519,7 @@ function BotSessionScreen({ route }) {
             </SafeKeyboardView>
           </View>
         </View>
-        </SafeAreaView>
+        </ScreenContainer>
         </KeyboardAvoidingView>
       </GradientBackground>
   );

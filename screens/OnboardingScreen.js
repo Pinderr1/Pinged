@@ -490,7 +490,13 @@ const getStyles = (theme) => {
   const accent = theme.accent;
 
   return StyleSheet.create({
-    container: { flex: 1, paddingTop: HEADER_SPACING, paddingHorizontal: 20, paddingBottom: 20, backgroundColor: background },
+    container: {
+      flex: 1,
+      paddingTop: HEADER_SPACING,
+      paddingBottom: 20,
+      backgroundColor: background,
+      alignItems: 'stretch',
+    },
     inner: { flex: 1, justifyContent: 'center' },
     progressText: {
       color: textColor,

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, SafeAreaView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
+import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
 import { useGameSessions } from '../contexts/GameSessionContext';
 import { useChats } from '../contexts/ChatContext';
@@ -69,32 +70,30 @@ const ActiveGamesScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <GradientBackground style={{ flex: 1 }}>
-        <Header />
-        <View style={{ flex: 1, paddingTop: HEADER_SPACING }}>
-          {loading ? (
-            <View style={styles.loader}>
-              <Loader />
-            </View>
-          ) : (
-            <FlatList
-              data={list}
-              keyExtractor={(item) => item.id}
-              renderItem={renderItem}
-              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-              ListEmptyComponent={
-                <EmptyState
-                  text="No active games."
-                  image={require('../assets/logo.png')}
-                />
-              }
-              contentContainerStyle={{ paddingBottom: 120 }}
-            />
-          )}
-        </View>
-      </GradientBackground>
-    </SafeAreaView>
+    <GradientBackground style={{ flex: 1 }}>
+      <Header />
+      <ScreenContainer style={{ paddingTop: HEADER_SPACING }}>
+        {loading ? (
+          <View style={styles.loader}>
+            <Loader />
+          </View>
+        ) : (
+          <FlatList
+            data={list}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+            ListEmptyComponent={
+              <EmptyState
+                text="No active games."
+                image={require('../assets/logo.png')}
+              />
+            }
+            contentContainerStyle={{ paddingBottom: 120 }}
+          />
+        )}
+      </ScreenContainer>
+    </GradientBackground>
   );
 };
 
