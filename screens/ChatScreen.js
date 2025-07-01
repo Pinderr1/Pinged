@@ -23,6 +23,7 @@ import Header from '../components/Header';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
 import ScreenContainer from '../components/ScreenContainer';
+import GameContainer from '../components/GameContainer';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
 import firebase from '../firebase';
@@ -390,22 +391,11 @@ function PrivateChat({ user }) {
   const gameSection = SelectedGameClient
     ? showGame
       ? (
-          <View
-            style={{
-              flex: 1,
-              padding: 10,
-              borderBottomWidth: 1,
-              borderColor: darkMode ? '#444' : '#ccc',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
+          <GameContainer
+            onToggleChat={() => setShowGame(false)}
+            player={{ name: 'You' }}
+            opponent={{ name: user.displayName }}
           >
-            <TouchableOpacity
-              style={privateStyles.closeBtn}
-              onPress={() => setShowGame(false)}
-            >
-              <Text style={privateStyles.closeBtnText}>X</Text>
-            </TouchableOpacity>
             {devMode && (
               <View style={{ flexDirection: 'row', marginBottom: 8 }}>
                 <TouchableOpacity
@@ -438,7 +428,7 @@ function PrivateChat({ user }) {
               playerID={devMode ? devPlayer : '0'}
               onGameEnd={handleGameEnd}
             />
-          </View>
+          </GameContainer>
         )
       : (
           <TouchableOpacity

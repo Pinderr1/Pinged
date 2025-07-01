@@ -27,6 +27,7 @@ import getGlobalStyles from '../styles';
 import { games } from '../games';
 import SyncedGame from '../components/SyncedGame';
 import GameOverModal from '../components/GameOverModal';
+import GameContainer from '../components/GameContainer';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { snapshotExists } from '../utils/firestore';
 import { createMatchIfMissing } from '../utils/matches';
@@ -260,7 +261,12 @@ const LiveSessionScreen = ({ route, navigation }) => {
                     <Text style={{ color: '#fff' }}>Player 2</Text>
                   </TouchableOpacity>
                 </View>
-                <GameComponent playerID={devPlayer} matchID="dev" />
+                <GameContainer
+                  player={{ name: 'You', xp: user?.xp }}
+                  opponent={{ name: 'Opponent' }}
+                >
+                  <GameComponent playerID={devPlayer} matchID="dev" />
+                </GameContainer>
               </>
             ) : (
               <SyncedGame
@@ -500,13 +506,11 @@ function BotSessionScreen({ route }) {
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
             {showBoard && !gameOver ? (
-              <>
-                <TouchableOpacity
-                  style={botStyles.closeBtn}
-                  onPress={() => setShowBoard(false)}
-                >
-                  <Text style={botStyles.closeBtnText}>X</Text>
-                </TouchableOpacity>
+              <GameContainer
+                onToggleChat={() => setShowBoard(false)}
+                player={{ name: 'You', xp: user?.xp }}
+                opponent={{ name: bot.name }}
+              >
                 <View style={botStyles.boardWrapper}>
                   <BoardComponent
                     G={G}
@@ -518,7 +522,7 @@ function BotSessionScreen({ route }) {
                 <TouchableOpacity style={botStyles.resetBtn} onPress={reset}>
                   <Text style={{ color: '#fff', fontWeight: 'bold' }}>Reset</Text>
                 </TouchableOpacity>
-              </>
+              </GameContainer>
             ) : !gameOver ? (
               <TouchableOpacity
                 style={botStyles.showBtn}
