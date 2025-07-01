@@ -13,6 +13,7 @@ import { MatchmakingProvider } from './MatchmakingContext';
 import { GameSessionProvider } from './GameSessionContext';
 import { TrendingProvider } from './TrendingContext';
 import { SoundProvider } from './SoundContext';
+import { FilterProvider } from './FilterContext';
 
 const Providers = ({ children }) => (
   <DevProvider>
@@ -25,13 +26,15 @@ const Providers = ({ children }) => (
                 <UserProvider>
                   <ListenerProvider>
                     <GameLimitProvider>
-                      <ChatProvider>
-                        <MatchmakingProvider>
-                          <TrendingProvider>
-                            <GameSessionProvider>{children}</GameSessionProvider>
-                          </TrendingProvider>
-                        </MatchmakingProvider>
-                      </ChatProvider>
+                      <FilterProvider>
+                        <ChatProvider>
+                          <MatchmakingProvider>
+                            <TrendingProvider>
+                              <GameSessionProvider>{children}</GameSessionProvider>
+                            </TrendingProvider>
+                          </MatchmakingProvider>
+                        </ChatProvider>
+                      </FilterProvider>
                     </GameLimitProvider>
                   </ListenerProvider>
                 </UserProvider>

@@ -14,6 +14,7 @@ import StatsScreen from '../screens/StatsScreen';
 import PlayScreen from '../screens/PlayScreen';
 import ActiveGamesScreen from '../screens/ActiveGamesScreen';
 import SwipeScreen from '../screens/SwipeScreen';
+import LikedYouScreen from '../screens/LikedYouScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +47,7 @@ export default function AppStack() {
         component={GameWithBotScreen}
         options={{ animation: 'fade_from_bottom' }}
       />
+      <Stack.Screen name="LikedYou" component={LikedYouScreen} />
       <Stack.Screen name="Play" component={PlayScreen} />
       <Stack.Screen
         name="Swipe"
