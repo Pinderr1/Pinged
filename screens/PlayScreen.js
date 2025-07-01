@@ -16,6 +16,8 @@ import { useGameLimit } from '../contexts/GameLimitContext';
 import { allGames } from '../data/games';
 import GameCard from '../components/GameCard';
 import GamePreviewModal from '../components/GamePreviewModal';
+import { games as gameRegistry } from '../games';
+import { getRandomBot } from '../ai/bots';
 import GameFilters from '../components/GameFilters';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import EmptyState from '../components/EmptyState';
@@ -23,6 +25,15 @@ import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
 import { useTrending } from '../contexts/TrendingContext';
 import { HEADER_SPACING } from '../layout';
+
+// Map app game IDs to boardgame registry keys for AI play
+const aiGameMap = allGames.reduce((acc, g) => {
+  const key = Object.keys(gameRegistry).find(
+    (k) => gameRegistry[k].meta.title === g.title
+  );
+  if (key) acc[g.id] = key;
+  return acc;
+}, {});
 
 
 const getAllCategories = () => {
@@ -88,6 +99,24 @@ const PlayScreen = ({ navigation }) => {
       game: { id, title, category, description }
     });
     // Game play is recorded in GameSessionScreen when the session starts
+  };
+
+  const handlePracticeGame = () => {
+    if (!previewGame) return;
+    setPreviewGame(null);
+    if (previewGame.premium && !isPremiumUser && !devMode) {
+      navigation.navigate('Premium', { context: 'paywall' });
+      return;
+    }
+    if (!requireCredits()) return;
+    const bot = getRandomBot();
+    const aiKeyMap = { rockPaperScissors: 'rps' };
+    const key = aiGameMap[previewGame.id];
+    const gameKey = key ? aiKeyMap[key] || key : 'ticTacToe';
+    navigation.navigate('GameWithBot', {
+      botId: bot.id,
+      game: gameKey,
+    });
   };
 
   const renderItem = ({ item }) => {
@@ -157,7 +186,8 @@ const PlayScreen = ({ navigation }) => {
         visible={!!previewGame}
         game={previewGame}
         onClose={() => setPreviewGame(null)}
-        onStart={handleStartGame}
+        onPlayFriend={handleStartGame}
+        onPracticeBot={handlePracticeGame}
       />
       </SafeKeyboardView>
     </GradientBackground>
