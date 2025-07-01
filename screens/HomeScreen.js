@@ -47,11 +47,6 @@ const HomeScreen = ({ navigation }) => {
   const [showBonus, setShowBonus] = useState(false);
   const local = getStyles(theme);
 
-  const shortcutActions = [
-    { key: 'startChat', title: 'Start Chat', emoji: '💬' },
-    { key: 'editProfile', title: 'Edit Profile', emoji: '📝' },
-    { key: 'viewMatches', title: 'View Matches', emoji: '👥' },
-  ];
 
   const quickPlayOptions = [
     { key: 'match', title: 'Invite Match', emoji: '👥' },
@@ -104,24 +99,10 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const handleShortcut = (key) => {
-    if (key === 'startChat') {
-      if (matches?.length) {
-        navigation.navigate('Chat', { user: matches[0] });
-      } else {
-        navigation.navigate('Matches');
-      }
-    } else if (key === 'editProfile') {
-      navigation.navigate('Profile', { editMode: true });
-    } else if (key === 'viewMatches') {
-      navigation.navigate('Matches');
-    }
-  };
 
   const level = Math.floor((user?.xp || 0) / 100);
   const xpProgress = (user?.xp || 0) % 100;
   const streakProgress = Math.min((user?.streak || 0) % 7, 7);
-  const dailyGame = allGames[0];
 
   return (
     <GradientBackground style={{ flex: 1 }}>
@@ -144,37 +125,17 @@ const HomeScreen = ({ navigation }) => {
           </View>
 
           <View style={local.group}>
-            <Text style={local.sectionTitle}>Daily Game</Text>
-            <Card
-              style={[local.gameTile, { backgroundColor: theme.card }]}
-              onPress={() => {
-                setPlayTarget('match');
-                selectGame(dailyGame);
-              }}
-            >
-              <View style={{ marginBottom: 8 }}>{dailyGame.icon}</View>
-              <Text style={[local.gameTitle, { color: theme.text }]}>{dailyGame.title}</Text>
-            </Card>
-          </View>
-
-          <View style={local.group}>
             <Text style={local.sectionTitle}>Quick Play</Text>
-            <FlatList
-              data={quickPlayOptions.slice(0, 2)}
-              keyExtractor={(item) => item.key}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={local.carousel}
-              renderItem={({ item }) => (
-                <Card
-                  onPress={() => openGamePicker(item.key)}
-                  style={[local.tile, { backgroundColor: theme.card }]}
-                >
-                  <Text style={local.tileEmoji}>{item.emoji}</Text>
-                  <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
-                </Card>
-              )}
-            />
+            {quickPlayOptions.slice(0, 2).map((item) => (
+              <Card
+                key={item.key}
+                onPress={() => openGamePicker(item.key)}
+                style={[local.fullTile, { backgroundColor: theme.card }]}
+              >
+                <Text style={[local.tileEmoji, { marginBottom: 0 }]}>{item.emoji}</Text>
+                <Text style={[local.fullTileText, { color: theme.text }]}>{item.title}</Text>
+              </Card>
+            ))}
           </View>
 
           <View style={local.group}>
@@ -217,31 +178,13 @@ const HomeScreen = ({ navigation }) => {
             )}
           </View>
 
-          <Text style={local.sectionTitle}>Shortcuts</Text>
-          <FlatList
-            data={shortcutActions}
-            keyExtractor={(item) => item.key}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={local.carousel}
-            renderItem={({ item }) => (
-              <Card
-                onPress={() => handleShortcut(item.key)}
-                style={[local.tile, { backgroundColor: theme.card }]}
-              >
-                <Text style={local.tileEmoji}>{item.emoji}</Text>
-                <Text style={[local.tileText, { color: theme.text }]}>{item.title}</Text>
-              </Card>
-            )}
-          />
-
           <View style={local.group}>
             <Card
               onPress={() => navigation.navigate('Play')}
-              style={[local.tile, { backgroundColor: theme.card }]}
+              style={[local.fullTile, { backgroundColor: theme.card }]}
             >
-              <Text style={local.tileEmoji}>🎮</Text>
-              <Text style={[local.tileText, { color: theme.text }]}>Games</Text>
+              <Text style={[local.tileEmoji, { marginBottom: 0 }]}>🎮</Text>
+              <Text style={[local.fullTileText, { color: theme.text }]}>Games</Text>
             </Card>
           </View>
 
@@ -363,9 +306,23 @@ const getStyles = (theme) =>
       alignItems: 'center',
       marginRight: 12,
     },
+    fullTile: {
+      alignSelf: 'stretch',
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 18,
+      paddingHorizontal: 20,
+      borderRadius: 12,
+      marginBottom: 12,
+    },
     tileEmoji: {
       fontSize: 28,
       marginBottom: 6,
+    },
+    fullTileText: {
+      fontSize: 16,
+      fontWeight: '600',
+      marginLeft: 12,
     },
     tileText: {
       fontSize: 14,
@@ -388,19 +345,6 @@ const getStyles = (theme) =>
     matchName: {
       fontSize: 13,
       fontWeight: '600',
-    },
-    gameTile: {
-      width: CARD_SIZE,
-      height: 160,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: 12,
-      padding: 12,
-    },
-    gameTitle: {
-      fontSize: 13,
-      fontWeight: '600',
-      textAlign: 'center',
     },
     modalBackdrop: {
       flex: 1,
