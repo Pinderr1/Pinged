@@ -169,7 +169,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={local.swipeButtonContainer}>
           <GradientButton
             text="Swipe Now"
-            onPress={() => navigation.navigate('Explore')}
+            onPress={() => navigation.navigate('Swipe')}
           />
         </View>
 
