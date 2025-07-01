@@ -94,8 +94,8 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const overlayOpacity = useRef(new Animated.Value(1)).current;
   const opponentProfile = useUserProfile(opponent?.id);
 
-  const userBadges = computeBadges(user?.xp, user?.streak);
-  const oppBadges = computeBadges(opponentProfile?.xp, opponentProfile?.streak);
+  const userBadges = user?.badges || [];
+  const oppBadges = opponentProfile?.badges || computeBadges(opponentProfile?.xp, opponentProfile?.streak);
 
   // Listen for Firestore invite status
   useEffect(() => {
@@ -481,7 +481,7 @@ function BotSessionScreen({ route }) {
       <GradientBackground style={{ flex: 1 }}>
         <Header />
         <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 10 }}>
-          <PlayerInfoBar name="You" xp={user?.xp || 0} badges={computeBadges(user?.xp, user?.streak)} />
+          <PlayerInfoBar name="You" xp={user?.xp || 0} badges={userBadges} />
           <PlayerInfoBar name={bot.name} xp={0} badges={[]} />
         </View>
         <KeyboardAvoidingView

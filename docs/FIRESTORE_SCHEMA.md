@@ -19,6 +19,7 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `premiumUpdatedAt` (timestamp)
 - `xp` (number)
 - `streak` (number)
+- `badges` (array of string) – earned badge ids
 - `lastActiveAt` (timestamp) – last login or game completion
 - `lastPlayedAt` (timestamp)
 - `streakRewardedAt` (timestamp) – last time a streak reward notification was sent
@@ -103,4 +104,10 @@ These per-user notifications can be paired with push notifications to keep users
 - `startedAt` (timestamp)
 - `endedAt` (timestamp)
 - `chatCounts` (map) – per-user message totals
+
+## Badges (`badges/{badgeId}`)
+- `title` (string)
+- `description` (string)
+- `icon` (string) – Ionicons icon name
+- `premium` (boolean) – if true, only awarded to premium users
 

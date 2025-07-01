@@ -70,10 +70,16 @@ exports.stripeWebhook = functions.https.onRequest((req, res) => {
     const session = event.data.object;
     const uid = session.metadata && session.metadata.uid;
     if (uid) {
-      admin.firestore().collection('users').doc(uid).update({
-        isPremium: true,
-        premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      }).catch(e => console.error('Failed to update premium status', e));
+      admin
+        .firestore()
+        .collection('users')
+        .doc(uid)
+        .update({
+          isPremium: true,
+          premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          badges: admin.firestore.FieldValue.arrayUnion('premiumMember'),
+        })
+        .catch((e) => console.error('Failed to update premium status', e));
     }
   }
 
@@ -95,10 +101,15 @@ exports.handleStripeWebhook = functions.https.onRequest(async (req, res) => {
     const uid = session.metadata && session.metadata.uid;
     if (uid) {
       try {
-        await admin.firestore().collection('users').doc(uid).update({
-          isPremium: true,
-          premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        await admin
+          .firestore()
+          .collection('users')
+          .doc(uid)
+          .update({
+            isPremium: true,
+            premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            badges: admin.firestore.FieldValue.arrayUnion('premiumMember'),
+          });
       } catch (e) {
         console.error('Failed to update premium status', e);
         return res.status(500).send('Failed to update user');

@@ -4,12 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ProgressBar from './ProgressBar';
 import { useTheme } from '../contexts/ThemeContext';
 import PropTypes from 'prop-types';
-
-const BADGES = [
-  { id: 'firstWin', icon: 'trophy-outline', title: 'First Win', desc: 'Win your first game.' },
-  { id: 'perfectGame', icon: 'star-outline', title: 'Perfect Game', desc: 'Win without mistakes.' },
-  { id: 'dailyStreak', icon: 'flame-outline', title: 'Daily Streak', desc: 'Play 7 days in a row.' },
-];
+import { BADGE_DEFINITIONS } from '../data/badges';
 
 export default function PlayerInfoBar({ name, xp = 0, badges = [] }) {
   const { theme } = useTheme();
@@ -26,7 +21,7 @@ export default function PlayerInfoBar({ name, xp = 0, badges = [] }) {
       <Text style={{ fontSize: 12, color: theme.textSecondary }}>Level {level}</Text>
       <ProgressBar value={progress} max={100} color={theme.accent} />
       <View style={{ flexDirection: 'row', marginTop: 4 }}>
-        {BADGES.map((badge) => {
+        {BADGE_DEFINITIONS.map((badge) => {
           const earned = badges.includes(badge.id);
           return (
             <TouchableOpacity

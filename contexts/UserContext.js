@@ -126,6 +126,19 @@ export const UserProvider = ({ children }) => {
           ? { lastPlayedAt: firebase.firestore.FieldValue.serverTimestamp() }
           : {}),
       });
+      const awarded = [];
+      const currentBadges = user.badges || [];
+      if (newXP >= 10 && !currentBadges.includes('firstWin')) awarded.push('firstWin');
+      if (newXP >= 50 && !currentBadges.includes('perfectGame')) awarded.push('perfectGame');
+      if (newStreak >= 7 && !currentBadges.includes('dailyStreak')) awarded.push('dailyStreak');
+      if (awarded.length) {
+        updateUser({ badges: [...currentBadges, ...awarded] });
+        await firebase
+          .firestore()
+          .collection('users')
+          .doc(user.uid)
+          .update({ badges: firebase.firestore.FieldValue.arrayUnion(...awarded) });
+      }
     } catch (e) {
       console.warn("Failed to update XP", e);
     }

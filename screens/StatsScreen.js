@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import GradientButton from '../components/GradientButton';
@@ -15,6 +16,7 @@ import ProfileCard from '../components/stats/ProfileCard';
 import StatBox from '../components/stats/StatBox';
 import ScreenContainer from '../components/ScreenContainer';
 import { CARD_STYLE } from '../components/Card';
+import { BADGE_DEFINITIONS } from '../data/badges';
 
 const StatsScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -32,7 +34,7 @@ const StatsScreen = ({ navigation }) => {
     messagesSent: 0,
     xp: 0,
     streak: 0,
-    badge: '',
+    badges: [],
   });
 
   const [loading, setLoading] = useState(true);
@@ -90,7 +92,7 @@ const StatsScreen = ({ navigation }) => {
           messagesSent,
           xp: data.xp || 0,
           streak: data.streak || 0,
-          badge: '',
+          badges: data.badges || [],
         });
         setLoading(false);
       } catch (e) {
@@ -163,8 +165,21 @@ const StatsScreen = ({ navigation }) => {
           <Text style={styles.statSub}>{stats.streak} days</Text>
         </StatBox>
         <StatBox loading={loading} styles={styles}>
-          <Text style={styles.statLabel}>Badge</Text>
-          <Text style={styles.statValue}>{stats.badge}</Text>
+          <Text style={styles.statLabel}>Badges</Text>
+          <View style={{ flexDirection: 'row', marginTop: 4 }}>
+            {BADGE_DEFINITIONS.map((badge) => {
+              const earned = stats.badges.includes(badge.id);
+              return (
+                <Ionicons
+                  key={badge.id}
+                  name={badge.icon}
+                  size={20}
+                  style={{ marginHorizontal: 4, opacity: earned ? 1 : 0.3 }}
+                  color={earned ? theme.accent : theme.textSecondary}
+                />
+              );
+            })}
+          </View>
         </StatBox>
 
         {!isPremium && (
