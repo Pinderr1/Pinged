@@ -9,7 +9,6 @@ import {
   Modal,
   RefreshControl,
   Platform,
-  KeyboardAvoidingView,
   Keyboard,
   LayoutAnimation,
   Dimensions,
@@ -26,6 +25,7 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
 import ScreenContainer from '../components/ScreenContainer';
 import GameContainer from '../components/GameContainer';
+import ChatContainer from '../components/ChatContainer';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
 import firebase from '../firebase';
@@ -411,12 +411,6 @@ function PrivateChat({ user }) {
   let gameSection = null;
   if (SelectedGameClient) {
     gameSection = (
-      <View
-        style={[
-          privateStyles.gameWrapper,
-          { height: gameVisible ? BOARD_HEIGHT : 0 },
-        ]}
-      >
         <GameContainer
           visible={gameVisible}
           onToggleChat={() => setShowGame(false)}
@@ -456,17 +450,11 @@ function PrivateChat({ user }) {
             onGameEnd={handleGameEnd}
           />
         </GameContainer>
-      </View>
     );
   }
 
   const chatSection = (
-    <View
-      style={[
-        privateStyles.chatSection,
-        { paddingBottom: INPUT_BAR_HEIGHT + (keyboardOpen ? 0 : insets.bottom) },
-      ]}
-    >
+    <View style={privateStyles.chatSection}>
       <FlatList
         style={{ flex: 1 }}
         data={messages}
@@ -525,15 +513,7 @@ function PrivateChat({ user }) {
     }
   };
 
-  const inputBarSection = (
-    <View
-      style={[
-        privateStyles.inputWrapper,
-        {
-          bottom: (keyboardOpen ? 0 : insets.bottom) + 16,
-        },
-      ]}
-    >
+  const inputBar = (
       <View style={privateStyles.inputBar}>
         <TouchableOpacity
           onLongPress={startRecording}
@@ -566,7 +546,6 @@ function PrivateChat({ user }) {
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
   );
 
 
@@ -592,27 +571,23 @@ function PrivateChat({ user }) {
         </View>
       </Modal>
       <ScreenContainer>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={HEADER_SPACING}
-        >
-          <View style={[privateStyles.content, { paddingTop: HEADER_SPACING }]}>
+        <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
+          <View style={[privateStyles.gameWrapper, { height: gameVisible ? BOARD_HEIGHT : 0 }]}>
             {gameSection}
-            <View style={privateStyles.chatWrapper}>
-              {showPlaceholders ? (
-                <PlaceholderBubbles />
-              ) : loading ? (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                  <Loader />
-                </View>
-              ) : (
-                chatSection
-              )}
-            </View>
           </View>
-          {inputBarSection}
-        </KeyboardAvoidingView>
+          <ChatContainer style={privateStyles.chatWrapper}>
+            {showPlaceholders ? (
+              <PlaceholderBubbles />
+            ) : loading ? (
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Loader />
+              </View>
+            ) : (
+              chatSection
+            )}
+            {inputBar}
+          </ChatContainer>
+        </SafeKeyboardView>
       </ScreenContainer>
     </GradientBackground>
   );
@@ -728,15 +703,7 @@ const getPrivateStyles = (theme) =>
   },
   chatSection: {
     flex: 1,
-    paddingTop: 10,
     paddingHorizontal: 10,
-  },
-  inputWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'transparent',
   },
   });
 
