@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, Image, Animated } from 'react-native';
+import { View, Text, Animated } from 'react-native';
 import PropTypes from 'prop-types';
 import Card from './Card';
 import GradientButton from './GradientButton';
 import Loader from './Loader';
 import useCardPressAnimation from '../hooks/useCardPressAnimation';
+import AvatarRing from './AvatarRing';
 
 const InviteUserCard = ({ item, onInvite, isInvited, isLoading, theme, darkMode, width }) => {
   const { scale, handlePressIn, handlePressOut, playSuccess } = useCardPressAnimation();
@@ -24,9 +25,12 @@ const InviteUserCard = ({ item, onInvite, isInvited, isLoading, theme, darkMode,
       }}
     >
       <View style={{ alignItems: 'center' }}>
-        <Image
+        <AvatarRing
           source={item.photo}
-          style={{ width: 50, height: 50, borderRadius: 25, marginBottom: 8 }}
+          size={42}
+          isMatch
+          isOnline={item.online}
+          style={{ marginBottom: 8 }}
         />
         <Text style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>
           {item.displayName}
