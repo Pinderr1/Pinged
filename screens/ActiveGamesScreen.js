@@ -12,6 +12,7 @@ import firebase from '../firebase';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
 import { HEADER_SPACING } from '../layout';
+import { CARD_STYLE } from '../components/Card';
 
 const ActiveGamesScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -103,6 +104,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginHorizontal: 16,
     marginBottom: 12,
+    ...CARD_STYLE,
   },
   gameText: {
     fontSize: 16,

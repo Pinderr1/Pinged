@@ -15,7 +15,7 @@ import {
   RefreshControl
 } from 'react-native';
 import GradientButton from '../components/GradientButton';
-import Card from '../components/Card';
+import Card, { CARD_STYLE } from '../components/Card';
 import ScreenContainer from '../components/ScreenContainer';
 import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
@@ -461,7 +461,7 @@ const getStyles = (theme, skeletonColor) =>
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
-    
+    ...CARD_STYLE,
   },
   bannerImage: {
     width: '100%',
@@ -489,7 +489,7 @@ const getStyles = (theme, skeletonColor) =>
     borderRadius: 16,
     marginBottom: 20,
     padding: 12,
-    
+    ...CARD_STYLE,
   },
   image: {
     width: '100%',
@@ -547,7 +547,7 @@ const getStyles = (theme, skeletonColor) =>
     padding: 14,
     marginHorizontal: 16,
     marginBottom: 12,
-    
+    ...CARD_STYLE,
   },
   postTitle: {
     fontSize: FONT_SIZES.MD - 1,
