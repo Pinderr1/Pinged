@@ -612,6 +612,7 @@ const getPrivateStyles = (theme) =>
   gameWrapper: {
     flex: 1,
     overflow: 'hidden',
+    marginBottom: 20,
   },
   chatWrapper: {
     flex: 1,
