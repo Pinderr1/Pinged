@@ -5,8 +5,12 @@ import { useTheme } from '../contexts/ThemeContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
 import { HEADER_HEIGHT } from '../layout';
 
-export interface HeaderProps {}
-const Header: React.FC<HeaderProps> = () => {
+export interface HeaderProps {
+  /** Only show the center logo */
+  showLogoOnly?: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ showLogoOnly = false }) => {
   const navigation = useNavigation();
   const { darkMode, theme } = useTheme();
   const notificationCount = useUnreadNotifications();
@@ -14,34 +18,39 @@ const Header: React.FC<HeaderProps> = () => {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.headerBackground }]}>
       <View style={styles.container}>
-        {/* Left icon - Gear */}
-        <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.iconWrapper}>
-          <Image
-            source={require('../assets/gear.png')}
-            style={[styles.icon, { tintColor: theme.text }]}
-          />
-        </TouchableOpacity>
-
-        {/* Center logo */}
-        <Image
-          source={require('../assets/logo.png')}
-          style={styles.logo}
-        />
-
-        {/* Right icon - Bell with badge */}
-        <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.iconWrapper}>
-          <View style={styles.bellWrapper}>
+        {!showLogoOnly && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Settings')}
+            style={styles.iconWrapper}
+          >
             <Image
-              source={require('../assets/bell.png')}
+              source={require('../assets/gear.png')}
               style={[styles.icon, { tintColor: theme.text }]}
             />
-            {notificationCount > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{notificationCount}</Text>
-              </View>
-            )}
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        )}
+
+        {/* Center logo */}
+        <Image source={require('../assets/logo.png')} style={styles.logo} />
+
+        {!showLogoOnly && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Notifications')}
+            style={styles.iconWrapper}
+          >
+            <View style={styles.bellWrapper}>
+              <Image
+                source={require('../assets/bell.png')}
+                style={[styles.icon, { tintColor: theme.text }]}
+              />
+              {notificationCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{notificationCount}</Text>
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );

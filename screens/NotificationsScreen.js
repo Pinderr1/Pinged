@@ -18,6 +18,7 @@ import GradientBackground from '../components/GradientBackground';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { useUser } from '../contexts/UserContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { HEADER_SPACING } from '../layout';
 import firebase from '../firebase';
 import { games } from '../games';
 import PropTypes from 'prop-types';
@@ -118,7 +119,13 @@ const NotificationsScreen = ({ navigation }) => {
   return (
     <GradientBackground style={styles.container}>
       <Header navigation={navigation} />
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingTop: HEADER_SPACING,
+          padding: 20,
+          paddingBottom: 120,
+        }}
+      >
         <Text style={[local.title, { color: theme.text }]}>Game Invites</Text>
 
         {pendingInvites.length === 0 ? (
