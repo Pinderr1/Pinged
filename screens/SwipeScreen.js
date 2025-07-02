@@ -35,7 +35,6 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
 import { computePriority } from '../utils/priority';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
-import PropTypes from 'prop-types';
 import * as Haptics from 'expo-haptics';
 import SkeletonUserCard from '../components/SkeletonUserCard';
 import EmptyState from '../components/EmptyState';
@@ -793,7 +792,5 @@ const getStyles = (theme) =>
     paddingHorizontal: 20,
   },
 });
-
-SwipeScreen.propTypes = {};
 
 export default SwipeScreen;
