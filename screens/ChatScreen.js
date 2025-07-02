@@ -47,7 +47,7 @@ import EmptyState from '../components/EmptyState';
 
 // Available emoji reactions for group chats
 const REACTIONS = ['🔥', '😂', '❤️'];
-const INPUT_BAR_HEIGHT = 70;
+const INPUT_BAR_HEIGHT = 60;
 
 /*******************************
  * Private one-on-one chat UI *
@@ -81,6 +81,7 @@ function PrivateChat({ user }) {
   const [text, setText] = useState('');
   const [devPlayer, setDevPlayer] = useState('0');
   const [isTyping, setIsTyping] = useState(false);
+  const [showGameMenu, setShowGameMenu] = useState(false);
   const inputRef = useRef(null);
   const typingTimeout = useRef(null);
   const [otherUserId, setOtherUserId] = useState(null);
@@ -513,6 +514,16 @@ function PrivateChat({ user }) {
     }
   };
 
+  const handleChangeGame = () => {
+    setShowGameMenu(false);
+    setShowGameModal(true);
+  };
+
+  const handleCancelGame = () => {
+    setShowGameMenu(false);
+    setActiveGame(user.id, null);
+  };
+
   const inputBarOffset = keyboardOpen ? keyboardHeight : 0;
   const inputBar = (
       <View
@@ -551,6 +562,14 @@ function PrivateChat({ user }) {
             Play
           </Text>
         </TouchableOpacity>
+        {activeGameId && (
+          <TouchableOpacity
+            style={privateStyles.menuIcon}
+            onPress={() => setShowGameMenu((v) => !v)}
+          >
+            <Ionicons name="ellipsis-vertical" size={20} color="#fff" />
+          </TouchableOpacity>
+        )}
       </View>
   );
 
@@ -572,6 +591,29 @@ function PrivateChat({ user }) {
               onPress={() => setShowGameModal(false)}
             >
               <Text style={{ color: '#fff', fontWeight: 'bold' }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        visible={showGameMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowGameMenu(false)}
+      >
+        <View style={privateStyles.modalOverlay}>
+          <View style={privateStyles.menuContent}>
+            <TouchableOpacity
+              style={privateStyles.gameOption}
+              onPress={handleChangeGame}
+            >
+              <Text style={privateStyles.gameOptionText}>Change Game</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={privateStyles.gameOption}
+              onPress={handleCancelGame}
+            >
+              <Text style={privateStyles.gameOptionText}>Cancel Game</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -649,8 +691,8 @@ const getPrivateStyles = (theme) =>
   inputBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
   },
   input: {
     flex: 1,
@@ -662,8 +704,8 @@ const getPrivateStyles = (theme) =>
   },
   sendBtn: {
     backgroundColor: theme.accent,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     borderRadius: 20,
   },
   playButton: {
@@ -673,6 +715,14 @@ const getPrivateStyles = (theme) =>
     borderRadius: 16,
     alignSelf: 'center',
     marginLeft: 8,
+  },
+  menuIcon: {
+    backgroundColor: '#009688',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    alignSelf: 'center',
+    marginLeft: 6,
   },
   avatar: {
     width: 40,
@@ -692,6 +742,12 @@ const getPrivateStyles = (theme) =>
     borderRadius: 10,
     width: '80%',
     maxHeight: '60%',
+  },
+  menuContent: {
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 10,
+    width: 180,
   },
   gameOption: {
     padding: 12,
