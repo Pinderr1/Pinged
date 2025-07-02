@@ -26,6 +26,8 @@ import Loader from '../components/Loader';
 import ScreenContainer from '../components/ScreenContainer';
 import GameContainer from '../components/GameContainer';
 import ChatContainer from '../components/ChatContainer';
+import LottieView from 'lottie-react-native';
+import { BlurView } from 'expo-blur';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
 import firebase from '../firebase';
@@ -96,6 +98,7 @@ function PrivateChat({ user }) {
   const [firstGame, setFirstGame] = useState(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [gameResult, setGameResult] = useState(null);
   const showPlaceholders = loading && messages.length === 0;
 
   useEffect(() => {
@@ -297,6 +300,7 @@ function PrivateChat({ user }) {
   const handleGameEnd = (result) => {
     if (!result) return;
     addGameXP();
+    setGameResult(result);
     if (result.winner !== undefined) {
       const msg = result.winner === '0' ? 'You win!' : `${user.displayName} wins.`;
       sendChatMessage(`Game over. ${msg}`, 'system');
@@ -305,6 +309,13 @@ function PrivateChat({ user }) {
     }
     setActiveGame(user.id, null);
   };
+
+  useEffect(() => {
+    if (gameResult) {
+      const t = setTimeout(() => setGameResult(null), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [gameResult]);
 
 
   const handleGameSelect = (gameId) => {
@@ -558,6 +569,25 @@ function PrivateChat({ user }) {
   return (
     <GradientBackground style={{ flex: 1 }}>
       <Header />
+      <Modal visible={!!gameResult} transparent animationType="fade">
+        <BlurView intensity={60} tint="dark" style={privateStyles.resultOverlay}>
+          {gameResult?.winner === '0' ? (
+            <LottieView
+              source={require('../assets/confetti.json')}
+              autoPlay
+              loop={false}
+              style={privateStyles.resultAnim}
+            />
+          ) : null}
+          <Text style={privateStyles.resultText}>
+            {gameResult?.winner === '0'
+              ? 'You win!'
+              : gameResult?.winner === '1'
+              ? `${user.displayName} wins.`
+              : 'Draw.'}
+          </Text>
+        </BlurView>
+      </Modal>
       <Modal
         visible={showGameModal}
         transparent
@@ -701,6 +731,19 @@ const getPrivateStyles = (theme) =>
   gameOptionText: {
     fontSize: 16,
     color: '#333',
+  },
+  resultOverlay: {
+    flex: 1,
+    backgroundColor: '#0009',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  resultAnim: { width: 250, height: 250 },
+  resultText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 20,
   },
   typingIndicator: {
     fontSize: 12,
