@@ -26,6 +26,7 @@ import Loader from '../components/Loader';
 import ScreenContainer from '../components/ScreenContainer';
 import GameContainer from '../components/GameContainer';
 import ChatContainer from '../components/ChatContainer';
+import LottieView from 'lottie-react-native';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
 import firebase from '../firebase';
@@ -96,6 +97,7 @@ function PrivateChat({ user }) {
   const [firstGame, setFirstGame] = useState(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [endAnimation, setEndAnimation] = useState(null);
   const showPlaceholders = loading && messages.length === 0;
 
   useEffect(() => {
@@ -300,10 +302,14 @@ function PrivateChat({ user }) {
     if (result.winner !== undefined) {
       const msg = result.winner === '0' ? 'You win!' : `${user.displayName} wins.`;
       sendChatMessage(`Game over. ${msg}`, 'system');
+      setEndAnimation('win');
     } else if (result.draw) {
       sendChatMessage('Game over. Draw.', 'system');
+      setEndAnimation('draw');
     }
-    setActiveGame(user.id, null);
+    if (!result.winner && !result.draw) {
+      setActiveGame(user.id, null);
+    }
   };
 
 
@@ -595,6 +601,24 @@ function PrivateChat({ user }) {
           </ChatContainer>
         </SafeKeyboardView>
       </ScreenContainer>
+      {endAnimation && (
+        <View style={privateStyles.gameEndOverlay} pointerEvents="none">
+          <LottieView
+            source={
+              endAnimation === 'draw'
+                ? require('../assets/hearts.json')
+                : require('../assets/confetti.json')
+            }
+            autoPlay
+            loop={false}
+            onAnimationFinish={() => {
+              setEndAnimation(null);
+              setActiveGame(user.id, null);
+            }}
+            style={{ width: 250, height: 250 }}
+          />
+        </View>
+      )}
     </GradientBackground>
   );
 }
@@ -711,6 +735,11 @@ const getPrivateStyles = (theme) =>
     flex: 1,
     paddingHorizontal: 10,
     paddingBottom: INPUT_BAR_HEIGHT,
+  },
+  gameEndOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   });
 
