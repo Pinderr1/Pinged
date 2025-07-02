@@ -175,9 +175,6 @@ const SwipeScreen = () => {
         }
         const snap = await userQuery.limit(50).get();
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        if (devMode) {
-          data = [...devUsers, ...data];
-        }
         let formatted = data.map((u) => {
           const imgs = Array.isArray(u.photos) && u.photos.length
             ? u.photos
@@ -225,6 +222,25 @@ const SwipeScreen = () => {
             computeMatchPercent(currentUser, aUser)
           );
         });
+
+        if (devMode) {
+          const extras = devUsers.map((u) => ({
+            id: u.id,
+            displayName: u.displayName,
+            age: u.age,
+            bio: u.bio,
+            favoriteGames: Array.isArray(u.favoriteGames) ? u.favoriteGames : [],
+            gender: u.gender || '',
+            genderPref: u.genderPref || '',
+            location: u.location || '',
+            priorityScore: 0,
+            boostUntil: null,
+            images: u.photos.map((img) =>
+              imageSource(img, require('../assets/user1.jpg'))
+            ),
+          }));
+          formatted = [...extras, ...formatted];
+        }
 
         setUsers(formatted);
       } catch (e) {

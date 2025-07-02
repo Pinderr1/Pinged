@@ -111,7 +111,7 @@ function PrivateChat({ user }) {
     const handleShow = (e) => {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setKeyboardOpen(true);
-      setKeyboardHeight(e.endCoordinates?.height || 0);
+      setKeyboardHeight((e.endCoordinates?.height || 0) - insets.bottom);
     };
 
     const handleHide = () => {
@@ -414,6 +414,7 @@ function PrivateChat({ user }) {
         <GameContainer
           visible={gameVisible}
           onToggleChat={() => setShowGame(false)}
+          onClose={() => setShowGame(false)}
           player={{ name: 'You' }}
           opponent={{ name: user.displayName }}
         >
@@ -513,12 +514,12 @@ function PrivateChat({ user }) {
     }
   };
 
-  const inputBarOffset = keyboardOpen ? keyboardHeight : 0;
+  const inputBarOffset = keyboardOpen ? keyboardHeight - insets.bottom : 0;
   const inputBar = (
       <View
         style={[
           privateStyles.inputBar,
-          { marginBottom: inputBarOffset, paddingBottom: insets.bottom },
+          { bottom: inputBarOffset, paddingBottom: insets.bottom },
         ]}
       >
         <TouchableOpacity
@@ -647,6 +648,10 @@ const getPrivateStyles = (theme) =>
     marginTop: 2,
   },
   inputBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,

@@ -157,12 +157,14 @@ const HomeScreen = ({ navigation }) => {
 
           <View style={local.communityBoard}>
             <Text style={local.sectionTitle}>Community Board</Text>
-            {SAMPLE_EVENTS.slice(0, 3).map((ev) => (
-              <EventFlyer
-                key={ev.id}
-                event={ev}
-                onJoin={() => navigation.navigate('Community')}
-              />
+            {SAMPLE_EVENTS.slice(0, 3).map((ev, i) => (
+              <View key={ev.id} style={local.note}>
+                <Text style={local.pin}>📌</Text>
+                <EventFlyer
+                  event={ev}
+                  onJoin={() => navigation.navigate('Community')}
+                />
+              </View>
             ))}
           </View>
         </ScrollView>
@@ -371,6 +373,27 @@ const getStyles = (theme) =>
     communityBoard: {
       width: '100%',
       marginBottom: 24,
+      backgroundColor: '#DEB887',
+      padding: 12,
+      borderRadius: 12,
+    },
+    note: {
+      backgroundColor: '#fff8dc',
+      borderRadius: 8,
+      padding: 8,
+      marginBottom: 12,
+      position: 'relative',
+      shadowColor: '#000',
+      shadowOpacity: 0.1,
+      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    pin: {
+      position: 'absolute',
+      top: -10,
+      right: 16,
+      fontSize: 18,
     },
   });
 

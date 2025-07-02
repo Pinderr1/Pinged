@@ -13,6 +13,7 @@ export default function GameContainer({
   player = {},
   opponent = {},
   onToggleChat,
+  onClose,
   visible = true,
 }) {
   const { theme } = useTheme();
@@ -44,6 +45,11 @@ export default function GameContainer({
             />
           </TouchableOpacity>
         )}
+        {onClose && (
+          <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+            <Ionicons name="close" size={24} color={theme.text} />
+          </TouchableOpacity>
+        )}
         <PlayerInfoBar
           name={opponent.name || 'Opponent'}
           xp={opponent.xp}
@@ -64,6 +70,7 @@ GameContainer.propTypes = {
   player: PropTypes.object,
   opponent: PropTypes.object,
   onToggleChat: PropTypes.func,
+  onClose: PropTypes.func,
   visible: PropTypes.bool,
 };
 
@@ -78,6 +85,7 @@ const getStyles = (theme) =>
       marginTop: 10,
     },
     chatToggle: { paddingHorizontal: 8 },
+    closeBtn: { position: 'absolute', top: 4, right: 4, padding: 4 },
     boardSlot: {
       flex: 1,
       justifyContent: 'center',
