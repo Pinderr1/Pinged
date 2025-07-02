@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -57,7 +57,7 @@ const NimBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const NimClient = Client({ game: NimGame, board: NimBoard });
+const NimClient = createGameClient({ game: NimGame, board: NimBoard });
 
 export const Game = NimGame;
 export const Board = NimBoard;

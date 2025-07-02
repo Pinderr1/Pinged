@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
@@ -117,7 +117,7 @@ const BlackjackBoard = ({ G, ctx, moves, playerID, onGameEnd }) => {
   );
 };
 
-const BlackjackClient = Client({ game: BlackjackGame, board: BlackjackBoard });
+const BlackjackClient = createGameClient({ game: BlackjackGame, board: BlackjackBoard });
 
 export const Game = BlackjackGame;
 export const Board = BlackjackBoard;

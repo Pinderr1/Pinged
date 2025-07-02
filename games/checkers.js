@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -179,7 +179,7 @@ const CheckersBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const CheckersClient = Client({ game: CheckersGame, board: CheckersBoard });
+const CheckersClient = createGameClient({ game: CheckersGame, board: CheckersBoard });
 
 export const Game = CheckersGame;
 export const Board = CheckersBoard;

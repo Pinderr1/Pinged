@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
@@ -103,7 +103,7 @@ const GomokuBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const GomokuClient = Client({ game: GomokuGame, board: GomokuBoard });
+const GomokuClient = createGameClient({ game: GomokuGame, board: GomokuBoard });
 
 export const Game = GomokuGame;
 export const Board = GomokuBoard;

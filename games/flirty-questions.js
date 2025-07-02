@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
 
@@ -60,7 +60,7 @@ const FlirtyBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const FlirtyClient = Client({ game: FlirtyGame, board: FlirtyBoard });
+const FlirtyClient = createGameClient({ game: FlirtyGame, board: FlirtyBoard });
 
 export const Game = FlirtyGame;
 export const Board = FlirtyBoard;
