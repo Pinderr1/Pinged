@@ -100,7 +100,7 @@ ToastItem.propTypes = {
 
 const NotificationCenter = ({ color }) => {
   const { theme } = useTheme();
-  const { queue, removeNotification } = useNotification();
+  const { queue, dismissNotification } = useNotification();
   const bannerColor = color || theme.accent;
 
   const activeToasts = queue.slice(0, 2);
@@ -115,7 +115,7 @@ const NotificationCenter = ({ color }) => {
           item={item}
           index={index}
           color={bannerColor}
-          onDismiss={() => removeNotification(item.id)}
+          onDismiss={() => dismissNotification(item.id)}
         />
       ))}
     </View>

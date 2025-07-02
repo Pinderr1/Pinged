@@ -1,8 +1,11 @@
 import React, { createContext, useState, useContext } from 'react';
+import firebase from '../firebase';
+import { useUser } from './UserContext';
 
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
+  const { user } = useUser();
   const [queue, setQueue] = useState([]);
 
   const showNotification = (payload) => {
@@ -16,9 +19,25 @@ export const NotificationProvider = ({ children }) => {
     setQueue((prev) => prev.filter((n) => n.id !== id));
   };
 
+  const dismissNotification = async (id) => {
+    removeNotification(id);
+    if (!user?.uid) return;
+    try {
+      await firebase
+        .firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('notifications')
+        .doc(id)
+        .update({ read: true });
+    } catch (e) {
+      console.warn('Failed to dismiss notification', e);
+    }
+  };
+
   return (
     <NotificationContext.Provider
-      value={{ queue, showNotification, removeNotification }}
+      value={{ queue, showNotification, removeNotification, dismissNotification }}
     >
       {children}
     </NotificationContext.Provider>

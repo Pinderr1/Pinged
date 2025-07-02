@@ -18,6 +18,7 @@ import GradientBackground from '../components/GradientBackground';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { useUser } from '../contexts/UserContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useNotification } from '../contexts/NotificationContext';
 import { HEADER_SPACING } from '../layout';
 import firebase from '../firebase';
 import { games } from '../games';
@@ -54,6 +55,7 @@ const NotificationsScreen = ({ navigation }) => {
   const { incomingInvites, acceptGameInvite, cancelGameInvite } = useMatchmaking();
   const { user } = useUser();
   const { darkMode, theme } = useTheme();
+  const { dismissNotification } = useNotification();
   const styles = getStyles(theme);
   const [loadingId, setLoadingId] = useState(null);
   const [invitesLoaded, setInvitesLoaded] = useState(false);
@@ -61,6 +63,13 @@ const NotificationsScreen = ({ navigation }) => {
   useEffect(() => {
     setInvitesLoaded(true);
   }, [incomingInvites]);
+
+  useEffect(() => {
+    if (!invitesLoaded) return;
+    incomingInvites
+      .filter((i) => i.status === 'pending')
+      .forEach((i) => dismissNotification(i.id));
+  }, [invitesLoaded, incomingInvites]);
 
   const pendingInvites = incomingInvites.filter((i) => i.status === 'pending');
 
@@ -99,6 +108,7 @@ const NotificationsScreen = ({ navigation }) => {
       console.warn('Failed to accept invite', e);
     }
     setLoadingId(null);
+    dismissNotification(invite.id);
   };
 
   const handleDecline = async (invite) => {
@@ -114,6 +124,7 @@ const NotificationsScreen = ({ navigation }) => {
       .catch((e) => console.warn('Failed to decline invite', e));
     setLoadingId(null);
     Vibration.vibrate(40);
+    dismissNotification(invite.id);
   };
 
   return (
