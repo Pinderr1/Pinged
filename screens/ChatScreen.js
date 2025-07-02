@@ -78,6 +78,7 @@ function PrivateChat({ user }) {
 
   const prevGameIdRef = useRef(null);
   const [showGameModal, setShowGameModal] = useState(false);
+  const [showGameMenu, setShowGameMenu] = useState(false);
   const [text, setText] = useState('');
   const [devPlayer, setDevPlayer] = useState('0');
   const [isTyping, setIsTyping] = useState(false);
@@ -513,7 +514,18 @@ function PrivateChat({ user }) {
     }
   };
 
+  const handleCancelGame = () => {
+    setActiveGame(user.id, null);
+    setShowGameMenu(false);
+  };
+
+  const handleChangeGame = () => {
+    setShowGameModal(true);
+    setShowGameMenu(false);
+  };
+
   const inputBarOffset = keyboardOpen ? keyboardHeight : 0;
+  const menuBottom = inputBarOffset + insets.bottom + INPUT_BAR_HEIGHT + 10;
   const inputBar = (
       <View
         style={[
@@ -551,6 +563,14 @@ function PrivateChat({ user }) {
             Play
           </Text>
         </TouchableOpacity>
+        {activeGameId && (
+          <TouchableOpacity
+            style={privateStyles.menuButton}
+            onPress={() => setShowGameMenu((v) => !v)}
+          >
+            <Ionicons name="ellipsis-vertical" size={18} color="#fff" />
+          </TouchableOpacity>
+        )}
       </View>
   );
 
@@ -593,6 +613,16 @@ function PrivateChat({ user }) {
             )}
             {inputBar}
           </ChatContainer>
+          {showGameMenu && (
+            <View style={[privateStyles.gameMenu, { bottom: menuBottom }]}>
+              <TouchableOpacity onPress={handleCancelGame}>
+                <Text style={privateStyles.gameMenuItem}>Cancel Game</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleChangeGame}>
+                <Text style={privateStyles.gameMenuItem}>Change Game</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </SafeKeyboardView>
       </ScreenContainer>
     </GradientBackground>
@@ -673,6 +703,24 @@ const getPrivateStyles = (theme) =>
     borderRadius: 16,
     alignSelf: 'center',
     marginLeft: 8,
+  },
+  menuButton: {
+    backgroundColor: '#009688',
+    padding: 6,
+    borderRadius: 16,
+    alignSelf: 'center',
+    marginLeft: 4,
+  },
+  gameMenu: {
+    position: 'absolute',
+    right: 20,
+    backgroundColor: '#009688',
+    borderRadius: 8,
+    padding: 8,
+  },
+  gameMenuItem: {
+    color: '#fff',
+    paddingVertical: 6,
   },
   avatar: {
     width: 40,
