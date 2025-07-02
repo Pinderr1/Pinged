@@ -32,6 +32,7 @@ import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
 import firebase from '../firebase';
 import * as Haptics from 'expo-haptics';
+import { Audio } from 'expo-av';
 import { uploadVoiceAsync } from '../utils/upload';
 import { useTheme } from '../contexts/ThemeContext';
 import { HEADER_SPACING, FONT_SIZES } from '../layout';
@@ -99,6 +100,9 @@ function PrivateChat({ user }) {
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [gameResult, setGameResult] = useState(null);
+  const winSound = useRef(null);
+  const loseSound = useRef(null);
+  const drawSound = useRef(null);
   const showPlaceholders = loading && messages.length === 0;
 
   useEffect(() => {
@@ -108,6 +112,27 @@ function PrivateChat({ user }) {
     setFirstGame(
       gameList[Math.floor(Math.random() * gameList.length)] || null
     );
+  }, []);
+
+  useEffect(() => {
+    const loadSounds = async () => {
+      try {
+        const win = await Audio.Sound.createAsync({ uri: './assets/sfx/win.mp3' });
+        winSound.current = win.sound || win;
+        const lose = await Audio.Sound.createAsync({ uri: './assets/sfx/lose.mp3' });
+        loseSound.current = lose.sound || lose;
+        const draw = await Audio.Sound.createAsync({ uri: './assets/sfx/draw.mp3' });
+        drawSound.current = draw.sound || draw;
+      } catch (e) {
+        console.warn('Failed to load game end sounds', e);
+      }
+    };
+    loadSounds();
+    return () => {
+      winSound.current?.unloadAsync();
+      loseSound.current?.unloadAsync();
+      drawSound.current?.unloadAsync();
+    };
   }, []);
 
   useEffect(() => {
@@ -297,6 +322,20 @@ function PrivateChat({ user }) {
     setRefreshing(false);
   };
 
+  const playSound = async (type) => {
+    try {
+      if (type === 'win') {
+        await winSound.current?.replayAsync();
+      } else if (type === 'lose') {
+        await loseSound.current?.replayAsync();
+      } else if (type === 'draw') {
+        await drawSound.current?.replayAsync();
+      }
+    } catch (e) {
+      console.warn('Failed to play sound', e);
+    }
+  };
+
   const handleGameEnd = (result) => {
     if (!result) return;
     addGameXP();
@@ -304,8 +343,21 @@ function PrivateChat({ user }) {
     if (result.winner !== undefined) {
       const msg = result.winner === '0' ? 'You win!' : `${user.displayName} wins.`;
       sendChatMessage(`Game over. ${msg}`, 'system');
+      if (result.winner === '0') {
+        playSound('win');
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success
+        ).catch(() => {});
+      } else if (result.winner === '1') {
+        playSound('lose');
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Error
+        ).catch(() => {});
+      }
     } else if (result.draw) {
       sendChatMessage('Game over. Draw.', 'system');
+      playSound('draw');
+      Haptics.selectionAsync().catch(() => {});
     }
     setActiveGame(user.id, null);
   };
