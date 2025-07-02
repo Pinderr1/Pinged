@@ -45,6 +45,7 @@ import useVoiceRecorder from '../hooks/useVoiceRecorder';
 // TODO: add support for sending short voice or video intro clips in chat
 import Toast from 'react-native-toast-message';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import useDebouncedCallback from '../hooks/useDebouncedCallback';
 import EmptyState from '../components/EmptyState';
 
 // Available emoji reactions for group chats
@@ -250,6 +251,8 @@ function PrivateChat({ user }) {
       updateTyping(false);
     }
   };
+
+  const [debouncedSend, sending] = useDebouncedCallback(handleSend, 800);
 
 
   const handleVoiceFinish = async () => {
@@ -569,7 +572,11 @@ function PrivateChat({ user }) {
           onChangeText={handleTextChange}
           placeholderTextColor="#888"
         />
-        <TouchableOpacity style={privateStyles.sendBtn} onPress={handleSend}>
+        <TouchableOpacity
+          style={[privateStyles.sendBtn, sending && { opacity: 0.6 }]}
+          onPress={debouncedSend}
+          disabled={sending}
+        >
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -892,6 +899,8 @@ function GroupChat({ event }) {
     }
   };
 
+  const [debouncedSend, sending] = useDebouncedCallback(sendMessage, 800);
+
   const addReaction = async (msgId, emoji) => {
     try {
       await firebase
@@ -1046,7 +1055,11 @@ function GroupChat({ event }) {
             placeholderTextColor="#999"
             style={groupStyles.input}
           />
-          <TouchableOpacity onPress={sendMessage} style={groupStyles.sendBtn}>
+          <TouchableOpacity
+            onPress={debouncedSend}
+            disabled={sending}
+            style={[groupStyles.sendBtn, sending && { opacity: 0.6 }]}
+          >
             <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
           </TouchableOpacity>
         </View>

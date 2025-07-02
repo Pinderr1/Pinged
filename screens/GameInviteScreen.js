@@ -26,6 +26,7 @@ import Toast from 'react-native-toast-message';
 import { HEADER_SPACING } from '../layout';
 import EmptyState from '../components/EmptyState';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import useDebouncedCallback from '../hooks/useDebouncedCallback';
 import InviteUserCard from '../components/InviteUserCard';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -105,6 +106,8 @@ const GameInviteScreen = ({ route, navigation }) => {
     }
   };
 
+  const [debouncedInvite, inviting] = useDebouncedCallback(handleInvite, 800);
+
   const filtered = matches.filter((u) =>
     u.displayName.toLowerCase().includes(search.toLowerCase())
   );
@@ -121,9 +124,10 @@ const GameInviteScreen = ({ route, navigation }) => {
     return (
       <InviteUserCard
         item={item}
-        onInvite={handleInvite}
+        onInvite={debouncedInvite}
         isInvited={isInvited}
         isLoading={isLoading}
+        disabled={inviting}
         theme={theme}
         darkMode={darkMode}
         width={CARD_WIDTH}

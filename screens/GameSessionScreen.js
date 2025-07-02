@@ -43,6 +43,7 @@ import EmptyState from '../components/EmptyState';
 import useGameSession from '../hooks/useGameSession';
 import { logGameStats } from '../utils/gameStats';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import useDebouncedCallback from '../hooks/useDebouncedCallback';
 import PlayerInfoBar from '../components/PlayerInfoBar';
 import useUserProfile from '../hooks/useUserProfile';
 import PropTypes from 'prop-types';
@@ -211,6 +212,8 @@ const LiveSessionScreen = ({ route, navigation }) => {
     });
   };
 
+  const [debouncedRematch, rematchWaiting] = useDebouncedCallback(handleRematch, 800);
+
   if (!game || !opponent) {
     return (
       <GradientBackground style={globalStyles.swipeScreen}>
@@ -327,7 +330,8 @@ const LiveSessionScreen = ({ route, navigation }) => {
             ? opponent.id
             : null
         }
-        onRematch={handleRematch}
+        onRematch={debouncedRematch}
+        rematchDisabled={rematchWaiting}
         onExit={() => navigation.goBack()}
       />
     </GradientBackground>
@@ -413,6 +417,8 @@ function BotSessionScreen({ route }) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     play('message');
   };
+
+  const [debouncedSend, sending] = useDebouncedCallback(handleSend, 800);
 
   const playAgain = () => {
     reset();
@@ -580,7 +586,11 @@ function BotSessionScreen({ route }) {
                   value={text}
                   onChangeText={setText}
                 />
-                <TouchableOpacity style={botStyles.sendBtn} onPress={handleSend}>
+                <TouchableOpacity
+                  style={[botStyles.sendBtn, sending && { opacity: 0.6 }]}
+                  onPress={debouncedSend}
+                  disabled={sending}
+                >
                   <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
                 </TouchableOpacity>
               </View>
