@@ -314,6 +314,7 @@ const handleSwipe = async (direction) => {
             ).catch(() => {});
             play('match');
             Toast.show({ type: 'success', text1: "It's a match!" });
+            showNotification("It's a match!");
             setShowFireworks(true);
             setTimeout(() => setShowFireworks(false), 2000);
           }
