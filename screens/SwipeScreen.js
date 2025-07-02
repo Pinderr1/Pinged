@@ -176,7 +176,7 @@ const SwipeScreen = () => {
         const snap = await userQuery.limit(50).get();
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         if (devMode) {
-          data = [...devUsers, ...data];
+          data = [...devUsers.slice(0, 3), ...data];
         }
         let formatted = data.map((u) => {
           const imgs = Array.isArray(u.photos) && u.photos.length
