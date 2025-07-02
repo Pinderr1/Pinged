@@ -1,5 +1,5 @@
 import React from 'react';
-import { SafeAreaView, View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
+import { SafeAreaView, View, Image, TouchableOpacity, StyleSheet, Platform, Text, Switch } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
@@ -12,7 +12,7 @@ export interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ showLogoOnly = false }) => {
   const navigation = useNavigation();
-  const { darkMode, theme } = useTheme();
+  const { darkMode, toggleTheme, theme } = useTheme();
   const notificationCount = useUnreadNotifications();
 
   return (
@@ -34,22 +34,33 @@ const Header: React.FC<HeaderProps> = ({ showLogoOnly = false }) => {
         <Image source={require('../assets/logo.png')} style={styles.logo} />
 
         {!showLogoOnly && (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Notifications')}
-            style={styles.iconWrapper}
-          >
-            <View style={styles.bellWrapper}>
-              <Image
-                source={require('../assets/bell.png')}
-                style={[styles.icon, { tintColor: theme.text }]}
+          <View style={styles.rightIcons}>
+            <View style={styles.iconWrapper}>
+              <Switch
+                accessibilityLabel="toggle dark mode"
+                value={darkMode}
+                onValueChange={toggleTheme}
+                trackColor={{ false: '#767577', true: theme.accent }}
+                thumbColor={Platform.OS === 'android' ? '#f4f3f4' : undefined}
               />
-              {notificationCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{notificationCount}</Text>
-                </View>
-              )}
             </View>
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Notifications')}
+              style={styles.iconWrapper}
+            >
+              <View style={styles.bellWrapper}>
+                <Image
+                  source={require('../assets/bell.png')}
+                  style={[styles.icon, { tintColor: theme.text }]}
+                />
+                {notificationCount > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{notificationCount}</Text>
+                  </View>
+                )}
+              </View>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     </SafeAreaView>
@@ -82,6 +93,10 @@ const styles = StyleSheet.create({
         elevation: 6,
       },
     }),
+  },
+  rightIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   iconWrapper: {
     width: 40,
