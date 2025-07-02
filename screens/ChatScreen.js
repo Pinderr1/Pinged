@@ -411,6 +411,15 @@ function PrivateChat({ user }) {
   let gameSection = null;
   if (SelectedGameClient) {
     gameSection = (
+      <View style={{ flex: 1 }}>
+        {gameVisible && (
+          <TouchableOpacity
+            style={privateStyles.closeGameButton}
+            onPress={() => setShowGame(false)}
+          >
+            <Ionicons name="close" size={20} color={theme.text} />
+          </TouchableOpacity>
+        )}
         <GameContainer
           visible={gameVisible}
           onToggleChat={() => setShowGame(false)}
@@ -450,6 +459,7 @@ function PrivateChat({ user }) {
             onGameEnd={handleGameEnd}
           />
         </GameContainer>
+      </View>
     );
   }
 
@@ -706,6 +716,13 @@ const getPrivateStyles = (theme) =>
     fontSize: 12,
     color: '#666',
     marginBottom: 4,
+  },
+  closeGameButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    padding: 4,
+    zIndex: 10,
   },
   chatSection: {
     flex: 1,
