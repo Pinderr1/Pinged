@@ -10,7 +10,6 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import firebase from '../firebase';
@@ -47,7 +46,6 @@ const questions = [
 const requiredFields = ['avatar', 'displayName', 'age'];
 
 export default function OnboardingScreen() {
-  const navigation = useNavigation();
   const { darkMode, theme } = useTheme();
   const { updateUser } = useUser();
   const { markOnboarded, hasOnboarded } = useOnboarding();
