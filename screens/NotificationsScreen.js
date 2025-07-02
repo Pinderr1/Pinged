@@ -57,10 +57,29 @@ const NotificationsScreen = ({ navigation }) => {
   const styles = getStyles(theme);
   const [loadingId, setLoadingId] = useState(null);
   const [invitesLoaded, setInvitesLoaded] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notesLoaded, setNotesLoaded] = useState(false);
+  const [noteLoadingId, setNoteLoadingId] = useState(null);
 
   useEffect(() => {
     setInvitesLoaded(true);
   }, [incomingInvites]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const q = firebase
+      .firestore()
+      .collection('users')
+      .doc(user.uid)
+      .collection('notifications')
+      .orderBy('createdAt', 'desc');
+    const unsub = q.onSnapshot((snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setNotifications(data);
+      setNotesLoaded(true);
+    });
+    return unsub;
+  }, [user?.uid]);
 
   const pendingInvites = incomingInvites.filter((i) => i.status === 'pending');
 
@@ -114,6 +133,23 @@ const NotificationsScreen = ({ navigation }) => {
       .catch((e) => console.warn('Failed to decline invite', e));
     setLoadingId(null);
     Vibration.vibrate(40);
+  };
+
+  const handleDismissNote = async (note) => {
+    setNoteLoadingId(note.id);
+    try {
+      await firebase
+        .firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('notifications')
+        .doc(note.id)
+        .update({ read: true });
+      setNotifications((prev) => prev.filter((n) => n.id !== note.id));
+    } catch (e) {
+      console.warn('Failed to dismiss notification', e);
+    }
+    setNoteLoadingId(null);
   };
 
   return (
@@ -185,6 +221,47 @@ const NotificationsScreen = ({ navigation }) => {
                   )}
                 </TouchableOpacity>
               </View>
+            </View>
+          ))
+        )}
+
+        <Text style={[local.title, { color: theme.text, marginTop: 30 }]}>Notifications</Text>
+
+        {notifications.length === 0 ? (
+          notesLoaded ? (
+            <EmptyState
+              text="No notifications."
+              image={require('../assets/bell.png')}
+            />
+          ) : (
+            [0, 1].map((i) => (
+              <View
+                key={`note-skel-${i}`}
+                style={[local.card, { backgroundColor: theme.card }]}
+              >
+                <View
+                  style={[local.skelText, { backgroundColor: theme.textSecondary }]}
+                />
+              </View>
+            ))
+          )
+        ) : (
+          notifications.map((note) => (
+            <View
+              key={note.id}
+              style={[local.card, { backgroundColor: theme.card }]}
+            >
+              <Text style={[local.text, { color: theme.text }]}>{note.message}</Text>
+              <TouchableOpacity
+                onPress={() => handleDismissNote(note)}
+                disabled={noteLoadingId === note.id}
+              >
+                {noteLoadingId === note.id ? (
+                  <Loader size="small" />
+                ) : (
+                  <Text style={{ color: theme.accent, fontSize: 13 }}>Dismiss</Text>
+                )}
+              </TouchableOpacity>
             </View>
           ))
         )}
