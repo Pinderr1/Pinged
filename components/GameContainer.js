@@ -29,21 +29,17 @@ export default function GameContainer({
 
   return (
     <GradientBackground style={styles.container}>
+      {onToggleChat && (
+        <TouchableOpacity style={styles.chatToggle} onPress={onToggleChat}>
+          <Ionicons name="close" size={24} color={theme.text} />
+        </TouchableOpacity>
+      )}
       <View style={styles.header}>
         <PlayerInfoBar
           name={player.name || 'You'}
           xp={player.xp}
           badges={player.badges}
         />
-        {onToggleChat && (
-          <TouchableOpacity style={styles.chatToggle} onPress={onToggleChat}>
-            <Ionicons
-              name="chatbubble-ellipses-outline"
-              size={24}
-              color={theme.text}
-            />
-          </TouchableOpacity>
-        )}
         <PlayerInfoBar
           name={opponent.name || 'Opponent'}
           xp={opponent.xp}
@@ -77,7 +73,13 @@ const getStyles = (theme) =>
       paddingHorizontal: 16,
       marginTop: 10,
     },
-    chatToggle: { paddingHorizontal: 8 },
+    chatToggle: {
+      position: 'absolute',
+      right: 16,
+      top: 6,
+      padding: 8,
+      zIndex: 10,
+    },
     boardSlot: {
       flex: 1,
       justifyContent: 'center',
