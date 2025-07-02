@@ -7,11 +7,14 @@ import GradientButton from './GradientButton';
 import { CARD_STYLE } from './Card';
 
 const EventFlyer = ({ event, onJoin, joined }) => {
-  const { darkMode, theme } = useTheme();
-  const styles = getStyles(theme, darkMode);
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
 
   return (
-    <View style={[styles.container, { backgroundColor: darkMode ? '#333' : '#fff' }]}>
+    <View style={[
+      styles.container,
+      { backgroundColor: theme.card }
+    ]}>
       <Image source={eventImageSource(event.image)} style={styles.image} />
       <View style={styles.details}>
         <View style={styles.headerRow}>
@@ -38,16 +41,21 @@ EventFlyer.propTypes = {
   joined: PropTypes.bool,
 };
 
-const getStyles = (theme, darkMode) =>
+const getStyles = (theme) =>
   StyleSheet.create({
     container: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginHorizontal: 16,
-      marginBottom: 16,
-      padding: 16,
+      marginHorizontal: 20,
+      marginBottom: 24,
+      padding: 20,
+      transform: [{ rotate: '-2deg' }],
       borderRadius: CARD_STYLE.borderRadius,
       ...CARD_STYLE,
+      shadowOpacity: 0.2,
+      shadowOffset: { width: 0, height: 4 },
+      shadowRadius: 6,
+      elevation: 4,
     },
     image: {
       width: 70,
