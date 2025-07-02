@@ -7,7 +7,16 @@ import Loader from './Loader';
 import useCardPressAnimation from '../hooks/useCardPressAnimation';
 import AvatarRing from './AvatarRing';
 
-const InviteUserCard = ({ item, onInvite, isInvited, isLoading, theme, darkMode, width }) => {
+const InviteUserCard = ({
+  item,
+  onInvite,
+  isInvited,
+  isLoading,
+  disabled,
+  theme,
+  darkMode,
+  width,
+}) => {
   const { scale, handlePressIn, handlePressOut, playSuccess } = useCardPressAnimation();
 
   const handlePress = () => onInvite(item, playSuccess);
@@ -53,6 +62,7 @@ const InviteUserCard = ({ item, onInvite, isInvited, isLoading, theme, darkMode,
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
               width={120}
+              disabled={disabled}
               style={{ marginTop: 6 }}
             />
           </Animated.View>
@@ -67,6 +77,7 @@ InviteUserCard.propTypes = {
   onInvite: PropTypes.func.isRequired,
   isInvited: PropTypes.bool,
   isLoading: PropTypes.bool,
+  disabled: PropTypes.bool,
   theme: PropTypes.object.isRequired,
   darkMode: PropTypes.bool,
   width: PropTypes.number.isRequired,

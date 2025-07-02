@@ -13,6 +13,7 @@ export default function GameOverModal({
   winnerAvatar,
   winnerId,
   onRematch,
+  rematchDisabled,
   onExit,
 }) {
   const stats = useWinLossStats(winnerId);
@@ -49,7 +50,8 @@ export default function GameOverModal({
           <Pressable
             onPress={onRematch}
             android_ripple={{ color: '#fff' }}
-            style={styles.rematchBtn}
+            style={[styles.rematchBtn, rematchDisabled && { opacity: 0.6 }]}
+            disabled={rematchDisabled}
           >
             <Text style={styles.btnText}>Rematch</Text>
           </Pressable>
@@ -72,6 +74,7 @@ GameOverModal.propTypes = {
   winnerAvatar: PropTypes.any,
   winnerId: PropTypes.string,
   onRematch: PropTypes.func.isRequired,
+  rematchDisabled: PropTypes.bool,
   onExit: PropTypes.func.isRequired,
 };
 
