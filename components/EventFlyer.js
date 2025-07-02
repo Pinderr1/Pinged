@@ -14,7 +14,7 @@ const EventFlyer = ({ event, onJoin, joined, style }) => {
     <View
       style={[
         styles.container,
-        { backgroundColor: darkMode ? '#333' : '#fff' },
+        { backgroundColor: theme.card },
         style,
       ]}
     >
@@ -50,11 +50,18 @@ const getStyles = (theme, darkMode) =>
     container: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginHorizontal: 16,
-      marginBottom: 16,
-      padding: 16,
+      marginHorizontal: 20,
+      marginBottom: 20,
+      padding: 18,
       borderRadius: CARD_STYLE.borderRadius,
-      ...CARD_STYLE,
+      borderWidth: 1,
+      borderColor: darkMode ? 'rgba(255,255,255,0.1)' : '#e0d4b9',
+      shadowColor: '#000',
+      shadowOpacity: 0.25,
+      shadowOffset: { width: 0, height: 3 },
+      shadowRadius: 5,
+      elevation: 4,
+      transform: [{ rotate: '-2deg' }],
     },
     image: {
       width: 70,
