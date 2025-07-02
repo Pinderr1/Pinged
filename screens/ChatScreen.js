@@ -542,6 +542,11 @@ function PrivateChat({ user }) {
 
   const inputBarBottom = keyboardOpen ? keyboardHeight : 0;
   const menuBottom = inputBarBottom + insets.bottom + INPUT_BAR_HEIGHT + 10;
+  const playButtonText = activeGameId
+    ? showGame
+      ? 'Hide'
+      : 'Show Game'
+    : 'Play';
   const inputBar = (
       <View
         style={[
@@ -575,9 +580,10 @@ function PrivateChat({ user }) {
         <TouchableOpacity
           style={privateStyles.playButton}
           onPress={handlePlayPress}
+          accessibilityLabel={playButtonText}
         >
           <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>
-            Play
+            {playButtonText}
           </Text>
         </TouchableOpacity>
         {activeGameId && (
