@@ -32,6 +32,7 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if signedIn();
+      allow create: if isUser(userId);
       // Only allow users to update their own document
       allow update: if isUser(userId) &&
         canPlayDaily(resource.data, request.resource.data);
