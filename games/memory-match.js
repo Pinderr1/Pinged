@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
@@ -79,7 +79,7 @@ const MemoryMatchBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const MemoryMatchClient = Client({ game: MemoryMatchGame, board: MemoryMatchBoard });
+const MemoryMatchClient = createGameClient({ game: MemoryMatchGame, board: MemoryMatchBoard });
 
 export const Game = MemoryMatchGame;
 export const Board = MemoryMatchBoard;

@@ -11,8 +11,10 @@ import { useSound } from './SoundContext';
 const ChatContext = createContext();
 
 const STORAGE_PREFIX = 'chatMatches_';
+const GAME_STATE_PREFIX = 'gameState_';
 
 const getStorageKey = (uid) => `${STORAGE_PREFIX}${uid}`;
+const getGameStateKey = (matchId) => `${GAME_STATE_PREFIX}${matchId}`;
 
 export const ChatProvider = ({ children }) => {
   const { devMode } = useDev();
@@ -270,6 +272,35 @@ export const ChatProvider = ({ children }) => {
   const getActiveGame = (matchId) =>
     matches.find((m) => m.id === matchId)?.activeGameId || null;
 
+  const getSavedGameState = async (matchId) => {
+    try {
+      const val = await AsyncStorage.getItem(getGameStateKey(matchId));
+      return val ? JSON.parse(val) : null;
+    } catch (e) {
+      console.warn('Failed to load game state', e);
+      return null;
+    }
+  };
+
+  const saveGameState = async (matchId, state) => {
+    try {
+      await AsyncStorage.setItem(
+        getGameStateKey(matchId),
+        JSON.stringify(state)
+      );
+    } catch (e) {
+      console.warn('Failed to save game state', e);
+    }
+  };
+
+  const clearGameState = async (matchId) => {
+    try {
+      await AsyncStorage.removeItem(getGameStateKey(matchId));
+    } catch (e) {
+      console.warn('Failed to clear game state', e);
+    }
+  };
+
 
   const addMatch = (match) =>
     setMatches((prev) => {
@@ -331,6 +362,9 @@ export const ChatProvider = ({ children }) => {
         removeMatch,
         setActiveGame,
         getActiveGame,
+        getSavedGameState,
+        saveGameState,
+        clearGameState,
         startLocalGame,
         clearGameInvite,
         acceptGameInvite,

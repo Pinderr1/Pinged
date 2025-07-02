@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
@@ -78,7 +78,7 @@ const RPSBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const RPSClient = Client({ game: RPSGame, board: RPSBoard });
+const RPSClient = createGameClient({ game: RPSGame, board: RPSBoard });
 
 export const Game = RPSGame;
 export const Board = RPSBoard;

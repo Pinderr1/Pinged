@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Animated } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -154,7 +154,7 @@ const getStyles = (theme) =>
   resultText: { marginTop: 12, fontWeight: 'bold', fontSize: 18, color: theme.text },
 });
 
-const TicTacToeClient = Client({
+const TicTacToeClient = createGameClient({
   game: TicTacToeGame,
   board: TicTacToeBoard,
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
@@ -147,7 +147,7 @@ const MinesweeperBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const MinesweeperClient = Client({ game: MinesweeperGame, board: MinesweeperBoard });
+const MinesweeperClient = createGameClient({ game: MinesweeperGame, board: MinesweeperBoard });
 
 export const Game = MinesweeperGame;
 export const Board = MinesweeperBoard;

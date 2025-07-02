@@ -63,7 +63,15 @@ function PrivateChat({ user }) {
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { devMode } = useDev();
   const requireCredits = useRequireGameCredits();
-  const { setActiveGame, getActiveGame, getPendingInvite, startLocalGame } = useChats();
+  const {
+    setActiveGame,
+    getActiveGame,
+    getPendingInvite,
+    startLocalGame,
+    getSavedGameState,
+    saveGameState,
+    clearGameState,
+  } = useChats();
   const { darkMode, theme } = useTheme();
   const privateStyles = getPrivateStyles(theme);
   const BOARD_HEIGHT = Dimensions.get('window').height / 2;
@@ -103,6 +111,7 @@ function PrivateChat({ user }) {
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [gameResult, setGameResult] = useState(null);
+  const [savedState, setSavedState] = useState(null);
   const winSound = useRef(null);
   const loseSound = useRef(null);
   const drawSound = useRef(null);
@@ -211,6 +220,14 @@ function PrivateChat({ user }) {
     }
     prevGameIdRef.current = activeGameId;
   }, [activeGameId]);
+
+  useEffect(() => {
+    if (!activeGameId) {
+      setSavedState(null);
+      return;
+    }
+    getSavedGameState(user.id).then((s) => setSavedState(s));
+  }, [activeGameId, user.id]);
 
   useEffect(() => {
     if (!user?.id || !currentUser?.uid) return;
@@ -341,6 +358,12 @@ function PrivateChat({ user }) {
     }
   };
 
+  const handleStateChange = (state) => {
+    if (activeGameId) {
+      saveGameState(user.id, state);
+    }
+  };
+
   const handleGameEnd = (result) => {
     if (!result) return;
     addGameXP();
@@ -366,6 +389,7 @@ function PrivateChat({ user }) {
     }
     setTimeout(() => {
       setActiveGame(user.id, null);
+      clearGameState(user.id);
     }, 2000);
   };
 
@@ -520,6 +544,8 @@ function PrivateChat({ user }) {
             matchID={user.id}
             playerID={devMode ? devPlayer : '0'}
             onGameEnd={handleGameEnd}
+            initialState={savedState}
+            onStateChange={handleStateChange}
           />
         </GameContainer>
       </View>
@@ -588,6 +614,7 @@ function PrivateChat({ user }) {
 
   const handleCancelGame = () => {
     setActiveGame(user.id, null);
+    clearGameState(user.id);
     setShowGameMenu(false);
   };
 

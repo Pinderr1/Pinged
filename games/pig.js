@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
@@ -87,7 +87,7 @@ const PigBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const PigClient = Client({ game: PigGame, board: PigBoard });
+const PigClient = createGameClient({ game: PigGame, board: PigBoard });
 
 export const Game = PigGame;
 export const Board = PigBoard;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
@@ -98,7 +98,7 @@ const SudokuBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const SudokuClient = Client({ game: SudokuGame, board: SudokuBoard });
+const SudokuClient = createGameClient({ game: SudokuGame, board: SudokuBoard });
 
 export const Game = SudokuGame;
 export const Board = SudokuBoard;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
@@ -124,7 +124,7 @@ const ConnectFourBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const ConnectFourClient = Client({ game: ConnectFourGame, board: ConnectFourBoard });
+const ConnectFourClient = createGameClient({ game: ConnectFourGame, board: ConnectFourBoard });
 
 export const Game = ConnectFourGame;
 export const Board = ConnectFourBoard;

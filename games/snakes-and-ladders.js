@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { View, Text, TouchableOpacity } from 'react-native';
 
 const snakes = { 16: 6, 47: 26, 49: 11, 56: 53, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 98: 78 };
@@ -77,7 +77,7 @@ const SnakesLaddersBoard = ({ G, ctx, moves }) => {
   );
 };
 
-const SnakesLaddersClient = Client({ game: SnakesLaddersGame, board: SnakesLaddersBoard });
+const SnakesLaddersClient = createGameClient({ game: SnakesLaddersGame, board: SnakesLaddersBoard });
 
 export const Game = SnakesLaddersGame;
 export const Board = SnakesLaddersBoard;

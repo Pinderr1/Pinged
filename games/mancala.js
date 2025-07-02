@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
@@ -149,7 +149,7 @@ const MancalaBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const MancalaClient = Client({ game: MancalaGame, board: MancalaBoard });
+const MancalaClient = createGameClient({ game: MancalaGame, board: MancalaBoard });
 
 export const Game = MancalaGame;
 export const Board = MancalaBoard;

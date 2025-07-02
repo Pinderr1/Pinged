@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
@@ -72,7 +72,7 @@ const HangmanBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const HangmanClient = Client({ game: HangmanGame, board: HangmanBoard });
+const HangmanClient = createGameClient({ game: HangmanGame, board: HangmanBoard });
 
 export const Game = HangmanGame;
 export const Board = HangmanBoard;

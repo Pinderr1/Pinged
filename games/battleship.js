@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
@@ -157,7 +157,7 @@ const BattleshipBoard = ({ G, ctx, moves, playerID, onGameEnd }) => {
   );
 };
 
-const BattleshipClient = Client({ game: BattleshipGame, board: BattleshipBoard });
+const BattleshipClient = createGameClient({ game: BattleshipGame, board: BattleshipBoard });
 
 export const Game = BattleshipGame;
 export const Board = BattleshipBoard;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -72,7 +72,7 @@ const GuessNumberBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const GuessNumberClient = Client({ game: GuessNumberGame, board: GuessNumberBoard });
+const GuessNumberClient = createGameClient({ game: GuessNumberGame, board: GuessNumberBoard });
 
 export const Game = GuessNumberGame;
 export const Board = GuessNumberBoard;

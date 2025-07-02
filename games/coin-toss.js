@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from 'boardgame.io/react-native';
+import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -67,7 +67,7 @@ const CoinTossBoard = ({ G, ctx, moves, onGameEnd }) => {
   );
 };
 
-const CoinTossClient = Client({ game: CoinTossGame, board: CoinTossBoard });
+const CoinTossClient = createGameClient({ game: CoinTossGame, board: CoinTossBoard });
 
 export const Game = CoinTossGame;
 export const Board = CoinTossBoard;
