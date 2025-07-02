@@ -157,13 +157,21 @@ const HomeScreen = ({ navigation }) => {
 
           <View style={local.communityBoard}>
             <Text style={local.sectionTitle}>Community Board</Text>
-            {SAMPLE_EVENTS.slice(0, 3).map((ev) => (
-              <EventFlyer
-                key={ev.id}
-                event={ev}
-                onJoin={() => navigation.navigate('Community')}
-              />
-            ))}
+            <View style={local.boardBackground}>
+              {SAMPLE_EVENTS.slice(0, 3).map((ev, idx) => (
+                <View key={ev.id} style={local.noteWrapper}>
+                  <View style={local.pin} />
+                  <EventFlyer
+                    event={ev}
+                    onJoin={() => navigation.navigate('Community')}
+                    style={[
+                      local.noteCard,
+                      idx % 2 === 0 ? local.rotateLeft : local.rotateRight,
+                    ]}
+                  />
+                </View>
+              ))}
+            </View>
           </View>
         </ScrollView>
         <View style={local.swipeButtonContainer}>
@@ -371,6 +379,40 @@ const getStyles = (theme) =>
     communityBoard: {
       width: '100%',
       marginBottom: 24,
+    },
+    boardBackground: {
+      backgroundColor: '#f5deb3',
+      padding: 12,
+      borderRadius: 12,
+    },
+    noteWrapper: {
+      marginBottom: 24,
+      alignItems: 'center',
+    },
+    noteCard: {
+      backgroundColor: '#fffef8',
+      borderWidth: 1,
+      borderColor: '#e0d4b9',
+      shadowColor: '#000',
+      shadowOpacity: 0.2,
+      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: 3,
+      elevation: 2,
+    },
+    rotateLeft: {
+      transform: [{ rotate: '-2deg' }],
+    },
+    rotateRight: {
+      transform: [{ rotate: '2deg' }],
+    },
+    pin: {
+      position: 'absolute',
+      top: -6,
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: '#c0392b',
+      zIndex: 1,
     },
   });
 

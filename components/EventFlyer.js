@@ -6,12 +6,18 @@ import { eventImageSource } from '../utils/avatar';
 import GradientButton from './GradientButton';
 import { CARD_STYLE } from './Card';
 
-const EventFlyer = ({ event, onJoin, joined }) => {
+const EventFlyer = ({ event, onJoin, joined, style }) => {
   const { darkMode, theme } = useTheme();
   const styles = getStyles(theme, darkMode);
 
   return (
-    <View style={[styles.container, { backgroundColor: darkMode ? '#333' : '#fff' }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: darkMode ? '#333' : '#fff' },
+        style,
+      ]}
+    >
       <Image source={eventImageSource(event.image)} style={styles.image} />
       <View style={styles.details}>
         <View style={styles.headerRow}>
@@ -36,6 +42,7 @@ EventFlyer.propTypes = {
   event: PropTypes.object.isRequired,
   onJoin: PropTypes.func,
   joined: PropTypes.bool,
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
 };
 
 const getStyles = (theme, darkMode) =>
