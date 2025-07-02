@@ -426,17 +426,10 @@ function PrivateChat({ user }) {
   if (SelectedGameClient) {
     gameSection = (
       <View style={{ flex: 1 }}>
-        {gameVisible && (
-          <TouchableOpacity
-            style={privateStyles.closeGameButton}
-            onPress={() => setShowGame(false)}
-          >
-            <Ionicons name="close" size={20} color={theme.text} />
-          </TouchableOpacity>
-        )}
         <GameContainer
           visible={gameVisible}
           onToggleChat={() => setShowGame(false)}
+          onClose={() => setShowGame(false)}
           player={{ name: 'You' }}
           opponent={{ name: user.displayName }}
         >
@@ -547,15 +540,16 @@ function PrivateChat({ user }) {
     setShowGameMenu(false);
   };
 
-  const inputBarOffset = keyboardOpen ? keyboardHeight : 0;
-  const menuBottom = inputBarOffset + insets.bottom + INPUT_BAR_HEIGHT + 10;
+  const inputBarBottom = keyboardOpen ? keyboardHeight : 0;
+  const menuBottom = inputBarBottom + insets.bottom + INPUT_BAR_HEIGHT + 10;
   const inputBar = (
       <View
         style={[
-          privateStyles.inputBar,
-          { marginBottom: inputBarOffset, paddingBottom: insets.bottom },
+          privateStyles.inputBarContainer,
+          { bottom: inputBarBottom + insets.bottom },
         ]}
       >
+        <View style={privateStyles.inputBar}>
         <TouchableOpacity
           onLongPress={startRecording}
           onPressOut={handleVoiceFinish}
@@ -594,6 +588,7 @@ function PrivateChat({ user }) {
             <Ionicons name="ellipsis-vertical" size={18} color="#fff" />
           </TouchableOpacity>
         )}
+        </View>
       </View>
   );
 
@@ -725,6 +720,12 @@ const getPrivateStyles = (theme) =>
     paddingVertical: 8,
     paddingHorizontal: 10,
   },
+  inputBarContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    backgroundColor: theme.background,
+  },
   input: {
     flex: 1,
     backgroundColor: '#fff',
@@ -810,13 +811,6 @@ const getPrivateStyles = (theme) =>
     fontSize: 12,
     color: '#666',
     marginBottom: 4,
-  },
-  closeGameButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    padding: 4,
-    zIndex: 10,
   },
   chatSection: {
     flex: 1,
