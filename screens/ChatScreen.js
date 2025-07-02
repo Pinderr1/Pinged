@@ -25,6 +25,7 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
 import ScreenContainer from '../components/ScreenContainer';
 import GameContainer from '../components/GameContainer';
+import GameMenu from '../components/GameMenu';
 import ChatContainer from '../components/ChatContainer';
 import LottieView from 'lottie-react-native';
 import { BlurView } from 'expo-blur';
@@ -716,16 +717,12 @@ function PrivateChat({ user }) {
             )}
             {inputBar}
           </ChatContainer>
-          {showGameMenu && (
-            <View style={[privateStyles.gameMenu, { bottom: menuBottom }]}>
-              <TouchableOpacity onPress={handleCancelGame}>
-                <Text style={privateStyles.gameMenuItem}>Cancel Game</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleChangeGame}>
-                <Text style={privateStyles.gameMenuItem}>Change Game</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <GameMenu
+            visible={showGameMenu}
+            bottom={menuBottom}
+            onCancel={handleCancelGame}
+            onChange={handleChangeGame}
+          />
         </SafeKeyboardView>
       </ScreenContainer>
     </GradientBackground>
@@ -790,6 +787,8 @@ const getPrivateStyles = (theme) =>
     left: 0,
     right: 0,
     backgroundColor: theme.background,
+    height: INPUT_BAR_HEIGHT,
+    justifyContent: 'center',
   },
   input: {
     flex: 1,
