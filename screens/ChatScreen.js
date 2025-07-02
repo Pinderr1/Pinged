@@ -308,7 +308,9 @@ function PrivateChat({ user }) {
     } else if (result.draw) {
       sendChatMessage('Game over. Draw.', 'system');
     }
-    setActiveGame(user.id, null);
+    setTimeout(() => {
+      setActiveGame(user.id, null);
+    }, 2000);
   };
 
   useEffect(() => {
@@ -599,9 +601,10 @@ function PrivateChat({ user }) {
   return (
     <GradientBackground style={{ flex: 1 }}>
       <Header />
-      <Modal visible={!!gameResult} transparent animationType="fade">
-        <BlurView intensity={60} tint="dark" style={privateStyles.resultOverlay}>
-          {gameResult?.winner === '0' ? (
+      {gameResult ? (
+        <View style={privateStyles.resultOverlay} pointerEvents="none">
+          <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+          {gameResult.winner === '0' ? (
             <LottieView
               source={require('../assets/confetti.json')}
               autoPlay
@@ -610,14 +613,14 @@ function PrivateChat({ user }) {
             />
           ) : null}
           <Text style={privateStyles.resultText}>
-            {gameResult?.winner === '0'
+            {gameResult.winner === '0'
               ? 'You win!'
-              : gameResult?.winner === '1'
+              : gameResult.winner === '1'
               ? `${user.displayName} wins.`
               : 'Draw.'}
           </Text>
-        </BlurView>
-      </Modal>
+        </View>
+      ) : null}
       <Modal
         visible={showGameModal}
         transparent
@@ -791,7 +794,7 @@ const getPrivateStyles = (theme) =>
     color: '#333',
   },
   resultOverlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: '#0009',
     justifyContent: 'center',
     alignItems: 'center',
