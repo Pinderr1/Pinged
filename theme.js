@@ -3,7 +3,7 @@ export const lightTheme = {
   card: '#ffffff',
   text: '#222222',
   textSecondary: '#666666',
-  accent: '#d81b60',
+  accent: '#FF75B5',
   gradientStart: '#FF75B5',
   gradientEnd: '#FF9A75',
   headerBackground: '#ffffff',
