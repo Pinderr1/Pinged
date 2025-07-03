@@ -7,6 +7,7 @@ import { useListeners } from './ListenerContext';
 import Toast from 'react-native-toast-message';
 import * as Haptics from 'expo-haptics';
 import { useSound } from './SoundContext';
+import { logDev } from '../utils/logger';
 
 const ChatContext = createContext();
 
@@ -169,7 +170,7 @@ export const ChatProvider = ({ children }) => {
     setMatches((prev) => {
       if (devMode) {
         if (!prev.find((m) => m.id === devMatch.id)) {
-          console.log('Adding dev match');
+          logDev('Adding dev match');
           return [...prev, devMatch];
         }
         return prev;
@@ -234,7 +235,7 @@ export const ChatProvider = ({ children }) => {
       )
     );
     if (devMode) {
-      console.log('Auto-accepting game invite');
+      logDev('Auto-accepting game invite');
       acceptGameInvite(matchId);
     }
   };

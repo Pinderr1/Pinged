@@ -13,7 +13,7 @@ async function pushToUser(uid, title, body, extra = {}) {
   const userData = snap.data();
   const token = userData && userData.expoPushToken;
   if (!token) {
-    console.log(`No Expo push token for user ${uid}`);
+    functions.logger.info(`No Expo push token for user ${uid}`);
     return null;
   }
 
@@ -227,7 +227,7 @@ exports.resetFreeGameUsage = functions.pubsub
     });
 
     await Promise.all(tasks);
-    console.log(`Reset freeGameUsed for ${tasks.length} users`);
+    functions.logger.info(`Reset freeGameUsed for ${tasks.length} users`);
     return null;
   });
 
@@ -482,7 +482,7 @@ exports.remindPendingInvites = functions.pubsub
     });
 
     await Promise.all(tasks);
-    console.log(`Sent ${tasks.length} invite reminders`);
+    functions.logger.info(`Sent ${tasks.length} invite reminders`);
     return null;
   });
 
@@ -510,7 +510,7 @@ exports.remindIdlePlayers = functions.pubsub
     });
 
     await Promise.all(tasks);
-    console.log(`Sent ${tasks.length} idle player reminders`);
+    functions.logger.info(`Sent ${tasks.length} idle player reminders`);
     return null;
   });
 
@@ -552,6 +552,6 @@ exports.notifyStreakRewards = functions.pubsub
     });
 
     await Promise.all(tasks);
-    console.log(`Sent ${tasks.length} streak reward notifications`);
+    functions.logger.info(`Sent ${tasks.length} streak reward notifications`);
     return null;
   });

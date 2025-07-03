@@ -4,6 +4,7 @@ import { StatusBar, Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
+import { logDev } from '../utils/logger';
 
 import SplashScreen from '../screens/SplashScreen';
 import AuthStack from './AuthStack';
@@ -27,7 +28,7 @@ export default function RootNavigator() {
     const handleDeepLink = ({ url }) => {
       const parsed = Linking.parse(url);
       if (parsed.path === 'chat') {
-        console.log('Deep linking to Chat');
+        logDev('Deep linking to Chat');
       }
     };
     const sub = Linking.addEventListener('url', handleDeepLink);

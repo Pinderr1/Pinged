@@ -5,6 +5,7 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/compat/functions';
 import 'firebase/compat/database';
+import { logDev } from './utils/logger';
 
 // Validate required environment variables at runtime
 const requiredEnv = [
@@ -45,9 +46,7 @@ const firebaseConfig = {
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
-  if (__DEV__) {
-    console.log('Firebase config loaded', firebaseConfig);
-  }
+  logDev('Firebase config loaded', firebaseConfig);
 }
 
 const auth = firebase.auth();
@@ -55,7 +54,7 @@ let firestore;
 try {
   firestore = firebase.firestore();
 } catch (e) {
-  console.log('Firestore init error', e);
+  logDev('Firestore init error', e);
 }
 const storage = firebase.storage();
 const functions = firebase.functions();
