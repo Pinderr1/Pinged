@@ -15,33 +15,35 @@ import { SoundProvider } from './SoundContext';
 import { FilterProvider } from './FilterContext';
 
 const Providers = ({ children }) => (
-  <UserProvider>
-    <DevProvider>
-      <ThemeProvider>
-        <SoundProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              <OnboardingProvider>
+  <DevProvider>
+    <OnboardingProvider>
+      <UserProvider>
+        <ThemeProvider>
+          <SoundProvider>
+            <AuthProvider>
+              <NotificationProvider>
                 <ListenerProvider>
                   <GameLimitProvider>
                     <FilterProvider>
                       <ChatProvider>
                         <MatchmakingProvider>
                           <TrendingProvider>
-                            <GameSessionProvider>{children}</GameSessionProvider>
+                            <GameSessionProvider>
+                              {children}
+                            </GameSessionProvider>
                           </TrendingProvider>
                         </MatchmakingProvider>
                       </ChatProvider>
                     </FilterProvider>
                   </GameLimitProvider>
                 </ListenerProvider>
-              </OnboardingProvider>
-            </NotificationProvider>
-          </AuthProvider>
-        </SoundProvider>
-      </ThemeProvider>
-    </DevProvider>
-  </UserProvider>
+              </NotificationProvider>
+            </AuthProvider>
+          </SoundProvider>
+        </ThemeProvider>
+      </UserProvider>
+    </OnboardingProvider>
+  </DevProvider>
 );
 
 export default Providers;
