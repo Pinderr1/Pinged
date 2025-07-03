@@ -506,34 +506,8 @@ function PrivateChat({ user }) {
           onClose={() => setShowGame(false)}
           player={{ name: 'You' }}
           opponent={{ name: user.displayName }}
+          showHeader={false}
         >
-          {devMode && (
-            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-              <TouchableOpacity
-                onPress={() => setDevPlayer('0')}
-                style={{
-                  backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 8,
-                  marginRight: 8,
-                }}
-              >
-                <Text style={{ color: '#fff' }}>Player 1</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setDevPlayer('1')}
-                style={{
-                  backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 8,
-                }}
-              >
-                <Text style={{ color: '#fff' }}>Player 2</Text>
-              </TouchableOpacity>
-            </View>
-          )}
           <SelectedGameClient
             matchID={user.id}
             playerID={devMode ? devPlayer : '0'}
