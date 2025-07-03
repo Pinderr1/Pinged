@@ -40,6 +40,7 @@ import SkeletonUserCard from '../components/SkeletonUserCard';
 import EmptyState from '../components/EmptyState';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
+import PropTypes from 'prop-types';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -793,5 +794,7 @@ const getStyles = (theme) =>
     paddingHorizontal: 20,
   },
 });
+
+SwipeScreen.propTypes = {};
 
 export default SwipeScreen;

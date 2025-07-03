@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
+import PropTypes from 'prop-types';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const CARD_HEIGHT = SCREEN_HEIGHT * 0.75;
 
-export default function SkeletonUserCard() {
+function SkeletonUserCard() {
   return (
     <View style={styles.card}>
       <View style={styles.image} />
@@ -17,6 +18,10 @@ export default function SkeletonUserCard() {
     </View>
   );
 }
+
+SkeletonUserCard.propTypes = {};
+
+export default SkeletonUserCard;
 
 const styles = StyleSheet.create({
   card: {
