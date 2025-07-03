@@ -9,7 +9,7 @@ import { logDev } from '../utils/logger';
 import SplashScreen from '../screens/SplashScreen';
 import AuthStack from './AuthStack';
 import AppStack from './AppStack';
-import OnboardingScreen from '../screens/OnboardingScreen';
+import OnboardingStack from './OnboardingStack';
 
 
 const splashDuration = 2000;
@@ -51,7 +51,7 @@ export default function RootNavigator() {
   }
 
   if (!onboarded) {
-    return <OnboardingScreen />;
+    return <OnboardingStack />;
   }
 
   return <AppStack />;
