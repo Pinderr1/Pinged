@@ -722,7 +722,7 @@ function PrivateChat({ user }) {
         </View>
       </Modal>
       <ScreenContainer>
-        <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }}>
+        <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }} offset={0}>
           <View style={[privateStyles.gameWrapper, { height: gameVisible ? BOARD_HEIGHT : 0 }]}>
             {gameSection}
           </View>

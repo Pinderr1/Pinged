@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
+  Keyboard,
+  LayoutAnimation,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
@@ -20,8 +22,10 @@ import { useTheme } from '../contexts/ThemeContext';
 import { HEADER_SPACING, FONT_SIZES } from '../layout';
 import { useUser } from '../contexts/UserContext';
 import useDebouncedCallback from '../hooks/useDebouncedCallback';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const REACTIONS = ['🔥', '😂', '❤️'];
+const INPUT_BAR_HEIGHT = 60;
 
 
 /********************
@@ -38,6 +42,9 @@ function GroupChat({ event }) {
   const [refreshing, setRefreshing] = useState(false);
   const [input, setInput] = useState('');
   const [reactionTarget, setReactionTarget] = useState(null);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const q = firebase
@@ -98,6 +105,30 @@ function GroupChat({ event }) {
   };
 
   const [debouncedSend, sending] = useDebouncedCallback(sendMessage, 800);
+
+  useEffect(() => {
+    const handleShow = (e) => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setKeyboardOpen(true);
+      setKeyboardHeight(e.endCoordinates?.height || 0);
+    };
+
+    const handleHide = () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setKeyboardOpen(false);
+      setKeyboardHeight(0);
+    };
+
+    const showSub = Keyboard.addListener('keyboardDidShow', handleShow);
+    const hideSub = Keyboard.addListener('keyboardDidHide', handleHide);
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const inputBottom = keyboardOpen ? keyboardHeight : 0;
 
   const addReaction = async (msgId, emoji) => {
     try {
@@ -210,7 +241,10 @@ function GroupChat({ event }) {
   return (
     <GradientBackground style={{ flex: 1 }}>
       <Header />
-      <SafeKeyboardView style={[groupStyles.container, { paddingTop: HEADER_SPACING }]}>
+      <SafeKeyboardView
+        style={[groupStyles.container, { paddingTop: HEADER_SPACING }]}
+        offset={0}
+      >
         {loading ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Loader />
@@ -230,7 +264,7 @@ function GroupChat({ event }) {
               data={messages}
               keyExtractor={(item) => item.id}
               renderItem={renderMessage}
-              style={{ flex: 1 }}
+              style={groupStyles.chatSection}
               contentContainerStyle={{ padding: 16 }}
               refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
@@ -245,7 +279,12 @@ function GroupChat({ event }) {
           </>
         )}
 
-        <View style={groupStyles.inputRow}>
+        <View
+          style={[
+            groupStyles.inputBarContainer,
+            { bottom: inputBottom + insets.bottom },
+          ]}
+        >
           <TextInput
             value={input}
             onChangeText={setInput}
@@ -308,12 +347,6 @@ const getGroupStyles = (theme) =>
     color: '#eee',
     marginTop: 4,
   },
-  inputRow: {
-    flexDirection: 'row',
-    padding: 12,
-    backgroundColor: '#f1f1f1',
-    alignItems: 'center',
-  },
   input: {
     flex: 1,
     backgroundColor: '#fff',
@@ -343,6 +376,20 @@ const getGroupStyles = (theme) =>
     borderRadius: 12,
     padding: 6,
     marginTop: 6,
+  },
+  chatSection: {
+    flex: 1,
+    paddingBottom: INPUT_BAR_HEIGHT,
+  },
+  inputBarContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: INPUT_BAR_HEIGHT,
+    backgroundColor: '#f1f1f1',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
   },
   senderRow: {
     flexDirection: 'row',
