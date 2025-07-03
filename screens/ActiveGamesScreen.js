@@ -13,6 +13,7 @@ import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
 import { HEADER_SPACING } from '../layout';
 import { CARD_STYLE } from '../components/Card';
+import PropTypes from 'prop-types';
 
 const ActiveGamesScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -117,5 +118,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+ActiveGamesScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default ActiveGamesScreen;
