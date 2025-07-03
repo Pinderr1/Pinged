@@ -4,7 +4,8 @@ import Toast from "react-native-toast-message";
 import Loader from "../components/Loader";
 import firebase from "../firebase";
 import { useDev } from "./DevContext";
-import { useOnboarding, clearStoredOnboarding } from "./OnboardingContext";
+import { useOnboarding } from "./OnboardingContext";
+import { clearStoredOnboarding } from "../utils/onboarding";
 import { snapshotExists } from "../utils/firestore";
 import { computeBadges } from "../utils/badges";
 

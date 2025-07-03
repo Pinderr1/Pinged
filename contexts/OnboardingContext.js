@@ -3,17 +3,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { View } from "react-native";
 import Loader from "../components/Loader";
 import { useAuth } from "./AuthContext";
+import { clearStoredOnboarding } from "../utils/onboarding";
 
 const OnboardingContext = createContext();
 
-export const clearStoredOnboarding = async (uid) => {
-  if (!uid) return;
-  try {
-    await AsyncStorage.removeItem(`hasOnboarded_${uid}`);
-  } catch (e) {
-    console.warn("Failed to clear onboarding flag", e);
-  }
-};
 
 export const OnboardingProvider = ({ children }) => {
   const { user } = useAuth();

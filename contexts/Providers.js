@@ -16,11 +16,11 @@ import { FilterProvider } from './FilterContext';
 
 const Providers = ({ children }) => (
   <DevProvider>
-    <OnboardingProvider>
-      <UserProvider>
-        <ThemeProvider>
-          <SoundProvider>
-            <AuthProvider>
+    <AuthProvider>
+      <OnboardingProvider>
+        <UserProvider>
+          <ThemeProvider>
+            <SoundProvider>
               <NotificationProvider>
                 <ListenerProvider>
                   <GameLimitProvider>
@@ -38,11 +38,11 @@ const Providers = ({ children }) => (
                   </GameLimitProvider>
                 </ListenerProvider>
               </NotificationProvider>
-            </AuthProvider>
-          </SoundProvider>
-        </ThemeProvider>
-      </UserProvider>
-    </OnboardingProvider>
+            </SoundProvider>
+          </ThemeProvider>
+        </UserProvider>
+      </OnboardingProvider>
+    </AuthProvider>
   </DevProvider>
 );
 

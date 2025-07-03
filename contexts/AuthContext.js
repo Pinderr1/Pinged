@@ -4,7 +4,7 @@ import * as Google from "expo-auth-session/providers/google";
 import * as AuthSession from "expo-auth-session";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import firebase from "../firebase";
-import { clearStoredOnboarding } from "./OnboardingContext";
+import { clearStoredOnboarding } from "../utils/onboarding";
 import { snapshotExists } from "../utils/firestore";
 import { isAllowedDomain } from "../utils/email";
 
