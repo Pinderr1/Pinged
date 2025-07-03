@@ -15,6 +15,7 @@ export default function GameContainer({
   onToggleChat,
   onClose,
   visible = true,
+  showHeader = true,
 }) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
@@ -35,27 +36,29 @@ export default function GameContainer({
           <Ionicons name="close" size={22} color={theme.text} />
         </TouchableOpacity>
       )}
-      <View style={styles.header}>
-        <PlayerInfoBar
-          name={player.name || 'You'}
-          xp={player.xp}
-          badges={player.badges}
-        />
-        {onToggleChat && (
-          <TouchableOpacity style={styles.chatToggle} onPress={onToggleChat}>
-            <Ionicons
-              name="chatbubble-ellipses-outline"
-              size={24}
-              color={theme.text}
-            />
-          </TouchableOpacity>
-        )}
-        <PlayerInfoBar
-          name={opponent.name || 'Opponent'}
-          xp={opponent.xp}
-          badges={opponent.badges}
-        />
-      </View>
+      {showHeader && (
+        <View style={styles.header}>
+          <PlayerInfoBar
+            name={player.name || 'You'}
+            xp={player.xp}
+            badges={player.badges}
+          />
+          {onToggleChat && (
+            <TouchableOpacity style={styles.chatToggle} onPress={onToggleChat}>
+              <Ionicons
+                name="chatbubble-ellipses-outline"
+                size={24}
+                color={theme.text}
+              />
+            </TouchableOpacity>
+          )}
+          <PlayerInfoBar
+            name={opponent.name || 'Opponent'}
+            xp={opponent.xp}
+            badges={opponent.badges}
+          />
+        </View>
+      )}
       <AnimatedView
         style={[styles.boardSlot, { opacity: anim, transform: [{ scale: anim }] }]}
       >
@@ -72,6 +75,7 @@ GameContainer.propTypes = {
   onToggleChat: PropTypes.func,
   onClose: PropTypes.func,
   visible: PropTypes.bool,
+  showHeader: PropTypes.bool,
 };
 
 const getStyles = (theme) =>
