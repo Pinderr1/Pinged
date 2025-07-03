@@ -15,33 +15,33 @@ import { SoundProvider } from './SoundContext';
 import { FilterProvider } from './FilterContext';
 
 const Providers = ({ children }) => (
-  <DevProvider>
-    <ThemeProvider>
-      <SoundProvider>
-        <AuthProvider>
-          <NotificationProvider>
-            <OnboardingProvider>
-              <UserProvider>
-                  <ListenerProvider>
-                    <GameLimitProvider>
-                      <FilterProvider>
-                        <ChatProvider>
-                          <MatchmakingProvider>
-                            <TrendingProvider>
-                              <GameSessionProvider>{children}</GameSessionProvider>
-                            </TrendingProvider>
-                          </MatchmakingProvider>
-                        </ChatProvider>
-                      </FilterProvider>
-                    </GameLimitProvider>
-                  </ListenerProvider>
-                </UserProvider>
+  <UserProvider>
+    <DevProvider>
+      <ThemeProvider>
+        <SoundProvider>
+          <AuthProvider>
+            <NotificationProvider>
+              <OnboardingProvider>
+                <ListenerProvider>
+                  <GameLimitProvider>
+                    <FilterProvider>
+                      <ChatProvider>
+                        <MatchmakingProvider>
+                          <TrendingProvider>
+                            <GameSessionProvider>{children}</GameSessionProvider>
+                          </TrendingProvider>
+                        </MatchmakingProvider>
+                      </ChatProvider>
+                    </FilterProvider>
+                  </GameLimitProvider>
+                </ListenerProvider>
               </OnboardingProvider>
             </NotificationProvider>
-        </AuthProvider>
-      </SoundProvider>
-    </ThemeProvider>
-  </DevProvider>
+          </AuthProvider>
+        </SoundProvider>
+      </ThemeProvider>
+    </DevProvider>
+  </UserProvider>
 );
 
 export default Providers;
