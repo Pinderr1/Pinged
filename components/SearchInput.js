@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, TextInput } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 import PropTypes from 'prop-types';
 
 export default function SearchInput({ search, setSearch }) {
+  const { theme } = useTheme();
   return (
     <View
       style={{
         marginHorizontal: 16,
         marginBottom: 6,
-        backgroundColor: '#fff',
+        backgroundColor: theme.card,
         borderRadius: 12,
         paddingHorizontal: 12,
         paddingVertical: 4,
@@ -17,10 +19,10 @@ export default function SearchInput({ search, setSearch }) {
     >
       <TextInput
         placeholder="Search games..."
-        placeholderTextColor="#999"
+        placeholderTextColor={theme.textSecondary}
         value={search}
         onChangeText={setSearch}
-        style={{ fontSize: 14, color: '#000', paddingVertical: 3 }}
+        style={{ fontSize: 14, color: theme.text, paddingVertical: 3 }}
       />
     </View>
   );

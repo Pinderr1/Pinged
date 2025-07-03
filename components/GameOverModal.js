@@ -6,6 +6,7 @@ import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
 import { avatarSource } from '../utils/avatar';
 import useWinLossStats from '../hooks/useWinLossStats';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function GameOverModal({
   visible,
@@ -16,6 +17,8 @@ export default function GameOverModal({
   rematchDisabled,
   onExit,
 }) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const stats = useWinLossStats(winnerId);
   useEffect(() => {
     if (visible && winnerName) {
@@ -49,7 +52,7 @@ export default function GameOverModal({
           )}
           <Pressable
             onPress={onRematch}
-            android_ripple={{ color: '#fff' }}
+            android_ripple={{ color: theme.text }}
             style={[styles.rematchBtn, rematchDisabled && { opacity: 0.6 }]}
             disabled={rematchDisabled}
           >
@@ -57,7 +60,7 @@ export default function GameOverModal({
           </Pressable>
           <Pressable
             onPress={onExit}
-            android_ripple={{ color: '#fff' }}
+            android_ripple={{ color: theme.text }}
             style={styles.exitBtn}
           >
             <Text style={styles.btnText}>Exit</Text>
@@ -78,69 +81,71 @@ GameOverModal.propTypes = {
   onExit: PropTypes.func.isRequired,
 };
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: '#0009',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  animationContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  animation: {
-    width: '100%',
-    height: '100%',
-  },
-  card: {
-    padding: 24,
-    borderRadius: 20,
-    width: 280,
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  stats: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-    marginBottom: 16,
-  },
-  rematchBtn: {
-    backgroundColor: '#28c76f',
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-    borderRadius: 16,
-    width: '100%',
-    marginBottom: 12,
-    overflow: 'hidden',
-  },
-  exitBtn: {
-    backgroundColor: '#e74c3c',
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-    borderRadius: 16,
-    width: '100%',
-    overflow: 'hidden',
-  },
-  btnText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-});
+const getStyles = (theme) =>
+  StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: '#0009',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    animationContainer: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    animation: {
+      width: '100%',
+      height: '100%',
+    },
+    card: {
+      padding: 24,
+      borderRadius: 20,
+      width: 280,
+      alignItems: 'center',
+      overflow: 'hidden',
+      backgroundColor: theme.card,
+    },
+    avatar: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      marginBottom: 10,
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: 'bold',
+      color: theme.text,
+      marginBottom: 6,
+      textAlign: 'center',
+    },
+    stats: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.text,
+      marginBottom: 16,
+    },
+    rematchBtn: {
+      backgroundColor: theme.accent,
+      paddingVertical: 12,
+      paddingHorizontal: 40,
+      borderRadius: 16,
+      width: '100%',
+      marginBottom: 12,
+      overflow: 'hidden',
+    },
+    exitBtn: {
+      backgroundColor: theme.accent,
+      paddingVertical: 12,
+      paddingHorizontal: 40,
+      borderRadius: 16,
+      width: '100%',
+      overflow: 'hidden',
+    },
+    btnText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      fontSize: 16,
+      textAlign: 'center',
+    },
+  });
