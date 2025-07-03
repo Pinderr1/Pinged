@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
 import { useDev } from './DevContext';
 import firebase from '../firebase';
+import { logDev } from '../utils/logger';
 
 const GameLimitContext = createContext();
 const DAILY_LIMIT = 1;
@@ -48,7 +49,7 @@ export const GameLimitProvider = ({ children }) => {
           lastGamePlayedAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
     } catch (e) {
-      console.log('Failed to update play count', e);
+      logDev('Failed to update play count', e);
     }
   };
 

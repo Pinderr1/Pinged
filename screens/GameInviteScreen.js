@@ -28,6 +28,7 @@ import EmptyState from '../components/EmptyState';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import useDebouncedCallback from '../hooks/useDebouncedCallback';
 import InviteUserCard from '../components/InviteUserCard';
+import { logDev } from '../utils/logger';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH / 2 - 24;
@@ -99,7 +100,7 @@ const GameInviteScreen = ({ route, navigation }) => {
       });
 
     if (devMode) {
-      console.log('Auto-accepting invite');
+      logDev('Auto-accepting invite');
       toLobby();
     } else {
       setTimeout(toLobby, 2000);

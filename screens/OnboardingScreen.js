@@ -32,6 +32,7 @@ import MultiSelectList from '../components/MultiSelectList';
 import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { allGames } from '../data/games';
+import { logDev } from '../utils/logger';
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
@@ -252,7 +253,7 @@ export default function OnboardingScreen() {
       const { city, region } = geo[0];
       setAnswers((prev) => ({ ...prev, location: `${city}, ${region}` }));
     } catch (e) {
-      console.log('Geo error:', e);
+      logDev('Geo error:', e);
     }
   };
 

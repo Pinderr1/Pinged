@@ -19,6 +19,7 @@ import { useOnboarding } from '../../contexts/OnboardingContext';
 import { useNavigation } from '@react-navigation/native';
 import { useDev } from '../../contexts/DevContext';
 import PropTypes from 'prop-types';
+import { logDev } from '../../utils/logger';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -44,7 +45,7 @@ export default function LoginScreen() {
         .auth()
         .signInWithCredential(credential)
         .then(async (res) => {
-          console.log('✅ Google login success:', res.user.uid);
+          logDev('✅ Google login success:', res.user.uid);
           const snap = await firebase
             .firestore()
             .collection('users')
