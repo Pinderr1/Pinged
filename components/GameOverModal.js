@@ -6,6 +6,7 @@ import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
 import { avatarSource } from '../utils/avatar';
 import useWinLossStats from '../hooks/useWinLossStats';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function GameOverModal({
   visible,
@@ -16,6 +17,8 @@ export default function GameOverModal({
   rematchDisabled,
   onExit,
 }) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const stats = useWinLossStats(winnerId);
   useEffect(() => {
     if (visible && winnerName) {
@@ -78,7 +81,8 @@ GameOverModal.propTypes = {
   onExit: PropTypes.func.isRequired,
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) =>
+  StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: '#0009',
@@ -100,6 +104,7 @@ const styles = StyleSheet.create({
     width: 280,
     alignItems: 'center',
     overflow: 'hidden',
+    backgroundColor: theme.card,
   },
   avatar: {
     width: 80,
@@ -110,14 +115,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text,
     marginBottom: 6,
     textAlign: 'center',
   },
   stats: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.text,
     marginBottom: 16,
   },
   rematchBtn: {
@@ -138,9 +143,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   btnText: {
-    color: '#fff',
+    color: theme.text,
     fontWeight: 'bold',
     fontSize: 16,
     textAlign: 'center',
   },
-});
+  });
