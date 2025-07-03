@@ -1,11 +1,11 @@
 import React, { createContext, useState, useContext } from 'react';
 import firebase from '../firebase';
-import { useUser } from './UserContext';
+import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [queue, setQueue] = useState([]);
 
   const showNotification = (payload) => {
