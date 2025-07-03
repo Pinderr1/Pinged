@@ -67,18 +67,22 @@ export default function useGameSession(sessionId, gameId, opponentId) {
 
     const gameover = Game.endIf ? Game.endIf({ G, ctx: { currentPlayer: nextPlayer } }) : undefined;
 
-    await firebase
-      .firestore()
-      .collection('gameSessions')
-      .doc(sessionId)
-      .update({
-        state: G,
-        currentPlayer: nextPlayer,
-        gameover: gameover || null,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        moves: firebase.firestore.FieldValue.arrayUnion({ action: moveName, player: String(idx), at: firebase.firestore.FieldValue.serverTimestamp() }),
-      });
-    play('game_move');
+    try {
+      await firebase
+        .firestore()
+        .collection('gameSessions')
+        .doc(sessionId)
+        .update({
+          state: G,
+          currentPlayer: nextPlayer,
+          gameover: gameover || null,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          moves: firebase.firestore.FieldValue.arrayUnion({ action: moveName, player: String(idx), at: firebase.firestore.FieldValue.serverTimestamp() }),
+        });
+      play('game_move');
+    } catch (e) {
+      console.warn('Failed to update game session', e);
+    }
   }, [session, Game, sessionId, user?.uid]);
 
   const moves = {};

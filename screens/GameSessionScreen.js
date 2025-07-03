@@ -143,23 +143,27 @@ const LiveSessionScreen = ({ route, navigation }) => {
   useEffect(() => {
     if (countdown === null) return;
     const handleStart = async () => {
-      if (!requireCredits()) return;
-      setShowGame(true);
-      setCountdown(null);
-      recordGamePlayed();
-      if (opponent?.id && user?.uid) {
-        await createMatchIfMissing(user.uid, opponent.id);
-      }
-      if (inviteId && user?.uid) {
-        const ref = firebase.firestore().collection('gameInvites').doc(inviteId);
-        const snap = await ref.get();
-        const data = snap.data();
-        if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
-          ref.update({
-            status: 'active',
-            startedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          });
+      try {
+        if (!requireCredits()) return;
+        setShowGame(true);
+        setCountdown(null);
+        recordGamePlayed();
+        if (opponent?.id && user?.uid) {
+          await createMatchIfMissing(user.uid, opponent.id);
         }
+        if (inviteId && user?.uid) {
+          const ref = firebase.firestore().collection('gameInvites').doc(inviteId);
+          const snap = await ref.get();
+          const data = snap.data();
+          if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
+            ref.update({
+              status: 'active',
+              startedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to start game', e);
       }
     };
 
@@ -180,9 +184,10 @@ const LiveSessionScreen = ({ route, navigation }) => {
   };
 
   const handleRematch = async () => {
-    if (!requireCredits()) return;
-    if (inviteId && user?.uid) {
-      const ref = firebase.firestore().collection('gameInvites').doc(inviteId);
+    try {
+      if (!requireCredits()) return;
+      if (inviteId && user?.uid) {
+        const ref = firebase.firestore().collection('gameInvites').doc(inviteId);
         const snap = await ref.get();
         const data = snap.data();
         if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
@@ -198,18 +203,21 @@ const LiveSessionScreen = ({ route, navigation }) => {
               archived: true,
               archivedAt: firebase.firestore.FieldValue.serverTimestamp(),
             });
+        }
       }
-    }
 
-    const newId = await sendGameInvite(opponent.id, game.id);
-    Toast.show({ type: 'success', text1: 'Invite sent!' });
-    setGameResult(null);
-    navigation.replace('GameSession', {
-      game,
-      opponent,
-      inviteId: newId,
-      status: devMode ? 'ready' : 'waiting',
-    });
+      const newId = await sendGameInvite(opponent.id, game.id);
+      Toast.show({ type: 'success', text1: 'Invite sent!' });
+      setGameResult(null);
+      navigation.replace('GameSession', {
+        game,
+        opponent,
+        inviteId: newId,
+        status: devMode ? 'ready' : 'waiting',
+      });
+    } catch (e) {
+      console.warn('Failed to start rematch', e);
+    }
   };
 
   const [debouncedRematch, rematchWaiting] = useDebouncedCallback(handleRematch, 800);

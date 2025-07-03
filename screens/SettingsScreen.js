@@ -23,9 +23,13 @@ const SettingsScreen = ({ navigation }) => {
 
   const handleEditProfile = () => navigation.navigate('Profile', { editMode: true });
   const handleLogout = async () => {
-    await firebase.auth().signOut();
-    // RootNavigator will detect the auth change and present the AuthStack
-    // so no manual navigation reset is required here.
+    try {
+      await firebase.auth().signOut();
+      // RootNavigator will detect the auth change and present the AuthStack
+      // so no manual navigation reset is required here.
+    } catch (e) {
+      console.warn('Failed to sign out', e);
+    }
   };
   const handleGoPremium = () => navigation.navigate('Premium', { context: 'paywall' });
 
