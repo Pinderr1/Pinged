@@ -26,6 +26,9 @@ import EventFlyer from "../components/EventFlyer";
 import GradientButton from '../components/GradientButton';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { eventImageSource } from '../utils/avatar';
+import PremiumBanner from '../components/PremiumBanner';
+import ActiveGamesPreview from '../components/ActiveGamesPreview';
+import MatchesPreview from '../components/MatchesPreview';
 
 // Map app game IDs to boardgame registry keys for AI play
 const aiGameMap = allGames.reduce((acc, g) => {
@@ -45,6 +48,7 @@ const HomeScreen = ({ navigation }) => {
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
   const [showBonus, setShowBonus] = useState(false);
+  const [showPremiumBanner, setShowPremiumBanner] = useState(!isPremiumUser);
   const local = getStyles(theme);
 
 
@@ -61,6 +65,10 @@ const HomeScreen = ({ navigation }) => {
       return () => clearTimeout(t);
     }
   }, [loginBonus]);
+
+  useEffect(() => {
+    setShowPremiumBanner(!isPremiumUser);
+  }, [isPremiumUser]);
 
   const openGamePicker = (target) => {
     if (target === 'browse') {
@@ -125,9 +133,16 @@ const HomeScreen = ({ navigation }) => {
               <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
               <ProgressBar value={xpProgress} max={100} color={theme.accent} />
               <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
-              <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
-            </Card>
-          </View>
+          <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
+        </Card>
+      </View>
+
+      {!isPremiumUser && showPremiumBanner && (
+        <PremiumBanner
+          onClose={() => setShowPremiumBanner(false)}
+          onPress={() => navigation.navigate('Premium', { context: 'paywall' })}
+        />
+      )}
 
           <View style={local.group}>
             <Text style={local.sectionTitle}>Quick Play</Text>
@@ -140,16 +155,16 @@ const HomeScreen = ({ navigation }) => {
                 <Text style={[local.tileEmoji, { marginBottom: 0 }]}>{item.emoji}</Text>
                 <Text style={[local.fullTileText, { color: theme.text }]}>{item.title}</Text>
               </Card>
-            ))}
-          </View>
+          ))}
+        </View>
+        <ActiveGamesPreview navigation={navigation} />
+        <MatchesPreview navigation={navigation} />
 
-
-
-          <View style={local.group}>
-            <Card
-              onPress={() => navigation.navigate('Play')}
-              style={[local.fullTile, { backgroundColor: theme.card }]}
-            >
+        <View style={local.group}>
+          <Card
+            onPress={() => navigation.navigate('Play')}
+            style={[local.fullTile, { backgroundColor: theme.card }]}
+          >
               <Text style={[local.tileEmoji, { marginBottom: 0 }]}>🎮</Text>
               <Text style={[local.fullTileText, { color: theme.text }]}>Games</Text>
             </Card>
