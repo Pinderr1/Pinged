@@ -1,13 +1,19 @@
 // screens/PhoneVerificationScreen.js
-import React, { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, TextInput, Text } from "react-native";
 import GradientBackground from "../components/GradientBackground";
 import GradientButton from "../components/GradientButton";
 import ScreenContainer from "../components/ScreenContainer";
 import Header from "../components/Header";
 import RNPickerSelect from "react-native-picker-select";
-import firebase from "../firebase";
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import { auth } from "../firebase";
+import {
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  PhoneAuthProvider,
+  linkWithCredential,
+  signInWithCredential,
+} from "firebase/auth";
 import Toast from "react-native-toast-message";
 import PropTypes from "prop-types";
 import { useTheme } from "../contexts/ThemeContext";
@@ -23,7 +29,6 @@ const countryItems = [
 ];
 
 export default function PhoneVerificationScreen({ navigation }) {
-  const recaptchaRef = useRef(null);
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const [countryCode, setCountryCode] = useState("+1");
@@ -31,6 +36,19 @@ export default function PhoneVerificationScreen({ navigation }) {
   const [otp, setOtp] = useState("");
   const [verificationId, setVerificationId] = useState(null);
   const [lastSent, setLastSent] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        "recaptcha-container",
+        { size: "invisible" },
+        auth,
+      );
+    }
+    return () => {
+      window.recaptchaVerifier?.clear?.();
+    };
+  }, []);
 
   const spamNumbers = ["+11234567890"];
   const isSpammyNumber = (num) => {
@@ -58,9 +76,11 @@ export default function PhoneVerificationScreen({ navigation }) {
         setLastSent(now);
         return;
       }
-      const res = await firebase
-        .auth()
-        .signInWithPhoneNumber(phoneNumber, recaptchaRef.current);
+      const res = await signInWithPhoneNumber(
+        auth,
+        phoneNumber,
+        window.recaptchaVerifier,
+      );
       setVerificationId(res.verificationId);
       setLastSent(now);
       Toast.show({ type: "success", text1: "Code sent" });
@@ -72,14 +92,11 @@ export default function PhoneVerificationScreen({ navigation }) {
 
   const verifyCode = async () => {
     try {
-      const credential = firebase.auth.PhoneAuthProvider.credential(
-        verificationId,
-        otp,
-      );
-      if (firebase.auth().currentUser) {
-        await firebase.auth().currentUser.linkWithCredential(credential);
+      const credential = PhoneAuthProvider.credential(verificationId, otp);
+      if (auth.currentUser) {
+        await linkWithCredential(auth.currentUser, credential);
       } else {
-        await firebase.auth().signInWithCredential(credential);
+        await signInWithCredential(auth, credential);
       }
       Toast.show({ type: "success", text1: "Phone verified" });
       navigation.goBack();
@@ -102,10 +119,7 @@ export default function PhoneVerificationScreen({ navigation }) {
   return (
     <GradientBackground>
       <Header showLogoOnly />
-      <FirebaseRecaptchaVerifierModal
-        ref={recaptchaRef}
-        firebaseConfig={firebase.app()?.options || {}}
-      />
+      <View style={{ height: 0, width: 0 }} nativeID="recaptcha-container" />
       <ScreenContainer
         style={{ paddingTop: HEADER_SPACING, alignItems: "center" }}
       >
