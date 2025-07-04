@@ -26,6 +26,8 @@
     "expo-linear-gradient": "~14.1.4",
     "expo-location": "~18.1.6",
     "expo-web-browser": "~14.2.0",
+    "expo-font": "~12.1.4",
+    "expo-splash-screen": "~0.23.4",
     "firebase": "^9.6.11",
     "lottie-ios": "^4.5.1",
     "lottie-react-native": "7.2.2",

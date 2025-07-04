@@ -1,27 +1,29 @@
 // navigation/AppStack.js
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import MainTabs from "./MainTabs";
-import ProfileScreen from "../screens/ProfileScreen";
-import EditProfileScreen from "../screens/EditProfileScreen";
-import ChatScreen from "../screens/ChatScreen";
-import NotificationsScreen from "../screens/NotificationsScreen";
-import GameInviteScreen from "../screens/GameInviteScreen";
-import GameSessionScreen from "../screens/GameSessionScreen";
-import GameWithBotScreen from "../screens/GameWithBotScreen";
-import CommunityScreen from "../screens/CommunityScreen";
-import PremiumScreen from "../screens/PremiumScreen";
-import StatsScreen from "../screens/StatsScreen";
-import PlayScreen from "../screens/PlayScreen";
-import SwipeScreen from "../screens/SwipeScreen";
-import LikedYouScreen from "../screens/LikedYouScreen";
-import VerifyHumanScreen from "../screens/VerifyHumanScreen";
-import PhoneVerificationScreen from "../screens/PhoneVerificationScreen";
+import Loader from "../components/Loader";
+const MainTabs = lazy(() => import("./MainTabs"));
+const ProfileScreen = lazy(() => import("../screens/ProfileScreen"));
+const EditProfileScreen = lazy(() => import("../screens/EditProfileScreen"));
+const ChatScreen = lazy(() => import("../screens/ChatScreen"));
+const NotificationsScreen = lazy(() => import("../screens/NotificationsScreen"));
+const GameInviteScreen = lazy(() => import("../screens/GameInviteScreen"));
+const GameSessionScreen = lazy(() => import("../screens/GameSessionScreen"));
+const GameWithBotScreen = lazy(() => import("../screens/GameWithBotScreen"));
+const CommunityScreen = lazy(() => import("../screens/CommunityScreen"));
+const PremiumScreen = lazy(() => import("../screens/PremiumScreen"));
+const StatsScreen = lazy(() => import("../screens/StatsScreen"));
+const PlayScreen = lazy(() => import("../screens/PlayScreen"));
+const SwipeScreen = lazy(() => import("../screens/SwipeScreen"));
+const LikedYouScreen = lazy(() => import("../screens/LikedYouScreen"));
+const VerifyHumanScreen = lazy(() => import("../screens/VerifyHumanScreen"));
+const PhoneVerificationScreen = lazy(() => import("../screens/PhoneVerificationScreen"));
 
 const Stack = createNativeStackNavigator();
 
 export default function AppStack() {
   return (
+    <Suspense fallback={<Loader /> }>
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
@@ -62,5 +64,6 @@ export default function AppStack() {
         component={PhoneVerificationScreen}
       />
     </Stack.Navigator>
+    </Suspense>
   );
 }
