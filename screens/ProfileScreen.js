@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
@@ -12,7 +13,7 @@ import { useUser } from '../contexts/UserContext';
 import firebase from '../firebase';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
-import { uploadAvatarAsync } from '../utils/upload';
+import { uploadAvatarAsync, uploadPhotoAsync } from '../utils/upload';
 import { avatarSource } from '../utils/avatar';
 import { sanitizeText } from '../utils/sanitize';
 import PropTypes from 'prop-types';
@@ -20,6 +21,8 @@ import RNPickerSelect from 'react-native-picker-select';
 import MultiSelectList from '../components/MultiSelectList';
 import { useTheme } from '../contexts/ThemeContext';
 import { allGames } from '../data/games';
+import ProgressBar from '../components/ProgressBar';
+import { getProfileCompletion } from '../utils/profile';
 
 const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
@@ -37,9 +40,16 @@ const ProfileScreen = ({ navigation, route }) => {
   );
   const defaultGameOptions = allGames.map((g) => ({ label: g.title, value: g.title }));
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
+  const [photos, setPhotos] = useState(
+    Array.isArray(user?.photos)
+      ? user.photos
+      : user?.photoURL
+      ? [user.photoURL]
+      : []
+  );
   const [avatar, setAvatar] = useState(user?.photoURL || '');
 
-  const pickImage = async () => {
+  const pickPhoto = async (index) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Toast.show({ type: 'error', text1: 'Permission denied' });
@@ -53,7 +63,13 @@ const ProfileScreen = ({ navigation, route }) => {
     });
 
     if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      setPhotos((prev) => {
+        const copy = [...prev];
+        copy[index] = uri;
+        return copy;
+      });
+      if (index === 0) setAvatar(uri);
     }
   };
 
@@ -65,6 +81,13 @@ const ProfileScreen = ({ navigation, route }) => {
     setBio(user?.bio || '');
     setLocation(user?.location || '');
     setFavoriteGames(Array.isArray(user?.favoriteGames) ? user.favoriteGames : []);
+    setPhotos(
+      Array.isArray(user?.photos)
+        ? user.photos
+        : user?.photoURL
+        ? [user.photoURL]
+        : []
+    );
     setAvatar(user?.photoURL || '');
   }, [user]);
 
@@ -92,15 +115,21 @@ const ProfileScreen = ({ navigation, route }) => {
 
   const handleSave = async () => {
     if (!user) return;
-    let photoURL = avatar;
-    if (avatar && !avatar.startsWith('http')) {
-      try {
-        photoURL = await uploadAvatarAsync(avatar, user.uid);
-      } catch (e) {
-        console.warn('Avatar upload failed', e);
-        Toast.show({ type: 'error', text1: 'Failed to upload photo' });
+    let uploaded = [];
+    for (let i = 0; i < photos.length; i++) {
+      const img = photos[i];
+      if (img && !img.startsWith('http')) {
+        try {
+          const url = await uploadPhotoAsync(img, user.uid, i);
+          uploaded[i] = url;
+        } catch (e) {
+          console.warn('Photo upload failed', e);
+        }
+      } else if (img) {
+        uploaded[i] = img;
       }
     }
+    const photoURL = uploaded[0] || avatar;
 
     const clean = {
       displayName: sanitizeText(displayName.trim()),
@@ -111,6 +140,7 @@ const ProfileScreen = ({ navigation, route }) => {
       bio: sanitizeText(bio.trim()),
       location: sanitizeText(location),
       photoURL,
+      photos: uploaded.filter(Boolean),
     };
     try {
       await firebase
@@ -120,6 +150,7 @@ const ProfileScreen = ({ navigation, route }) => {
         .set(clean, { merge: true });
       updateUser(clean);
       setAvatar(photoURL);
+      setPhotos(uploaded.filter(Boolean));
       Toast.show({ type: 'success', text1: 'Profile updated!' });
       navigation.reset({
         index: 0,
@@ -131,6 +162,7 @@ const ProfileScreen = ({ navigation, route }) => {
     }
   };
 
+  const completion = getProfileCompletion({ ...user, photos });
   const gradientColors = editMode ? ['#fff', '#ffe6f0'] : ['#fff', '#fce4ec'];
   const title = editMode ? 'Edit Your Profile' : 'Set Up Your Profile';
   const saveLabel = editMode ? 'Save Changes' : 'Save';
@@ -143,9 +175,27 @@ const ProfileScreen = ({ navigation, route }) => {
         <Text style={styles.navBtnText}>{editMode ? 'Setup Mode' : 'Edit Mode'}</Text>
       </TouchableOpacity>
       <Text style={styles.logoText}>{title}</Text>
-      <TouchableOpacity onPress={pickImage} style={{ alignSelf: 'center', marginBottom: 10 }}>
-        <Image source={avatarSource(avatar)} style={{ width: 100, height: 100, borderRadius: 50 }} />
-      </TouchableOpacity>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginBottom: 10 }}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <TouchableOpacity
+            key={i}
+            onPress={() => pickPhoto(i)}
+            style={{ margin: 4 }}
+          >
+            <Image
+              source={avatarSource(photos[i])}
+              style={{ width: 80, height: 80, borderRadius: 10 }}
+            />
+            <Ionicons
+              name="pencil"
+              size={18}
+              color="#fff"
+              style={{ position: 'absolute', right: 4, bottom: 4 }}
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
+      <ProgressBar value={completion} max={100} />
 
       <TextInput
         style={styles.input}

@@ -38,7 +38,7 @@ export default function MainTabs() {
             Home: <Ionicons name="home-outline" color={color} size={size} />,
             Explore: <FontAwesome5 name="fire" color={color} size={20} />,
             Matches: <Ionicons name="chatbubble-ellipses" color={color} size={size} />,
-            Settings: <Ionicons name="settings-outline" color={color} size={20} />,
+            Settings: <Ionicons name="person-circle-outline" color={color} size={20} />,
           };
           return icons[route.name] || <FontAwesome name="circle" color={color} size={20} />;
         },

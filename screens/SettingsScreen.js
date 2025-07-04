@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import ScreenContainer from '../components/ScreenContainer';
 import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
@@ -10,6 +11,9 @@ import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import firebase from '../firebase';
 import PropTypes from 'prop-types';
+import AvatarRing from '../components/AvatarRing';
+import ProgressBar from '../components/ProgressBar';
+import { getProfileCompletion } from '../utils/profile';
 
 const SettingsScreen = ({ navigation }) => {
   const { darkMode, toggleTheme, theme } = useTheme();
@@ -32,11 +36,28 @@ const SettingsScreen = ({ navigation }) => {
     }
   };
   const handleGoPremium = () => navigation.navigate('Premium', { context: 'paywall' });
+  const completion = getProfileCompletion(user);
 
   return (
     <GradientBackground style={{ flex: 1 }}>
       <ScreenContainer style={styles.container}>
         <Header />
+
+      <View style={{ alignItems: 'center', marginBottom: 20 }}>
+        <TouchableOpacity onPress={handleEditProfile} style={{ marginBottom: 6 }}>
+          <AvatarRing source={user?.photos?.[0] || user?.photoURL} size={80} />
+          <Ionicons
+            name="pencil"
+            size={20}
+            color={theme.text}
+            style={{ position: 'absolute', bottom: 0, right: 0 }}
+          />
+        </TouchableOpacity>
+        <ProgressBar value={completion} max={100} />
+        <Text style={{ color: theme.textSecondary, fontSize: 12 }}>
+          Profile {completion}% complete
+        </Text>
+      </View>
 
       <Text style={[styles.logoText, { color: theme.text, marginBottom: 10 }]}>
         Settings
@@ -65,6 +86,15 @@ const SettingsScreen = ({ navigation }) => {
           onPress={() => navigation.navigate('LikedYou')}
         />
       )}
+
+      <GradientButton
+        text="Pinged Platinum"
+        onPress={() => navigation.navigate('Premium', { context: 'upgrade' })}
+      />
+      <GradientButton
+        text="Get More Super Likes"
+        onPress={() => navigation.navigate('Premium', { context: 'upgrade' })}
+      />
 
       <GradientButton text="Edit Profile" onPress={handleEditProfile} />
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { SafeAreaView, View, Image, TouchableOpacity, StyleSheet, Platform, Text, Switch } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
 import { HEADER_HEIGHT } from '../layout';
@@ -23,9 +24,10 @@ const Header: React.FC<HeaderProps> = ({ showLogoOnly = false }) => {
             onPress={() => navigation.navigate('Settings')}
             style={styles.iconWrapper}
           >
-            <Image
-              source={require('../assets/gear.png')}
-              style={[styles.icon, { tintColor: theme.text }]}
+            <Ionicons
+              name="person-circle-outline"
+              size={24}
+              color={theme.text}
             />
           </TouchableOpacity>
         )}
