@@ -12,9 +12,17 @@ export const ThemeProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     AsyncStorage.getItem(STORAGE_KEY)
-      .then((val) => setDarkMode(val === 'true'))
-      .finally(() => setLoaded(true));
+      .then((val) => {
+        if (isMounted) setDarkMode(val === 'true');
+      })
+      .finally(() => {
+        if (isMounted) setLoaded(true);
+      });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const toggleTheme = async () => {

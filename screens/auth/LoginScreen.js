@@ -38,6 +38,7 @@ export default function LoginScreen() {
   });
 
   useEffect(() => {
+    let isMounted = true;
     if (response?.type === 'success') {
       const { id_token } = response.params;
       const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
@@ -45,6 +46,7 @@ export default function LoginScreen() {
         .auth()
         .signInWithCredential(credential)
         .then(async (res) => {
+          if (!isMounted) return;
           logDev('✅ Google login success:', res.user.uid);
           const snap = await firebase
             .firestore()
@@ -56,10 +58,15 @@ export default function LoginScreen() {
           }
         })
         .catch((error) => {
-          console.error('❌ Firebase SignIn Error', error);
-          Toast.show({ type: 'error', text1: 'Login failed.' });
+          if (isMounted) {
+            console.error('❌ Firebase SignIn Error', error);
+            Toast.show({ type: 'error', text1: 'Login failed.' });
+          }
         });
     }
+    return () => {
+      isMounted = false;
+    };
   }, [response]);
 
   const handleDevLogin = async () => {
