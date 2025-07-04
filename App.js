@@ -10,6 +10,7 @@ import NotificationCenter from './components/NotificationCenter';
 import DevBanner from './components/DevBanner';
 import Toast from 'react-native-toast-message';
 import usePushNotifications from './hooks/usePushNotifications';
+import useRemoteConfig from './hooks/useRemoteConfig';
 import RootNavigator from './navigation/RootNavigator';
 import { useTheme } from './contexts/ThemeContext';
 
@@ -23,14 +24,15 @@ export default function App() {
   const [fontsLoaded] = useFonts({});
   const { loaded: themeLoaded } = useTheme();
   const { loading: userLoading } = useUser();
+  const { loading: configLoading } = useRemoteConfig();
 
   useEffect(() => {
-    if (fontsLoaded && themeLoaded && !userLoading) {
+    if (fontsLoaded && themeLoaded && !userLoading && !configLoading) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, themeLoaded, userLoading]);
+  }, [fontsLoaded, themeLoaded, userLoading, configLoading]);
 
-  if (!fontsLoaded || !themeLoaded || userLoading) {
+  if (!fontsLoaded || !themeLoaded || userLoading || configLoading) {
     return null;
   }
 
