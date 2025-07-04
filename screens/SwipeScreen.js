@@ -95,7 +95,13 @@ const SwipeScreen = () => {
   const { sendGameInvite } = useMatchmaking();
   const isPremiumUser = !!currentUser?.isPremium;
   const requireCredits = useRequireGameCredits();
-  const { location: filterLocation, ageRange, interests } = useFilters();
+  const {
+    location: filterLocation,
+    ageRange,
+    interests,
+    gender: filterGender,
+    verifiedOnly,
+  } = useFilters();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likesUsed, setLikesUsed] = useState(0);
@@ -166,6 +172,14 @@ const SwipeScreen = () => {
             .where('age', '<=', ageRange[1]);
         }
 
+        if (filterGender) {
+          userQuery = userQuery.where('gender', '==', filterGender);
+        }
+
+        if (verifiedOnly) {
+          userQuery = userQuery.where('isVerified', '==', true);
+        }
+
         if (Array.isArray(interests) && interests.length) {
           userQuery = userQuery.where(
             'favoriteGames',
@@ -196,12 +210,21 @@ const SwipeScreen = () => {
             location: u.location || '',
             priorityScore: u.priorityScore || 0,
             boostUntil: u.boostUntil || null,
+            isVerified: !!u.isVerified,
             images,
           };
         });
 
         if (filterLocation) {
           formatted = formatted.filter((u) => u.location === filterLocation);
+        }
+
+        if (filterGender) {
+          formatted = formatted.filter((u) => u.gender === filterGender);
+        }
+
+        if (verifiedOnly) {
+          formatted = formatted.filter((u) => u.isVerified);
         }
 
         if (Array.isArray(ageRange) && ageRange.length === 2) {
@@ -233,7 +256,15 @@ const SwipeScreen = () => {
       setLoadingUsers(false);
     };
     fetchUsers();
-  }, [currentUser?.uid, devMode, filterLocation, ageRange, interests]);
+  }, [
+    currentUser?.uid,
+    devMode,
+    filterLocation,
+    ageRange,
+    interests,
+    filterGender,
+    verifiedOnly,
+  ]);
 
   // Reset card position whenever the index changes
   useEffect(() => {

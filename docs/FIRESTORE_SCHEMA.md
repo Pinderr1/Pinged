@@ -30,6 +30,13 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `online` (boolean)
 - `lastOnline` (timestamp) – last presence update time
 - `badges` (array of string) – earned badge IDs
+- `visibility` (string) – `standard` or `incognito`
+- `discoveryEnabled` (boolean) – hide from swipe if false
+- `messagePermission` (string) – `everyone`, `verified`, or `profile100`
+- `seeAgeRange` (array) – preferred age range for matches
+- `seeGender` (string) – preferred gender of matches
+- `seeLocation` (string) – preferred location for matches
+- `seeVerifiedOnly` (boolean) – show only verified profiles
 
 ### Subcollections
 - **gameInvites** – invitations sent or received by the user. Each invite document mirrors the root `gameInvites` collection.
