@@ -18,6 +18,7 @@ const SwipeScreen = lazy(() => import("../screens/SwipeScreen"));
 const LikedYouScreen = lazy(() => import("../screens/LikedYouScreen"));
 const VerifyHumanScreen = lazy(() => import("../screens/VerifyHumanScreen"));
 const PhoneVerificationScreen = lazy(() => import("../screens/PhoneVerificationScreen"));
+const DebugMenuScreen = lazy(() => import("../screens/DebugMenuScreen"));
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +47,7 @@ export default function AppStack() {
       <Stack.Screen name="EventChat" component={ChatScreen} />
       <Stack.Screen name="Premium" component={PremiumScreen} />
       <Stack.Screen name="Stats" component={StatsScreen} />
+      <Stack.Screen name="DebugMenu" component={DebugMenuScreen} />
       <Stack.Screen
         name="GameWithBot"
         component={GameWithBotScreen}

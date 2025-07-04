@@ -322,6 +322,13 @@ const SettingsScreen = ({ navigation }) => {
             onPress={toggleDevMode}
           />
 
+          {devMode && (
+            <GradientButton
+              text="Debug Menu"
+              onPress={() => navigation.navigate('DebugMenu')}
+            />
+          )}
+
           <GradientButton text="Log Out" onPress={handleLogout} />
         </>
       )}

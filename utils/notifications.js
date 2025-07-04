@@ -7,12 +7,13 @@ import { logDev } from './logger';
 export async function registerForPushNotificationsAsync() {
   try {
     if (!Constants.isDevice) {
-      logDev('Must use physical device for Push Notifications');
+      logDev('Notifications', 'Must use physical device for Push Notifications');
       return null;
     }
 
     if (Constants.appOwnership === 'expo' && Platform.OS === 'android') {
       logDev(
+        'Notifications',
         'Remote push notifications are not supported in Expo Go on Android. Use a development build.'
       );
       return null;
@@ -26,7 +27,7 @@ export async function registerForPushNotificationsAsync() {
     }
 
     if (finalStatus !== 'granted') {
-      logDev('Failed to get push token for push notification!');
+      logDev('Notifications', 'Failed to get push token for push notification!');
       return null;
     }
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { logDev } from '../utils/logger';
+import { logDev, setLoggerDevMode } from '../utils/logger';
 
 const DevContext = createContext();
 
@@ -12,7 +12,7 @@ export const DevProvider = ({ children }) => {
   const toggleDevMode = () => {
     setDevMode((prev) => {
       const next = !prev;
-      logDev(`Dev mode ${next ? 'enabled' : 'disabled'}`);
+      logDev('Dev', `Dev mode ${next ? 'enabled' : 'disabled'}`);
       return next;
     });
   };
@@ -33,6 +33,10 @@ export const DevProvider = ({ children }) => {
       console.warn = origWarn;
       console.error = origError;
     };
+  }, [devMode]);
+
+  useEffect(() => {
+    setLoggerDevMode(devMode);
   }, [devMode]);
 
   const clearLogs = () => setLogs([]);

@@ -170,7 +170,7 @@ export const ChatProvider = ({ children }) => {
     setMatches((prev) => {
       if (devMode) {
         if (!prev.find((m) => m.id === devMatch.id)) {
-          logDev('Adding dev match');
+          logDev('Chat', 'Adding dev match');
           return [...prev, devMatch];
         }
         return prev;
@@ -235,7 +235,7 @@ export const ChatProvider = ({ children }) => {
       )
     );
     if (devMode) {
-      logDev('Auto-accepting game invite');
+      logDev('Chat', 'Auto-accepting game invite');
       acceptGameInvite(matchId);
     }
   };
