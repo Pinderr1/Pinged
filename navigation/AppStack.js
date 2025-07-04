@@ -15,6 +15,8 @@ import StatsScreen from '../screens/StatsScreen';
 import PlayScreen from '../screens/PlayScreen';
 import SwipeScreen from '../screens/SwipeScreen';
 import LikedYouScreen from '../screens/LikedYouScreen';
+import VerifyHumanScreen from '../screens/VerifyHumanScreen';
+import PhoneVerificationScreen from '../screens/PhoneVerificationScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -54,6 +56,8 @@ export default function AppStack() {
         component={SwipeScreen}
         options={{ animation: 'slide_from_bottom' }}
       />
+      <Stack.Screen name="VerifyHuman" component={VerifyHumanScreen} />
+      <Stack.Screen name="PhoneVerification" component={PhoneVerificationScreen} />
       </Stack.Navigator>
   );
 }
