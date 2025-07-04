@@ -17,6 +17,7 @@ import SwipeScreen from "../screens/SwipeScreen";
 import LikedYouScreen from "../screens/LikedYouScreen";
 import VerifyHumanScreen from "../screens/VerifyHumanScreen";
 import PhoneVerificationScreen from "../screens/PhoneVerificationScreen";
+import DebugMenuScreen from "../screens/DebugMenuScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -61,6 +62,7 @@ export default function AppStack() {
         name="PhoneVerification"
         component={PhoneVerificationScreen}
       />
+      <Stack.Screen name="DebugMenu" component={DebugMenuScreen} />
     </Stack.Navigator>
   );
 }

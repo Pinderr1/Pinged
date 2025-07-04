@@ -45,7 +45,7 @@ export default function LoginScreen() {
         .auth()
         .signInWithCredential(credential)
         .then(async (res) => {
-          logDev('✅ Google login success:', res.user.uid);
+          logDev('Auth', '✅ Google login success:', res.user.uid);
           const snap = await firebase
             .firestore()
             .collection('users')

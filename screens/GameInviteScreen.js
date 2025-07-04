@@ -100,7 +100,7 @@ const GameInviteScreen = ({ route, navigation }) => {
       });
 
     if (devMode) {
-      logDev('Auto-accepting invite');
+      logDev('Game', 'Auto-accepting invite');
       toLobby();
     } else {
       setTimeout(toLobby, 2000);

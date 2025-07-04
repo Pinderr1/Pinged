@@ -46,7 +46,7 @@ const firebaseConfig = {
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
-  logDev('Firebase config loaded', firebaseConfig);
+  logDev('Firebase', 'Firebase config loaded', firebaseConfig);
 }
 
 const auth = firebase.auth();
@@ -54,7 +54,7 @@ let firestore;
 try {
   firestore = firebase.firestore();
 } catch (e) {
-  logDev('Firestore init error', e);
+  logDev('Firebase', 'Firestore init error', e);
 }
 const storage = firebase.storage();
 const functions = firebase.functions();
