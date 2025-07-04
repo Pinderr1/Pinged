@@ -20,10 +20,12 @@ import RNPickerSelect from 'react-native-picker-select';
 import MultiSelectList from '../components/MultiSelectList';
 import { useTheme } from '../contexts/ThemeContext';
 import { allGames } from '../data/games';
+import { useLoading } from '../contexts/LoadingContext';
 
 const EditProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
   const { theme } = useTheme();
+  const { showLoading, hideLoading } = useLoading();
   const styles = getStyles(theme);
   const [editMode, setEditMode] = useState(route?.params?.editMode || false);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
@@ -118,6 +120,7 @@ const EditProfileScreen = ({ navigation, route }) => {
 
   const handleSave = async () => {
     if (!user) return;
+    showLoading();
     let photoURL = avatar;
     if (avatar && !avatar.startsWith('http')) {
       try {
@@ -166,6 +169,8 @@ const EditProfileScreen = ({ navigation, route }) => {
     } catch (e) {
       console.warn('Failed to update profile', e);
       Toast.show({ type: 'error', text1: 'Update failed' });
+    } finally {
+      hideLoading();
     }
   };
 

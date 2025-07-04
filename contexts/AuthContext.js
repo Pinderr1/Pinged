@@ -7,6 +7,7 @@ import firebase from "../firebase";
 import { clearStoredOnboarding } from "../utils/onboarding";
 import { snapshotExists } from "../utils/firestore";
 import { isAllowedDomain } from "../utils/email";
+import { useLoading } from "./LoadingContext";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -21,6 +22,7 @@ export const AuthProvider = ({ children }) => {
     clientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
     redirectUri,
   });
+  const { showLoading, hideLoading } = useLoading();
 
   const ensureUserDoc = async (fbUser) => {
     try {
@@ -42,38 +44,48 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithEmail = async (email, password) => {
-    const userCred = await firebase
-      .auth()
-      .signInWithEmailAndPassword(email.trim(), password);
-    await ensureUserDoc(userCred.user);
+    showLoading();
+    try {
+      const userCred = await firebase
+        .auth()
+        .signInWithEmailAndPassword(email.trim(), password);
+      await ensureUserDoc(userCred.user);
+    } finally {
+      hideLoading();
+    }
   };
 
   const signUpWithEmail = async (email, password) => {
     if (!isAllowedDomain(email)) {
       throw new Error("Email domain not supported");
     }
-    const userCred = await firebase
-      .auth()
-      .createUserWithEmailAndPassword(email.trim(), password);
+    showLoading();
     try {
-      const keys = await AsyncStorage.getAllKeys();
-      const matchKeys = keys.filter((k) => k.startsWith("chatMatches"));
-      if (matchKeys.length) await AsyncStorage.multiRemove(matchKeys);
-    } catch (e) {
-      console.warn("Failed to clear stored matches", e);
+      const userCred = await firebase
+        .auth()
+        .createUserWithEmailAndPassword(email.trim(), password);
+      try {
+        const keys = await AsyncStorage.getAllKeys();
+        const matchKeys = keys.filter((k) => k.startsWith("chatMatches"));
+        if (matchKeys.length) await AsyncStorage.multiRemove(matchKeys);
+      } catch (e) {
+        console.warn("Failed to clear stored matches", e);
+      }
+      await firebase
+        .firestore()
+        .collection("users")
+        .doc(userCred.user.uid)
+        .set({
+          uid: userCred.user.uid,
+          email: userCred.user.email,
+          displayName: userCred.user.displayName || "",
+          photoURL: userCred.user.photoURL || "",
+          onboardingComplete: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+    } finally {
+      hideLoading();
     }
-    await firebase
-      .firestore()
-      .collection("users")
-      .doc(userCred.user.uid)
-      .set({
-        uid: userCred.user.uid,
-        email: userCred.user.email,
-        displayName: userCred.user.displayName || "",
-        photoURL: userCred.user.photoURL || "",
-        onboardingComplete: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
   };
 
   const loginWithGoogle = () =>
