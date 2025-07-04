@@ -20,7 +20,7 @@ const ThemedNotificationCenter = () => {
   return <NotificationCenter color={theme.accent} />;
 };
 
-export default function App() {
+const AppInner = () => {
   usePushNotifications();
   const [fontsLoaded] = useFonts({});
   const { loaded: themeLoaded } = useTheme();
@@ -63,17 +63,23 @@ export default function App() {
         keyboardVerticalOffset={60}
       >
         <ErrorBoundary>
-          <Providers>
-            <NavigationContainer>
-              <RootNavigator />
-              <DevBanner />
-            </NavigationContainer>
-            <ThemedNotificationCenter />
-            <LoadingOverlay />
-            <Toast />
-          </Providers>
+          <NavigationContainer>
+            <RootNavigator />
+            <DevBanner />
+          </NavigationContainer>
+          <ThemedNotificationCenter />
+          <LoadingOverlay />
+          <Toast />
         </ErrorBoundary>
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+};
+
+export default function App() {
+  return (
+    <Providers>
+      <AppInner />
+    </Providers>
   );
 }
