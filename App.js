@@ -8,6 +8,7 @@ import Providers from './contexts/Providers';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotificationCenter from './components/NotificationCenter';
 import DevBanner from './components/DevBanner';
+import LoadingOverlay from './components/LoadingOverlay';
 import Toast from 'react-native-toast-message';
 import usePushNotifications from './hooks/usePushNotifications';
 import RootNavigator from './navigation/RootNavigator';
@@ -48,6 +49,7 @@ export default function App() {
               <DevBanner />
             </NavigationContainer>
             <ThemedNotificationCenter />
+            <LoadingOverlay />
             <Toast />
           </Providers>
         </ErrorBoundary>

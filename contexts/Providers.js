@@ -13,6 +13,7 @@ import { GameSessionProvider } from './GameSessionContext';
 import { TrendingProvider } from './TrendingContext';
 import { SoundProvider } from './SoundContext';
 import { FilterProvider } from './FilterContext';
+import { LoadingProvider } from './LoadingContext';
 
 const Providers = ({ children }) => (
   <DevProvider>
@@ -20,25 +21,27 @@ const Providers = ({ children }) => (
       <OnboardingProvider>
         <UserProvider>
           <ThemeProvider>
-            <SoundProvider>
-              <NotificationProvider>
-                <ListenerProvider>
-                  <GameLimitProvider>
-                    <FilterProvider>
-                      <ChatProvider>
-                        <MatchmakingProvider>
-                          <TrendingProvider>
-                            <GameSessionProvider>
-                              {children}
-                            </GameSessionProvider>
-                          </TrendingProvider>
-                        </MatchmakingProvider>
-                      </ChatProvider>
-                    </FilterProvider>
-                  </GameLimitProvider>
-                </ListenerProvider>
-              </NotificationProvider>
-            </SoundProvider>
+            <LoadingProvider>
+              <SoundProvider>
+                <NotificationProvider>
+                  <ListenerProvider>
+                    <GameLimitProvider>
+                      <FilterProvider>
+                        <ChatProvider>
+                          <MatchmakingProvider>
+                            <TrendingProvider>
+                              <GameSessionProvider>
+                                {children}
+                              </GameSessionProvider>
+                            </TrendingProvider>
+                          </MatchmakingProvider>
+                        </ChatProvider>
+                      </FilterProvider>
+                    </GameLimitProvider>
+                  </ListenerProvider>
+                </NotificationProvider>
+              </SoundProvider>
+            </LoadingProvider>
           </ThemeProvider>
         </UserProvider>
       </OnboardingProvider>
