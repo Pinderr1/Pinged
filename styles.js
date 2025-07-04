@@ -232,6 +232,18 @@ const getStyles = (theme) =>
   buttonIcon: {
     fontSize: 28,
     color: '#fff'
+  },
+  infoLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginBottom: 12
+  },
+  infoLinkText: {
+    color: theme.accent,
+    textDecorationLine: 'underline',
+    marginRight: 4,
+    fontSize: FONT_SIZES.SM
   }
   });
 
