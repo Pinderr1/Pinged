@@ -49,7 +49,7 @@ export const GameLimitProvider = ({ children }) => {
           lastGamePlayedAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
     } catch (e) {
-      logDev('Failed to update play count', e);
+      logDev('GameLimit', 'Failed to update play count', e);
     }
   };
 

@@ -322,6 +322,13 @@ const SettingsScreen = ({ navigation }) => {
             onPress={toggleDevMode}
           />
 
+          {devMode && (
+            <GradientButton
+              text="Debug Menu"
+              onPress={() => navigation.navigate('DebugMenu')}
+            />
+          )}
+
           {user?.isAdmin && (
             <GradientButton
               text="Review Flagged Users"
