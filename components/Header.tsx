@@ -1,5 +1,6 @@
-import React from 'react';
-import { SafeAreaView, View, Image, TouchableOpacity, StyleSheet, Platform, Text, Switch } from 'react-native';
+import React, { useState } from 'react';
+import { SafeAreaView, View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
@@ -14,55 +15,66 @@ const Header: React.FC<HeaderProps> = ({ showLogoOnly = false }) => {
   const navigation = useNavigation();
   const { darkMode, toggleTheme, theme } = useTheme();
   const notificationCount = useUnreadNotifications();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const menuItems = [
+    { label: 'Profile', onPress: () => navigation.navigate('Profile') },
+    { label: 'Settings', onPress: () => navigation.navigate('Settings') },
+    { label: darkMode ? 'Light Mode' : 'Dark Mode', onPress: toggleTheme },
+  ];
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.headerBackground }]}>
       <View style={styles.container}>
-        {!showLogoOnly && (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Settings')}
-            style={styles.iconWrapper}
-          >
-            <Image
-              source={require('../assets/gear.png')}
-              style={[styles.icon, { tintColor: theme.text }]}
-            />
-          </TouchableOpacity>
-        )}
-
-        {/* Center logo */}
-        <Image source={require('../assets/logo.png')} style={styles.logo} />
-
-        {!showLogoOnly && (
-          <View style={styles.rightIcons}>
-            <View style={styles.iconWrapper}>
-              <Switch
-                accessibilityLabel="toggle dark mode"
-                value={darkMode}
-                onValueChange={toggleTheme}
-                trackColor={{ false: '#767577', true: theme.accent }}
-                thumbColor={Platform.OS === 'android' ? '#f4f3f4' : undefined}
-              />
+        {showLogoOnly ? (
+          <Image source={require('../assets/logo.png')} style={styles.logo} />
+        ) : (
+          <>
+            <Image source={require('../assets/logo.png')} style={styles.logo} />
+            <View style={styles.rightIcons}>
+              <TouchableOpacity
+                accessibilityLabel="open menu"
+                onPress={() => setMenuOpen((v) => !v)}
+                style={styles.iconWrapper}
+              >
+                <Ionicons name="menu" size={28} color={theme.text} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Notifications')}
+                style={styles.iconWrapper}
+              >
+                <View style={styles.bellWrapper}>
+                  <Image
+                    source={require('../assets/bell.png')}
+                    style={[styles.icon, { tintColor: theme.text }]}
+                  />
+                  {notificationCount > 0 && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{notificationCount}</Text>
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Notifications')}
-              style={styles.iconWrapper}
-            >
-              <View style={styles.bellWrapper}>
-                <Image
-                  source={require('../assets/bell.png')}
-                  style={[styles.icon, { tintColor: theme.text }]}
-                />
-                {notificationCount > 0 && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{notificationCount}</Text>
-                  </View>
-                )}
-              </View>
-            </TouchableOpacity>
-          </View>
+          </>
         )}
       </View>
+      {menuOpen && !showLogoOnly && (
+        <View style={[styles.dropdown, { backgroundColor: theme.card }]}>
+          {menuItems.map((item) => (
+            <TouchableOpacity
+              key={item.label}
+              onPress={() => {
+                setMenuOpen(false);
+                item.onPress();
+              }}
+              style={styles.menuItem}
+            >
+              <Text style={[styles.menuText, { color: theme.text }]}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -137,6 +149,25 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  dropdown: {
+    position: 'absolute',
+    top: HEADER_HEIGHT,
+    right: 16,
+    borderRadius: 8,
+    paddingVertical: 8,
+    width: 160,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  menuItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  menuText: {
+    fontSize: 16,
   },
 });
 
