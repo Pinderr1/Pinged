@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView, KeyboardAvoidingView, Platform, Text } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { useUser } from './contexts/UserContext';
@@ -25,7 +25,17 @@ export default function App() {
   const [fontsLoaded] = useFonts({});
   const { loaded: themeLoaded } = useTheme();
   const { loading: userLoading } = useUser();
-  const { loading: configLoading } = useRemoteConfig();
+  const {
+    loading: configLoading,
+    error: configError,
+    alertMessage,
+  } = useRemoteConfig();
+
+  useEffect(() => {
+    if (alertMessage) {
+      Toast.show({ type: 'info', text1: alertMessage });
+    }
+  }, [alertMessage]);
 
   useEffect(() => {
     if (fontsLoaded && themeLoaded && !userLoading && !configLoading) {
@@ -35,6 +45,14 @@ export default function App() {
 
   if (!fontsLoaded || !themeLoaded || userLoading || configLoading) {
     return null;
+  }
+
+  if (configError) {
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Failed to load configuration.</Text>
+      </SafeAreaView>
+    );
   }
 
   return (
