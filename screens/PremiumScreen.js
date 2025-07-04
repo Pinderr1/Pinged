@@ -1,41 +1,32 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  Image
-} from 'react-native';
-import GradientButton from '../components/GradientButton';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
-import * as WebBrowser from 'expo-web-browser';
-import Header from '../components/Header';
+import GradientButton from '../components/GradientButton';
 import ScreenContainer from '../components/ScreenContainer';
+import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
-import { useUser } from '../contexts/UserContext';
+import * as WebBrowser from 'expo-web-browser';
 import firebase from '../firebase';
 import PropTypes from 'prop-types';
-import { HEADER_SPACING, FONT_SIZES } from '../layout';
 
-const upgradeFeatures = [
-  { icon: require('../assets/icons/unlimited.png'), text: 'Unlimited Game Invites' },
-  { icon: require('../assets/icons/games.png'), text: 'All Games Unlocked' },
-  { icon: require('../assets/icons/badge.png'), text: 'Premium Profile Badge' },
-  { icon: require('../assets/icons/star.png'), text: 'Support New Game Development' }
-];
+const featuresByPlan = {
+  week: [
+    'Unlimited invites for 7 days',
+    'Premium badge on your profile',
+    'All games unlocked',
+  ],
+  month: [
+    'Unlimited game invites',
+    'Premium badge on your profile',
+    'All games unlocked',
+    'Support new game development',
+  ],
+};
 
-const paywallFeatures = [
-  { icon: require('../assets/icons/unlimited.png'), text: 'Unlimited Game Invites' },
-  { icon: require('../assets/icons/games.png'), text: 'All Games Unlocked' },
-  { icon: require('../assets/icons/badge.png'), text: 'Premium Profile Badge' }
-];
-
-const PremiumScreen = ({ navigation, route }) => {
+export default function PremiumScreen({ navigation }) {
+  const [plan, setPlan] = useState('week');
   const { theme } = useTheme();
-  const paywallStyles = getPaywallStyles(theme);
-  const context = route?.params?.context || 'paywall';
-  const { user } = useUser();
+  const styles = getStyles(theme);
 
   const startCheckout = async () => {
     try {
@@ -43,6 +34,7 @@ const PremiumScreen = ({ navigation, route }) => {
         .functions()
         .httpsCallable('createCheckoutSession');
       const result = await createSession({
+        period: plan,
         successUrl: process.env.EXPO_PUBLIC_SUCCESS_URL,
         cancelUrl: process.env.EXPO_PUBLIC_CANCEL_URL,
       });
@@ -55,173 +47,101 @@ const PremiumScreen = ({ navigation, route }) => {
     }
   };
 
-  if (context === 'upgrade') {
-    return (
-      <GradientBackground style={{ flex: 1 }}>
-        <Header />
-        <ScreenContainer style={{ paddingTop: HEADER_SPACING, paddingBottom: 100 }}>
-          <View style={upgradeStyles.container}>
-            <Text style={upgradeStyles.title}>Upgrade to Premium</Text>
-            <Text style={upgradeStyles.subtitle}>
-              Play unlimited games, access all features, and support the Pinged community.
-            </Text>
-            <View style={upgradeStyles.featureList}>
-              {upgradeFeatures.map((item, index) => (
-                <View key={index} style={upgradeStyles.featureItem}>
-                  <Image source={item.icon} style={upgradeStyles.featureIcon} />
-                  <Text style={upgradeStyles.featureText}>{item.text}</Text>
-                </View>
-              ))}
-            </View>
-            <GradientButton
-              text="Upgrade Now"
-              icon={<Text style={{ fontSize: 16 }}>💎</Text>}
-              onPress={startCheckout}
-            />
-            <Text style={upgradeStyles.legal}>
-              1 free game/day included on free plan. Cancel anytime. All prices in CAD.
-            </Text>
-          </View>
-        </ScreenContainer>
-      </GradientBackground>
-    );
-  }
+  const features = featuresByPlan[plan];
 
   return (
     <GradientBackground style={{ flex: 1 }}>
       <Header />
-      <ScreenContainer style={paywallStyles.container}>
-        {user?.isPremium && user.premiumUpdatedAt && (
-          <Text style={paywallStyles.memberSince}>{
-            `Member since ${new Date(
-              user.premiumUpdatedAt.toDate?.() || user.premiumUpdatedAt
-            ).toLocaleDateString()}`
-          }</Text>
-        )}
-        <Text style={paywallStyles.title}>Upgrade to Premium</Text>
-        <Text style={paywallStyles.subtitle}>More features. More matches. More fun.</Text>
-        <FlatList
-          data={paywallFeatures}
-          keyExtractor={(item, index) => index.toString()}
-          contentContainerStyle={{ marginTop: 24 }}
-          renderItem={({ item }) => (
-            <View style={paywallStyles.featureRow}>
-              <Image source={item.icon} style={paywallStyles.icon} />
-              <Text style={paywallStyles.featureText}>{item.text}</Text>
-            </View>
-          )}
-        />
-        <GradientButton
-          text="Upgrade Now"
-          onPress={startCheckout}
-          marginVertical={40}
-        />
+      <ScreenContainer style={styles.container}>
+        <Text style={styles.title}>Choose Your Plan</Text>
+        <View style={styles.toggleRow}>
+          {['week', 'month'].map((p) => (
+            <TouchableOpacity
+              key={p}
+              style={[styles.toggleOption, plan === p && styles.toggleActive]}
+              onPress={() => setPlan(p)}
+            >
+              <Text
+                style={[styles.toggleText, plan === p && styles.toggleTextActive]}
+              >
+                {p === 'week' ? '1 Week' : '1 Month'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <View style={styles.box}>
+          {features.map((f, i) => (
+            <Text key={i} style={styles.feature}>
+              • {f}
+            </Text>
+          ))}
+        </View>
+        <GradientButton text="Continue" onPress={startCheckout} />
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={paywallStyles.cancel}>Maybe Later</Text>
+          <Text style={styles.cancel}>Maybe Later</Text>
         </TouchableOpacity>
       </ScreenContainer>
     </GradientBackground>
   );
-};
-
-const upgradeStyles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 0,
-    alignItems: 'stretch',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#777',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  featureList: {
-    marginBottom: 30,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  featureIcon: {
-    width: 26,
-    height: 26,
-    marginRight: 12,
-  },
-  featureText: {
-    fontSize: 15,
-    color: '#333',
-  },
-  legal: {
-    fontSize: 12,
-    color: '#aaa',
-    textAlign: 'center',
-    marginTop: 20,
-  },
-});
-
-const getPaywallStyles = (theme) =>
-  StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'stretch',
-    paddingHorizontal: 0,
-    paddingTop: HEADER_SPACING,
-  },
-  title: {
-    fontSize: FONT_SIZES.XL,
-    fontWeight: 'bold',
-    color: theme.accent,
-  },
-  subtitle: {
-    fontSize: FONT_SIZES.SM,
-    color: '#666',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  featureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  icon: {
-    width: 28,
-    height: 28,
-    resizeMode: 'contain',
-    marginRight: 12,
-  },
-  featureText: {
-    fontSize: FONT_SIZES.MD,
-    color: '#333',
-    flexShrink: 1,
-  },
-  cancel: {
-    marginTop: 16,
-    fontSize: FONT_SIZES.SM,
-    color: '#888',
-  },
-  memberSince: {
-    fontSize: FONT_SIZES.SM,
-    color: '#666',
-    marginBottom: 12,
-  },
-});
+}
 
 PremiumScreen.propTypes = {
   navigation: PropTypes.shape({
-    navigate: PropTypes.func.isRequired,
+    goBack: PropTypes.func.isRequired,
   }).isRequired,
-  route: PropTypes.shape({
-    params: PropTypes.shape({
-      context: PropTypes.string,
-    }),
-  }),
 };
 
-export default PremiumScreen;
+const getStyles = (theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      paddingTop: 80,
+      alignItems: 'center',
+      paddingHorizontal: 20,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: theme.accent,
+      marginBottom: 20,
+    },
+    toggleRow: {
+      flexDirection: 'row',
+      backgroundColor: theme.card,
+      borderRadius: 20,
+      padding: 4,
+      marginBottom: 20,
+    },
+    toggleOption: {
+      paddingVertical: 8,
+      paddingHorizontal: 20,
+      borderRadius: 16,
+    },
+    toggleActive: {
+      backgroundColor: theme.accent,
+    },
+    toggleText: {
+      color: theme.textSecondary,
+      fontWeight: '600',
+    },
+    toggleTextActive: {
+      color: '#fff',
+    },
+    box: {
+      width: '100%',
+      backgroundColor: theme.card,
+      padding: 20,
+      borderRadius: 12,
+      marginBottom: 40,
+    },
+    feature: {
+      fontSize: 16,
+      color: theme.text,
+      marginBottom: 8,
+    },
+    cancel: {
+      color: theme.textSecondary,
+      fontSize: 14,
+      marginTop: 16,
+    },
+  });
