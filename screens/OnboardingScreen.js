@@ -168,10 +168,6 @@ export default function OnboardingScreen() {
             firebase.auth().currentUser.uid
           );
         } catch (e) {
-          if (e.message === 'celebrity-face') {
-            Toast.show({ type: 'error', text1: 'Invalid profile photo' });
-            return;
-          }
           throw e;
         }
       }
@@ -221,10 +217,6 @@ export default function OnboardingScreen() {
           );
           setAnswers((prev) => ({ ...prev, avatar: url }));
         } catch (e) {
-          if (e.message === 'celebrity-face') {
-            Toast.show({ type: 'error', text1: 'Invalid profile photo' });
-            return;
-          }
           console.error('Photo upload failed:', e);
           Toast.show({ type: 'error', text1: 'Failed to upload photo' });
           return;

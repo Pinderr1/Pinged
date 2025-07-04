@@ -19,8 +19,17 @@ export async function uploadAvatarAsync(uri, uid) {
     const response = await fetch(uri);
     const blob = await response.blob();
 
-    if (await detectCelebrityFace(uri)) {
-      throw new Error('celebrity-face');
+    const isCelebrity = await detectCelebrityFace(uri);
+    if (isCelebrity) {
+      try {
+        await firebase
+          .firestore()
+          .collection('users')
+          .doc(uid)
+          .set({ flaggedForReview: true }, { merge: true });
+      } catch (err) {
+        console.warn('Failed to flag user for review', err);
+      }
     }
 
     // Store avatar inside a user specific folder so it matches storage.rules

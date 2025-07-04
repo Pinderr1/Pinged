@@ -18,6 +18,7 @@ const SwipeScreen = lazy(() => import("../screens/SwipeScreen"));
 const LikedYouScreen = lazy(() => import("../screens/LikedYouScreen"));
 const VerifyHumanScreen = lazy(() => import("../screens/VerifyHumanScreen"));
 const PhoneVerificationScreen = lazy(() => import("../screens/PhoneVerificationScreen"));
+const AdminReviewScreen = lazy(() => import("../screens/AdminReviewScreen"));
 
 const Stack = createNativeStackNavigator();
 
@@ -63,6 +64,7 @@ export default function AppStack() {
         name="PhoneVerification"
         component={PhoneVerificationScreen}
       />
+      <Stack.Screen name="AdminReview" component={AdminReviewScreen} />
     </Stack.Navigator>
     </Suspense>
   );

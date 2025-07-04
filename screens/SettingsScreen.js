@@ -322,6 +322,13 @@ const SettingsScreen = ({ navigation }) => {
             onPress={toggleDevMode}
           />
 
+          {user?.isAdmin && (
+            <GradientButton
+              text="Review Flagged Users"
+              onPress={() => navigation.navigate('AdminReview')}
+            />
+          )}
+
           <GradientButton text="Log Out" onPress={handleLogout} />
         </>
       )}
