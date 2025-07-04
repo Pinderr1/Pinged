@@ -21,7 +21,7 @@ const SettingsScreen = ({ navigation }) => {
 
   const toggleAdvanced = () => setShowAdvanced((prev) => !prev);
 
-  const handleEditProfile = () => navigation.navigate('Profile', { editMode: true });
+  const handleEditProfile = () => navigation.navigate('EditProfile');
   const handleLogout = async () => {
     try {
       await firebase.auth().signOut();
