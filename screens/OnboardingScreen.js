@@ -260,7 +260,7 @@ export default function OnboardingScreen() {
       const { city, region } = geo[0];
       setAnswers((prev) => ({ ...prev, location: `${city}, ${region}` }));
     } catch (e) {
-      logDev('Geo error:', e);
+      logDev('Onboarding', 'Geo error:', e);
     }
   };
 

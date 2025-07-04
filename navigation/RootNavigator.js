@@ -51,7 +51,7 @@ export default function RootNavigator() {
     const handleDeepLink = ({ url }) => {
       const parsed = Linking.parse(url);
       if (parsed.path === 'chat') {
-        logDev('Deep linking to Chat');
+        logDev('Nav', 'Deep linking to Chat');
       }
     };
     const sub = Linking.addEventListener('url', handleDeepLink);
