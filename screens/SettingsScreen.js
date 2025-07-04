@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Text, View, TextInput, Switch } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import ScreenContainer from '../components/ScreenContainer';
 import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
@@ -29,6 +30,12 @@ const SettingsScreen = ({ navigation }) => {
   const [messagePermission, setMessagePermission] = useState(
     user?.messagePermission || 'everyone'
   );
+  const [allowDMs, setAllowDMs] = useState(user?.allowDMs !== false);
+  const [swipeSurge, setSwipeSurge] = useState(!!user?.swipeSurge);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(
+    user?.notificationsEnabled !== false
+  );
+  const [distanceUnit, setDistanceUnit] = useState(user?.distanceUnit || 'mi');
   const {
     location: filterLocation,
     ageRange,
@@ -212,6 +219,85 @@ const SettingsScreen = ({ navigation }) => {
           { label: 'Only Verified', value: 'verified' },
           { label: 'Profile 100%', value: 'profile100' },
         ]}
+      />
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+        <Text style={[styles.settingText, { marginRight: 8 }]}>Allow DMs</Text>
+        <Switch
+          value={allowDMs}
+          onValueChange={(v) => {
+            setAllowDMs(v);
+            saveUserSetting({ allowDMs: v });
+          }}
+        />
+      </View>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+        <Text style={[styles.settingText, { marginRight: 8 }]}>Swipe Surge</Text>
+        <Switch
+          value={swipeSurge}
+          onValueChange={(v) => {
+            setSwipeSurge(v);
+            saveUserSetting({ swipeSurge: v });
+          }}
+        />
+      </View>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+        <Text style={[styles.settingText, { marginRight: 8 }]}>Notifications</Text>
+        <Switch
+          value={notificationsEnabled}
+          onValueChange={(v) => {
+            setNotificationsEnabled(v);
+            saveUserSetting({ notificationsEnabled: v });
+          }}
+        />
+      </View>
+
+      <RNPickerSelect
+        onValueChange={(val) => {
+          setDistanceUnit(val);
+          saveUserSetting({ distanceUnit: val });
+        }}
+        value={distanceUnit}
+        placeholder={{ label: 'Distance Unit', value: null }}
+        useNativeAndroidPickerStyle={false}
+        style={{ inputIOS: styles.input, inputAndroid: styles.input }}
+        items={[
+          { label: 'Miles', value: 'mi' },
+          { label: 'Kilometers', value: 'km' },
+        ]}
+      />
+
+      <Text style={[styles.settingText, { marginTop: 16 }]}>Payment</Text>
+      <GradientButton
+        text="Manage Payment Method"
+        onPress={() => WebBrowser.openBrowserAsync('https://example.com/payments')}
+      />
+      <GradientButton
+        text="Manage Google Play Subscriptions"
+        onPress={() => WebBrowser.openBrowserAsync('https://play.google.com/store/account/subscriptions')}
+      />
+      <GradientButton
+        text="Restore Purchases"
+        onPress={() => WebBrowser.openBrowserAsync('https://example.com/restore')}
+      />
+
+      <GradientButton
+        text="Contact Us"
+        onPress={() => WebBrowser.openBrowserAsync('https://example.com/contact')}
+      />
+      <GradientButton
+        text="Help & Support"
+        onPress={() => WebBrowser.openBrowserAsync('https://example.com/help')}
+      />
+      <GradientButton
+        text="Community Guidelines"
+        onPress={() => WebBrowser.openBrowserAsync('https://example.com/guidelines')}
+      />
+      <GradientButton
+        text="Privacy"
+        onPress={() => WebBrowser.openBrowserAsync('https://example.com/privacy')}
       />
 
       <GradientButton
