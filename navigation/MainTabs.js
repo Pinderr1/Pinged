@@ -1,5 +1,5 @@
 // navigation/MainTabs.js
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   Ionicons,
@@ -8,10 +8,11 @@ import {
 } from '@expo/vector-icons';
 
 import { useTheme } from '../contexts/ThemeContext';
-import HomeScreen from '../screens/HomeScreen';
-import SwipeScreen from '../screens/SwipeScreen';
-import MatchesScreen from '../screens/MatchesScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+import Loader from '../components/Loader';
+const HomeScreen = lazy(() => import('../screens/HomeScreen'));
+const SwipeScreen = lazy(() => import('../screens/SwipeScreen'));
+const MatchesScreen = lazy(() => import('../screens/MatchesScreen'));
+const SettingsScreen = lazy(() => import('../screens/SettingsScreen'));
 
 const Tab = createBottomTabNavigator();
 
@@ -19,6 +20,7 @@ export default function MainTabs() {
   const { darkMode, theme } = useTheme();
 
   return (
+    <Suspense fallback={<Loader /> }>
     <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
@@ -49,5 +51,6 @@ export default function MainTabs() {
       <Tab.Screen name="Matches" component={MatchesScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
+    </Suspense>
   );
 }

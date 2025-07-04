@@ -1,13 +1,15 @@
 // navigation/AuthStack.js
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LoginScreen from '../screens/auth/LoginScreen';
-import EmailAuthScreen from '../screens/EmailAuthScreen';
+import Loader from '../components/Loader';
+const LoginScreen = lazy(() => import('../screens/auth/LoginScreen'));
+const EmailAuthScreen = lazy(() => import('../screens/EmailAuthScreen'));
 
 const Stack = createNativeStackNavigator();
 
 export default function AuthStack() {
   return (
+    <Suspense fallback={<Loader /> }>
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
@@ -27,5 +29,6 @@ export default function AuthStack() {
         initialParams={{ mode: 'signup' }}
       />
     </Stack.Navigator>
+    </Suspense>
   );
 }

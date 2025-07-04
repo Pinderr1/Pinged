@@ -1,15 +1,15 @@
 // navigation/RootNavigator.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { StatusBar, Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import { logDev } from '../utils/logger';
 
-import SplashScreen from '../screens/SplashScreen';
-import AuthStack from './AuthStack';
-import AppStack from './AppStack';
-import OnboardingStack from './OnboardingStack';
+const SplashScreen = lazy(() => import('../screens/SplashScreen'));
+const AuthStack = lazy(() => import('./AuthStack'));
+const AppStack = lazy(() => import('./AppStack'));
+const OnboardingStack = lazy(() => import('./OnboardingStack'));
 
 
 const splashDuration = 2000;
@@ -35,10 +35,6 @@ export default function RootNavigator() {
     return () => sub.remove();
   }, []);
 
-  if (isSplash || loading) {
-    return <SplashScreen onFinish={() => setIsSplash(false)} />;
-  }
-
   // Prefer the onboarding flag from the user's profile. Only fall back to
   // the locally persisted flag when the profile has not been loaded yet.
   const onboarded =
@@ -46,13 +42,26 @@ export default function RootNavigator() {
       ? user.onboardingComplete
       : hasOnboarded;
 
-  if (!user) {
-    return <AuthStack />;
+  let content = null;
+  if (isSplash || loading) {
+    content = <SplashScreen onFinish={() => setIsSplash(false)} />;
+  } else if (!user) {
+    content = <AuthStack />;
+  } else if (!onboarded) {
+    content = <OnboardingStack />;
+  } else {
+    content = <AppStack />;
   }
 
-  if (!onboarded) {
-    return <OnboardingStack />;
-  }
-
-  return <AppStack />;
+  return (
+    <Suspense
+      fallback={
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Loading...</Text>
+        </View>
+      }
+    >
+      {content}
+    </Suspense>
+  );
 }
