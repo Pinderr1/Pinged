@@ -44,7 +44,7 @@ import PropTypes from 'prop-types';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-const CARD_HEIGHT = SCREEN_HEIGHT * 0.75;
+const CARD_HEIGHT = SCREEN_HEIGHT;
 const MAX_LIKES = 100;
 const BUTTON_ROW_BOTTOM = SCREEN_HEIGHT * 0.05;
 
@@ -104,6 +104,7 @@ const SwipeScreen = () => {
   const [imageIndex, setImageIndex] = useState(0);
   const [history, setHistory] = useState([]);
   const [showSuperLikeAnim, setShowSuperLikeAnim] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [matchLine, setMatchLine] = useState('');
   const [matchGame, setMatchGame] = useState(null);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -369,14 +370,28 @@ const handleSwipe = async (direction) => {
     pan.setValue({ x: 0, y: 0 });
   };
 
-  const handleSuperLike = () => {
+  const handleSuperLike = async () => {
+    if (!displayUser) return;
     if (!isPremiumUser && !devMode) {
       navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
+
+    const targetId = displayUser.id;
     setShowSuperLikeAnim(true);
-    handleSwipe('right');
     Toast.show({ type: 'success', text1: '🌟 Superliked!' });
+    handleSwipe('right');
+
+    try {
+      if (requireCredits()) {
+        await sendGameInvite(targetId, '1');
+        recordGamePlayed();
+        Toast.show({ type: 'success', text1: 'Invite sent!' });
+      }
+    } catch (e) {
+      console.warn('Failed to send invite', e);
+    }
+
     setTimeout(() => setShowSuperLikeAnim(false), 1500);
   };
 
@@ -407,7 +422,9 @@ const handleSwipe = async (direction) => {
         useNativeDriver: false,
       }),
       onPanResponderRelease: (_, gesture) => {
-        if (gesture.dx > 120) {
+        if (gesture.dy < -120 && Math.abs(gesture.dx) < 80) {
+          handleSuperLike();
+        } else if (gesture.dx > 120) {
           Animated.timing(pan, {
             toValue: { x: SCREEN_WIDTH, y: 0 },
             duration: 200,
@@ -463,9 +480,6 @@ const handleSwipe = async (direction) => {
 
   const gradientColors = [theme.gradientStart, theme.gradientEnd];
 
-  const matchPercent = displayUser
-    ? computeMatchPercent(currentUser, displayUser)
-    : 0;
 
   return (
     <GradientBackground colors={gradientColors} style={{ flex: 1 }}>
@@ -508,15 +522,30 @@ const handleSwipe = async (direction) => {
             </Animated.View>
             <Image source={displayUser.images[imageIndex]} style={styles.image} />
             <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.5)']}
+              colors={['transparent', 'rgba(0,0,0,0.6)']}
               style={styles.imageOverlay}
             />
-            <View style={styles.info}>
-              <Text style={styles.name}>
-                {displayUser.displayName}, {displayUser.age}
+            <View style={styles.bottomInfo}>
+              <Text style={styles.distanceBadge}>
+                {devMode ? '1 mile away' : 'Nearby'}
               </Text>
-              <Text style={styles.match}>Match: {matchPercent}%</Text>
-              <Text style={styles.bio}>{displayUser.bio}</Text>
+              <View style={styles.nameRow}>
+                <Text style={styles.nameText}>
+                  {displayUser.displayName}, {displayUser.age}
+                </Text>
+                <Ionicons
+                  name="checkmark-circle"
+                  size={20}
+                  color={theme.accent}
+                  style={{ marginLeft: 6 }}
+                />
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowDetails(true)}
+                style={styles.expandIcon}
+              >
+                <Ionicons name="chevron-up" size={24} color="#fff" />
+              </TouchableOpacity>
             </View>
           </TouchableOpacity>
           </Animated.View>
@@ -614,6 +643,25 @@ const handleSwipe = async (direction) => {
           ))}
         </View>
 
+        {showDetails && (
+          <Modal visible={showDetails} transparent animationType="slide">
+            <BlurView intensity={60} tint="dark" style={styles.detailsOverlay}>
+              <View style={styles.detailsContainer}>
+                <Text style={styles.nameText}>
+                  {displayUser?.displayName}, {displayUser?.age}
+                </Text>
+                <Text style={styles.bioText}>{displayUser?.bio}</Text>
+                <GradientButton
+                  text="Close"
+                  width={120}
+                  onPress={() => setShowDetails(false)}
+                  style={{ marginTop: 20 }}
+                />
+              </View>
+            </BlurView>
+          </Modal>
+        )}
+
         {matchedUser && (
           <Modal visible={showFireworks} transparent animationType="fade">
             <BlurView intensity={50} tint="dark" style={styles.fireworksOverlay}>
@@ -642,7 +690,7 @@ const getStyles = (theme) =>
   StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: HEADER_SPACING,
+    paddingTop: 0,
     justifyContent: 'flex-start',
     alignItems: 'stretch',
   },
@@ -661,7 +709,7 @@ const getStyles = (theme) =>
   },
   image: {
     width: '100%',
-    height: '75%',
+    height: '100%',
   },
   imageOverlay: {
     position: 'absolute',
@@ -669,29 +717,37 @@ const getStyles = (theme) =>
     width: '100%',
     height: '40%',
   },
-  info: {
-    padding: 15,
+  bottomInfo: {
+    position: 'absolute',
+    bottom: BUTTON_ROW_BOTTOM + 80,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
-  name: {
+  distanceBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: theme.accent,
+    color: '#fff',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginBottom: 4,
+    fontSize: 12,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  nameText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
   },
-  match: {
-    fontSize: 18,
-    marginTop: 4,
-    fontWeight: 'bold',
-    color: theme.accent,
-  },
-  bio: {
-    fontSize: 16,
-    marginTop: 6,
-    color: '#666',
-  },
-  extra: {
-    fontSize: 14,
-    marginTop: 4,
-    color: '#555',
+  expandIcon: {
+    position: 'absolute',
+    bottom: -30,
+    alignSelf: 'center',
   },
   noMoreWrapper: {
     alignItems: 'center',
@@ -773,6 +829,22 @@ const getStyles = (theme) =>
     height: 200,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  detailsOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  detailsContainer: {
+    backgroundColor: theme.card,
+    padding: 20,
+    borderRadius: 12,
+    width: '80%',
+  },
+  bioText: {
+    color: theme.text,
+    marginTop: 10,
+    textAlign: 'center',
   },
   fireworksOverlay: {
     flex: 1,
