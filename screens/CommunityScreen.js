@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import GradientButton from '../components/GradientButton';
 import Card, { CARD_STYLE } from '../components/Card';
+import EventFlyer from '../components/EventFlyer';
 import ScreenContainer from '../components/ScreenContainer';
 import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
