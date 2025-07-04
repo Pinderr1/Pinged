@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
 import Providers from './contexts/Providers';
+import ErrorBoundary from './components/ErrorBoundary';
 import NotificationCenter from './components/NotificationCenter';
 import DevBanner from './components/DevBanner';
 import Toast from 'react-native-toast-message';
@@ -23,14 +24,16 @@ export default function App() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={60}
       >
-        <Providers>
-          <NavigationContainer>
-            <RootNavigator />
-            <DevBanner />
-          </NavigationContainer>
-          <ThemedNotificationCenter />
-          <Toast />
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            <NavigationContainer>
+              <RootNavigator />
+              <DevBanner />
+            </NavigationContainer>
+            <ThemedNotificationCenter />
+            <Toast />
+          </Providers>
+        </ErrorBoundary>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

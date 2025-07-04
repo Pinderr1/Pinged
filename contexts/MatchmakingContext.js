@@ -4,6 +4,7 @@ import { useUser } from './UserContext';
 import { useListeners } from './ListenerContext';
 import { snapshotExists } from '../utils/firestore';
 import { createMatchIfMissing } from '../utils/matches';
+import Toast from 'react-native-toast-message';
 
 const MatchmakingContext = createContext();
 
@@ -18,122 +19,158 @@ export const MatchmakingProvider = ({ children }) => {
 
   const sendMatchRequest = async (to) => {
     if (!user?.uid || !to) return null;
-    const ref = await firebase
-      .firestore()
-      .collection('matchRequests')
-      .add({
-        from: user.uid,
-        to,
-        status: 'pending',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-    return ref.id;
+    try {
+      const ref = await firebase
+        .firestore()
+        .collection('matchRequests')
+        .add({
+          from: user.uid,
+          to,
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+      return ref.id;
+    } catch (e) {
+      console.warn('Failed to send match request', e);
+      Toast.show({ type: 'error', text1: 'Failed to send match request' });
+      return null;
+    }
   };
 
   const acceptMatchRequest = async (id) => {
     if (!user?.uid || !id) return;
-    const ref = firebase.firestore().collection('matchRequests').doc(id);
-    const snap = await ref.get();
-    const data = snap.data();
-    if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
-    await ref.update({ status: 'accepted' });
+    try {
+      const ref = firebase.firestore().collection('matchRequests').doc(id);
+      const snap = await ref.get();
+      const data = snap.data();
+      if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
+      await ref.update({ status: 'accepted' });
+    } catch (e) {
+      console.warn('Failed to accept match request', e);
+      Toast.show({ type: 'error', text1: 'Failed to accept request' });
+    }
   };
 
   const cancelMatchRequest = async (id) => {
     if (!user?.uid || !id) return;
-    const ref = firebase.firestore().collection('matchRequests').doc(id);
-    const snap = await ref.get();
-    const data = snap.data();
-    if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
-    await ref.update({ status: 'cancelled' });
+    try {
+      const ref = firebase.firestore().collection('matchRequests').doc(id);
+      const snap = await ref.get();
+      const data = snap.data();
+      if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
+      await ref.update({ status: 'cancelled' });
+    } catch (e) {
+      console.warn('Failed to cancel match request', e);
+      Toast.show({ type: 'error', text1: 'Failed to cancel request' });
+    }
   };
 
   const sendGameInvite = async (to, gameId) => {
     if (!user?.uid || !to || !gameId) return null;
-    const payload = {
-      from: user.uid,
-      to,
-      gameId,
-      fromName: user.displayName || 'User',
-      status: 'pending',
-      acceptedBy: [user.uid],
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    };
-    const ref = await firebase.firestore().collection('gameInvites').add(payload);
-    const inviteData = { ...payload, inviteId: ref.id };
     try {
-      await firestore
-        .collection('users')
-        .doc(user.uid)
+      const payload = {
+        from: user.uid,
+        to,
+        gameId,
+        fromName: user.displayName || 'User',
+        status: 'pending',
+        acceptedBy: [user.uid],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      };
+      const ref = await firebase
+        .firestore()
         .collection('gameInvites')
-        .doc(ref.id)
-        .set(inviteData);
-      await firestore
-        .collection('users')
-        .doc(to)
-        .collection('gameInvites')
-        .doc(ref.id)
-        .set(inviteData);
+        .add(payload);
+      const inviteData = { ...payload, inviteId: ref.id };
+      try {
+        await firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('gameInvites')
+          .doc(ref.id)
+          .set(inviteData);
+        await firestore
+          .collection('users')
+          .doc(to)
+          .collection('gameInvites')
+          .doc(ref.id)
+          .set(inviteData);
+      } catch (e) {
+        console.warn('Failed to create invite subdocs', e);
+      }
+      return ref.id;
     } catch (e) {
-      console.warn('Failed to create invite subdocs', e);
+      console.warn('Failed to send game invite', e);
+      Toast.show({ type: 'error', text1: 'Failed to send game invite' });
+      return null;
     }
-    return ref.id;
   };
 
   const acceptGameInvite = async (id) => {
     if (!user?.uid || !id) return;
-    const ref = firebase.firestore().collection('gameInvites').doc(id);
-    const snap = await ref.get();
-    const data = snap.data();
-    if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
-    await ref.update({
-      acceptedBy: firebase.firestore.FieldValue.arrayUnion(user.uid),
-    });
-
-    if (data.acceptedBy?.length + 1 >= 2 && !data.acceptedBy?.includes(user.uid)) {
-      await ref.update({ status: 'ready' });
-    } else if (data.acceptedBy?.length >= 2) {
-      await ref.update({ status: 'ready' });
-    }
-
     try {
-      await firebase
-        .firestore()
-        .collection('users')
-        .doc(user.uid)
-        .collection('gameInvites')
-        .doc(id)
-        .update({ status: 'accepted' });
-    } catch (e) {
-      console.warn('Failed to update invite status', e);
-    }
+      const ref = firebase.firestore().collection('gameInvites').doc(id);
+      const snap = await ref.get();
+      const data = snap.data();
+      if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
+      await ref.update({
+        acceptedBy: firebase.firestore.FieldValue.arrayUnion(user.uid),
+      });
 
-    await createMatchIfMissing(user.uid, data.from === user.uid ? data.to : data.from);
+      if (data.acceptedBy?.length + 1 >= 2 && !data.acceptedBy?.includes(user.uid)) {
+        await ref.update({ status: 'ready' });
+      } else if (data.acceptedBy?.length >= 2) {
+        await ref.update({ status: 'ready' });
+      }
+
+      try {
+        await firebase
+          .firestore()
+          .collection('users')
+          .doc(user.uid)
+          .collection('gameInvites')
+          .doc(id)
+          .update({ status: 'accepted' });
+      } catch (e) {
+        console.warn('Failed to update invite status', e);
+      }
+
+      await createMatchIfMissing(user.uid, data.from === user.uid ? data.to : data.from);
+    } catch (e) {
+      console.warn('Failed to accept game invite', e);
+      Toast.show({ type: 'error', text1: 'Failed to accept invite' });
+    }
   };
 
   const cancelGameInvite = async (id) => {
     if (!user?.uid || !id) return;
 
-    const ref = firebase.firestore().collection('gameInvites').doc(id);
-    const snap = await ref.get();
-
-    if (!snapshotExists(snap)) return;
-
-    const data = snap.data();
-    if (data.from !== user.uid && data.to !== user.uid) return;
-
     try {
-      await ref.update({ status: 'cancelled' });
+      const ref = firebase.firestore().collection('gameInvites').doc(id);
+      const snap = await ref.get();
 
-      await firebase
-        .firestore()
-        .collection('users')
-        .doc(user.uid)
-        .collection('gameInvites')
-        .doc(id)
-        .update({ status: 'cancelled' });
+      if (!snapshotExists(snap)) return;
+
+      const data = snap.data();
+      if (data.from !== user.uid && data.to !== user.uid) return;
+
+      try {
+        await ref.update({ status: 'cancelled' });
+
+        await firebase
+          .firestore()
+          .collection('users')
+          .doc(user.uid)
+          .collection('gameInvites')
+          .doc(id)
+          .update({ status: 'cancelled' });
+      } catch (e) {
+        console.warn('Failed to cancel game invite', e);
+        Toast.show({ type: 'error', text1: 'Failed to cancel invite' });
+      }
     } catch (e) {
-      console.warn('Failed to cancel game invite', e);
+      console.warn('Failed to load game invite', e);
+      Toast.show({ type: 'error', text1: 'Failed to cancel invite' });
     }
   };
 

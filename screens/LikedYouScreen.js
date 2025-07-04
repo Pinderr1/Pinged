@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import getStyles from '../styles';
 import GradientBackground from '../components/GradientBackground';
 import ScreenContainer from '../components/ScreenContainer';
 import Header from '../components/Header';
@@ -14,6 +15,7 @@ import PropTypes from 'prop-types';
 
 const LikedYouScreen = ({ navigation }) => {
   const { theme } = useTheme();
+  const globalStyles = getStyles(theme);
   const { user } = useUser();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +63,7 @@ const LikedYouScreen = ({ navigation }) => {
     <GradientBackground style={{ flex: 1 }}>
       <ScreenContainer>
         <Header />
-        <View style={[styles.container, { paddingTop: HEADER_SPACING }]}>
+        <View style={[globalStyles.container, { paddingTop: HEADER_SPACING }]}>
           <Text style={[styles.title, { color: theme.text }]}>People Who Liked You</Text>
           <FlatList
             data={users}
@@ -81,9 +83,6 @@ LikedYouScreen.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
