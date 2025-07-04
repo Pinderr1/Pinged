@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import { eventImageSource } from '../utils/avatar';
 import GradientButton from './GradientButton';
+import { textStyles } from '../textStyles';
 
 const NEXT_EVENT = {
   title: 'Checkers Blitz Tournament',
@@ -62,11 +63,11 @@ const getStyles = (theme) =>
     marginRight: 12,
   },
   title: {
-    fontSize: 15,
+    ...textStyles.subtitle,
     fontWeight: 'bold',
   },
   time: {
-    fontSize: 13,
+    ...textStyles.label,
     color: theme.accent,
     marginTop: 2,
   },

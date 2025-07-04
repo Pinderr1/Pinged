@@ -1,8 +1,10 @@
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PropTypes from 'prop-types';
 
 export default function SafeKeyboardView({ children, style, offset }) {
+  const insets = useSafeAreaInsets();
   const verticalOffset =
     offset !== undefined
       ? offset
@@ -12,7 +14,10 @@ export default function SafeKeyboardView({ children, style, offset }) {
 
   return (
     <KeyboardAvoidingView
-      style={style}
+      style={[
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+        style,
+      ]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={verticalOffset}
     >

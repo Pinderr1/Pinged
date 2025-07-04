@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TextInput } from 'react-native';
+import { textStyles } from '../textStyles';
 import { useTheme } from '../contexts/ThemeContext';
 import PropTypes from 'prop-types';
 
@@ -22,7 +23,7 @@ export default function SearchInput({ search, setSearch }) {
         placeholderTextColor={theme.textSecondary}
         value={search}
         onChangeText={setSearch}
-        style={{ fontSize: 14, color: theme.text, paddingVertical: 3 }}
+        style={[textStyles.body, { color: theme.text, paddingVertical: 3 }]}
       />
     </View>
   );

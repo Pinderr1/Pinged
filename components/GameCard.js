@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import { textStyles } from '../textStyles';
 import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
@@ -41,10 +42,10 @@ export default function GameCard({ item, onPress, toggleFavorite, isFavorite, tr
       <View style={{ marginBottom: 10, alignItems: 'center', justifyContent: 'center' }}>
         {item.icon}
       </View>
-      <Text style={{ fontSize: 15, fontWeight: '600', textAlign: 'center' }}>
+      <Text style={[textStyles.subtitle, { textAlign: 'center' }]}>
         {item.title}
       </Text>
-      <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+      <Text style={[textStyles.label, { color: '#666', marginTop: 4 }]}>
         {item.category}
       </Text>
     </GameCardBase>
