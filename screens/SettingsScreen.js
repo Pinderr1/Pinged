@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
+import ProgressBar from '../components/ProgressBar';
+import { profileCompletion } from '../utils/profile';
 import ScreenContainer from '../components/ScreenContainer';
 import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
@@ -18,6 +20,7 @@ const SettingsScreen = ({ navigation }) => {
   const isPremium = !!user?.isPremium;
   const { devMode, toggleDevMode } = useDev();
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const completion = profileCompletion(user);
 
   const toggleAdvanced = () => setShowAdvanced((prev) => !prev);
 
@@ -51,12 +54,26 @@ const SettingsScreen = ({ navigation }) => {
         </Text>
       </View>
 
+      <View style={{ width: '100%', marginBottom: 20 }}>
+        <Text style={{ color: theme.textSecondary, marginBottom: 4 }}>
+          Profile {completion}% complete
+        </Text>
+        <ProgressBar value={completion} max={100} />
+      </View>
+
       {!isPremium && (
-        <GradientButton
-          text="Go Premium"
-          onPress={handleGoPremium}
-          icon={<Text style={{ fontSize: 16 }}>💎</Text>}
-        />
+        <>
+          <GradientButton
+            text="Go Premium"
+            onPress={handleGoPremium}
+            icon={<Text style={{ fontSize: 16 }}>💎</Text>}
+          />
+          <GradientButton
+            text="Pinged Platinum"
+            onPress={() => navigation.navigate('Premium', { context: 'upgrade' })}
+            icon={<Text style={{ fontSize: 16 }}>💎</Text>}
+          />
+        </>
       )}
 
       {isPremium && (
@@ -65,6 +82,11 @@ const SettingsScreen = ({ navigation }) => {
           onPress={() => navigation.navigate('LikedYou')}
         />
       )}
+
+      <GradientButton
+        text="Get More Super Likes"
+        onPress={() => navigation.navigate('Play')}
+      />
 
       <GradientButton text="Edit Profile" onPress={handleEditProfile} />
 
