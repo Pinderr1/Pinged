@@ -30,12 +30,14 @@ export default function RootNavigator() {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     firebase
       .firestore()
       .collection('config')
       .doc('app')
       .get()
       .then((doc) => {
+        if (!isMounted) return;
         const minVersion = doc.data()?.minVersion;
         if (
           minVersion &&
@@ -45,6 +47,9 @@ export default function RootNavigator() {
         }
       })
       .catch((e) => console.warn('Failed to fetch app config', e));
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {

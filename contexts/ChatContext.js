@@ -41,18 +41,23 @@ export const ChatProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     if (!user?.uid) {
-      setMatches(devMode ? [devMatch] : []);
-      setLoading(false);
-      return;
+      if (isMounted) {
+        setMatches(devMode ? [devMatch] : []);
+        setLoading(false);
+      }
+      return () => {
+        isMounted = false;
+      };
     }
     setLoading(true);
     AsyncStorage.getItem(getStorageKey(user.uid))
       .then((data) => {
-      if (data) {
-        try {
-          const parsed = JSON.parse(data);
-          if (Array.isArray(parsed)) {
+        if (data) {
+          try {
+            const parsed = JSON.parse(data);
+            if (Array.isArray(parsed)) {
             const converted = parsed.map((m) => {
               const { name, ...rest } = m;
               return {
@@ -60,24 +65,32 @@ export const ChatProvider = ({ children }) => {
                 displayName: m.displayName || name || 'Match',
               };
             });
-            setMatches(
-              devMode
-                ? [...converted, devMatch].filter(
-                    (v, i, a) => a.findIndex((x) => x.id === v.id) === i
-                  )
-                : converted
-            );
+            if (isMounted) {
+              setMatches(
+                devMode
+                  ? [...converted, devMatch].filter(
+                      (v, i, a) => a.findIndex((x) => x.id === v.id) === i
+                    )
+                  : converted
+              );
+            }
           } else {
-            setMatches(devMode ? [devMatch] : []);
+            if (isMounted) setMatches(devMode ? [devMatch] : []);
           }
         } catch (e) {
           console.warn('Failed to parse matches from storage', e);
-          setMatches(devMode ? [devMatch] : []);
+          if (isMounted) setMatches(devMode ? [devMatch] : []);
         }
       } else {
-        setMatches(devMode ? [devMatch] : []);
+        if (isMounted) setMatches(devMode ? [devMatch] : []);
       }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
       });
+    return () => {
+      isMounted = false;
+    };
   }, [user?.uid, devMode]);
 
   // Subscribe to Firestore matches for the current user

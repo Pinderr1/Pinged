@@ -220,7 +220,13 @@ function PrivateChat({ user }) {
       setSavedState(null);
       return;
     }
-    getSavedGameState(user.id).then((s) => setSavedState(s));
+    let isMounted = true;
+    getSavedGameState(user.id).then((s) => {
+      if (isMounted) setSavedState(s);
+    });
+    return () => {
+      isMounted = false;
+    };
   }, [activeGameId, user.id]);
 
   useEffect(() => {

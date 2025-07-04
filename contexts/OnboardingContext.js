@@ -15,15 +15,27 @@ export const OnboardingProvider = ({ children }) => {
   const [hasOnboarded, setHasOnboarded] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     if (!user) {
-      setHasOnboarded(false);
-      setLoaded(true);
-      return;
+      if (isMounted) {
+        setHasOnboarded(false);
+        setLoaded(true);
+      }
+      return () => {
+        isMounted = false;
+      };
     }
     const key = `hasOnboarded_${user.uid}`;
     AsyncStorage.getItem(key)
-      .then((val) => setHasOnboarded(val === "true"))
-      .finally(() => setLoaded(true));
+      .then((val) => {
+        if (isMounted) setHasOnboarded(val === "true");
+      })
+      .finally(() => {
+        if (isMounted) setLoaded(true);
+      });
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
   const markOnboarded = async () => {
