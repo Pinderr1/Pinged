@@ -32,6 +32,16 @@ export default function PhoneVerificationScreen({ navigation }) {
   const [verificationId, setVerificationId] = useState(null);
   const [lastSent, setLastSent] = useState(0);
 
+  const spamNumbers = ["+11234567890"];
+  const isSpammyNumber = (num) => {
+    const digits = num.replace(/\D/g, "");
+    const local = digits.slice(-10);
+    if (spamNumbers.includes(num)) return true;
+    if (/^(\d)\1{9}$/.test(local)) return true;
+    if (local === "1234567890" || local === "0123456789") return true;
+    return false;
+  };
+
   const sendCode = async () => {
     const now = Date.now();
     if (now - lastSent < 30000) {
@@ -43,6 +53,11 @@ export default function PhoneVerificationScreen({ navigation }) {
     }
     try {
       const phoneNumber = `${countryCode}${phone}`;
+      if (isSpammyNumber(phoneNumber)) {
+        Toast.show({ type: "error", text1: "Invalid phone number" });
+        setLastSent(now);
+        return;
+      }
       const res = await firebase
         .auth()
         .signInWithPhoneNumber(phoneNumber, recaptchaRef.current);
@@ -129,6 +144,7 @@ export default function PhoneVerificationScreen({ navigation }) {
               onChangeText={setOtp}
               placeholder="Verification code"
               keyboardType="number-pad"
+              contextMenuHidden
               placeholderTextColor={theme.textSecondary}
             />
             <GradientButton text="Verify" onPress={verifyCode} />

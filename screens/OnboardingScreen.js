@@ -162,7 +162,18 @@ export default function OnboardingScreen() {
     try {
       let photoURL = answers.avatar;
       if (photoURL && !photoURL.startsWith('http')) {
-        photoURL = await uploadAvatarAsync(photoURL, firebase.auth().currentUser.uid);
+        try {
+          photoURL = await uploadAvatarAsync(
+            photoURL,
+            firebase.auth().currentUser.uid
+          );
+        } catch (e) {
+          if (e.message === 'celebrity-face') {
+            Toast.show({ type: 'error', text1: 'Invalid profile photo' });
+            return;
+          }
+          throw e;
+        }
       }
 
       const user = firebase.auth().currentUser;
@@ -210,6 +221,10 @@ export default function OnboardingScreen() {
           );
           setAnswers((prev) => ({ ...prev, avatar: url }));
         } catch (e) {
+          if (e.message === 'celebrity-face') {
+            Toast.show({ type: 'error', text1: 'Invalid profile photo' });
+            return;
+          }
           console.error('Photo upload failed:', e);
           Toast.show({ type: 'error', text1: 'Failed to upload photo' });
           return;

@@ -122,14 +122,18 @@ const ProfileScreen = ({ navigation, route }) => {
   const handleSave = async () => {
     if (!user) return;
     let photoURL = avatar;
-    if (avatar && !avatar.startsWith('http')) {
-      try {
-        photoURL = await uploadAvatarAsync(avatar, user.uid);
-      } catch (e) {
-        console.warn('Avatar upload failed', e);
-        Toast.show({ type: 'error', text1: 'Failed to upload photo' });
+  if (avatar && !avatar.startsWith('http')) {
+    try {
+      photoURL = await uploadAvatarAsync(avatar, user.uid);
+    } catch (e) {
+      if (e.message === 'celebrity-face') {
+        Toast.show({ type: 'error', text1: 'Invalid profile photo' });
+        return;
       }
+      console.warn('Avatar upload failed', e);
+      Toast.show({ type: 'error', text1: 'Failed to upload photo' });
     }
+  }
 
     const clean = {
       displayName: sanitizeText(displayName.trim()),
