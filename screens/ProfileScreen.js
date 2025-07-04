@@ -126,10 +126,6 @@ const ProfileScreen = ({ navigation, route }) => {
     try {
       photoURL = await uploadAvatarAsync(avatar, user.uid);
     } catch (e) {
-      if (e.message === 'celebrity-face') {
-        Toast.show({ type: 'error', text1: 'Invalid profile photo' });
-        return;
-      }
       console.warn('Avatar upload failed', e);
       Toast.show({ type: 'error', text1: 'Failed to upload photo' });
     }
