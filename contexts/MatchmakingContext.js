@@ -5,11 +5,13 @@ import { useListeners } from './ListenerContext';
 import { snapshotExists } from '../utils/firestore';
 import { createMatchIfMissing } from '../utils/matches';
 import Toast from 'react-native-toast-message';
+import { useLoading } from './LoadingContext';
 
 const MatchmakingContext = createContext();
 
 export const MatchmakingProvider = ({ children }) => {
   const { user } = useUser();
+  const { show, hide } = useLoading();
   const {
     incomingRequests,
     outgoingRequests,
@@ -67,6 +69,7 @@ export const MatchmakingProvider = ({ children }) => {
 
   const sendGameInvite = async (to, gameId) => {
     if (!user?.uid || !to || !gameId) return null;
+    show();
     try {
       const payload = {
         from: user.uid,
@@ -103,6 +106,8 @@ export const MatchmakingProvider = ({ children }) => {
       console.warn('Failed to send game invite', e);
       Toast.show({ type: 'error', text1: 'Failed to send game invite' });
       return null;
+    } finally {
+      hide();
     }
   };
 

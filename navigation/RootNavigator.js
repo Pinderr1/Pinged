@@ -5,23 +5,46 @@ import * as Linking from 'expo-linking';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import { logDev } from '../utils/logger';
+import Constants from 'expo-constants';
+import firebase from '../firebase';
+import { isVersionLess } from '../utils/version';
 
 const SplashScreen = lazy(() => import('../screens/SplashScreen'));
 const AuthStack = lazy(() => import('./AuthStack'));
 const AppStack = lazy(() => import('./AppStack'));
 const OnboardingStack = lazy(() => import('./OnboardingStack'));
+const UpdateScreen = lazy(() => import('../screens/UpdateScreen'));
 
 
 const splashDuration = 2000;
 
 export default function RootNavigator() {
   const [isSplash, setIsSplash] = useState(true);
+  const [requiresUpdate, setRequiresUpdate] = useState(false);
   const { user, loading } = useUser();
   const { hasOnboarded } = useOnboarding();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsSplash(false), splashDuration);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    firebase
+      .firestore()
+      .collection('config')
+      .doc('app')
+      .get()
+      .then((doc) => {
+        const minVersion = doc.data()?.minVersion;
+        if (
+          minVersion &&
+          isVersionLess(Constants.manifest.version, String(minVersion))
+        ) {
+          setRequiresUpdate(true);
+        }
+      })
+      .catch((e) => console.warn('Failed to fetch app config', e));
   }, []);
 
   useEffect(() => {
@@ -43,7 +66,9 @@ export default function RootNavigator() {
       : hasOnboarded;
 
   let content = null;
-  if (isSplash || loading) {
+  if (requiresUpdate) {
+    content = <UpdateScreen />;
+  } else if (isSplash || loading) {
     content = <SplashScreen onFinish={() => setIsSplash(false)} />;
   } else if (!user) {
     content = <AuthStack />;
