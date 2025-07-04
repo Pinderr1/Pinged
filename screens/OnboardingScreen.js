@@ -24,7 +24,7 @@ import * as Location from 'expo-location';
 import { avatarSource } from '../utils/avatar';
 import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import MultiSelectList from '../components/MultiSelectList';
@@ -32,6 +32,7 @@ import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { allGames } from '../data/games';
 import { logDev } from '../utils/logger';
+import LocationInfoModal from '../components/LocationInfoModal';
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
@@ -88,6 +89,7 @@ export default function OnboardingScreen() {
     value: g.title,
   }));
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
+  const [showLocationInfo, setShowLocationInfo] = useState(false);
 
   useEffect(() => {
     const unsub = firebase
@@ -292,17 +294,29 @@ export default function OnboardingScreen() {
 
     if (currentField === 'location') {
       return (
-        <TouchableOpacity style={styles.locationContainer} onPress={autofillLocation}>
-          <MaterialCommunityIcons
-            name="crosshairs-gps"
-            size={28}
-            color="#fff"
-            style={styles.locationIcon}
-          />
-          <Text style={styles.locationText}>
-            {answers.location ? `📍 ${answers.location}` : 'Use My Location'}
-          </Text>
-        </TouchableOpacity>
+        <View>
+          <TouchableOpacity
+            style={styles.locationContainer}
+            onPress={autofillLocation}
+          >
+            <MaterialCommunityIcons
+              name="crosshairs-gps"
+              size={28}
+              color="#fff"
+              style={styles.locationIcon}
+            />
+            <Text style={styles.locationText}>
+              {answers.location ? `📍 ${answers.location}` : 'Use My Location'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.infoLink}
+            onPress={() => setShowLocationInfo(true)}
+          >
+            <Text style={styles.infoLinkText}>How is my location used?</Text>
+            <Ionicons name="arrow-forward" size={16} color={theme.accent} />
+          </TouchableOpacity>
+        </View>
       );
     }
 
@@ -477,6 +491,10 @@ export default function OnboardingScreen() {
             <Text style={styles.skipButtonText}>Complete Profile Later</Text>
           </TouchableOpacity>
         )}
+        <LocationInfoModal
+          visible={showLocationInfo}
+          onClose={() => setShowLocationInfo(false)}
+        />
       </SafeKeyboardView>
     </GradientBackground>
   );
@@ -571,6 +589,18 @@ const getStyles = (theme) => {
     locationText: {
       color: '#fff',
       fontSize: FONT_SIZES.MD,
+    },
+    infoLink: {
+      marginTop: 10,
+      alignSelf: 'center',
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    infoLinkText: {
+      color: accent,
+      textDecorationLine: 'underline',
+      marginRight: 4,
+      fontSize: FONT_SIZES.SM,
     },
     buttonRow: {
       flexDirection: 'row',

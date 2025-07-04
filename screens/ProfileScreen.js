@@ -20,6 +20,8 @@ import RNPickerSelect from 'react-native-picker-select';
 import MultiSelectList from '../components/MultiSelectList';
 import { useTheme } from '../contexts/ThemeContext';
 import { allGames } from '../data/games';
+import { Ionicons } from '@expo/vector-icons';
+import LocationInfoModal from '../components/LocationInfoModal';
 
 const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
@@ -38,6 +40,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const defaultGameOptions = allGames.map((g) => ({ label: g.title, value: g.title }));
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
   const [avatar, setAvatar] = useState(user?.photoURL || '');
+  const [showLocationInfo, setShowLocationInfo] = useState(false);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -213,6 +216,13 @@ const ProfileScreen = ({ navigation, route }) => {
         value={location}
         onChangeText={setLocation}
       />
+      <TouchableOpacity
+        style={styles.infoLink}
+        onPress={() => setShowLocationInfo(true)}
+      >
+        <Text style={styles.infoLinkText}>How is my location used?</Text>
+        <Ionicons name="arrow-forward" size={16} color={theme.accent} />
+      </TouchableOpacity>
 
       <MultiSelectList
         options={gameOptions}
@@ -221,6 +231,10 @@ const ProfileScreen = ({ navigation, route }) => {
         theme={theme}
       />
       <GradientButton text={saveLabel} onPress={handleSave} />
+      <LocationInfoModal
+        visible={showLocationInfo}
+        onClose={() => setShowLocationInfo(false)}
+      />
       </SafeKeyboardView>
     </GradientBackground>
   );
