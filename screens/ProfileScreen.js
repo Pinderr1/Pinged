@@ -34,9 +34,23 @@ const ProfileScreen = ({ navigation, route }) => {
   const [genderPref, setGenderPref] = useState(user?.genderPref || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [location, setLocation] = useState(user?.location || '');
+  const [relationshipGoals, setRelationshipGoals] = useState(
+    user?.relationshipGoals || ''
+  );
+  const [height, setHeight] = useState(user?.height || '');
+  const [pronouns, setPronouns] = useState(user?.pronouns || '');
+  const [zodiac, setZodiac] = useState(user?.zodiac || '');
+  const [education, setEducation] = useState(user?.education || '');
   const [favoriteGames, setFavoriteGames] = useState(
     Array.isArray(user?.favoriteGames) ? user.favoriteGames : []
   );
+  const [interests, setInterests] = useState(user?.interests || '');
+  const [languages, setLanguages] = useState(user?.languages || '');
+  const [personality, setPersonality] = useState(user?.personality || '');
+  const [pets, setPets] = useState(user?.pets || '');
+  const [drinking, setDrinking] = useState(user?.drinking || '');
+  const [smoking, setSmoking] = useState(user?.smoking || '');
+  const [workout, setWorkout] = useState(user?.workout || '');
   const defaultGameOptions = allGames.map((g) => ({ label: g.title, value: g.title }));
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
   const [avatar, setAvatar] = useState(user?.photoURL || '');
@@ -67,7 +81,19 @@ const ProfileScreen = ({ navigation, route }) => {
     setGenderPref(user?.genderPref || '');
     setBio(user?.bio || '');
     setLocation(user?.location || '');
+    setRelationshipGoals(user?.relationshipGoals || '');
+    setHeight(user?.height || '');
+    setPronouns(user?.pronouns || '');
+    setZodiac(user?.zodiac || '');
+    setEducation(user?.education || '');
     setFavoriteGames(Array.isArray(user?.favoriteGames) ? user.favoriteGames : []);
+    setInterests(user?.interests || '');
+    setLanguages(user?.languages || '');
+    setPersonality(user?.personality || '');
+    setPets(user?.pets || '');
+    setDrinking(user?.drinking || '');
+    setSmoking(user?.smoking || '');
+    setWorkout(user?.workout || '');
     setAvatar(user?.photoURL || '');
   }, [user]);
 
@@ -110,7 +136,19 @@ const ProfileScreen = ({ navigation, route }) => {
       age: parseInt(age, 10) || null,
       gender: sanitizeText(gender),
       genderPref: sanitizeText(genderPref),
+      relationshipGoals: sanitizeText(relationshipGoals.trim()),
+      height: sanitizeText(height.trim()),
+      pronouns: sanitizeText(pronouns.trim()),
+      zodiac: sanitizeText(zodiac.trim()),
+      education: sanitizeText(education.trim()),
       favoriteGames: favoriteGames.map((g) => sanitizeText(g)),
+      interests: sanitizeText(interests.trim()),
+      languages: sanitizeText(languages.trim()),
+      personality: sanitizeText(personality.trim()),
+      pets: sanitizeText(pets.trim()),
+      drinking: sanitizeText(drinking.trim()),
+      smoking: sanitizeText(smoking.trim()),
+      workout: sanitizeText(workout.trim()),
       bio: sanitizeText(bio.trim()),
       location: sanitizeText(location),
       photoURL,
@@ -229,6 +267,78 @@ const ProfileScreen = ({ navigation, route }) => {
         selected={favoriteGames}
         onChange={setFavoriteGames}
         theme={theme}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\u2764\ufe0f Relationship goals"
+        value={relationshipGoals}
+        onChangeText={setRelationshipGoals}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\ud83d\udc65 Pronouns"
+        value={pronouns}
+        onChangeText={setPronouns}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\ud83c\udf31 Zodiac sign"
+        value={zodiac}
+        onChangeText={setZodiac}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\ud83c\udf93 Education"
+        value={education}
+        onChangeText={setEducation}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\ud83d\udc65 Height"
+        value={height}
+        onChangeText={setHeight}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\u2728 Interests"
+        value={interests}
+        onChangeText={setInterests}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\ud83c\udf10 Languages"
+        value={languages}
+        onChangeText={setLanguages}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\ud83d\ude04 Personality"
+        value={personality}
+        onChangeText={setPersonality}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\ud83d\udc31 Pets"
+        value={pets}
+        onChangeText={setPets}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\ud83c\udf7a Drinking"
+        value={drinking}
+        onChangeText={setDrinking}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\ud83d\udeac Smoking"
+        value={smoking}
+        onChangeText={setSmoking}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="\ud83c\udfcb\ufe0f\u200d\u2640\ufe0f Workout habits"
+        value={workout}
+        onChangeText={setWorkout}
       />
       <GradientButton text={saveLabel} onPress={handleSave} />
       <LocationInfoModal
