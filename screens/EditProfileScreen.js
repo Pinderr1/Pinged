@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, View, Image, Switch } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
@@ -12,7 +13,7 @@ import { useUser } from '../contexts/UserContext';
 import firebase from '../firebase';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
-import { uploadAvatarAsync } from '../utils/upload';
+import { uploadAvatarAsync, uploadPhotoAsync } from '../utils/upload';
 import { avatarSource } from '../utils/avatar';
 import { sanitizeText } from '../utils/sanitize';
 import PropTypes from 'prop-types';
@@ -20,6 +21,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import MultiSelectList from '../components/MultiSelectList';
 import { useTheme } from '../contexts/ThemeContext';
 import { allGames } from '../data/games';
+import ProgressBar from '../components/ProgressBar';
 
 const EditProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
@@ -38,6 +40,13 @@ const EditProfileScreen = ({ navigation, route }) => {
   const defaultGameOptions = allGames.map((g) => ({ label: g.title, value: g.title }));
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
   const [avatar, setAvatar] = useState(user?.photoURL || '');
+  const initialPhotos =
+    Array.isArray(user?.photos) && user.photos.length
+      ? user.photos
+      : user?.photoURL
+      ? [user.photoURL]
+      : [];
+  const [photos, setPhotos] = useState(initialPhotos);
   const [jobTitle, setJobTitle] = useState(user?.jobTitle || '');
   const [company, setCompany] = useState(user?.company || '');
   const [school, setSchool] = useState(user?.school || '');
@@ -69,7 +78,9 @@ const EditProfileScreen = ({ navigation, route }) => {
     });
 
     if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      setAvatar(uri);
+      setPhotos((p) => (p.length < 6 ? [...p, uri] : p));
     }
   };
 
@@ -82,6 +93,13 @@ const EditProfileScreen = ({ navigation, route }) => {
     setLocation(user?.location || '');
     setFavoriteGames(Array.isArray(user?.favoriteGames) ? user.favoriteGames : []);
     setAvatar(user?.photoURL || '');
+    setPhotos(
+      Array.isArray(user?.photos) && user.photos.length
+        ? user.photos
+        : user?.photoURL
+        ? [user.photoURL]
+        : []
+    );
     setJobTitle(user?.jobTitle || '');
     setCompany(user?.company || '');
     setSchool(user?.school || '');
@@ -119,6 +137,22 @@ const EditProfileScreen = ({ navigation, route }) => {
   const handleSave = async () => {
     if (!user) return;
     let photoURL = avatar;
+    let uploadedPhotos = photos;
+    if (photos.some((p) => !p.startsWith('http'))) {
+      uploadedPhotos = [];
+      for (const uri of photos) {
+        if (uri.startsWith('http')) {
+          uploadedPhotos.push(uri);
+        } else {
+          try {
+            const url = await uploadPhotoAsync(uri, user.uid);
+            if (url) uploadedPhotos.push(url);
+          } catch (e) {
+            console.warn('Photo upload failed', e);
+          }
+        }
+      }
+    }
     if (avatar && !avatar.startsWith('http')) {
       try {
         photoURL = await uploadAvatarAsync(avatar, user.uid);
@@ -149,6 +183,7 @@ const EditProfileScreen = ({ navigation, route }) => {
         tiktok: sanitizeText(tiktok.trim()),
       },
       photoURL,
+      photos: uploadedPhotos,
     };
     try {
       await firebase
@@ -169,6 +204,21 @@ const EditProfileScreen = ({ navigation, route }) => {
     }
   };
 
+  const completedFields = [
+    displayName,
+    age,
+    gender,
+    bio,
+    location,
+    favoriteGames.length ? 'yes' : '',
+    photos.length ? 'yes' : '',
+  ];
+  const profileProgress = Math.round(
+    (completedFields.filter((v) => v && v !== '').length /
+      completedFields.length) *
+      100,
+  );
+
   const gradientColors = editMode ? ['#fff', '#ffe6f0'] : ['#fff', '#fce4ec'];
   const title = editMode ? 'Edit Your Profile' : 'Set Up Your Profile';
   const saveLabel = editMode ? 'Save Changes' : 'Save';
@@ -181,9 +231,27 @@ const EditProfileScreen = ({ navigation, route }) => {
         <Text style={styles.navBtnText}>{editMode ? 'Setup Mode' : 'Edit Mode'}</Text>
       </TouchableOpacity>
       <Text style={styles.logoText}>{title}</Text>
+      <ProgressBar value={profileProgress} max={100} />
       <TouchableOpacity onPress={pickImage} style={{ alignSelf: 'center', marginBottom: 10 }}>
-        <Image source={avatarSource(avatar)} style={{ width: 100, height: 100, borderRadius: 50 }} />
+        <View>
+          <Image source={avatarSource(avatar)} style={{ width: 100, height: 100, borderRadius: 50 }} />
+          <Ionicons
+            name="pencil"
+            size={24}
+            color={theme.accent}
+            style={{ position: 'absolute', bottom: 0, right: 0 }}
+          />
+        </View>
       </TouchableOpacity>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginBottom: 10 }}>
+        {photos.map((p, idx) => (
+          <Image
+            key={idx}
+            source={avatarSource(p)}
+            style={{ width: 60, height: 60, borderRadius: 8, margin: 4 }}
+          />
+        ))}
+      </View>
 
       <TextInput
         style={styles.input}

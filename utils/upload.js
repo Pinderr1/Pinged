@@ -39,3 +39,21 @@ export async function uploadVoiceAsync(uri, uid) {
     return null;
   }
 }
+
+export async function uploadPhotoAsync(uri, uid) {
+  if (!uri || !uid) throw new Error('uri and uid required');
+  try {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const filename = `${Date.now()}.jpg`;
+    const ref = firebase.storage().ref().child(`avatars/${uid}/${filename}`);
+    const uploadTask = ref.put(blob);
+    await new Promise((resolve, reject) => {
+      uploadTask.on('state_changed', null, reject, resolve);
+    });
+    return ref.getDownloadURL();
+  } catch (e) {
+    console.warn('Failed to upload photo', e);
+    return null;
+  }
+}

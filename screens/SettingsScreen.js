@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Text, View, TextInput, Switch } from 'react-native';
+import ProgressBar from '../components/ProgressBar';
 import ScreenContainer from '../components/ScreenContainer';
 import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
@@ -40,6 +41,19 @@ const SettingsScreen = ({ navigation }) => {
     setVerifiedFilter,
   } = useFilters();
 
+  const profileFields = [
+    user?.photoURL,
+    user?.displayName,
+    user?.age,
+    user?.gender,
+    user?.bio,
+    user?.location,
+    Array.isArray(user?.favoriteGames) && user.favoriteGames.length ? 'x' : '',
+  ];
+  const profileProgress = Math.round(
+    (profileFields.filter((f) => f).length / profileFields.length) * 100,
+  );
+
   const toggleAdvanced = () => setShowAdvanced((prev) => !prev);
 
   const handleEditProfile = () => navigation.navigate('EditProfile');
@@ -74,6 +88,12 @@ const SettingsScreen = ({ navigation }) => {
       <Text style={[styles.logoText, { color: theme.text, marginBottom: 10 }]}>
         Settings
       </Text>
+      <View style={{ width: '100%', marginBottom: 10 }}>
+        <Text style={{ color: theme.textSecondary, marginBottom: 4 }}>
+          Profile Completeness: {profileProgress}%
+        </Text>
+        <ProgressBar value={profileProgress} max={100} />
+      </View>
 
       <View style={{ marginBottom: 20 }}>
         <Text style={[styles.settingText, { color: theme.textSecondary }]}>
@@ -85,11 +105,18 @@ const SettingsScreen = ({ navigation }) => {
       </View>
 
       {!isPremium && (
-        <GradientButton
-          text="Go Premium"
-          onPress={handleGoPremium}
-          icon={<Text style={{ fontSize: 16 }}>💎</Text>}
-        />
+        <>
+          <GradientButton
+            text="Get Pinged Platinum"
+            onPress={handleGoPremium}
+            icon={<Text style={{ fontSize: 16 }}>💎</Text>}
+          />
+          <GradientButton
+            text="Get More Super Likes"
+            onPress={() => navigation.navigate('Premium', { context: 'superlikes' })}
+            style={{ marginTop: 10 }}
+          />
+        </>
       )}
 
       {isPremium && (
