@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenContainer from '../components/ScreenContainer';
 import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
@@ -18,6 +19,53 @@ const SettingsScreen = ({ navigation }) => {
   const isPremium = !!user?.isPremium;
   const { devMode, toggleDevMode } = useDev();
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [allowDMs, setAllowDMs] = useState(true);
+  const [swipeSurge, setSwipeSurge] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [showDistanceKm, setShowDistanceKm] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.multiGet([
+      'allowDMs',
+      'swipeSurge',
+      'notificationsEnabled',
+      'showDistanceKm',
+    ])
+      .then((res) => {
+        const map = Object.fromEntries(res);
+        setAllowDMs(map.allowDMs !== 'false');
+        setSwipeSurge(map.swipeSurge === 'true');
+        setNotificationsEnabled(map.notificationsEnabled !== 'false');
+        setShowDistanceKm(map.showDistanceKm === 'true');
+      })
+      .catch((e) => console.warn('Failed to load settings', e));
+  }, []);
+
+  const persist = (key, val) =>
+    AsyncStorage.setItem(key, val.toString()).catch((e) =>
+      console.warn('Failed to persist setting', e)
+    );
+
+  const toggleAllowDMs = () => {
+    const next = !allowDMs;
+    setAllowDMs(next);
+    persist('allowDMs', next);
+  };
+  const toggleSwipeSurge = () => {
+    const next = !swipeSurge;
+    setSwipeSurge(next);
+    persist('swipeSurge', next);
+  };
+  const toggleNotifications = () => {
+    const next = !notificationsEnabled;
+    setNotificationsEnabled(next);
+    persist('notificationsEnabled', next);
+  };
+  const toggleDistanceUnits = () => {
+    const next = !showDistanceKm;
+    setShowDistanceKm(next);
+    persist('showDistanceKm', next);
+  };
 
   const toggleAdvanced = () => setShowAdvanced((prev) => !prev);
 
@@ -81,6 +129,26 @@ const SettingsScreen = ({ navigation }) => {
           />
 
           <GradientButton
+            text={allowDMs ? 'Disable DMs' : 'Allow DMs'}
+            onPress={toggleAllowDMs}
+          />
+
+          <GradientButton
+            text={swipeSurge ? 'Disable Swipe Surge' : 'Enable Swipe Surge'}
+            onPress={toggleSwipeSurge}
+          />
+
+          <GradientButton
+            text={notificationsEnabled ? 'Disable Notifications' : 'Enable Notifications'}
+            onPress={toggleNotifications}
+          />
+
+          <GradientButton
+            text={`Show Distance in ${showDistanceKm ? 'Miles' : 'Kilometers'}`}
+            onPress={toggleDistanceUnits}
+          />
+
+          <GradientButton
             text="View My Stats"
             onPress={() => navigation.navigate('Stats')}
           />
@@ -91,6 +159,36 @@ const SettingsScreen = ({ navigation }) => {
           />
 
           <GradientButton text="Log Out" onPress={handleLogout} />
+
+          <GradientButton
+            text="Manage Payment Method"
+            onPress={() => console.log('manage payment')}
+          />
+          <GradientButton
+            text="Manage Google Play Subscriptions"
+            onPress={() => console.log('manage subscriptions')}
+          />
+          <GradientButton
+            text="Restore Purchases"
+            onPress={() => console.log('restore purchases')}
+          />
+
+          <GradientButton
+            text="Contact Us"
+            onPress={() => navigation.navigate('ContactUs')}
+          />
+          <GradientButton
+            text="Help & Support"
+            onPress={() => navigation.navigate('HelpSupport')}
+          />
+          <GradientButton
+            text="Community Guidelines"
+            onPress={() => navigation.navigate('Guidelines')}
+          />
+          <GradientButton
+            text="Privacy"
+            onPress={() => navigation.navigate('Privacy')}
+          />
         </>
       )}
       </ScreenContainer>

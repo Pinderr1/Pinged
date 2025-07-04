@@ -14,6 +14,10 @@ import StatsScreen from '../screens/StatsScreen';
 import PlayScreen from '../screens/PlayScreen';
 import SwipeScreen from '../screens/SwipeScreen';
 import LikedYouScreen from '../screens/LikedYouScreen';
+import ContactUsScreen from '../screens/ContactUsScreen';
+import HelpSupportScreen from '../screens/HelpSupportScreen';
+import GuidelinesScreen from '../screens/GuidelinesScreen';
+import PrivacyScreen from '../screens/PrivacyScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -52,6 +56,10 @@ export default function AppStack() {
         component={SwipeScreen}
         options={{ animation: 'slide_from_bottom' }}
       />
+      <Stack.Screen name="ContactUs" component={ContactUsScreen} />
+      <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+      <Stack.Screen name="Guidelines" component={GuidelinesScreen} />
+      <Stack.Screen name="Privacy" component={PrivacyScreen} />
       </Stack.Navigator>
   );
 }
