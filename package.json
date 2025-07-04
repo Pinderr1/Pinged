@@ -8,7 +8,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "deploy": "bash scripts/deploy.sh",
-    "test": "node tests/runTests.js"
+    "test": "npm test",
+    "lint": "eslint .",
+    "prepush": "npm run lint && npm run test"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",

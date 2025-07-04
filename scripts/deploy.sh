@@ -1,11 +1,18 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-# Deploy firestore rules
-firebase deploy --only firestore:rules
+# Run tests
+npm run test
 
-# Deploy firestore indexes
-firebase deploy --only firestore:indexes
+# Build static assets
+npx expo export --output-dir dist
 
-# Deploy cloud functions
-cd functions && npm install && firebase deploy --only functions && cd ..
+# Bump patch version
+npm version patch
+
+# Push changes and tags
+git push
+git push --tags
+
+# Publish build via EAS
+npx eas build --platform all --non-interactive
