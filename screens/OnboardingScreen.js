@@ -336,7 +336,7 @@ export default function OnboardingScreen() {
           style={{
             inputIOS: styles.input,
             inputAndroid: styles.input,
-            placeholder: { color: darkMode ? '#999' : '#aaa' },
+            placeholder: { color: theme.textSecondary },
           }}
           items={ageItems}
         />

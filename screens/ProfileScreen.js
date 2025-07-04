@@ -230,7 +230,7 @@ const ProfileScreen = ({ navigation, route }) => {
         style={{
           inputIOS: styles.input,
           inputAndroid: styles.input,
-          placeholder: { color: '#999' },
+          placeholder: { color: theme.textSecondary },
         }}
         items={[
           { label: 'Male', value: 'Male' },
