@@ -1,7 +1,7 @@
 // /screens/ProfileScreen.js
 
 import React, { useState, useEffect } from 'react';
-import { Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View, Image, ScrollView } from 'react-native';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
@@ -179,7 +179,14 @@ const ProfileScreen = ({ navigation, route }) => {
   return (
     <GradientBackground colors={gradientColors} style={{ flex: 1 }}>
       <Header />
-      <SafeKeyboardView style={[styles.container, { paddingTop: HEADER_SPACING }]}>
+      <SafeKeyboardView style={{ flex: 1 }}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={[
+            styles.container,
+            { paddingTop: HEADER_SPACING, paddingBottom: 100 },
+          ]}
+        >
       <TouchableOpacity onPress={() => setEditMode(!editMode)} style={{ alignSelf: 'flex-end', marginBottom: 10 }}>
         <Text style={styles.navBtnText}>{editMode ? 'Setup Mode' : 'Edit Mode'}</Text>
       </TouchableOpacity>
@@ -345,6 +352,7 @@ const ProfileScreen = ({ navigation, route }) => {
         visible={showLocationInfo}
         onClose={() => setShowLocationInfo(false)}
       />
+        </ScrollView>
       </SafeKeyboardView>
     </GradientBackground>
   );
