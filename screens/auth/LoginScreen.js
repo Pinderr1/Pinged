@@ -21,14 +21,16 @@ import { useDev } from '../../contexts/DevContext';
 import PropTypes from 'prop-types';
 import { logDev } from '../../utils/logger';
 
-WebBrowser.maybeCompleteAuthSession();
-
 export default function LoginScreen() {
   const navigation = useNavigation();
   const { markOnboarded } = useOnboarding();
   const { toggleDevMode } = useDev();
   const { theme } = useTheme();
   const styles = getStyles(theme);
+
+  useEffect(() => {
+    WebBrowser.maybeCompleteAuthSession();
+  }, []);
 
   const redirectUri = AuthSession.makeRedirectUri({ scheme: 'pinged' });
 
