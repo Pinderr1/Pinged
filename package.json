@@ -33,11 +33,6 @@
     "expo-splash-screen": "^0.21.1",
     "expo-updates": "~0.28.15",
     "expo-web-browser": "~14.2.0",
-<<<<<<< HEAD
-=======
-    "expo-font": "~12.1.4",
-    "expo-splash-screen": "~0.30.10",
->>>>>>> 6db242b0a71e2850d3de6fdffe00775ea3aa782b
     "firebase": "^9.6.11",
     "lottie-ios": "^4.5.1",
     "lottie-react-native": "7.2.2",
@@ -46,21 +41,8 @@
     "react-native": "0.79.5",
     "react-native-picker-select": "^9.3.1",
     "react-native-safe-area-context": "5.4.0",
-<<<<<<< HEAD
     "react-native-svg": "^15.2.0",
     "react-native-toast-message": "^2.3.0"
-=======
-    "react-native-toast-message": "^2.3.0",
-    "expo-notifications": "~0.31.4",
-    "expo-device": "~7.1.4",
-    "expo-haptics": "~14.1.4",
-    "expo-updates": "~0.28.15",
-    "expo-blur": "~14.1.5",
-    "prop-types": "^15.8.1",
-    "react-native-svg": "^15.2.0",
-    "@expo-google-fonts/inter": "^0.2.2",
-    "@expo-google-fonts/roboto": "^0.2.2"
->>>>>>> 6db242b0a71e2850d3de6fdffe00775ea3aa782b
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
