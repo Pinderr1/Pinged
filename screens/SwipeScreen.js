@@ -39,6 +39,7 @@ import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import * as Haptics from 'expo-haptics';
 import SkeletonUserCard from '../components/SkeletonUserCard';
 import EmptyState from '../components/EmptyState';
+import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
 import PropTypes from 'prop-types';
@@ -146,6 +147,13 @@ const SwipeScreen = () => {
 
   const [users, setUsers] = useState([]);
   const displayUser = users[currentIndex] ?? null;
+  const { playing: playingIntro, playPause: playIntro } = useVoicePlayback(
+    displayUser?.voiceIntro
+  );
+  const {
+    playing: playingMatchIntro,
+    playPause: playMatchIntro,
+  } = useVoicePlayback(matchedUser?.voiceIntro);
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -209,6 +217,7 @@ const SwipeScreen = () => {
             displayName: u.displayName || 'User',
             age: u.age || '',
             bio: u.bio || '',
+            voiceIntro: u.voiceIntro || '',
             favoriteGames: Array.isArray(u.favoriteGames) ? u.favoriteGames : [],
             gender: u.gender || '',
             genderPref: u.genderPref || '',
@@ -726,6 +735,18 @@ const handleSwipe = async (direction) => {
                   {displayUser?.displayName}, {displayUser?.age}
                 </Text>
                 <Text style={styles.bioText}>{displayUser?.bio}</Text>
+                {displayUser?.voiceIntro ? (
+                  <TouchableOpacity
+                    onPress={playIntro}
+                    style={styles.playIntro}
+                  >
+                    <Ionicons
+                      name={playingIntro ? 'pause' : 'play'}
+                      size={32}
+                      color={theme.accent}
+                    />
+                  </TouchableOpacity>
+                ) : null}
                 <GradientButton
                   text="Close"
                   width={120}
@@ -747,6 +768,15 @@ const handleSwipe = async (direction) => {
                 style={{ width: 300, height: 300 }}
               />
               <Text style={styles.matchText}>It's a Match with {matchedUser.displayName}!</Text>
+              {matchedUser?.voiceIntro ? (
+                <TouchableOpacity onPress={playMatchIntro} style={styles.playIntro}>
+                  <Ionicons
+                    name={playingMatchIntro ? 'pause' : 'play'}
+                    size={32}
+                    color="#fff"
+                  />
+                </TouchableOpacity>
+              ) : null}
               {matchLine ? (
                 <Text style={styles.suggestText}>{`Try: "${matchLine}"`}</Text>
               ) : null}
@@ -933,6 +963,10 @@ const getStyles = (theme) =>
     color: theme.text,
     marginTop: 10,
     textAlign: 'center',
+  },
+  playIntro: {
+    marginTop: 10,
+    alignSelf: 'center',
   },
   fireworksOverlay: {
     flex: 1,
