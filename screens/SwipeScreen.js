@@ -162,12 +162,13 @@ const SwipeScreen = () => {
   }, [devMode]);
 
   useEffect(() => {
+    let mounted = true;
     const fetchUsers = async () => {
       if (!currentUser?.uid) {
-        setLoadingUsers(false);
+        if (mounted) setLoadingUsers(false);
         return;
       }
-      setLoadingUsers(true);
+      if (mounted) setLoadingUsers(true);
       try {
         let userQuery = firebase
           .firestore()
@@ -218,7 +219,7 @@ const SwipeScreen = () => {
             displayName: u.displayName || 'User',
             age: u.age || '',
             bio: u.bio || '',
-            voiceIntro: u.voiceIntro || '',
+            voiceIntro: u?.voiceIntro || '',
             favoriteGames: Array.isArray(u.favoriteGames) ? u.favoriteGames : [],
             gender: u.gender || '',
             genderPref: u.genderPref || '',
@@ -264,13 +265,16 @@ const SwipeScreen = () => {
           );
         });
 
-        setUsers(formatted);
+        if (mounted) setUsers(formatted);
       } catch (e) {
         console.warn('Failed to load users', e);
       }
-      setLoadingUsers(false);
+      if (mounted) setLoadingUsers(false);
     };
     fetchUsers();
+    return () => {
+      mounted = false;
+    };
   }, [
     currentUser?.uid,
     devMode,

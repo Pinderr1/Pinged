@@ -5,6 +5,7 @@ export default {
     name: "Pinged",
     slug: "pinged",
     version: "1.0.0",
+    sdkVersion: "53.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
     scheme: "pinged",
