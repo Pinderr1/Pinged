@@ -13,7 +13,7 @@ import {
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import firebase from '../firebase';
-import { uploadAvatarAsync } from '../utils/upload';
+import { uploadAvatarAsync, uploadIntroAsync } from '../utils/upload';
 import PropTypes from 'prop-types';
 import { sanitizeText } from '../utils/sanitize';
 import { snapshotExists } from '../utils/firestore';
@@ -33,10 +33,12 @@ import Header from '../components/Header';
 import { allGames } from '../data/games';
 import { logDev } from '../utils/logger';
 import LocationInfoModal from '../components/LocationInfoModal';
+import useVoiceRecorder from '../hooks/useVoiceRecorder';
+import useVoicePlayback from '../hooks/useVoicePlayback';
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
-  // TODO: allow recording a short voice or video intro and store URL in profile
+  { key: 'voiceIntro', label: 'Record a quick voice intro' },
   { key: 'displayName', label: 'What’s your name?' },
   { key: 'age', label: 'How old are you?' },
   { key: 'genderInfo', label: 'Gender & preference' },
@@ -52,6 +54,9 @@ export default function OnboardingScreen() {
   const { updateUser } = useUser();
   const { markOnboarded, hasOnboarded } = useOnboarding();
   const styles = getStyles(theme);
+
+  const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
+  const { playing, playPause } = useVoicePlayback(answers.voiceIntro);
 
   const [step, setStep] = useState(0);
   const cardOpacity = useRef(new Animated.Value(1)).current;
@@ -76,6 +81,7 @@ export default function OnboardingScreen() {
   };
   const [answers, setAnswers] = useState({
     avatar: '',
+    voiceIntro: '',
     displayName: '',
     age: '',
     gender: '',
@@ -180,6 +186,7 @@ export default function OnboardingScreen() {
           (answers.displayName || user.displayName || '').trim()
         ),
         photoURL,
+        voiceIntro: answers.voiceIntro || '',
         age: parseInt(answers.age, 10) || null,
         gender: sanitizeText(answers.gender),
         genderPref: sanitizeText(answers.genderPref),
@@ -250,6 +257,27 @@ export default function OnboardingScreen() {
     }
   };
 
+  const handleVoicePress = async () => {
+    if (isRecording) {
+      const result = await stopRecording();
+      if (result) {
+        try {
+          const url = await uploadIntroAsync(
+            result.uri,
+            firebase.auth().currentUser.uid
+          );
+          if (url)
+            setAnswers((prev) => ({ ...prev, voiceIntro: url }));
+        } catch (e) {
+          console.error('Voice upload failed:', e);
+          Toast.show({ type: 'error', text1: 'Failed to upload intro' });
+        }
+      }
+    } else {
+      await startRecording();
+    }
+  };
+
   const autofillLocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -296,6 +324,32 @@ export default function OnboardingScreen() {
             </View>
           )}
         </TouchableOpacity>
+      );
+    }
+
+    if (currentField === 'voiceIntro') {
+      return (
+        <View style={{ alignItems: 'center' }}>
+          <TouchableOpacity
+            onPress={handleVoicePress}
+            style={styles.voiceButton}
+          >
+            <Ionicons
+              name={isRecording ? 'stop' : 'mic'}
+              size={28}
+              color="#fff"
+            />
+          </TouchableOpacity>
+          {answers.voiceIntro ? (
+            <TouchableOpacity onPress={playPause} style={styles.playButton}>
+              <Ionicons
+                name={playing ? 'pause' : 'play'}
+                size={28}
+                color="#fff"
+              />
+            </TouchableOpacity>
+          ) : null}
+        </View>
       );
     }
 
@@ -635,6 +689,24 @@ const getStyles = (theme) => {
     nextButtonText: {
       color: '#fff',
       fontSize: FONT_SIZES.MD,
+    },
+    voiceButton: {
+      backgroundColor: accent,
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 20,
+    },
+    playButton: {
+      backgroundColor: accent,
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 10,
     },
     skipButton: {
       marginTop: 20,
