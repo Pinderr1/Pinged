@@ -3,6 +3,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaView, KeyboardAvoidingView, Platform, Text } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
+import { Roboto_700Bold } from '@expo-google-fonts/roboto';
 import { useUser } from './contexts/UserContext';
 import Providers from './contexts/Providers';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -22,7 +28,12 @@ const ThemedNotificationCenter = () => {
 
 const AppInner = () => {
   usePushNotifications();
-  const [fontsLoaded] = useFonts({});
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_700Bold,
+    Roboto_700Bold,
+  });
   const { loaded: themeLoaded } = useTheme();
   const { loading: userLoading } = useUser();
   const {

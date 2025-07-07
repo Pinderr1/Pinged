@@ -41,6 +41,7 @@ import EmptyState from '../components/EmptyState';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
 import PropTypes from 'prop-types';
+import { FONT_FAMILY } from '../textStyles';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -765,6 +766,7 @@ const getStyles = (theme) =>
     borderRadius: 4,
     marginBottom: 4,
     fontSize: 12,
+    fontFamily: FONT_FAMILY.medium,
   },
   nameRow: {
     flexDirection: 'row',
@@ -772,7 +774,7 @@ const getStyles = (theme) =>
   },
   nameText: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: FONT_FAMILY.heading,
     color: '#fff',
   },
   expandIcon: {
@@ -787,6 +789,7 @@ const getStyles = (theme) =>
   },
   noMoreText: {
     fontSize: 20,
+    fontFamily: FONT_FAMILY.bold,
     color: '#999',
     textAlign: 'center',
   },
@@ -794,6 +797,7 @@ const getStyles = (theme) =>
     color: theme.accent,
     textDecorationLine: 'underline',
     fontSize: 16,
+    fontFamily: FONT_FAMILY.medium,
   },
   buttonRow: {
     position: 'absolute',
@@ -833,7 +837,7 @@ const getStyles = (theme) =>
   },
   badgeText: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: FONT_FAMILY.bold,
     color: '#fff',
   },
   likeText: {
@@ -885,12 +889,13 @@ const getStyles = (theme) =>
   },
   matchText: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontFamily: FONT_FAMILY.bold,
     color: '#fff',
     marginTop: 20,
   },
   suggestText: {
     fontSize: 14,
+    fontFamily: FONT_FAMILY.regular,
     color: '#fff',
     marginTop: 6,
     textAlign: 'center',

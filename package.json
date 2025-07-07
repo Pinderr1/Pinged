@@ -42,7 +42,9 @@
     "expo-updates": "~0.28.15",
     "expo-blur": "~14.1.5",
     "prop-types": "^15.8.1",
-    "react-native-svg": "^15.2.0"
+    "react-native-svg": "^15.2.0",
+    "@expo-google-fonts/inter": "^0.2.2",
+    "@expo-google-fonts/roboto": "^0.2.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

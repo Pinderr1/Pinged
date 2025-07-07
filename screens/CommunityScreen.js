@@ -29,6 +29,7 @@ import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 import * as Haptics from 'expo-haptics';
 import EmptyState from '../components/EmptyState';
+import { FONT_FAMILY } from '../textStyles';
 
 
 const FILTERS = ['All', 'Tonight', 'Flirty', 'Tournaments'];
@@ -439,7 +440,7 @@ const getStyles = (theme, skeletonColor) =>
   StyleSheet.create({
   header: {
     fontSize: FONT_SIZES.XL,
-    fontWeight: 'bold',
+    fontFamily: FONT_FAMILY.heading,
     textAlign: 'center',
     marginVertical: 16,
   },
@@ -458,12 +459,13 @@ const getStyles = (theme, skeletonColor) =>
   },
   bannerTitle: {
     color: theme.accent,
-    fontWeight: 'bold',
+    fontFamily: FONT_FAMILY.bold,
     fontSize: FONT_SIZES.MD
   },
   bannerText: {
     fontSize: FONT_SIZES.SM,
-    color: '#555'
+    color: '#555',
+    fontFamily: FONT_FAMILY.regular,
   },
   flyerList: {
     paddingHorizontal: 16,
@@ -485,7 +487,8 @@ const getStyles = (theme, skeletonColor) =>
   badge: {
     fontSize: FONT_SIZES.SM - 2,
     color: '#28c76f',
-    marginTop: 4
+    marginTop: 4,
+    fontFamily: FONT_FAMILY.medium,
   },
   badgePopup: {
     backgroundColor: '#fff',
@@ -500,12 +503,13 @@ const getStyles = (theme, skeletonColor) =>
     marginBottom: 6
   },
   badgeTitle: {
-    fontWeight: 'bold',
+    fontFamily: FONT_FAMILY.bold,
     fontSize: FONT_SIZES.MD
   },
   badgeText: {
     fontSize: FONT_SIZES.SM - 1,
-    color: '#666'
+    color: '#666',
+    fontFamily: FONT_FAMILY.regular,
   },
   postCard: {
     borderRadius: 12,
@@ -516,7 +520,7 @@ const getStyles = (theme, skeletonColor) =>
   },
   postTitle: {
     fontSize: FONT_SIZES.MD - 1,
-    fontWeight: 'bold',
+    fontFamily: FONT_FAMILY.bold,
     marginBottom: 2
   },
   postTime: {
@@ -526,7 +530,8 @@ const getStyles = (theme, skeletonColor) =>
   },
   postDesc: {
     fontSize: FONT_SIZES.SM - 1,
-    color: '#666'
+    color: '#666',
+    fontFamily: FONT_FAMILY.regular,
   },
   skelLine: {
     height: 12,
@@ -558,7 +563,7 @@ const getStyles = (theme, skeletonColor) =>
     elevation: 10
   },
   modalTitle: {
-    fontWeight: 'bold',
+    fontFamily: FONT_FAMILY.bold,
     fontSize: 16,
     marginBottom: 12
   },
@@ -568,7 +573,8 @@ const getStyles = (theme, skeletonColor) =>
     borderRadius: 10,
     padding: 10,
     fontSize: 13,
-    marginBottom: 10
+    marginBottom: 10,
+    fontFamily: FONT_FAMILY.regular,
   },
   fab: {
     position: 'absolute',

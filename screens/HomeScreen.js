@@ -29,6 +29,7 @@ import { eventImageSource } from '../utils/avatar';
 import PremiumBanner from '../components/PremiumBanner';
 import ActiveGamesPreview from '../components/ActiveGamesPreview';
 import MatchesPreview from '../components/MatchesPreview';
+import { FONT_FAMILY } from '../textStyles';
 
 // Map app game IDs to boardgame registry keys for AI play
 const aiGameMap = allGames.reduce((acc, g) => {
@@ -235,7 +236,7 @@ const getStyles = (theme) =>
     },
     welcome: {
       fontSize: 18,
-      fontWeight: 'bold',
+      fontFamily: FONT_FAMILY.heading,
       alignSelf: 'center',
       marginTop: 20,
       marginBottom: 8,
@@ -248,7 +249,7 @@ const getStyles = (theme) =>
     },
     sectionTitle: {
       fontSize: 16,
-      fontWeight: '700',
+      fontFamily: FONT_FAMILY.bold,
       alignSelf: 'center',
       marginBottom: 8,
       color: theme.accent,
@@ -264,11 +265,12 @@ const getStyles = (theme) =>
     },
     levelText: {
       fontSize: 16,
-      fontWeight: '600',
+      fontFamily: FONT_FAMILY.bold,
       marginBottom: 4,
     },
     streakLabel: {
       fontSize: 12,
+      fontFamily: FONT_FAMILY.regular,
       marginTop: 8,
       marginBottom: 2,
     },
@@ -298,12 +300,12 @@ const getStyles = (theme) =>
     },
     fullTileText: {
       fontSize: 16,
-      fontWeight: '600',
+      fontFamily: FONT_FAMILY.bold,
       marginLeft: 12,
     },
     tileText: {
       fontSize: 14,
-      fontWeight: '500',
+      fontFamily: FONT_FAMILY.medium,
     },
     modalBackdrop: {
       flex: 1,
@@ -340,7 +342,7 @@ const getStyles = (theme) =>
     },
     eventTitle: {
       fontSize: 14,
-      fontWeight: 'bold',
+      fontFamily: FONT_FAMILY.bold,
     },
     eventTime: {
       fontSize: 12,
@@ -349,6 +351,7 @@ const getStyles = (theme) =>
     },
     eventDesc: {
       fontSize: 12,
+      fontFamily: FONT_FAMILY.regular,
     },
     featuredEventCard: {
       flexDirection: 'row',
@@ -381,7 +384,7 @@ const getStyles = (theme) =>
     },
     postTitle: {
       fontSize: 14,
-      fontWeight: 'bold',
+      fontFamily: FONT_FAMILY.bold,
     },
     postTime: {
       fontSize: 12,
@@ -390,6 +393,7 @@ const getStyles = (theme) =>
     },
     postDesc: {
       fontSize: 12,
+      fontFamily: FONT_FAMILY.regular,
     },
     communityBoard: {
       width: '100%',
