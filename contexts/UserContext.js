@@ -93,6 +93,8 @@ export const UserProvider = ({ children }) => {
 
   const addActivityXP = async (amount = 10, opts = {}) => {
     if (!user?.uid) return;
+    const multiplier = user.isPremium ? 1.5 : 1;
+    const xpAmount = Math.round(amount * multiplier);
     const last = user.lastActiveAt
       ? user.lastActiveAt.toDate?.() || new Date(user.lastActiveAt)
       : null;
@@ -114,7 +116,7 @@ export const UserProvider = ({ children }) => {
       newStreak = 1;
     }
 
-    const newXP = (user.xp || 0) + amount;
+    const newXP = (user.xp || 0) + xpAmount;
     const newBadges = computeBadges({
       xp: newXP,
       streak: newStreak,

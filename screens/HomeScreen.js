@@ -129,12 +129,15 @@ const HomeScreen = ({ navigation }) => {
             <Text style={local.bonus}>🔥 Daily Bonus +5 XP</Text>
           )}
           <View style={local.group}>
-            <Card style={[local.progressCard, { backgroundColor: theme.card }]}>
-              <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
-              <ProgressBar value={xpProgress} max={100} color={theme.accent} />
-              <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
-          <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
-        </Card>
+          <Card style={[local.progressCard, { backgroundColor: theme.card }]}>
+            <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
+            <ProgressBar value={xpProgress} max={100} color={theme.accent} />
+            {isPremiumUser && (
+              <Text style={local.premiumXpBadge}>Premium XP</Text>
+            )}
+            <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
+            <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
+          </Card>
       </View>
 
       {!isPremiumUser && showPremiumBanner && (
@@ -266,6 +269,16 @@ const getStyles = (theme) =>
       fontSize: 16,
       fontWeight: '600',
       marginBottom: 4,
+    },
+    premiumXpBadge: {
+      alignSelf: 'flex-start',
+      marginTop: 4,
+      color: '#fff',
+      backgroundColor: theme.accent,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 10,
+      fontSize: 10,
     },
     streakLabel: {
       fontSize: 12,

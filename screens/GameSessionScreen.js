@@ -238,11 +238,17 @@ const LiveSessionScreen = ({ route, navigation }) => {
       <Header showLogoOnly />
 
       <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 10 }}>
-        <PlayerInfoBar name="You" xp={user?.xp || 0} badges={userBadges} />
+        <PlayerInfoBar
+          name="You"
+          xp={user?.xp || 0}
+          badges={userBadges}
+          isPremium={user?.isPremium}
+        />
         <PlayerInfoBar
           name={opponent.displayName}
           xp={opponentProfile?.xp || 0}
           badges={oppBadges}
+          isPremium={opponentProfile?.isPremium}
         />
       </View>
 
@@ -277,8 +283,8 @@ const LiveSessionScreen = ({ route, navigation }) => {
                   </TouchableOpacity>
                 </View>
                 <GameContainer
-                  player={{ name: 'You', xp: user?.xp }}
-                  opponent={{ name: 'Opponent' }}
+                  player={{ name: 'You', xp: user?.xp, isPremium: user?.isPremium }}
+                  opponent={{ name: 'Opponent', isPremium: false }}
                 >
                   <GameComponent playerID={devPlayer} matchID="dev" />
                 </GameContainer>
@@ -507,8 +513,9 @@ function BotSessionScreen({ route }) {
               badges: user?.badges || [],
               isPremium: user?.isPremium,
             })}
+            isPremium={user?.isPremium}
           />
-          <PlayerInfoBar name={bot.name} xp={0} badges={[]} />
+          <PlayerInfoBar name={bot.name} xp={0} badges={[]} isPremium={false} />
         </View>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -537,8 +544,8 @@ function BotSessionScreen({ route }) {
             {showBoard && !gameOver ? (
               <GameContainer
                 onToggleChat={() => setShowBoard(false)}
-                player={{ name: 'You', xp: user?.xp }}
-                opponent={{ name: bot.name }}
+                player={{ name: 'You', xp: user?.xp, isPremium: user?.isPremium }}
+                opponent={{ name: bot.name, isPremium: false }}
               >
                 <View style={botStyles.boardWrapper}>
                   <BoardComponent
