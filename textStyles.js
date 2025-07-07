@@ -1,11 +1,17 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { FONT_SIZES } from './layout';
 
+const defaultFont = Platform.select({
+  ios: 'System',
+  android: 'Roboto',
+  default: 'System',
+});
+
 export const FONT_FAMILY = {
-  regular: 'Inter_400Regular',
-  medium: 'Inter_500Medium',
-  bold: 'Inter_700Bold',
-  heading: 'Roboto_700Bold',
+  regular: defaultFont,
+  medium: defaultFont,
+  bold: defaultFont,
+  heading: defaultFont,
 };
 
 export const textStyles = StyleSheet.create({
