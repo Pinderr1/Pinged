@@ -29,8 +29,8 @@
     "expo-image-picker": "~16.1.4",
     "expo-linear-gradient": "~14.1.4",
     "expo-location": "~18.1.6",
-    "expo-notifications": "~0.31.3",
-    "expo-splash-screen": "^0.21.1",
+    "expo-notifications": "~0.31.4",
+    "expo-splash-screen": "~0.30.10",
     "expo-updates": "~0.28.15",
     "expo-web-browser": "~14.2.0",
     "firebase": "^9.6.11",
@@ -41,7 +41,7 @@
     "react-native": "0.79.5",
     "react-native-picker-select": "^9.3.1",
     "react-native-safe-area-context": "5.4.0",
-    "react-native-svg": "^15.2.0",
+    "react-native-svg": "15.11.2",
     "react-native-toast-message": "^2.3.0"
   },
   "devDependencies": {
