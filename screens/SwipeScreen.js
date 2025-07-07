@@ -38,6 +38,7 @@ import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import * as Haptics from 'expo-haptics';
 import SkeletonUserCard from '../components/SkeletonUserCard';
 import EmptyState from '../components/EmptyState';
+import BoostModal from '../components/BoostModal';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
 import PropTypes from 'prop-types';
@@ -87,7 +88,7 @@ const SwipeScreen = () => {
   const styles = getStyles(theme);
   const navigation = useNavigation();
   const { showNotification } = useNotification();
-  const { user: currentUser } = useUser();
+  const { user: currentUser, updateUser } = useUser();
   const { play } = useSound();
   const { devMode } = useDev();
   const { addMatch } = useChats();
@@ -111,6 +112,7 @@ const SwipeScreen = () => {
   const [history, setHistory] = useState([]);
   const [showSuperLikeAnim, setShowSuperLikeAnim] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [showBoostModal, setShowBoostModal] = useState(false);
   const [matchLine, setMatchLine] = useState('');
   const [matchGame, setMatchGame] = useState(null);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -118,7 +120,7 @@ const SwipeScreen = () => {
   const pan = useRef(new Animated.ValueXY()).current;
   // 3 main buttons shown in the toolbar
   const scaleRefs = useRef(
-    Array(3)
+    Array(4)
       .fill(null)
       .map(() => new Animated.Value(1))
   ).current;
@@ -509,6 +511,23 @@ const handleSwipe = async (direction) => {
     }
   };
 
+  const startFreeBoost = async () => {
+    if (!currentUser?.uid) return;
+    const until = new Date(Date.now() + 30 * 60 * 1000);
+    updateUser({ boostUntil: until, boostTrialUsed: true });
+    setShowBoostModal(false);
+    Toast.show({ type: 'success', text1: 'Boost activated!' });
+    try {
+      await firebase
+        .firestore()
+        .collection('users')
+        .doc(currentUser.uid)
+        .update({ boostUntil: until, boostTrialUsed: true });
+    } catch (e) {
+      console.warn('Failed to start boost', e);
+    }
+  };
+
   const gradientColors = [theme.gradientStart, theme.gradientEnd];
 
 
@@ -557,9 +576,16 @@ const handleSwipe = async (direction) => {
               style={styles.imageOverlay}
             />
             <View style={styles.bottomInfo}>
-              <Text style={styles.distanceBadge}>
-                {devMode ? '1 mile away' : 'Nearby'}
-              </Text>
+              <View style={styles.badgesRow}>
+                <Text style={styles.distanceBadge}>
+                  {devMode ? '1 mile away' : 'Nearby'}
+                </Text>
+                {displayUser.boostUntil &&
+                (displayUser.boostUntil.toDate?.() ||
+                  new Date(displayUser.boostUntil)) > new Date() ? (
+                  <Text style={styles.boostBadge}>🔥 Boosted</Text>
+                ) : null}
+              </View>
               <View style={styles.nameRow}>
                 <Text style={styles.nameText}>
                   {displayUser.displayName}, {displayUser.age}
@@ -620,21 +646,26 @@ const handleSwipe = async (direction) => {
         <View style={styles.buttonRow}>
           {[
             {
-              icon: "close",
-              color: "#f87171",
+              icon: 'close',
+              color: '#f87171',
               action: swipeLeft,
               longAction: rewind,
             },
             {
-              icon: "game-controller",
-              color: "#a78bfa",
+              icon: 'game-controller',
+              color: '#a78bfa',
               action: handleGameInvite,
             },
             {
-              icon: "heart",
-              color: "#ff75b5",
+              icon: 'heart',
+              color: '#ff75b5',
               action: swipeRight,
               longAction: handleSuperLike,
+            },
+            {
+              icon: 'flame',
+              color: '#fb923c',
+              action: () => setShowBoostModal(true),
             },
           ].map((btn, i) => (
             <Animated.View
@@ -712,6 +743,13 @@ const handleSwipe = async (direction) => {
             </BlurView>
           </Modal>
         )}
+        <BoostModal
+          visible={showBoostModal}
+          onClose={() => setShowBoostModal(false)}
+          onStart={startFreeBoost}
+          onPremium={() => navigation.navigate('Premium', { context: 'upgrade' })}
+          trialUsed={!!currentUser?.boostTrialUsed}
+        />
       </ScreenContainer>
     </GradientBackground>
   );
@@ -765,6 +803,19 @@ const getStyles = (theme) =>
     borderRadius: 4,
     marginBottom: 4,
     fontSize: 12,
+  },
+  boostBadge: {
+    marginLeft: 8,
+    backgroundColor: theme.accent,
+    color: '#fff',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    fontSize: 12,
+  },
+  badgesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   nameRow: {
     flexDirection: 'row',
