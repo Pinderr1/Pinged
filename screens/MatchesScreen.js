@@ -14,6 +14,10 @@ import Card from '../components/Card';
 import AvatarRing from '../components/AvatarRing';
 import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
+import { useMatchmaking } from '../contexts/MatchmakingContext';
+import useRequireGameCredits from '../hooks/useRequireGameCredits';
+import useRematchHistory from '../hooks/useRematchHistory';
+import Toast from 'react-native-toast-message';
 import PropTypes from 'prop-types';
 import { HEADER_SPACING } from '../layout';
 import EmptyState from '../components/EmptyState';
@@ -24,6 +28,9 @@ const SKELETON_CHAT_COUNT = 5;
 const MatchesScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
   const { matches, loading, refreshMatches } = useChats();
+  const { sendGameInvite } = useMatchmaking();
+  const requireCredits = useRequireGameCredits();
+  const history = useRematchHistory(matches);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -32,10 +39,22 @@ const MatchesScreen = ({ navigation }) => {
 
   const newMatches = matches.filter((m) => (m.messages || []).length === 0);
   const activeChats = matches.filter((m) => (m.messages || []).length > 0);
+  const historyMatches = matches.filter((m) => history[m.id]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
     await refreshMatches();
+  };
+
+  const handlePlayAgain = async (match, gameId) => {
+    if (!gameId || !match?.otherUserId) return;
+    if (!requireCredits()) return;
+    try {
+      await sendGameInvite(match.otherUserId, gameId);
+      Toast.show({ type: 'success', text1: 'Invite sent!' });
+    } catch (e) {
+      console.warn('Failed to send rematch invite', e);
+    }
   };
 
   const skeletonColor = darkMode ? '#333333' : '#e0e0e0';
@@ -139,6 +158,53 @@ const MatchesScreen = ({ navigation }) => {
     </Card>
   );
 
+  const renderHistoryItem = (item) => {
+    const hist = history[item.id];
+    if (!hist) return null;
+    const resultText =
+      hist.lastResult === 'win'
+        ? 'You won'
+        : hist.lastResult === 'loss'
+        ? 'You lost'
+        : 'Draw';
+    return (
+      <Card
+        key={`hist-${item.id}`}
+        style={[styles.chatItem, { backgroundColor: theme.card }]}
+      >
+        <View style={styles.avatarColumn}>
+          <AvatarRing
+            source={item.image}
+            size={48}
+            isMatch
+            isOnline={item.online}
+            style={styles.chatAvatar}
+          />
+          <Text style={[styles.avatarName, { color: theme.text }]} numberOfLines={1}>
+            {item.displayName}
+          </Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.chatName, { color: theme.text }]}>{item.displayName}</Text>
+          <Text style={[styles.chatPreview, { color: theme.textSecondary }]} numberOfLines={1}>
+            Last game: {resultText}
+          </Text>
+          {hist.rematchPercent != null && (
+            <Text style={[styles.chatPreview, { color: theme.textSecondary }]}>
+              {hist.rematchPercent}% rematches
+            </Text>
+          )}
+        </View>
+        <TouchableOpacity
+          onPress={() => handlePlayAgain(item, hist.gameId)}
+          style={[styles.playBtn, { backgroundColor: theme.accent }]}
+        >
+          <Text style={styles.playText}>Play Again</Text>
+        </TouchableOpacity>
+      </Card>
+    );
+  };
+
   return (
     <GradientBackground style={{ flex: 1 }}>
       <ScreenContainer>
@@ -208,6 +274,12 @@ const MatchesScreen = ({ navigation }) => {
                 contentContainerStyle={{ paddingBottom: 120 }}
                 showsVerticalScrollIndicator={false}
               />
+              {historyMatches.length > 0 && (
+                <>
+                  <Text style={styles.sectionTitle}>Rematch History</Text>
+                  {historyMatches.map((m) => renderHistoryItem(m))}
+                </>
+              )}
             </>
           )}
         </View>
@@ -285,6 +357,17 @@ const styles = StyleSheet.create({
   chatPreview: {
     fontSize: 12,
     marginTop: 2,
+  },
+  playBtn: {
+    backgroundColor: '#ff4081',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+  playText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   skeletonText: {
     height: 10,
