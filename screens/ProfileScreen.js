@@ -1,7 +1,7 @@
 // /screens/ProfileScreen.js
 
 import React, { useState, useEffect } from 'react';
-import { Text, TextInput, TouchableOpacity, View, Image, ScrollView } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View, Image, ScrollView, Share } from 'react-native';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
@@ -172,6 +172,19 @@ const ProfileScreen = ({ navigation, route }) => {
     }
   };
 
+  const handleShare = async () => {
+    if (!user) return;
+    try {
+      const url = `https://pinged.app/user/${user.uid}?ref=${user.uid}`;
+      await Share.share({
+        message: `Check out my Pinged profile: ${url}`,
+        url,
+      });
+    } catch (e) {
+      console.warn('Failed to share profile', e);
+    }
+  };
+
   const gradientColors = editMode ? ['#fff', '#ffe6f0'] : ['#fff', '#fce4ec'];
   const title = editMode ? 'Edit Your Profile' : 'Set Up Your Profile';
   const saveLabel = editMode ? 'Save Changes' : 'Save';
@@ -187,9 +200,14 @@ const ProfileScreen = ({ navigation, route }) => {
             { paddingTop: HEADER_SPACING, paddingBottom: 100 },
           ]}
         >
-      <TouchableOpacity onPress={() => setEditMode(!editMode)} style={{ alignSelf: 'flex-end', marginBottom: 10 }}>
-        <Text style={styles.navBtnText}>{editMode ? 'Setup Mode' : 'Edit Mode'}</Text>
-      </TouchableOpacity>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+        <TouchableOpacity onPress={() => setEditMode(!editMode)}>
+          <Text style={styles.navBtnText}>{editMode ? 'Setup Mode' : 'Edit Mode'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleShare} accessibilityLabel="share profile">
+          <Ionicons name="share-outline" size={24} color={theme.text} />
+        </TouchableOpacity>
+      </View>
       <Text style={styles.logoText}>{title}</Text>
       <TouchableOpacity onPress={pickImage} style={{ alignSelf: 'center', marginBottom: 10 }}>
         <Image source={avatarSource(avatar)} style={{ width: 100, height: 100, borderRadius: 50 }} />
