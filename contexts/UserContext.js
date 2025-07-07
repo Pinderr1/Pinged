@@ -8,6 +8,7 @@ import { useOnboarding } from "./OnboardingContext";
 import { clearStoredOnboarding } from "../utils/onboarding";
 import { snapshotExists } from "../utils/firestore";
 import { computeBadges } from "../utils/badges";
+import { computeUnlocks } from "../utils/unlocks";
 
 const UserContext = createContext();
 
@@ -27,6 +28,7 @@ export const UserProvider = ({ children }) => {
     xp: 0,
     streak: 0,
     badges: [],
+    unlocks: [],
   };
 
   useEffect(() => {
@@ -57,6 +59,7 @@ export const UserProvider = ({ children }) => {
                 email: fbUser.email,
                 isPremium: !!data.isPremium,
                 badges: data.badges || [],
+                unlocks: data.unlocks || [],
                 ...data,
               });
             } else if (devMode) {
@@ -66,6 +69,7 @@ export const UserProvider = ({ children }) => {
                 uid: fbUser.uid,
                 email: fbUser.email,
                 isPremium: false,
+                unlocks: [],
               });
             }
             setLoading(false);
@@ -121,9 +125,10 @@ export const UserProvider = ({ children }) => {
       badges: user.badges || [],
       isPremium: user.isPremium,
     });
+    const newUnlocks = computeUnlocks({ xp: newXP, unlocks: user.unlocks || [] });
     const updates = { xp: newXP, streak: newStreak, lastActiveAt: new Date() };
     if (opts.markPlayed) updates.lastPlayedAt = new Date();
-    updateUser({ ...updates, badges: newBadges });
+    updateUser({ ...updates, badges: newBadges, unlocks: newUnlocks });
     try {
       await firebase
         .firestore()
@@ -137,6 +142,9 @@ export const UserProvider = ({ children }) => {
           : {}),
         badges: firebase.firestore.FieldValue.arrayUnion(
           ...newBadges.filter((b) => !(user.badges || []).includes(b))
+        ),
+        unlocks: firebase.firestore.FieldValue.arrayUnion(
+          ...newUnlocks.filter((u) => !(user.unlocks || []).includes(u))
         ),
       });
     } catch (e) {

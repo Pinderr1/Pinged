@@ -21,6 +21,7 @@ import { games as gameRegistry } from '../games';
 import PropTypes from 'prop-types';
 import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
+import { getNextUnlock } from '../utils/unlocks';
 import Card from '../components/Card';
 import EventFlyer from "../components/EventFlyer";
 import GradientButton from '../components/GradientButton';
@@ -111,6 +112,7 @@ const HomeScreen = ({ navigation }) => {
   const level = Math.floor((user?.xp || 0) / 100);
   const xpProgress = (user?.xp || 0) % 100;
   const streakProgress = Math.min((user?.streak || 0) % 7, 7);
+  const nextUnlock = getNextUnlock(level);
 
   return (
     <GradientBackground style={{ flex: 1 }}>
@@ -133,8 +135,13 @@ const HomeScreen = ({ navigation }) => {
               <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
               <ProgressBar value={xpProgress} max={100} color={theme.accent} />
               <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
-          <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
-        </Card>
+              <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
+              {nextUnlock && (
+                <Text style={[local.unlockText, { color: theme.textSecondary }]}>
+                  {`Next unlock at Level ${nextUnlock.level}: ${nextUnlock.reward.name}`}
+                </Text>
+              )}
+            </Card>
       </View>
 
       {!isPremiumUser && showPremiumBanner && (
@@ -271,6 +278,10 @@ const getStyles = (theme) =>
       fontSize: 12,
       marginTop: 8,
       marginBottom: 2,
+    },
+    unlockText: {
+      fontSize: 12,
+      marginTop: 8,
     },
     carousel: {
       paddingHorizontal: 16,
