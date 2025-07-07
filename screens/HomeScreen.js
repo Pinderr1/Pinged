@@ -13,6 +13,7 @@ import Header from '../components/Header';
 import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import StreakRewardModal from '../components/StreakRewardModal';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { HEADER_SPACING } from '../layout';
 
@@ -42,7 +43,7 @@ const aiGameMap = allGames.reduce((acc, g) => {
 const CARD_SIZE = 140;
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
-  const { user, loginBonus } = useUser();
+  const { user, loginBonus, streakReward, dismissStreakReward } = useUser();
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
@@ -215,6 +216,11 @@ const HomeScreen = ({ navigation }) => {
             </View>
           </View>
         </Modal>
+        <StreakRewardModal
+          visible={streakReward}
+          streak={user?.streak || 0}
+          onClose={dismissStreakReward}
+        />
       </ScreenContainer>
     </GradientBackground>
   );

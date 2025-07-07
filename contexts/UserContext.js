@@ -17,6 +17,7 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loginBonus, setLoginBonus] = useState(false);
+  const [streakReward, setStreakReward] = useState(false);
   const devUser = {
     displayName: "Dev Tester",
     age: 99,
@@ -57,6 +58,7 @@ export const UserProvider = ({ children }) => {
                 email: fbUser.email,
                 isPremium: !!data.isPremium,
                 badges: data.badges || [],
+                streakRewardedAt: data.streakRewardedAt || null,
                 ...data,
               });
             } else if (devMode) {
@@ -123,6 +125,15 @@ export const UserProvider = ({ children }) => {
     });
     const updates = { xp: newXP, streak: newStreak, lastActiveAt: new Date() };
     if (opts.markPlayed) updates.lastPlayedAt = new Date();
+    const rewardedAt = user.streakRewardedAt
+      ? user.streakRewardedAt.toDate?.() || new Date(user.streakRewardedAt)
+      : null;
+    const shouldReward =
+      newStreak % 7 === 0 && (!rewardedAt || (last && rewardedAt < last));
+    if (shouldReward) {
+      updates.streakRewardedAt = new Date();
+      setStreakReward(true);
+    }
     updateUser({ ...updates, badges: newBadges });
     try {
       await firebase
@@ -134,6 +145,9 @@ export const UserProvider = ({ children }) => {
         lastActiveAt: firebase.firestore.FieldValue.serverTimestamp(),
         ...(opts.markPlayed
           ? { lastPlayedAt: firebase.firestore.FieldValue.serverTimestamp() }
+          : {}),
+        ...(shouldReward
+          ? { streakRewardedAt: firebase.firestore.FieldValue.serverTimestamp() }
           : {}),
         badges: firebase.firestore.FieldValue.arrayUnion(
           ...newBadges.filter((b) => !(user.badges || []).includes(b))
@@ -147,6 +161,8 @@ export const UserProvider = ({ children }) => {
   const addGameXP = (amount = 10) => addActivityXP(amount, { markPlayed: true });
 
   const addLoginXP = (amount = 5) => addActivityXP(amount);
+
+  const dismissStreakReward = () => setStreakReward(false);
 
   const loginBonusGiven = useRef(false);
 
@@ -173,7 +189,16 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider
-      value={{ user, updateUser, addGameXP, addLoginXP, loginBonus, loading }}
+      value={{
+        user,
+        updateUser,
+        addGameXP,
+        addLoginXP,
+        loginBonus,
+        loading,
+        streakReward,
+        dismissStreakReward,
+      }}
     >
       {loading ? (
         <View
