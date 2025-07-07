@@ -43,6 +43,7 @@ import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
 import PropTypes from 'prop-types';
+import { FONT_FAMILY } from '../textStyles';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -161,12 +162,13 @@ const SwipeScreen = () => {
   }, [devMode]);
 
   useEffect(() => {
+    let mounted = true;
     const fetchUsers = async () => {
       if (!currentUser?.uid) {
-        setLoadingUsers(false);
+        if (mounted) setLoadingUsers(false);
         return;
       }
-      setLoadingUsers(true);
+      if (mounted) setLoadingUsers(true);
       try {
         let userQuery = firebase
           .firestore()
@@ -217,7 +219,7 @@ const SwipeScreen = () => {
             displayName: u.displayName || 'User',
             age: u.age || '',
             bio: u.bio || '',
-            voiceIntro: u.voiceIntro || '',
+            voiceIntro: u?.voiceIntro || '',
             favoriteGames: Array.isArray(u.favoriteGames) ? u.favoriteGames : [],
             gender: u.gender || '',
             genderPref: u.genderPref || '',
@@ -263,13 +265,16 @@ const SwipeScreen = () => {
           );
         });
 
-        setUsers(formatted);
+        if (mounted) setUsers(formatted);
       } catch (e) {
         console.warn('Failed to load users', e);
       }
-      setLoadingUsers(false);
+      if (mounted) setLoadingUsers(false);
     };
     fetchUsers();
+    return () => {
+      mounted = false;
+    };
   }, [
     currentUser?.uid,
     devMode,
@@ -852,6 +857,7 @@ const getStyles = (theme) =>
     borderRadius: 4,
     marginBottom: 4,
     fontSize: 12,
+    fontFamily: FONT_FAMILY.medium,
   },
   nameRow: {
     flexDirection: 'row',
@@ -859,7 +865,7 @@ const getStyles = (theme) =>
   },
   nameText: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: FONT_FAMILY.heading,
     color: '#fff',
   },
   expandIcon: {
@@ -874,6 +880,7 @@ const getStyles = (theme) =>
   },
   noMoreText: {
     fontSize: 20,
+    fontFamily: FONT_FAMILY.bold,
     color: '#999',
     textAlign: 'center',
   },
@@ -881,6 +888,7 @@ const getStyles = (theme) =>
     color: theme.accent,
     textDecorationLine: 'underline',
     fontSize: 16,
+    fontFamily: FONT_FAMILY.medium,
   },
   buttonRow: {
     position: 'absolute',
@@ -920,7 +928,7 @@ const getStyles = (theme) =>
   },
   badgeText: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: FONT_FAMILY.bold,
     color: '#fff',
   },
   likeText: {
@@ -976,12 +984,13 @@ const getStyles = (theme) =>
   },
   matchText: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontFamily: FONT_FAMILY.bold,
     color: '#fff',
     marginTop: 20,
   },
   suggestText: {
     fontSize: 14,
+    fontFamily: FONT_FAMILY.regular,
     color: '#fff',
     marginTop: 6,
     textAlign: 'center',
