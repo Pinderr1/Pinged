@@ -23,6 +23,7 @@ import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
+import GamePickerModal from '../components/GamePickerModal';
 import { allGames } from '../data/games';
 import { icebreakers } from '../data/prompts';
 import { devUsers } from '../data/devUsers';
@@ -92,7 +93,7 @@ const SwipeScreen = () => {
   const { devMode } = useDev();
   const { addMatch } = useChats();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
-  const { sendGameInvite } = useMatchmaking();
+  const { sendGameInvite, cancelGameInvite } = useMatchmaking();
   const isPremiumUser = !!currentUser?.isPremium;
   const requireCredits = useRequireGameCredits();
   const {
@@ -114,6 +115,9 @@ const SwipeScreen = () => {
   const [matchLine, setMatchLine] = useState('');
   const [matchGame, setMatchGame] = useState(null);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [showGamePicker, setShowGamePicker] = useState(false);
+  const [pendingInviteId, setPendingInviteId] = useState(null);
+  const [showUndoPrompt, setShowUndoPrompt] = useState(false);
 
   const pan = useRef(new Animated.ValueXY()).current;
   // 3 main buttons shown in the toolbar
@@ -401,6 +405,15 @@ const handleSwipe = async (direction) => {
     pan.setValue({ x: 0, y: 0 });
   };
 
+  const handleSwipeChallenge = () => {
+    if (!displayUser) return;
+    if (!isPremiumUser && !devMode) {
+      navigation.navigate('Premium', { context: 'paywall' });
+      return;
+    }
+    setShowGamePicker(true);
+  };
+
   const handleSuperLike = async () => {
     if (!displayUser) return;
     if (!isPremiumUser && !devMode) {
@@ -424,6 +437,37 @@ const handleSwipe = async (direction) => {
     }
 
     setTimeout(() => setShowSuperLikeAnim(false), 1500);
+  };
+
+  const handleGamePickSelect = async (game) => {
+    setShowGamePicker(false);
+    if (!displayUser || !game) return;
+    if (!requireCredits()) return;
+    try {
+      const inviteId = await sendGameInvite(displayUser.id, game.id);
+      recordGamePlayed();
+      setPendingInviteId(inviteId);
+      setShowSuperLikeAnim(true);
+      Toast.show({ type: 'success', text1: 'Invite sent!' });
+      setShowUndoPrompt(true);
+      setTimeout(() => setShowSuperLikeAnim(false), 1500);
+      setTimeout(() => setShowUndoPrompt(false), 4000);
+    } catch (e) {
+      console.warn('Failed to send invite', e);
+      Toast.show({ type: 'error', text1: 'Failed to send invite' });
+    }
+  };
+
+  const undoInvite = async () => {
+    if (!pendingInviteId) return;
+    try {
+      await cancelGameInvite(pendingInviteId);
+      Toast.show({ type: 'success', text1: 'Invite cancelled' });
+    } catch (e) {
+      console.warn('Failed to cancel invite', e);
+    }
+    setShowUndoPrompt(false);
+    setPendingInviteId(null);
   };
 
   const swipeLeft = () => {
@@ -454,7 +498,7 @@ const handleSwipe = async (direction) => {
       }),
       onPanResponderRelease: (_, gesture) => {
         if (gesture.dy < -120 && Math.abs(gesture.dx) < 80) {
-          handleSuperLike();
+          handleSwipeChallenge();
         } else if (gesture.dx > 120) {
           Animated.timing(pan, {
             toValue: { x: SCREEN_WIDTH, y: 0 },
@@ -712,6 +756,19 @@ const handleSwipe = async (direction) => {
             </BlurView>
           </Modal>
         )}
+        <GamePickerModal
+          visible={showGamePicker}
+          onSelect={handleGamePickSelect}
+          onClose={() => setShowGamePicker(false)}
+        />
+        {showUndoPrompt && (isPremiumUser || devMode) ? (
+          <View style={styles.undoBanner}>
+            <Text style={styles.undoText}>Invite sent</Text>
+            <TouchableOpacity onPress={undoInvite}>
+              <Text style={styles.undoButton}>Undo</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </ScreenContainer>
     </GradientBackground>
   );
@@ -896,6 +953,19 @@ const getStyles = (theme) =>
     textAlign: 'center',
     paddingHorizontal: 20,
   },
+  undoBanner: {
+    position: 'absolute',
+    bottom: BUTTON_ROW_BOTTOM + 80,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0009',
+    paddingVertical: 6,
+  },
+  undoText: { color: '#fff', marginRight: 12 },
+  undoButton: { color: theme.accent, fontWeight: 'bold' },
 });
 
 SwipeScreen.propTypes = {};
