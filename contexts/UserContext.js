@@ -27,6 +27,7 @@ export const UserProvider = ({ children }) => {
     xp: 0,
     streak: 0,
     badges: [],
+    eventTickets: [],
   };
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export const UserProvider = ({ children }) => {
                 email: fbUser.email,
                 isPremium: !!data.isPremium,
                 badges: data.badges || [],
+                eventTickets: data.eventTickets || [],
                 ...data,
               });
             } else if (devMode) {
@@ -66,13 +68,19 @@ export const UserProvider = ({ children }) => {
                 uid: fbUser.uid,
                 email: fbUser.email,
                 isPremium: false,
+                eventTickets: [],
               });
             }
             setLoading(false);
           },
           (err) => {
             console.warn("Failed to subscribe user doc", err);
-            setUser({ uid: fbUser.uid, email: fbUser.email, isPremium: false });
+            setUser({
+              uid: fbUser.uid,
+              email: fbUser.email,
+              isPremium: false,
+              eventTickets: [],
+            });
             setLoading(false);
           },
         );

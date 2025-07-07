@@ -6,6 +6,7 @@ export const SAMPLE_EVENTS = [
     category: 'Flirty',
     description: 'Wild dares, real connections.',
     image: require('../assets/user2.jpg'),
+    ticketed: true,
   },
   {
     id: 2,
@@ -14,6 +15,7 @@ export const SAMPLE_EVENTS = [
     category: 'Tournaments',
     description: 'Fast 1v1 matches + Boosts.',
     image: require('../assets/user3.jpg'),
+    ticketed: true,
   },
   {
     id: 3,

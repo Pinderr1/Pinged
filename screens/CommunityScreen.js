@@ -38,7 +38,7 @@ const CommunityScreen = () => {
   const skeletonColor = darkMode ? '#555' : '#ddd';
   const local = getStyles(theme, skeletonColor);
   const navigation = useNavigation();
-  const { user } = useUser();
+  const { user, updateUser } = useUser();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [joinedEvents, setJoinedEvents] = useState([]);
@@ -98,8 +98,51 @@ const CommunityScreen = () => {
     : events.filter((e) => e.category === activeFilter);
   const displayEvents = filteredEvents.slice(0, 4);
 
-  const toggleJoin = async (id) => {
+  const redeemTicket = async (eventId) => {
+    if (!user?.uid) return;
+    updateUser({ eventTickets: [ ...(user.eventTickets || []), eventId ] });
+    try {
+      await firebase.firestore().collection('users').doc(user.uid).update({
+        eventTickets: firebase.firestore.FieldValue.arrayUnion(eventId),
+      });
+    } catch (e) {
+      console.warn('Failed to redeem ticket', e);
+    }
+  };
+
+  const toggleJoin = async (event) => {
+    const id = event.id;
     const isJoined = joinedEvents.includes(id);
+
+    const completeJoin = () => {
+      setJoinedEvents(
+        isJoined ? joinedEvents.filter((e) => e !== id) : [...joinedEvents, id]
+      );
+      Alert.alert(
+        isJoined ? 'RSVP Cancelled' : 'Event Joined',
+        isJoined ? 'You left the event.' : 'You’re in! XP applied.'
+      );
+    };
+
+    if (!isJoined && event.ticketed && !user?.isPremium && !(user.eventTickets || []).includes(id)) {
+      Alert.alert(
+        'Ticket Required',
+        'Redeem a ticket or upgrade to Premium to join.',
+        [
+          {
+            text: 'Redeem Ticket',
+            onPress: async () => {
+              await redeemTicket(id);
+              completeJoin();
+            },
+          },
+          { text: 'Upgrade', onPress: () => navigation.navigate('Premium') },
+          { text: 'Cancel', style: 'cancel' },
+        ]
+      );
+      return;
+    }
+
     if (!isJoined && joinedEvents.length === 0) {
       setFirstJoin(true);
       if (user?.uid && !(user.badges || []).includes('socialButterfly')) {
@@ -116,13 +159,7 @@ const CommunityScreen = () => {
         }
       }
     }
-    setJoinedEvents(
-      isJoined ? joinedEvents.filter((e) => e !== id) : [...joinedEvents, id]
-    );
-    Alert.alert(
-      isJoined ? 'RSVP Cancelled' : 'Event Joined',
-      isJoined ? 'You left the event.' : 'You’re in! XP applied.'
-    );
+    completeJoin();
   };
 
   const handleRefresh = async () => {
@@ -149,7 +186,7 @@ const CommunityScreen = () => {
         key={event.id}
         event={event}
         joined={isJoined}
-        onJoin={() => toggleJoin(event.id)}
+        onJoin={() => toggleJoin(event)}
       />
     );
   };
@@ -419,7 +456,7 @@ const CommunityScreen = () => {
               text={optionsEvent?.isJoined ? 'Cancel RSVP' : 'Join Event'}
               onPress={() => {
                 if (optionsEvent) {
-                  toggleJoin(optionsEvent.event.id);
+                  toggleJoin(optionsEvent.event);
                 }
                 setShowOptionsModal(false);
               }}

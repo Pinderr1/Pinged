@@ -22,8 +22,13 @@ const EventFlyer = ({ event, onJoin, joined, style }) => {
       <View style={styles.details}>
         <View style={styles.headerRow}>
           <Text style={styles.title}>{event.title}</Text>
-          <View style={[styles.dateChip, { backgroundColor: theme.accent }]}>
-            <Text style={styles.dateText}>{event.time}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {event.ticketed && (
+              <Text style={styles.ticketIcon}>🎟️</Text>
+            )}
+            <View style={[styles.dateChip, { backgroundColor: theme.accent }]}>
+              <Text style={styles.dateText}>{event.time}</Text>
+            </View>
           </View>
         </View>
         <Text style={styles.desc}>{event.description}</Text>
@@ -83,6 +88,9 @@ const getStyles = (theme, darkMode) =>
       color: theme.text,
       flex: 1,
       marginRight: 8,
+    },
+    ticketIcon: {
+      marginRight: 4,
     },
     dateChip: {
       paddingHorizontal: 8,
