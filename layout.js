@@ -23,7 +23,8 @@ export const SPACING = {
   XXXL: 32,
 };
 
-export const HEADER_HEIGHT = 60;
+// Reduced default header height for a more compact layout
+export const HEADER_HEIGHT = 40;
 export const HEADER_SPACING = Platform.OS === 'ios'
   ? HEADER_HEIGHT + 40
   : HEADER_HEIGHT + 20;

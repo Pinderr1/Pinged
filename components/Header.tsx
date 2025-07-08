@@ -41,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({ showLogoOnly = false }) => {
                 onPress={() => setMenuOpen((v) => !v)}
                 style={styles.iconWrapper}
               >
-                <Ionicons name="menu" size={28} color={theme.text} />
+                <Ionicons name="menu" size={24} color={theme.text} />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => navigation.navigate('Notifications')}
@@ -115,25 +115,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconWrapper: {
-    width: 40,
-    height: 40,
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
   icon: {
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     resizeMode: 'contain',
   },
   logo: {
-    width: 40,
-    height: 40,
+    width: 32,
+    height: 32,
     resizeMode: 'contain',
   },
   bellWrapper: {
     position: 'relative',
-    width: 40,
-    height: 40,
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
