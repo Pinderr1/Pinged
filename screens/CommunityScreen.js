@@ -217,7 +217,12 @@ const CommunityScreen = () => {
         <Text style={local.header}>🎉 Community Board</Text>
 
         {/* Filters */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          style={{ paddingHorizontal: 16, marginBottom: 16 }}
+        >
           {FILTERS.map((f, i) => (
             <TouchableOpacity
               key={i}

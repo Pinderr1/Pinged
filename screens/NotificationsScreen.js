@@ -149,6 +149,7 @@ const NotificationsScreen = ({ navigation }) => {
     <GradientBackground style={styles.container}>
       <Header navigation={navigation} />
       <ScrollView
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
           paddingTop: HEADER_SPACING,
           padding: 20,

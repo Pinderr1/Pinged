@@ -122,6 +122,7 @@ const HomeScreen = ({ navigation }) => {
       <ScreenContainer>
         <Header showLogoOnly />
         <ScrollView
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={[
             local.container,
             { paddingTop: HEADER_SPACING, paddingBottom: 100 },
