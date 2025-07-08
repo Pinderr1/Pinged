@@ -18,7 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Easing } from 'react-native';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
-import { HEADER_SPACING } from '../layout';
+import { HEADER_SPACING, SPACING } from '../layout';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
@@ -881,9 +881,9 @@ const getStyles = (theme) =>
     borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: '#fff',
-    elevation: 8,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
@@ -902,8 +902,8 @@ const getStyles = (theme) =>
     bottom: BUTTON_ROW_BOTTOM + 80,
     left: 0,
     right: 0,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: SPACING.XL,
+    paddingVertical: SPACING.MD,
   },
   distanceBadge: {
     alignSelf: 'flex-start',
@@ -912,7 +912,7 @@ const getStyles = (theme) =>
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
-    marginBottom: 4,
+    marginBottom: SPACING.XS,
     fontSize: 12,
     fontFamily: FONT_FAMILY.medium,
   },
@@ -954,7 +954,7 @@ const getStyles = (theme) =>
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    paddingHorizontal: 20,
+    paddingHorizontal: SPACING.XL,
   },
   circleButton: {
     width: 60,
@@ -962,7 +962,7 @@ const getStyles = (theme) =>
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
+    elevation: 2,
   },
   badge: {
     position: 'absolute',
@@ -995,7 +995,7 @@ const getStyles = (theme) =>
     color: '#f87171',
   },
   boostBadge: {
-    marginLeft: 8,
+    marginLeft: SPACING.SM,
     backgroundColor: theme.accent,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -1028,17 +1028,17 @@ const getStyles = (theme) =>
   },
   detailsContainer: {
     backgroundColor: theme.card,
-    padding: 20,
+    padding: SPACING.XL,
     borderRadius: 12,
     width: '80%',
   },
   bioText: {
     color: theme.text,
-    marginTop: 10,
+    marginTop: SPACING.MD,
     textAlign: 'center',
   },
   playIntro: {
-    marginTop: 10,
+    marginTop: SPACING.MD,
     alignSelf: 'center',
   },
   fireworksOverlay: {
@@ -1051,7 +1051,7 @@ const getStyles = (theme) =>
     fontSize: 22,
     fontFamily: FONT_FAMILY.bold,
     color: '#fff',
-    marginTop: 20,
+    marginTop: SPACING.XL,
   },
   suggestText: {
     fontSize: 14,

@@ -13,6 +13,16 @@ export const BUTTON_STYLE = {
   borderRadius: 8,
 };
 
+export const SPACING = {
+  XS: 4,
+  SM: 8,
+  MD: 12,
+  LG: 16,
+  XL: 20,
+  XXL: 24,
+  XXXL: 32,
+};
+
 export const HEADER_HEIGHT = 60;
 export const HEADER_SPACING = Platform.OS === 'ios'
   ? HEADER_HEIGHT + 40

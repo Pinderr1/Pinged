@@ -67,10 +67,10 @@ export const CARD_STYLE = {
   borderRadius: 16,
   padding: 16,
   shadowColor: '#000',
-  shadowOpacity: 0.1,
+  shadowOpacity: 0.05,
   shadowOffset: { width: 0, height: 2 },
   shadowRadius: 4,
-  elevation: 3,
+  elevation: 2,
 };
 
 const styles = StyleSheet.create({
