@@ -33,6 +33,8 @@ import MultiSelectList from '../components/MultiSelectList';
 import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { allGames } from '../data/games';
+import { BADGE_LIST } from '../data/badges';
+import { icebreakers } from '../data/prompts';
 import { logDev } from '../utils/logger';
 import LocationInfoModal from '../components/LocationInfoModal';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
@@ -42,14 +44,26 @@ const questions = [
   { key: 'avatar', label: 'Upload your photo' },
   { key: 'voiceIntro', label: 'Record a quick voice intro' },
   { key: 'displayName', label: 'What’s your name?' },
-  { key: 'age', label: 'How old are you?' },
-  { key: 'genderInfo', label: 'Gender & preference' },
+  { key: 'basicInfo', label: 'Age & gender' },
   { key: 'bio', label: 'Write a short bio' },
+  { key: 'status', label: 'Your current mood' },
+  { key: 'prompt1', label: 'Prompt #1 response' },
+  { key: 'prompt2', label: 'Prompt #2 response' },
+  { key: 'personalityTags', label: 'Select personality tags' },
+  { key: 'badgePrefs', label: 'Choose badge preferences' },
   { key: 'location', label: 'Where are you located?' },
   { key: 'favoriteGames', label: 'Select your favorite games' },
 ];
 
-const requiredFields = ['avatar', 'displayName', 'age'];
+const PERSONALITY_OPTIONS = [
+  'Friendly',
+  'Competitive',
+  'Chill',
+  'Adventurous',
+  'Thoughtful',
+];
+
+const requiredFields = ['avatar', 'displayName', 'basicInfo'];
 
 export default function OnboardingScreen() {
   const { darkMode, theme } = useTheme();
@@ -68,6 +82,11 @@ export default function OnboardingScreen() {
     gender: '',
     genderPref: '',
     bio: '',
+    status: '',
+    prompt1: '',
+    prompt2: '',
+    personalityTags: [],
+    badgePrefs: [],
     location: '',
     favoriteGames: [],
   });
@@ -95,17 +114,6 @@ export default function OnboardingScreen() {
       }).start();
     });
   };
-  const [answers, setAnswers] = useState({
-    avatar: '',
-    voiceIntro: '',
-    displayName: '',
-    age: '',
-    gender: '',
-    genderPref: '',
-    bio: '',
-    location: '',
-    favoriteGames: [],
-  });
   const defaultGameOptions = allGames.map((g) => ({
     label: g.title,
     value: g.title,
@@ -149,7 +157,12 @@ export default function OnboardingScreen() {
   const validateField = () => {
     const value = answers[currentField];
     if (!requiredFields.includes(currentField)) return true;
-    if (currentField === 'age') return /^\d+$/.test(value) && parseInt(value, 10) >= 18;
+    if (currentField === 'basicInfo')
+      return (
+        /^\d+$/.test(answers.age) &&
+        parseInt(answers.age, 10) >= 18 &&
+        !!answers.gender
+      );
     if (currentField === 'avatar') return !!value;
     return value && value.toString().trim().length > 0;
   };
@@ -208,6 +221,13 @@ export default function OnboardingScreen() {
         age: parseInt(answers.age, 10) || null,
         gender: sanitizeText(answers.gender),
         genderPref: sanitizeText(answers.genderPref),
+        status: sanitizeText(answers.status.trim()),
+        prompts: [
+          sanitizeText(answers.prompt1.trim()),
+          sanitizeText(answers.prompt2.trim()),
+        ],
+        personalityTags: answers.personalityTags.map((t) => sanitizeText(t)),
+        badgePrefs: answers.badgePrefs.map((b) => sanitizeText(b)),
         location: sanitizeText(answers.location),
         favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
         bio: sanitizeText(answers.bio.trim()),
@@ -409,32 +429,28 @@ export default function OnboardingScreen() {
       );
     }
 
-    if (currentField === 'age') {
+    if (currentField === 'basicInfo') {
       const ageItems = Array.from({ length: 83 }, (_, i) => i + 18).map((n) => ({
-        label: `${n}`, value: `${n}`,
+        label: `${n}`,
+        value: `${n}`,
       }));
       return (
-        <RNPickerSelect
-          onValueChange={(val) => {
-            Haptics.selectionAsync().catch(() => {});
-            setAnswers((prev) => ({ ...prev, age: val }));
-          }}
-          value={answers.age}
-          placeholder={{ label: 'Select age', value: null }}
-          useNativeAndroidPickerStyle={false}
-          style={{
-            inputIOS: styles.input,
-            inputAndroid: styles.input,
-            placeholder: { color: theme.textSecondary },
-          }}
-          items={ageItems}
-        />
-      );
-    }
-
-    if (currentField === 'genderInfo') {
-      return (
         <View>
+          <RNPickerSelect
+            onValueChange={(val) => {
+              Haptics.selectionAsync().catch(() => {});
+              setAnswers((prev) => ({ ...prev, age: val }));
+            }}
+            value={answers.age}
+            placeholder={{ label: 'Select age', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: styles.input,
+              inputAndroid: styles.input,
+              placeholder: { color: theme.textSecondary },
+            }}
+            items={ageItems}
+          />
           <RNPickerSelect
             onValueChange={(val) => {
               Haptics.selectionAsync().catch(() => {});
@@ -444,8 +460,8 @@ export default function OnboardingScreen() {
             placeholder={{ label: 'Select gender', value: null }}
             useNativeAndroidPickerStyle={false}
             style={{
-              inputIOS: styles.input,
-              inputAndroid: styles.input,
+              inputIOS: [styles.input, { marginTop: 20 }],
+              inputAndroid: [styles.input, { marginTop: 20 }],
               placeholder: { color: darkMode ? '#999' : '#aaa' },
             }}
             items={pickerFields.gender}
@@ -477,6 +493,34 @@ export default function OnboardingScreen() {
           selected={answers.favoriteGames}
           onChange={(vals) =>
             setAnswers((prev) => ({ ...prev, favoriteGames: vals }))
+          }
+          theme={theme}
+        />
+      );
+    }
+
+    if (currentField === 'personalityTags') {
+      const options = PERSONALITY_OPTIONS.map((t) => ({ label: t, value: t }));
+      return (
+        <MultiSelectList
+          options={options}
+          selected={answers.personalityTags}
+          onChange={(vals) =>
+            setAnswers((prev) => ({ ...prev, personalityTags: vals }))
+          }
+          theme={theme}
+        />
+      );
+    }
+
+    if (currentField === 'badgePrefs') {
+      const options = BADGE_LIST.map((b) => ({ label: b.title, value: b.id }));
+      return (
+        <MultiSelectList
+          options={options}
+          selected={answers.badgePrefs}
+          onChange={(vals) =>
+            setAnswers((prev) => ({ ...prev, badgePrefs: vals }))
           }
           theme={theme}
         />
@@ -520,6 +564,22 @@ export default function OnboardingScreen() {
       );
     }
 
+    if (currentField === 'prompt1' || currentField === 'prompt2') {
+      const idx = currentField === 'prompt1' ? 0 : 1;
+      return (
+        <TextInput
+          style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
+          value={answers[currentField]}
+          onChangeText={(text) =>
+            setAnswers((prev) => ({ ...prev, [currentField]: text }))
+          }
+          placeholder={icebreakers[idx]}
+          placeholderTextColor={darkMode ? '#999' : '#aaa'}
+          multiline
+        />
+      );
+    }
+
     return (
       <TextInput
         style={styles.input}
@@ -529,7 +589,7 @@ export default function OnboardingScreen() {
         }
         placeholder={questions[step].label}
         placeholderTextColor={darkMode ? '#999' : '#aaa'}
-        keyboardType={currentField === 'age' ? 'numeric' : 'default'}
+        keyboardType="default"
         autoCapitalize="none"
       />
     );
