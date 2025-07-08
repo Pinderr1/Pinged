@@ -39,6 +39,10 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `expoPushToken` (string)
 - `online` (boolean)
 - `lastOnline` (timestamp) – last presence update time
+- `preset` (string) – selected theme preset id
+- `mood` (string)
+- `status` (string)
+- `theme` (map) – `{ accent, gradientStart, gradientEnd }`
 - `badges` (array of string) – earned badge IDs
 - `visibility` (string) – `standard` or `incognito`
 - `discoveryEnabled` (boolean) – hide from swipe if false

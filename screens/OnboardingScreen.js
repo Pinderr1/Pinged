@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
+import { presets } from '../data/presets';
 import firebase from '../firebase';
 import { uploadAvatarAsync, uploadIntroAsync } from '../utils/upload';
 import PropTypes from 'prop-types';
@@ -39,6 +40,7 @@ import useVoiceRecorder from '../hooks/useVoiceRecorder';
 import useVoicePlayback from '../hooks/useVoicePlayback';
 
 const questions = [
+  { key: 'preset', label: 'Pick a preset' },
   { key: 'avatar', label: 'Upload your photo' },
   { key: 'voiceIntro', label: 'Record a quick voice intro' },
   { key: 'displayName', label: 'What’s your name?' },
@@ -49,7 +51,7 @@ const questions = [
   { key: 'favoriteGames', label: 'Select your favorite games' },
 ];
 
-const requiredFields = ['avatar', 'displayName', 'age'];
+const requiredFields = ['preset', 'avatar', 'displayName', 'age'];
 
 export default function OnboardingScreen() {
   const { darkMode, theme } = useTheme();
@@ -61,6 +63,7 @@ export default function OnboardingScreen() {
 
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
   const [answers, setAnswers] = useState({
+    preset: presets[0].id,
     avatar: '',
     voiceIntro: '',
     displayName: '',
@@ -95,17 +98,6 @@ export default function OnboardingScreen() {
       }).start();
     });
   };
-  const [answers, setAnswers] = useState({
-    avatar: '',
-    voiceIntro: '',
-    displayName: '',
-    age: '',
-    gender: '',
-    genderPref: '',
-    bio: '',
-    location: '',
-    favoriteGames: [],
-  });
   const defaultGameOptions = allGames.map((g) => ({
     label: g.title,
     value: g.title,
@@ -151,6 +143,7 @@ export default function OnboardingScreen() {
     if (!requiredFields.includes(currentField)) return true;
     if (currentField === 'age') return /^\d+$/.test(value) && parseInt(value, 10) >= 18;
     if (currentField === 'avatar') return !!value;
+    if (currentField === 'preset') return !!value;
     return value && value.toString().trim().length > 0;
   };
 
@@ -197,6 +190,7 @@ export default function OnboardingScreen() {
       }
 
       const user = firebase.auth().currentUser;
+      const preset = presets.find((p) => p.id === answers.preset);
       const profile = {
         uid: user.uid,
         email: user.email,
@@ -211,6 +205,16 @@ export default function OnboardingScreen() {
         location: sanitizeText(answers.location),
         favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
         bio: sanitizeText(answers.bio.trim()),
+        preset: answers.preset,
+        mood: preset?.mood,
+        status: preset?.status,
+        theme: preset
+          ? {
+              accent: preset.accent,
+              gradientStart: preset.gradientStart,
+              gradientEnd: preset.gradientEnd,
+            }
+          : undefined,
         onboardingComplete: true,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
@@ -334,6 +338,37 @@ export default function OnboardingScreen() {
         { label: 'Any', value: 'Any' },
       ],
     };
+
+    if (currentField === 'preset') {
+      return (
+        <View style={styles.presetContainer}>
+          {presets.map((p) => (
+            <TouchableOpacity
+              key={p.id}
+              onPress={() => {
+                Haptics.selectionAsync().catch(() => {});
+                setAnswers((prev) => ({ ...prev, preset: p.id }));
+              }}
+              style={[
+                styles.presetOption,
+                answers.preset === p.id && {
+                  backgroundColor: p.accent,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.presetLabel,
+                  answers.preset === p.id && { color: '#fff' },
+                ]}
+              >
+                {p.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      );
+    }
 
     if (currentField === 'avatar') {
       return (
@@ -744,6 +779,25 @@ const getStyles = (theme) => {
       color: accent,
       fontSize: FONT_SIZES.MD,
       textDecorationLine: 'underline',
+    },
+    presetContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      flexWrap: 'wrap',
+      marginTop: 10,
+      marginBottom: 10,
+    },
+    presetOption: {
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: accent,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      margin: 4,
+    },
+    presetLabel: {
+      color: textColor,
+      fontSize: FONT_SIZES.MD,
     },
   });
 };

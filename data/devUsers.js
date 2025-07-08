@@ -9,6 +9,10 @@ export const devUsers = [
     gender: 'Other',
     genderPref: 'Any',
     location: 'Localhost',
+    preset: 'chill',
+    mood: 'Relaxed',
+    status: 'Looking to hang',
+    theme: { accent: '#4ADE80', gradientStart: '#34D399', gradientEnd: '#059669' },
   },
   {
     id: '__devUser2',
@@ -20,6 +24,10 @@ export const devUsers = [
     gender: 'Other',
     genderPref: 'Any',
     location: 'Localhost',
+    preset: 'hype',
+    mood: 'Energetic',
+    status: 'Ready to compete',
+    theme: { accent: '#F472B6', gradientStart: '#F59E0B', gradientEnd: '#EF4444' },
   },
   {
     id: '__devUser3',
@@ -31,5 +39,9 @@ export const devUsers = [
     gender: 'Other',
     genderPref: 'Any',
     location: 'Localhost',
+    preset: 'focus',
+    mood: 'Serious',
+    status: 'Training mode',
+    theme: { accent: '#60A5FA', gradientStart: '#3B82F6', gradientEnd: '#1E40AF' },
   },
 ];
