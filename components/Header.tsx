@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { SafeAreaView, View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -24,7 +25,10 @@ const Header: React.FC<HeaderProps> = ({ showLogoOnly = false }) => {
   ];
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.headerBackground }]}>
+    <SafeAreaView
+      edges={['top']}
+      style={[styles.safeArea, { backgroundColor: theme.headerBackground }]}
+    >
       <View style={styles.container}>
         {showLogoOnly ? (
           <Image source={require('../assets/logo.png')} style={styles.logo} />
