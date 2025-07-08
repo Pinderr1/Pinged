@@ -27,6 +27,9 @@ const EventFlyer = ({ event, onJoin, joined, style }) => {
           </View>
         </View>
         <Text style={styles.desc}>{event.description}</Text>
+        {event.ticketed && (
+          <Text style={styles.ticketed}>🎟 Ticketed Event</Text>
+        )}
         <GradientButton
           text={joined ? 'RSVP\'d' : 'RSVP'}
           onPress={onJoin}
@@ -97,6 +100,11 @@ const getStyles = (theme, darkMode) =>
       marginTop: 4,
       color: theme.textSecondary,
       fontSize: 13,
+    },
+    ticketed: {
+      marginTop: 2,
+      color: theme.accent,
+      fontSize: 12,
     },
   });
 
