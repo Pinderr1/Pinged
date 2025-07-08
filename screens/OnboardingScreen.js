@@ -10,6 +10,7 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+import LottieView from 'lottie-react-native';
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import firebase from '../firebase';
@@ -84,25 +85,18 @@ export default function OnboardingScreen() {
   );
 
   const [step, setStep] = useState(0);
-  const cardOpacity = useRef(new Animated.Value(1)).current;
+  const [transitioning, setTransitioning] = useState(false);
   const progressAnim = useRef(new Animated.Value(1 / questions.length)).current;
+  const transitionAnim = useRef(null);
 
   const animateStepChange = (newStep) => {
-    Animated.timing(cardOpacity, {
-      toValue: 0,
-      duration: 300,
-      easing: Easing.inOut(Easing.ease),
-      useNativeDriver: true,
-    }).start(() => {
+    setTransitioning(true);
+    transitionAnim.current?.reset();
+    transitionAnim.current?.play();
+    setTimeout(() => {
       setStep(newStep);
-      cardOpacity.setValue(0);
-      Animated.timing(cardOpacity, {
-        toValue: 1,
-        duration: 300,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-    });
+      setTransitioning(false);
+    }, 600);
   };
   const defaultGameOptions = allGames.map((g) => ({
     label: g.title,
@@ -570,6 +564,17 @@ export default function OnboardingScreen() {
       />
     );
   };
+
+  const renderDots = () => (
+    <View style={styles.dotsRow}>
+      {questions.map((_, idx) => (
+        <View
+          key={idx}
+          style={[styles.dot, idx === step && styles.activeDot]}
+        />
+      ))}
+    </View>
+  );
   return (
     <GradientBackground style={styles.container}>
       <Header showLogoOnly />
@@ -590,10 +595,24 @@ export default function OnboardingScreen() {
           />
         </View>
 
-        <Animated.View style={[styles.card, { opacity: cardOpacity }]}>
+        {renderDots()}
+
+        <View style={styles.card}>
           <Text style={styles.questionText}>{questions[step].label}</Text>
           {renderInput()}
-        </Animated.View>
+        </View>
+
+        {transitioning && (
+          <View style={styles.transitionOverlay} pointerEvents="none">
+            <LottieView
+              ref={transitionAnim}
+              source={require('../assets/hearts.json')}
+              autoPlay
+              loop={false}
+              style={styles.transitionAnimation}
+            />
+          </View>
+        )}
 
         <View style={styles.buttonRow}>
           {step > 0 && (
@@ -780,6 +799,34 @@ const getStyles = (theme) => {
       color: accent,
       fontSize: FONT_SIZES.MD,
       textDecorationLine: 'underline',
+    },
+    transitionOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#0004',
+    },
+    transitionAnimation: {
+      width: 200,
+      height: 200,
+    },
+    dotsRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      marginBottom: 20,
+    },
+    dot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: theme.card,
+      marginHorizontal: 4,
+    },
+    activeDot: {
+      backgroundColor: accent,
+      width: 12,
+      height: 12,
+      borderRadius: 6,
     },
   });
 };
