@@ -3,6 +3,7 @@ import { Text, View, TextInput, Switch, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as WebBrowser from 'expo-web-browser';
 import ScreenContainer from '../components/ScreenContainer';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
 import getStyles from '../styles';
@@ -83,7 +84,8 @@ const SettingsScreen = ({ navigation }) => {
   return (
     <GradientBackground style={{ flex: 1 }}>
       <ScreenContainer scroll contentContainerStyle={styles.container}>
-        <Header />
+        <SafeKeyboardView style={{ flex: 1 }}>
+          <Header />
 
       <Text style={[styles.logoText, { color: theme.text, marginBottom: 10 }]}>
         Settings
@@ -363,6 +365,7 @@ const SettingsScreen = ({ navigation }) => {
           <GradientButton text="Log Out" onPress={handleLogout} />
         </>
       )}
+        </SafeKeyboardView>
       </ScreenContainer>
     </GradientBackground>
   );

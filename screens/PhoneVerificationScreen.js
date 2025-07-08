@@ -4,6 +4,7 @@ import { View, TextInput, Text } from "react-native";
 import GradientBackground from "../components/GradientBackground";
 import GradientButton from "../components/GradientButton";
 import ScreenContainer from "../components/ScreenContainer";
+import SafeKeyboardView from "../components/SafeKeyboardView";
 import Header from "../components/Header";
 import RNPickerSelect from "react-native-picker-select";
 import { auth } from "../firebase";
@@ -123,6 +124,7 @@ export default function PhoneVerificationScreen({ navigation }) {
       <ScreenContainer
         style={{ paddingTop: HEADER_SPACING, alignItems: "center" }}
       >
+        <SafeKeyboardView style={{ flex: 1 }}>
         {!showOtp && (
           <View style={{ width: "100%" }}>
             <RNPickerSelect
@@ -164,6 +166,7 @@ export default function PhoneVerificationScreen({ navigation }) {
             <GradientButton text="Verify" onPress={verifyCode} />
           </View>
         )}
+        </SafeKeyboardView>
       </ScreenContainer>
     </GradientBackground>
   );

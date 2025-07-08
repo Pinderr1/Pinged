@@ -18,6 +18,7 @@ import GradientButton from '../components/GradientButton';
 import Card, { CARD_STYLE } from '../components/Card';
 import EventFlyer from '../components/EventFlyer';
 import ScreenContainer from '../components/ScreenContainer';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
@@ -325,7 +326,7 @@ const CommunityScreen = () => {
       {/* Host Modal */}
       <Modal visible={showHostModal} transparent animationType="fade">
         <View style={local.modalBackdrop}>
-          <View style={local.modalCard}>
+          <SafeKeyboardView style={local.modalCard}>
             <Text style={local.modalTitle}>Host an Event</Text>
             <TextInput
               placeholder="Event Title"
@@ -374,14 +375,14 @@ const CommunityScreen = () => {
             <TouchableOpacity onPress={() => setShowHostModal(false)} style={{ marginTop: 10 }}>
               <Text style={{ color: theme.accent }}>Cancel</Text>
             </TouchableOpacity>
-          </View>
+          </SafeKeyboardView>
         </View>
       </Modal>
 
       {/* Post Modal */}
       <Modal visible={showPostModal} transparent animationType="fade">
         <View style={local.modalBackdrop}>
-          <View style={local.modalCard}>
+          <SafeKeyboardView style={local.modalCard}>
             <Text style={local.modalTitle}>Create Post</Text>
             <TextInput
               placeholder="Title"
@@ -421,7 +422,7 @@ const CommunityScreen = () => {
             <TouchableOpacity onPress={() => setShowPostModal(false)} style={{ marginTop: 10 }}>
               <Text style={{ color: theme.accent }}>Cancel</Text>
             </TouchableOpacity>
-          </View>
+          </SafeKeyboardView>
         </View>
       </Modal>
 
