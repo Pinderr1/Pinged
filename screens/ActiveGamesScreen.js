@@ -11,7 +11,7 @@ import { games } from '../games';
 import firebase from '../firebase';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
-import { HEADER_SPACING } from '../layout';
+import { HEADER_SPACING, SPACING } from '../layout';
 import { CARD_STYLE } from '../components/Card';
 import PropTypes from 'prop-types';
 
@@ -101,16 +101,16 @@ const ActiveGamesScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   card: {
-    padding: 16,
+    padding: SPACING.LG,
     borderRadius: 16,
-    marginHorizontal: 16,
-    marginBottom: 12,
+    marginHorizontal: SPACING.LG,
+    marginBottom: SPACING.MD,
     ...CARD_STYLE,
   },
   gameText: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: SPACING.XS,
   },
   loader: {
     flex: 1,
