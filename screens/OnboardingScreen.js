@@ -1,5 +1,5 @@
 // screens/OnboardingScreen.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Animated,
-  Easing,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
@@ -27,6 +25,7 @@ import { avatarSource } from '../utils/avatar';
 import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import LottieView from 'lottie-react-native';
 import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import MultiSelectList from '../components/MultiSelectList';
@@ -75,25 +74,15 @@ export default function OnboardingScreen() {
   const { playing, playPause } = useVoicePlayback(answers.voiceIntro);
 
   const [step, setStep] = useState(0);
-  const cardOpacity = useRef(new Animated.Value(1)).current;
-  const progressAnim = useRef(new Animated.Value(1 / questions.length)).current;
+  const [transitioning, setTransitioning] = useState(false);
 
   const animateStepChange = (newStep) => {
-    Animated.timing(cardOpacity, {
-      toValue: 0,
-      duration: 300,
-      easing: Easing.inOut(Easing.ease),
-      useNativeDriver: true,
-    }).start(() => {
+    if (transitioning) return;
+    setTransitioning(true);
+    setTimeout(() => {
       setStep(newStep);
-      cardOpacity.setValue(0);
-      Animated.timing(cardOpacity, {
-        toValue: 1,
-        duration: 300,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-    });
+      setTransitioning(false);
+    }, 700);
   };
   const [answers, setAnswers] = useState({
     avatar: '',
@@ -135,16 +124,6 @@ export default function OnboardingScreen() {
   }, []);
 
   const currentField = questions[step].key;
-  const progress = (step + 1) / questions.length;
-
-  useEffect(() => {
-    Animated.timing(progressAnim, {
-      toValue: progress,
-      duration: 400,
-      easing: Easing.inOut(Easing.ease),
-      useNativeDriver: false,
-    }).start();
-  }, [progress, progressAnim]);
 
   const validateField = () => {
     const value = answers[currentField];
@@ -540,24 +519,29 @@ export default function OnboardingScreen() {
       <SafeKeyboardView style={styles.inner}>
         <Text style={styles.progressText}>{`Step ${step + 1} of ${questions.length}`}</Text>
 
-        <View style={styles.progressContainer}>
-          <Animated.View
-            style={[
-              styles.progressBar,
-              {
-                width: progressAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0%', '100%'],
-                }),
-              },
-            ]}
-          />
+        <View style={styles.dotsContainer}>
+          {questions.map((_, i) => (
+            <View
+              key={i}
+              style={[styles.dot, i === step && styles.activeDot]}
+            />
+          ))}
         </View>
 
-        <Animated.View style={[styles.card, { opacity: cardOpacity }]}>
+        {transitioning && (
+          <View style={styles.transitionContainer} pointerEvents="none">
+            <LottieView
+              source={require('../assets/hearts.json')}
+              autoPlay
+              loop={false}
+              style={styles.transitionAnimation}
+            />
+          </View>
+        )}
+        <View style={[styles.card, transitioning && { opacity: 0 }]}>
           <Text style={styles.questionText}>{questions[step].label}</Text>
           {renderInput()}
-        </Animated.View>
+        </View>
 
         <View style={styles.buttonRow}>
           {step > 0 && (
@@ -610,16 +594,19 @@ const getStyles = (theme) => {
       textAlign: 'center',
       marginBottom: 30,
     },
-    progressContainer: {
-      height: 8,
-      width: '100%',
-      backgroundColor: theme.card,
-      borderRadius: 4,
-      overflow: 'hidden',
+    dotsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
       marginBottom: 20,
     },
-    progressBar: {
-      height: '100%',
+    dot: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: theme.card,
+      marginHorizontal: 4,
+    },
+    activeDot: {
       backgroundColor: accent,
     },
     card: {
@@ -744,6 +731,16 @@ const getStyles = (theme) => {
       color: accent,
       fontSize: FONT_SIZES.MD,
       textDecorationLine: 'underline',
+    },
+    transitionContainer: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 10,
+    },
+    transitionAnimation: {
+      width: '100%',
+      height: '100%',
     },
   });
 };
