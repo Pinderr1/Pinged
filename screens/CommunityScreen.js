@@ -38,7 +38,7 @@ const CommunityScreen = () => {
   const skeletonColor = darkMode ? '#555' : '#ddd';
   const local = getStyles(theme, skeletonColor);
   const navigation = useNavigation();
-  const { user } = useUser();
+  const { user, redeemEventTicket } = useUser();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [joinedEvents, setJoinedEvents] = useState([]);
@@ -125,6 +125,28 @@ const CommunityScreen = () => {
     );
   };
 
+  const handleJoin = (event) => {
+    const isJoined = joinedEvents.includes(event.id);
+    if (!isJoined && event.ticketed && !user?.isPremium && !(user.eventTickets || []).includes(event.id)) {
+      Alert.alert('Ticket Required', 'Redeem a ticket or upgrade to Premium.', [
+        {
+          text: 'Use Ticket',
+          onPress: () => {
+            redeemEventTicket(event.id);
+            toggleJoin(event.id);
+          },
+        },
+        {
+          text: 'Upgrade',
+          onPress: () => navigation.navigate('Premium', { context: 'paywall' }),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]);
+      return;
+    }
+    toggleJoin(event.id);
+  };
+
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
@@ -149,7 +171,7 @@ const CommunityScreen = () => {
         key={event.id}
         event={event}
         joined={isJoined}
-        onJoin={() => toggleJoin(event.id)}
+        onJoin={() => handleJoin(event)}
       />
     );
   };
@@ -419,7 +441,7 @@ const CommunityScreen = () => {
               text={optionsEvent?.isJoined ? 'Cancel RSVP' : 'Join Event'}
               onPress={() => {
                 if (optionsEvent) {
-                  toggleJoin(optionsEvent.event.id);
+                  handleJoin(optionsEvent.event);
                 }
                 setShowOptionsModal(false);
               }}

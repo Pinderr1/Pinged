@@ -5,6 +5,7 @@ export const SAMPLE_EVENTS = [
     time: 'Friday @ 9PM',
     category: 'Flirty',
     description: 'Wild dares, real connections.',
+    ticketed: true,
     image: require('../assets/user2.jpg'),
   },
   {
@@ -21,6 +22,7 @@ export const SAMPLE_EVENTS = [
     time: 'Sunday Night',
     category: 'Flirty',
     description: 'Spicy, bold, fun.',
+    ticketed: true,
     image: require('../assets/user4.jpg'),
   },
   {

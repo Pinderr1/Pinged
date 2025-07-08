@@ -29,6 +29,7 @@ export const UserProvider = ({ children }) => {
     streak: 0,
     badges: [],
     unlocks: [],
+    eventTickets: [],
   };
 
   useEffect(() => {
@@ -60,6 +61,7 @@ export const UserProvider = ({ children }) => {
                 isPremium: !!data.isPremium,
                 badges: data.badges || [],
                 unlocks: data.unlocks || [],
+                eventTickets: data.eventTickets || [],
                 ...data,
               });
             } else if (devMode) {
@@ -70,13 +72,19 @@ export const UserProvider = ({ children }) => {
                 email: fbUser.email,
                 isPremium: false,
                 unlocks: [],
+                eventTickets: [],
               });
             }
             setLoading(false);
           },
           (err) => {
             console.warn("Failed to subscribe user doc", err);
-            setUser({ uid: fbUser.uid, email: fbUser.email, isPremium: false });
+            setUser({
+              uid: fbUser.uid,
+              email: fbUser.email,
+              isPremium: false,
+              eventTickets: [],
+            });
             setLoading(false);
           },
         );
@@ -156,6 +164,23 @@ export const UserProvider = ({ children }) => {
 
   const addLoginXP = (amount = 5) => addActivityXP(amount);
 
+  const redeemEventTicket = async (eventId) => {
+    if (!user?.uid) return;
+    if ((user.eventTickets || []).includes(eventId)) return;
+    updateUser({ eventTickets: [...(user.eventTickets || []), eventId] });
+    try {
+      await firebase
+        .firestore()
+        .collection('users')
+        .doc(user.uid)
+        .update({
+          eventTickets: firebase.firestore.FieldValue.arrayUnion(eventId),
+        });
+    } catch (e) {
+      console.warn('Failed to redeem event ticket', e);
+    }
+  };
+
   const loginBonusGiven = useRef(false);
 
   useEffect(() => {
@@ -181,7 +206,15 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider
-      value={{ user, updateUser, addGameXP, addLoginXP, loginBonus, loading }}
+      value={{
+        user,
+        updateUser,
+        addGameXP,
+        addLoginXP,
+        redeemEventTicket,
+        loginBonus,
+        loading,
+      }}
     >
       {loading ? (
         <View
