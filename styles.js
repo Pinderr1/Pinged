@@ -208,7 +208,7 @@ const getStyles = (theme) =>
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'stretch',
-    paddingTop: 40
+    // Padding handled by header SafeAreaView
   },
   swipeButtons: {
     flexDirection: 'row',
