@@ -11,6 +11,82 @@ import { isAllowedDomain } from "../utils/email";
 
 const AuthContext = createContext();
 
+export const ensureUserDoc = async (fbUser) => {
+  try {
+    const ref = firebase.firestore().collection("users").doc(fbUser.uid);
+    const snap = await ref.get();
+    if (!snapshotExists(snap)) {
+      await ref.set({
+        uid: fbUser.uid,
+        email: fbUser.email,
+        displayName: fbUser.displayName || "",
+        photoURL: fbUser.photoURL || "",
+        onboardingComplete: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+  } catch (e) {
+    console.warn("Failed to ensure user doc", e);
+  }
+};
+
+export const loginWithEmail = async (email, password) => {
+  try {
+    const userCred = await firebase
+      .auth()
+      .signInWithEmailAndPassword(email.trim(), password);
+    await ensureUserDoc(userCred.user);
+  } catch (e) {
+    console.warn('Login failed', e);
+    Toast.show({ type: 'error', text1: 'Login failed' });
+    throw e;
+  }
+};
+
+export const signUpWithEmail = async (email, password) => {
+  if (!isAllowedDomain(email)) {
+    throw new Error('Email domain not supported');
+  }
+  try {
+    const userCred = await firebase
+      .auth()
+      .createUserWithEmailAndPassword(email.trim(), password);
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const matchKeys = keys.filter((k) => k.startsWith('chatMatches'));
+      if (matchKeys.length) await AsyncStorage.multiRemove(matchKeys);
+    } catch (e) {
+      console.warn('Failed to clear stored matches', e);
+    }
+    await firebase
+      .firestore()
+      .collection('users')
+      .doc(userCred.user.uid)
+      .set({
+        uid: userCred.user.uid,
+        email: userCred.user.email,
+        displayName: userCred.user.displayName || '',
+        photoURL: userCred.user.photoURL || '',
+        onboardingComplete: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+  } catch (e) {
+    console.warn('Signup failed', e);
+    Toast.show({ type: 'error', text1: 'Signup failed' });
+    throw e;
+  }
+};
+
+export const createLoginWithGoogle = (promptAsync) => async () => {
+  try {
+    return await promptAsync({ useProxy: false, prompt: "select_account" });
+  } catch (e) {
+    console.warn('Google login failed', e);
+    Toast.show({ type: 'error', text1: 'Login failed' });
+    throw e;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,75 +100,7 @@ export const AuthProvider = ({ children }) => {
     clientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
     redirectUri,
   });
-
-  const ensureUserDoc = async (fbUser) => {
-    try {
-      const ref = firebase.firestore().collection("users").doc(fbUser.uid);
-      const snap = await ref.get();
-      if (!snapshotExists(snap)) {
-        await ref.set({
-          uid: fbUser.uid,
-          email: fbUser.email,
-          displayName: fbUser.displayName || "",
-          photoURL: fbUser.photoURL || "",
-          onboardingComplete: false,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-      }
-    } catch (e) {
-      console.warn("Failed to ensure user doc", e);
-    }
-  };
-
-  const loginWithEmail = async (email, password) => {
-    try {
-      const userCred = await firebase
-        .auth()
-        .signInWithEmailAndPassword(email.trim(), password);
-      await ensureUserDoc(userCred.user);
-    } catch (e) {
-      console.warn('Login failed', e);
-      Toast.show({ type: 'error', text1: 'Login failed' });
-      throw e;
-    }
-  };
-
-  const signUpWithEmail = async (email, password) => {
-    if (!isAllowedDomain(email)) {
-      throw new Error('Email domain not supported');
-    }
-    try {
-      const userCred = await firebase
-        .auth()
-        .createUserWithEmailAndPassword(email.trim(), password);
-      try {
-        const keys = await AsyncStorage.getAllKeys();
-        const matchKeys = keys.filter((k) => k.startsWith('chatMatches'));
-        if (matchKeys.length) await AsyncStorage.multiRemove(matchKeys);
-      } catch (e) {
-        console.warn('Failed to clear stored matches', e);
-      }
-      await firebase
-        .firestore()
-        .collection('users')
-        .doc(userCred.user.uid)
-        .set({
-          uid: userCred.user.uid,
-          email: userCred.user.email,
-          displayName: userCred.user.displayName || '',
-          photoURL: userCred.user.photoURL || '',
-          onboardingComplete: false,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-    } catch (e) {
-      console.warn('Signup failed', e);
-      Toast.show({ type: 'error', text1: 'Signup failed' });
-      throw e;
-    }
-  };
-
-  const loginWithGoogle = () =>
-    promptAsync({ useProxy: false, prompt: "select_account" });
+  const loginWithGoogle = createLoginWithGoogle(promptAsync);
 
   const logout = async () => {
     try {
