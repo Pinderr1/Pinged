@@ -110,7 +110,7 @@ service cloud.firestore {
     }
 
     match /matchHistory/{historyId} {
-      allow read: if signedIn();
+      allow read: if request.auth.uid in [resource.data.player1, resource.data.player2];
     }
 
     // List of available games for onboarding
