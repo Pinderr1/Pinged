@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, Alert } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import AuthForm from '../components/AuthForm';
 import ScreenContainer from '../components/ScreenContainer';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import Header from '../components/Header';
 import { HEADER_SPACING } from '../layout';
 import firebase from '../firebase';
@@ -103,7 +104,8 @@ export default function EmailAuthScreen({ route, navigation }) {
   return (
     <GradientBackground>
       <Header showLogoOnly />
-      <ScreenContainer scroll contentContainerStyle={[styles.container, { paddingTop: HEADER_SPACING }]}>
+      <SafeKeyboardView style={{ flex: 1 }}>
+        <ScreenContainer scroll contentContainerStyle={[styles.container, { paddingTop: HEADER_SPACING }]}>
         <Text style={[styles.logoText, { color: theme.text }]}>
           {mode === 'signup' ? 'Create Account' : 'Log In'}
         </Text>
@@ -131,6 +133,7 @@ export default function EmailAuthScreen({ route, navigation }) {
         )}
         </AuthForm>
       </ScreenContainer>
+      </SafeKeyboardView>
     </GradientBackground>
   );
 }

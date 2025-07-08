@@ -10,6 +10,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import * as WebBrowser from 'expo-web-browser';
 import ScreenContainer from '../components/ScreenContainer';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
 import getStyles from '../styles';
@@ -94,13 +95,14 @@ const SettingsScreen = ({ navigation }) => {
 
   return (
     <GradientBackground style={{ flex: 1 }}>
-      <ScreenContainer
-        scroll
-        contentContainerStyle={[
-          styles.container,
-          { paddingTop: HEADER_SPACING, paddingHorizontal: SPACING.LG },
-        ]}
-      >
+      <SafeKeyboardView style={{ flex: 1 }}>
+        <ScreenContainer
+          scroll
+          contentContainerStyle={[
+            styles.container,
+            { paddingTop: HEADER_SPACING, paddingHorizontal: SPACING.LG },
+          ]}
+        >
         <Header />
 
         <Text
@@ -415,6 +417,7 @@ const SettingsScreen = ({ navigation }) => {
           </View>
         )}
       </ScreenContainer>
+      </SafeKeyboardView>
     </GradientBackground>
   );
 };

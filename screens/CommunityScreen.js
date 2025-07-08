@@ -18,6 +18,7 @@ import GradientButton from '../components/GradientButton';
 import Card, { CARD_STYLE } from '../components/Card';
 import EventFlyer from '../components/EventFlyer';
 import ScreenContainer from '../components/ScreenContainer';
+import SafeKeyboardView from '../components/SafeKeyboardView';
 import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
@@ -207,11 +208,12 @@ const CommunityScreen = () => {
   return (
     <View style={{ flex: 1, backgroundColor: darkMode ? '#333' : '#fce4ec' }}>
       <Header />
-      <ScreenContainer
-        scroll
-        contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 150 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-      >
+      <SafeKeyboardView style={{ flex: 1 }}>
+        <ScreenContainer
+          scroll
+          contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 150 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        >
         <Text style={local.header}>🎉 Community Board</Text>
 
         {/* Filters */}
@@ -289,6 +291,7 @@ const CommunityScreen = () => {
           </Animated.View>
         )}
       </ScreenContainer>
+      </SafeKeyboardView>
 
       {/* Floating actions */}
       {showFabMenu && (
