@@ -95,9 +95,8 @@ service cloud.firestore {
     }
 
     match /gameStats/{statId} {
-      allow read: if signedIn() && request.auth.uid in resource.data.players;
-      allow create, update, delete: if signedIn() &&
-        request.auth.uid in request.resource.data.players;
+      allow read, write: if request.auth.uid == resource.data.userId;
+      allow create: if request.auth.uid == request.resource.data.userId;
     }
 
     match /chats/{chatId} {
