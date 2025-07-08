@@ -270,24 +270,26 @@ const CommunityScreen = () => {
       {/* Floating actions */}
       {showFabMenu && (
         <View style={local.fabMenu}>
-          <TouchableOpacity
+          <GradientButton
+            text="Host Event"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
               setShowHostModal(true);
               setShowFabMenu(false);
             }}
-          >
-            <Text style={local.fabItem}>🎤 Host Event</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+            width={140}
+            marginVertical={6}
+          />
+          <GradientButton
+            text="New Post"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
               setShowPostModal(true);
               setShowFabMenu(false);
             }}
-          >
-            <Text style={local.fabItem}>✏️ New Post</Text>
-          </TouchableOpacity>
+            width={140}
+            marginVertical={6}
+          />
         </View>
       )}
       <TouchableOpacity
@@ -441,13 +443,13 @@ const getStyles = (theme, skeletonColor) =>
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginVertical: 16,
+    marginVertical: 20,
   },
   banner: {
     marginHorizontal: 16,
     borderRadius: 16,
     padding: 16,
-    marginBottom: 20,
+    marginBottom: 28,
     ...CARD_STYLE,
   },
   bannerImage: {
@@ -473,7 +475,7 @@ const getStyles = (theme, skeletonColor) =>
     alignItems: 'center',
     borderRadius: 16,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 20,
     ...CARD_STYLE,
   },
   flyerImage: {
@@ -511,7 +513,7 @@ const getStyles = (theme, skeletonColor) =>
     borderRadius: 12,
     padding: 14,
     marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 16,
     ...CARD_STYLE,
   },
   postTitle: {
@@ -591,14 +593,11 @@ const getStyles = (theme, skeletonColor) =>
     position: 'absolute',
     bottom: 88,
     right: 20,
-    backgroundColor: theme.accent,
-    borderRadius: 8,
+    backgroundColor: theme.card,
+    borderRadius: 12,
     padding: 8,
+    elevation: 5,
   },
-  fabItem: {
-    color: '#fff',
-    paddingVertical: 6,
-  }
 });
 
 CommunityScreen.propTypes = {};
