@@ -30,7 +30,7 @@ import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { Video } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
-import MultiSelectList from '../components/MultiSelectList';
+import GameSelectGrid from '../components/GameSelectGrid';
 import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { allGames } from '../data/games';
@@ -104,33 +104,7 @@ export default function OnboardingScreen() {
       }).start();
     });
   };
-  const defaultGameOptions = allGames.map((g) => ({
-    label: g.title,
-    value: g.title,
-  }));
-  const [gameOptions, setGameOptions] = useState(defaultGameOptions);
   const [showLocationInfo, setShowLocationInfo] = useState(false);
-
-  useEffect(() => {
-    const unsub = firebase
-      .firestore()
-      .collection('games')
-      .orderBy('title')
-      .onSnapshot(
-        (snap) => {
-          if (!snap.empty) {
-            setGameOptions(
-              snap.docs.map((d) => ({
-                label: d.data().title,
-                value: d.data().title,
-              }))
-            );
-          }
-        },
-        (e) => console.warn('Failed to load games', e)
-      );
-    return unsub;
-  }, []);
 
   const currentField = questions[step].key;
   const progress = (step + 1) / questions.length;
@@ -508,13 +482,12 @@ export default function OnboardingScreen() {
 
     if (currentField === 'favoriteGames') {
       return (
-        <MultiSelectList
-          options={gameOptions}
+        <GameSelectGrid
+          games={allGames}
           selected={answers.favoriteGames}
           onChange={(vals) =>
             setAnswers((prev) => ({ ...prev, favoriteGames: vals }))
           }
-          theme={theme}
         />
       );
     }

@@ -17,7 +17,7 @@ import { avatarSource } from '../utils/avatar';
 import { sanitizeText } from '../utils/sanitize';
 import PropTypes from 'prop-types';
 import RNPickerSelect from 'react-native-picker-select';
-import MultiSelectList from '../components/MultiSelectList';
+import GameSelectGrid from '../components/GameSelectGrid';
 import { useTheme } from '../contexts/ThemeContext';
 import { allGames } from '../data/games';
 
@@ -35,8 +35,6 @@ const EditProfileScreen = ({ navigation, route }) => {
   const [favoriteGames, setFavoriteGames] = useState(
     Array.isArray(user?.favoriteGames) ? user.favoriteGames : []
   );
-  const defaultGameOptions = allGames.map((g) => ({ label: g.title, value: g.title }));
-  const [gameOptions, setGameOptions] = useState(defaultGameOptions);
   const [avatar, setAvatar] = useState(user?.photoURL || '');
   const [jobTitle, setJobTitle] = useState(user?.jobTitle || '');
   const [company, setCompany] = useState(user?.company || '');
@@ -98,23 +96,6 @@ const EditProfileScreen = ({ navigation, route }) => {
     setEditMode(route?.params?.editMode || false);
   }, [route?.params?.editMode]);
 
-  useEffect(() => {
-    const unsub = firebase
-      .firestore()
-      .collection('games')
-      .orderBy('title')
-      .onSnapshot(
-        (snap) => {
-          if (!snap.empty) {
-            setGameOptions(
-              snap.docs.map((d) => ({ label: d.data().title, value: d.data().title }))
-            );
-          }
-        },
-        (e) => console.warn('Failed to load games', e)
-      );
-    return unsub;
-  }, []);
 
   const handleSave = async () => {
     if (!user) return;
@@ -309,11 +290,10 @@ const EditProfileScreen = ({ navigation, route }) => {
         onChangeText={setLocation}
       />
 
-      <MultiSelectList
-        options={gameOptions}
+      <GameSelectGrid
+        games={allGames}
         selected={favoriteGames}
         onChange={setFavoriteGames}
-        theme={theme}
       />
       <GradientButton text={saveLabel} onPress={handleSave} />
       </SafeKeyboardView>
