@@ -24,6 +24,7 @@ import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { avatarSource } from '../utils/avatar';
+import AvatarCanvas, { OVERLAYS } from '../components/AvatarCanvas';
 import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
@@ -62,6 +63,7 @@ export default function OnboardingScreen() {
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
   const [answers, setAnswers] = useState({
     avatar: '',
+    overlay: 'none',
     voiceIntro: '',
     displayName: '',
     age: '',
@@ -97,6 +99,7 @@ export default function OnboardingScreen() {
   };
   const [answers, setAnswers] = useState({
     avatar: '',
+    overlay: 'none',
     voiceIntro: '',
     displayName: '',
     age: '',
@@ -204,6 +207,7 @@ export default function OnboardingScreen() {
           (answers.displayName || user.displayName || '').trim()
         ),
         photoURL,
+        avatarOverlay: answers.overlay,
         voiceIntro: answers.voiceIntro || '',
         age: parseInt(answers.age, 10) || null,
         gender: sanitizeText(answers.gender),
@@ -337,15 +341,42 @@ export default function OnboardingScreen() {
 
     if (currentField === 'avatar') {
       return (
-        <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-          {answers.avatar ? (
-            <Image source={avatarSource(answers.avatar)} style={styles.avatar} />
-          ) : (
-            <View style={styles.placeholder}>
-              <Text style={{ color: '#999' }}>Tap to select image</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <View style={{ alignItems: 'center' }}>
+          <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+            {answers.avatar ? (
+              <AvatarCanvas
+                source={answers.avatar}
+                overlay={answers.overlay}
+                size={150}
+              />
+            ) : (
+              <View style={styles.placeholder}>
+                <Text style={{ color: '#999' }}>Tap to select image</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <View style={styles.overlayRow}>
+            {Object.keys(OVERLAYS).map((o) => (
+              <TouchableOpacity
+                key={o}
+                style={[
+                  styles.overlayOption,
+                  answers.overlay === o && styles.overlaySelected,
+                ]}
+                onPress={() =>
+                  setAnswers((prev) => ({ ...prev, overlay: o }))
+                }
+              >
+                <AvatarCanvas
+                  source={answers.avatar}
+                  overlay={o}
+                  size={50}
+                />
+                <Text style={styles.overlayLabel}>{OVERLAYS[o]}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
       );
     }
 
@@ -661,6 +692,23 @@ const getStyles = (theme) => {
       justifyContent: 'center',
       alignItems: 'center',
     },
+    overlayRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      flexWrap: 'wrap',
+    },
+    overlayOption: {
+      alignItems: 'center',
+      marginHorizontal: 5,
+      marginTop: 10,
+    },
+    overlaySelected: {
+      borderWidth: 2,
+      borderColor: accent,
+      borderRadius: 8,
+      padding: 2,
+    },
+    overlayLabel: { fontSize: FONT_SIZES.SM, color: textColor },
     locationContainer: {
       flexDirection: 'row',
       alignItems: 'center',

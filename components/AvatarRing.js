@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Image, Animated, StyleSheet } from 'react-native';
+import AvatarCanvas from './AvatarCanvas';
 import { LinearGradient } from 'expo-linear-gradient';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
@@ -11,6 +12,7 @@ export default function AvatarRing({
   isMatch = false,
   isOnline = false,
   isPremium = false,
+  overlay = 'none',
   style,
 }) {
   const { theme } = useTheme();
@@ -87,15 +89,15 @@ export default function AvatarRing({
               />
             </Animated.View>
           </View>
-          <Image source={avatarSource(source)} style={imageStyle} />
+          <AvatarCanvas source={source} overlay={overlay} size={size} />
         </View>
       ) : isMatch ? (
         <LinearGradient colors={theme.gradient} style={ringStyle}>
-          <Image source={avatarSource(source)} style={imageStyle} />
+          <AvatarCanvas source={source} overlay={overlay} size={size} />
         </LinearGradient>
       ) : (
         <View style={ringStyle}>
-          <Image source={avatarSource(source)} style={imageStyle} />
+          <AvatarCanvas source={source} overlay={overlay} size={size} />
         </View>
       )}
       {isOnline && (
@@ -122,6 +124,7 @@ AvatarRing.propTypes = {
   isMatch: PropTypes.bool,
   isOnline: PropTypes.bool,
   isPremium: PropTypes.bool,
+  overlay: PropTypes.string,
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
 };
 
