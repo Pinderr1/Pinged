@@ -4,6 +4,7 @@ import { View, TextInput, Text } from "react-native";
 import GradientBackground from "../components/GradientBackground";
 import GradientButton from "../components/GradientButton";
 import ScreenContainer from "../components/ScreenContainer";
+import SafeKeyboardView from "../components/SafeKeyboardView";
 import Header from "../components/Header";
 import RNPickerSelect from "react-native-picker-select";
 import { auth } from "../firebase";
@@ -120,9 +121,10 @@ export default function PhoneVerificationScreen({ navigation }) {
     <GradientBackground>
       <Header showLogoOnly />
       <View style={{ height: 0, width: 0 }} nativeID="recaptcha-container" />
-      <ScreenContainer
-        style={{ paddingTop: HEADER_SPACING, alignItems: "center" }}
-      >
+      <SafeKeyboardView style={{ flex: 1 }}>
+        <ScreenContainer
+          style={{ paddingTop: HEADER_SPACING, alignItems: "center" }}
+        >
         {!showOtp && (
           <View style={{ width: "100%" }}>
             <RNPickerSelect
@@ -165,6 +167,7 @@ export default function PhoneVerificationScreen({ navigation }) {
           </View>
         )}
       </ScreenContainer>
+      </SafeKeyboardView>
     </GradientBackground>
   );
 }
