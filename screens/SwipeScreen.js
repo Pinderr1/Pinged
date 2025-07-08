@@ -37,6 +37,7 @@ import { BlurView } from 'expo-blur';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
 import { computePriority } from '../utils/priority';
+import { logDev } from '../utils/logger';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import * as Haptics from 'expo-haptics';
 import SkeletonUserCard from '../components/SkeletonUserCard';
@@ -123,6 +124,7 @@ const SwipeScreen = () => {
   const [pendingInviteId, setPendingInviteId] = useState(null);
   const [showUndoPrompt, setShowUndoPrompt] = useState(false);
   const [showBoostModal, setShowBoostModal] = useState(false);
+  const [debugInfo, setDebugInfo] = useState(null);
 
   const pan = useRef(new Animated.ValueXY()).current;
   // 4 main buttons shown in the toolbar
@@ -183,10 +185,7 @@ const SwipeScreen = () => {
       }
       if (mounted) setLoadingUsers(true);
       try {
-        let userQuery = firebase
-          .firestore()
-          .collection('users')
-          .where('uid', '!=', currentUser.uid);
+        let userQuery = firebase.firestore().collection('users');
 
         if (filterLocation) {
           userQuery = userQuery.where('location', '==', filterLocation);
@@ -217,9 +216,16 @@ const SwipeScreen = () => {
         }
         const snap = await userQuery.limit(50).get();
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const debug = { queryCount: data.length };
+
+        data = data.filter((u) => u.uid !== currentUser.uid);
+        debug.afterSelfFilter = data.length;
+
         if (devMode) {
           data = [...devUsers.slice(0, 3), ...data];
+          debug.withDevUsers = data.length;
         }
+
         let formatted = data.map((u) => {
           const imgs = Array.isArray(u.photos) && u.photos.length
             ? u.photos
@@ -245,27 +251,37 @@ const SwipeScreen = () => {
         });
 
         if (filterLocation) {
+          const before = formatted.length;
           formatted = formatted.filter((u) => u.location === filterLocation);
+          debug.locationCount = `${before}->${formatted.length}`;
         }
 
         if (filterGender) {
+          const before = formatted.length;
           formatted = formatted.filter((u) => u.gender === filterGender);
+          debug.genderCount = `${before}->${formatted.length}`;
         }
 
         if (verifiedOnly) {
+          const before = formatted.length;
           formatted = formatted.filter((u) => u.isVerified);
+          debug.verifiedCount = `${before}->${formatted.length}`;
         }
 
         if (Array.isArray(ageRange) && ageRange.length === 2) {
+          const before = formatted.length;
           formatted = formatted.filter(
             (u) => u.age >= ageRange[0] && u.age <= ageRange[1]
           );
+          debug.ageCount = `${before}->${formatted.length}`;
         }
 
         if (Array.isArray(interests) && interests.length) {
+          const before = formatted.length;
           formatted = formatted.filter((u) =>
             u.favoriteGames.some((g) => interests.includes(g))
           );
+          debug.interestCount = `${before}->${formatted.length}`;
         }
 
         // Sort by priority then compatibility so premium/boosted users surface first
@@ -278,7 +294,34 @@ const SwipeScreen = () => {
           );
         });
 
-        if (mounted) setUsers(formatted);
+        debug.finalCount = formatted.length;
+
+        if (devMode && formatted.length === 0) {
+          formatted = devUsers.map((u) => ({
+            id: u.id,
+            displayName: u.displayName,
+            age: u.age,
+            bio: u.bio,
+            introClipUrl: u.introClipUrl,
+            favoriteGames: u.favoriteGames,
+            gender: u.gender,
+            genderPref: u.genderPref,
+            location: u.location,
+            priorityScore: 0,
+            boostUntil: null,
+            isVerified: true,
+            images: u.photos.map((img) =>
+              imageSource(img, require('../assets/user1.jpg'))
+            ),
+          }));
+          debug.devFallback = true;
+        }
+
+        if (mounted) {
+          setUsers(formatted);
+          setDebugInfo(debug);
+        }
+        logDev('Suggested users:', JSON.stringify(debug));
       } catch (e) {
         console.warn('Failed to load users', e);
       }
@@ -892,6 +935,11 @@ const handleSwipe = async (direction) => {
             </TouchableOpacity>
           </View>
         ) : null}
+        {devMode && debugInfo ? (
+          <View style={styles.debugOverlay}>
+            <Text style={styles.debugText}>{JSON.stringify(debugInfo)}</Text>
+          </View>
+        ) : null}
       </ScreenContainer>
     </GradientBackground>
   );
@@ -1105,6 +1153,16 @@ const getStyles = (theme) =>
   },
   undoText: { color: '#fff', marginRight: 12 },
   undoButton: { color: theme.accent, fontWeight: 'bold' },
+  debugOverlay: {
+    position: 'absolute',
+    bottom: 20,
+    left: 10,
+    right: 10,
+    backgroundColor: '#0009',
+    padding: 8,
+    borderRadius: 6,
+  },
+  debugText: { color: '#fff', fontSize: 12, fontFamily: FONT_FAMILY.regular },
 });
 
 SwipeScreen.propTypes = {};
