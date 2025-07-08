@@ -50,6 +50,12 @@ const questions = [
 ];
 
 const requiredFields = ['avatar', 'displayName', 'age'];
+// Determine the index of the last required question in the flow
+const lastRequiredIndex = Math.max(
+  ...requiredFields.map((field) =>
+    questions.findIndex((q) => q.key === field)
+  )
+);
 
 export default function OnboardingScreen() {
   const { darkMode, theme } = useTheme();
@@ -575,7 +581,7 @@ export default function OnboardingScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-        {step >= requiredFields.length - 1 && (
+        {step >= lastRequiredIndex && (
           <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
             <Text style={styles.skipButtonText}>Complete Profile Later</Text>
           </TouchableOpacity>
