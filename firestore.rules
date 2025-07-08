@@ -30,6 +30,26 @@ service cloud.firestore {
           newData.dailyPlayCount <= limit;
     }
 
+    function isPremium(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.isPremium == true;
+    }
+
+    function isPremiumGame(gameId) {
+      return get(/databases/$(database)/documents/games/$(gameId)).data.premium == true;
+    }
+
+    function isMatch(uid, otherUid) {
+      let id = [uid, otherUid].sort().join('_');
+      return exists(/databases/$(database)/documents/matchHistory/$(id));
+    }
+
+    function sessionGameId(sessionId) {
+      let reqId = request.resource.data.gameId;
+      let resId = exists(/databases/$(database)/documents/gameSessions/$(sessionId)) ?
+        get(/databases/$(database)/documents/gameSessions/$(sessionId)).data.gameId : null;
+      return reqId != null ? reqId : resId;
+    }
+
     match /users/{userId} {
       allow read: if signedIn();
       allow create: if isUser(userId);
@@ -57,8 +77,13 @@ service cloud.firestore {
     }
 
     match /gameSessions/{sessionId} {
-      allow read, write: if signedIn() &&
-        (request.auth.uid in resource.data.players || request.auth.uid in request.resource.data.players);
+      allow read: if signedIn() &&
+        (request.auth.uid in resource.data.players ||
+         request.auth.uid in request.resource.data.players);
+      allow write: if signedIn() &&
+        (request.auth.uid in resource.data.players ||
+         request.auth.uid in request.resource.data.players) &&
+        (!isPremiumGame(sessionGameId(sessionId)) || isPremium(request.auth.uid));
     }
 
     match /gameStats/{statId} {
@@ -91,6 +116,12 @@ service cloud.firestore {
     // List of available games for onboarding
     match /games/{gameId} {
       allow read: if true;
+      match /messages/{messageId} {
+        allow read, write: if signedIn() &&
+          isMatch(request.auth.uid,
+            request.resource.data.otherUid != null ?
+              request.resource.data.otherUid : resource.data.otherUid);
+      }
     }
 
     // Community Board posts accessible to all signed-in users
