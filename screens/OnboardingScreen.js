@@ -95,17 +95,6 @@ export default function OnboardingScreen() {
       }).start();
     });
   };
-  const [answers, setAnswers] = useState({
-    avatar: '',
-    voiceIntro: '',
-    displayName: '',
-    age: '',
-    gender: '',
-    genderPref: '',
-    bio: '',
-    location: '',
-    favoriteGames: [],
-  });
   const defaultGameOptions = allGames.map((g) => ({
     label: g.title,
     value: g.title,
