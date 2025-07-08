@@ -6,9 +6,9 @@ export const lightTheme = {
   accent: '#FF75B5',
   primary: '#009688',
   success: '#4CAF50',
-  gradientStart: '#8B5CF6',
-  gradientEnd: '#EC4899',
-  gradient: ['#8B5CF6', '#EC4899'],
+  gradientStart: '#FF75B5',
+  gradientEnd: '#FF9A75',
+  gradient: ['#FF75B5', '#FF9A75'],
   headerBackground: '#ffffff',
 };
 
@@ -20,9 +20,9 @@ export const darkTheme = {
   accent: '#FF75B5',
   primary: '#009688',
   success: '#4CAF50',
-  gradientStart: '#8B5CF6',
-  gradientEnd: '#EC4899',
-  gradient: ['#8B5CF6', '#EC4899'],
+  gradientStart: '#FF75B5',
+  gradientEnd: '#FF9A75',
+  gradient: ['#FF75B5', '#FF9A75'],
   headerBackground: 'rgba(255,255,255,0.05)',
 };
 
