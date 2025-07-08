@@ -34,6 +34,7 @@ import MultiSelectList from '../components/MultiSelectList';
 import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { allGames } from '../data/games';
+import { BADGE_LIST } from '../data/badges';
 import { logDev } from '../utils/logger';
 import LocationInfoModal from '../components/LocationInfoModal';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
@@ -43,14 +44,17 @@ const questions = [
   { key: 'avatar', label: 'Upload your photo' },
   { key: 'introClip', label: 'Record a quick intro clip' },
   { key: 'displayName', label: 'What’s your name?' },
-  { key: 'age', label: 'How old are you?' },
-  { key: 'genderInfo', label: 'Gender & preference' },
+  { key: 'ageGender', label: 'Age & gender' },
   { key: 'bio', label: 'Write a short bio' },
   { key: 'location', label: 'Where are you located?' },
+  { key: 'mood', label: 'How are you feeling today?' },
   { key: 'favoriteGames', label: 'Select your favorite games' },
+  { key: 'promptResponses', label: 'Answer some prompts' },
+  { key: 'personalityTags', label: 'Add personality tags' },
+  { key: 'badgePrefs', label: 'Choose badge preferences' },
 ];
 
-const requiredFields = ['avatar', 'displayName', 'age'];
+const requiredFields = ['avatar', 'displayName', 'ageGender'];
 // Determine the index of the last required question in the flow
 const lastRequiredIndex = Math.max(
   ...requiredFields.map((field) =>
@@ -76,7 +80,11 @@ export default function OnboardingScreen() {
     genderPref: '',
     bio: '',
     location: '',
+    mood: '',
     favoriteGames: [],
+    promptResponses: ['', '', ''],
+    personalityTags: '',
+    badgePrefs: [],
   });
 
   const { playing, playPause } = useVoicePlayback(
@@ -109,6 +117,7 @@ export default function OnboardingScreen() {
     value: g.title,
   }));
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
+  const badgeOptions = BADGE_LIST.map((b) => ({ label: b.title, value: b.id }));
   const [showLocationInfo, setShowLocationInfo] = useState(false);
 
   useEffect(() => {
@@ -147,7 +156,8 @@ export default function OnboardingScreen() {
   const validateField = () => {
     const value = answers[currentField];
     if (!requiredFields.includes(currentField)) return true;
-    if (currentField === 'age') return /^\d+$/.test(value) && parseInt(value, 10) >= 18;
+    if (currentField === 'ageGender')
+      return /^\d+$/.test(answers.age) && parseInt(answers.age, 10) >= 18;
     if (currentField === 'avatar') return !!value;
     return value && value.toString().trim().length > 0;
   };
@@ -207,7 +217,13 @@ export default function OnboardingScreen() {
         gender: sanitizeText(answers.gender),
         genderPref: sanitizeText(answers.genderPref),
         location: sanitizeText(answers.location),
+        mood: sanitizeText(answers.mood.trim()),
         favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
+        promptResponses: answers.promptResponses.map((p) =>
+          sanitizeText(p.trim())
+        ),
+        personalityTags: sanitizeText(answers.personalityTags.trim()),
+        badgePrefs: answers.badgePrefs.map((b) => sanitizeText(b)),
         bio: sanitizeText(answers.bio.trim()),
         onboardingComplete: true,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -445,32 +461,28 @@ export default function OnboardingScreen() {
       );
     }
 
-    if (currentField === 'age') {
+    if (currentField === 'ageGender') {
       const ageItems = Array.from({ length: 83 }, (_, i) => i + 18).map((n) => ({
-        label: `${n}`, value: `${n}`,
+        label: `${n}`,
+        value: `${n}`,
       }));
       return (
-        <RNPickerSelect
-          onValueChange={(val) => {
-            Haptics.selectionAsync().catch(() => {});
-            setAnswers((prev) => ({ ...prev, age: val }));
-          }}
-          value={answers.age}
-          placeholder={{ label: 'Select age', value: null }}
-          useNativeAndroidPickerStyle={false}
-          style={{
-            inputIOS: styles.input,
-            inputAndroid: styles.input,
-            placeholder: { color: theme.textSecondary },
-          }}
-          items={ageItems}
-        />
-      );
-    }
-
-    if (currentField === 'genderInfo') {
-      return (
         <View>
+          <RNPickerSelect
+            onValueChange={(val) => {
+              Haptics.selectionAsync().catch(() => {});
+              setAnswers((prev) => ({ ...prev, age: val }));
+            }}
+            value={answers.age}
+            placeholder={{ label: 'Select age', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: styles.input,
+              inputAndroid: styles.input,
+              placeholder: { color: theme.textSecondary },
+            }}
+            items={ageItems}
+          />
           <RNPickerSelect
             onValueChange={(val) => {
               Haptics.selectionAsync().catch(() => {});
@@ -480,8 +492,8 @@ export default function OnboardingScreen() {
             placeholder={{ label: 'Select gender', value: null }}
             useNativeAndroidPickerStyle={false}
             style={{
-              inputIOS: styles.input,
-              inputAndroid: styles.input,
+              inputIOS: [styles.input, { marginTop: 20 }],
+              inputAndroid: [styles.input, { marginTop: 20 }],
               placeholder: { color: darkMode ? '#999' : '#aaa' },
             }}
             items={pickerFields.gender}
@@ -506,6 +518,20 @@ export default function OnboardingScreen() {
     }
 
 
+    if (currentField === 'mood') {
+      return (
+        <TextInput
+          style={styles.input}
+          value={answers.mood}
+          onChangeText={(text) =>
+            setAnswers((prev) => ({ ...prev, mood: text }))
+          }
+          placeholder={questions[step].label}
+          placeholderTextColor={darkMode ? '#999' : '#aaa'}
+        />
+      );
+    }
+
     if (currentField === 'favoriteGames') {
       return (
         <MultiSelectList
@@ -513,6 +539,54 @@ export default function OnboardingScreen() {
           selected={answers.favoriteGames}
           onChange={(vals) =>
             setAnswers((prev) => ({ ...prev, favoriteGames: vals }))
+          }
+          theme={theme}
+        />
+      );
+    }
+
+    if (currentField === 'promptResponses') {
+      return (
+        <View>
+          {answers.promptResponses.map((val, idx) => (
+            <TextInput
+              key={idx}
+              style={[styles.input, idx > 0 && { marginTop: 10 }]}
+              value={val}
+              onChangeText={(text) => {
+                const arr = [...answers.promptResponses];
+                arr[idx] = text;
+                setAnswers((prev) => ({ ...prev, promptResponses: arr }));
+              }}
+              placeholder={`Response ${idx + 1}`}
+              placeholderTextColor={darkMode ? '#999' : '#aaa'}
+            />
+          ))}
+        </View>
+      );
+    }
+
+    if (currentField === 'personalityTags') {
+      return (
+        <TextInput
+          style={styles.input}
+          value={answers.personalityTags}
+          onChangeText={(text) =>
+            setAnswers((prev) => ({ ...prev, personalityTags: text }))
+          }
+          placeholder="Comma separated tags"
+          placeholderTextColor={darkMode ? '#999' : '#aaa'}
+        />
+      );
+    }
+
+    if (currentField === 'badgePrefs') {
+      return (
+        <MultiSelectList
+          options={badgeOptions}
+          selected={answers.badgePrefs}
+          onChange={(vals) =>
+            setAnswers((prev) => ({ ...prev, badgePrefs: vals }))
           }
           theme={theme}
         />
@@ -565,7 +639,7 @@ export default function OnboardingScreen() {
         }
         placeholder={questions[step].label}
         placeholderTextColor={darkMode ? '#999' : '#aaa'}
-        keyboardType={currentField === 'age' ? 'numeric' : 'default'}
+        keyboardType="default"
         autoCapitalize="none"
       />
     );
