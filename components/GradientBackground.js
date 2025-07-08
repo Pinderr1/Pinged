@@ -8,7 +8,8 @@ import getStyles from '../styles';
 export default function GradientBackground({ children, colors, style }) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
-  const gradientColors = colors || [theme.gradientStart, theme.gradientEnd];
+  const gradientColors =
+    colors || theme.gradient || [theme.gradientStart, theme.gradientEnd];
 
   return (
     <LinearGradient colors={gradientColors} style={[{ flex: 1 }, style]}>

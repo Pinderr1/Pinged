@@ -453,7 +453,7 @@ export default function OnboardingScreen() {
     );
   };
   return (
-    <GradientBackground colors={[styles.gradientStart, styles.gradientEnd]} style={styles.container}>
+    <GradientBackground style={styles.container}>
       <Header showLogoOnly />
       <SafeKeyboardView style={styles.inner}>
         <Text style={styles.progressText}>{`Step ${step + 1} of ${questions.length}`}</Text>
@@ -645,8 +645,6 @@ const getStyles = (theme) => {
       fontSize: FONT_SIZES.MD,
       textDecorationLine: 'underline',
     },
-    gradientStart: theme.gradientStart,
-    gradientEnd: theme.gradientEnd,
   });
 };
 

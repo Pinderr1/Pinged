@@ -28,7 +28,7 @@ export default function SplashScreen({ onFinish }) {
   const showEgg = useRef(Math.random() < 0.02).current;
   const { darkMode, theme } = useTheme();
   const styles = getStyles(theme);
-  const colors = [theme.gradientStart, theme.gradientEnd];
+  const colors = theme.gradient;
 
   useEffect(() => {
     const timeout = setTimeout(onFinish, splashDuration);

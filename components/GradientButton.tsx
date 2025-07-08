@@ -77,7 +77,7 @@ export default function GradientButton({
         disabled={disabled}
       >
         <AnimatedLinearGradient
-          colors={[theme.gradientStart, theme.gradientEnd]}
+          colors={theme.gradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[
@@ -96,7 +96,7 @@ export default function GradientButton({
         >
           <AnimatedLinearGradient
             pointerEvents="none"
-            colors={[theme.gradientStart, theme.gradientEnd]}
+            colors={theme.gradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={{
