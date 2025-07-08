@@ -40,6 +40,11 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `online` (boolean)
 - `lastOnline` (timestamp) – last presence update time
 - `badges` (array of string) – earned badge IDs
+- `mood` (string) – optional status message
+- `introClipUrl` (string) – voice or video intro clip
+- `profilePrompts` (map) – prompt answers keyed by id
+- `personalityTags` (array of string) – descriptive tags
+- `badgePreferences` (map) – user-selected badge display
 - `visibility` (string) – `standard` or `incognito`
 - `discoveryEnabled` (boolean) – hide from swipe if false
 - `messagePermission` (string) – `everyone`, `verified`, or `profile100`
