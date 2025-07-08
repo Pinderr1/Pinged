@@ -254,11 +254,11 @@ const getStyles = (theme) =>
       color: theme.accent,
     },
     progressCard: {
-      marginBottom: 16,
+      marginBottom: 20,
       alignSelf: 'stretch',
     },
     group: {
-      marginBottom: 24,
+      marginBottom: 32,
       alignItems: 'stretch',
       width: '100%',
     },
@@ -393,17 +393,17 @@ const getStyles = (theme) =>
     },
     communityBoard: {
       width: '100%',
-      marginBottom: 24,
+      marginBottom: 32,
     },
     boardBackground: {
       backgroundColor: '#deb887',
-      padding: 12,
+      padding: 16,
       borderRadius: 12,
       borderWidth: 2,
       borderColor: '#caa76b',
     },
     noteWrapper: {
-      marginBottom: 24,
+      marginBottom: 32,
       alignItems: 'center',
       width: '100%',
     },
@@ -418,10 +418,10 @@ const getStyles = (theme) =>
       elevation: 3,
     },
     rotateLeft: {
-      transform: [{ rotate: '-2deg' }],
+      transform: [{ rotate: '-1deg' }],
     },
     rotateRight: {
-      transform: [{ rotate: '2deg' }],
+      transform: [{ rotate: '1deg' }],
     },
     pin: {
       position: 'absolute',

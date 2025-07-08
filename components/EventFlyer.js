@@ -61,7 +61,7 @@ const getStyles = (theme, darkMode) =>
       shadowOffset: { width: 0, height: 3 },
       shadowRadius: 5,
       elevation: 4,
-      transform: [{ rotate: '-2deg' }],
+      transform: [{ rotate: '-1deg' }],
     },
     image: {
       width: 70,
