@@ -1,5 +1,5 @@
 // screens/OnboardingScreen.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Animated,
-  Easing,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
@@ -27,7 +25,9 @@ import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
-import MultiSelectList from '../components/MultiSelectList';
+import GameIconPicker from '../components/GameIconPicker';
+import LottieView from 'lottie-react-native';
+import { BADGE_LIST } from '../utils/badges';
 import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { allGames } from '../data/games';
@@ -38,16 +38,19 @@ import useVoicePlayback from '../hooks/useVoicePlayback';
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
-  { key: 'voiceIntro', label: 'Record a quick voice intro' },
+  { key: 'introClip', label: 'Record a quick intro' },
   { key: 'displayName', label: 'What’s your name?' },
-  { key: 'age', label: 'How old are you?' },
-  { key: 'genderInfo', label: 'Gender & preference' },
+  { key: 'personalInfo', label: 'Age & gender' },
+  { key: 'mood', label: 'Your mood or status' },
+  { key: 'profilePrompt1', label: 'Finish the prompt' },
+  { key: 'teammateTag', label: 'Pick a personality tag' },
   { key: 'bio', label: 'Write a short bio' },
   { key: 'location', label: 'Where are you located?' },
   { key: 'favoriteGames', label: 'Select your favorite games' },
+  { key: 'badges', label: 'Preview badges & XP' },
 ];
 
-const requiredFields = ['avatar', 'displayName', 'age'];
+const requiredFields = ['avatar', 'displayName', 'personalInfo'];
 
 export default function OnboardingScreen() {
   const { darkMode, theme } = useTheme();
@@ -56,84 +59,45 @@ export default function OnboardingScreen() {
   const styles = getStyles(theme);
 
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
-  const { playing, playPause } = useVoicePlayback(answers.voiceIntro);
+  const { playing, playPause } = useVoicePlayback(answers.introClip);
 
   const [step, setStep] = useState(0);
-  const cardOpacity = useRef(new Animated.Value(1)).current;
-  const progressAnim = useRef(new Animated.Value(1 / questions.length)).current;
+  const [showTransition, setShowTransition] = useState(false);
 
   const animateStepChange = (newStep) => {
-    Animated.timing(cardOpacity, {
-      toValue: 0,
-      duration: 300,
-      easing: Easing.inOut(Easing.ease),
-      useNativeDriver: true,
-    }).start(() => {
+    setShowTransition(true);
+    setTimeout(() => {
+      setShowTransition(false);
       setStep(newStep);
-      cardOpacity.setValue(0);
-      Animated.timing(cardOpacity, {
-        toValue: 1,
-        duration: 300,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-    });
+    }, 600);
   };
   const [answers, setAnswers] = useState({
     avatar: '',
-    voiceIntro: '',
+    introClip: '',
     displayName: '',
-    age: '',
-    gender: '',
-    genderPref: '',
+    personalInfo: { age: '', gender: '', genderPref: '' },
+    mood: '',
+    profilePrompt1: '',
+    teammateTag: '',
     bio: '',
     location: '',
     favoriteGames: [],
+    badgePrefs: [],
   });
-  const defaultGameOptions = allGames.map((g) => ({
-    label: g.title,
-    value: g.title,
-  }));
-  const [gameOptions, setGameOptions] = useState(defaultGameOptions);
   const [showLocationInfo, setShowLocationInfo] = useState(false);
 
-  useEffect(() => {
-    const unsub = firebase
-      .firestore()
-      .collection('games')
-      .orderBy('title')
-      .onSnapshot(
-        (snap) => {
-          if (!snap.empty) {
-            setGameOptions(
-              snap.docs.map((d) => ({
-                label: d.data().title,
-                value: d.data().title,
-              }))
-            );
-          }
-        },
-        (e) => console.warn('Failed to load games', e)
-      );
-    return unsub;
-  }, []);
-
   const currentField = questions[step].key;
-  const progress = (step + 1) / questions.length;
-
-  useEffect(() => {
-    Animated.timing(progressAnim, {
-      toValue: progress,
-      duration: 400,
-      easing: Easing.inOut(Easing.ease),
-      useNativeDriver: false,
-    }).start();
-  }, [progress, progressAnim]);
 
   const validateField = () => {
     const value = answers[currentField];
     if (!requiredFields.includes(currentField)) return true;
-    if (currentField === 'age') return /^\d+$/.test(value) && parseInt(value, 10) >= 18;
+    if (currentField === 'personalInfo') {
+      return (
+        /^\d+$/.test(value.age) &&
+        parseInt(value.age, 10) >= 18 &&
+        !!value.gender
+      );
+    }
     if (currentField === 'avatar') return !!value;
     return value && value.toString().trim().length > 0;
   };
@@ -187,10 +151,14 @@ export default function OnboardingScreen() {
           (answers.displayName || user.displayName || '').trim()
         ),
         photoURL,
-        voiceIntro: answers.voiceIntro || '',
-        age: parseInt(answers.age, 10) || null,
-        gender: sanitizeText(answers.gender),
-        genderPref: sanitizeText(answers.genderPref),
+        introClipUrl: answers.introClip || '',
+        age: parseInt(answers.personalInfo.age, 10) || null,
+        gender: sanitizeText(answers.personalInfo.gender),
+        genderPref: sanitizeText(answers.personalInfo.genderPref),
+        mood: sanitizeText(answers.mood),
+        profilePrompt1: sanitizeText(answers.profilePrompt1),
+        teammateTag: sanitizeText(answers.teammateTag),
+        badgePrefs: answers.badgePrefs,
         location: sanitizeText(answers.location),
         favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
         bio: sanitizeText(answers.bio.trim()),
@@ -271,7 +239,7 @@ export default function OnboardingScreen() {
             firebase.auth().currentUser.uid
           );
           if (url)
-            setAnswers((prev) => ({ ...prev, voiceIntro: url }));
+            setAnswers((prev) => ({ ...prev, introClip: url }));
         } catch (e) {
           console.error('Voice upload failed:', e);
           Toast.show({ type: 'error', text1: 'Failed to upload intro' });
@@ -332,7 +300,7 @@ export default function OnboardingScreen() {
       );
     }
 
-    if (currentField === 'voiceIntro') {
+    if (currentField === 'introClip') {
       return (
         <View style={{ alignItems: 'center' }}>
           <TouchableOpacity
@@ -345,7 +313,7 @@ export default function OnboardingScreen() {
               color="#fff"
             />
           </TouchableOpacity>
-          {answers.voiceIntro ? (
+          {answers.introClip ? (
             <TouchableOpacity onPress={playPause} style={styles.playButton}>
               <Ionicons
                 name={playing ? 'pause' : 'play'}
@@ -392,43 +360,45 @@ export default function OnboardingScreen() {
       );
     }
 
-    if (currentField === 'age') {
+    if (currentField === 'personalInfo') {
       const ageItems = Array.from({ length: 83 }, (_, i) => i + 18).map((n) => ({
-        label: `${n}`, value: `${n}`,
+        label: `${n}`,
+        value: `${n}`,
       }));
-      return (
-        <RNPickerSelect
-          onValueChange={(val) => {
-            Haptics.selectionAsync().catch(() => {});
-            setAnswers((prev) => ({ ...prev, age: val }));
-          }}
-          value={answers.age}
-          placeholder={{ label: 'Select age', value: null }}
-          useNativeAndroidPickerStyle={false}
-          style={{
-            inputIOS: styles.input,
-            inputAndroid: styles.input,
-            placeholder: { color: theme.textSecondary },
-          }}
-          items={ageItems}
-        />
-      );
-    }
-
-    if (currentField === 'genderInfo') {
       return (
         <View>
           <RNPickerSelect
             onValueChange={(val) => {
               Haptics.selectionAsync().catch(() => {});
-              setAnswers((prev) => ({ ...prev, gender: val }));
+              setAnswers((prev) => ({
+                ...prev,
+                personalInfo: { ...prev.personalInfo, age: val },
+              }));
             }}
-            value={answers.gender}
-            placeholder={{ label: 'Select gender', value: null }}
+            value={answers.personalInfo.age}
+            placeholder={{ label: 'Select age', value: null }}
             useNativeAndroidPickerStyle={false}
             style={{
               inputIOS: styles.input,
               inputAndroid: styles.input,
+              placeholder: { color: theme.textSecondary },
+            }}
+            items={ageItems}
+          />
+          <RNPickerSelect
+            onValueChange={(val) => {
+              Haptics.selectionAsync().catch(() => {});
+              setAnswers((prev) => ({
+                ...prev,
+                personalInfo: { ...prev.personalInfo, gender: val },
+              }));
+            }}
+            value={answers.personalInfo.gender}
+            placeholder={{ label: 'Select gender', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: [styles.input, { marginTop: 20 }],
+              inputAndroid: [styles.input, { marginTop: 20 }],
               placeholder: { color: darkMode ? '#999' : '#aaa' },
             }}
             items={pickerFields.gender}
@@ -436,9 +406,12 @@ export default function OnboardingScreen() {
           <RNPickerSelect
             onValueChange={(val) => {
               Haptics.selectionAsync().catch(() => {});
-              setAnswers((prev) => ({ ...prev, genderPref: val }));
+              setAnswers((prev) => ({
+                ...prev,
+                personalInfo: { ...prev.personalInfo, genderPref: val },
+              }));
             }}
-            value={answers.genderPref}
+            value={answers.personalInfo.genderPref}
             placeholder={{ label: 'Preferred teammate gender', value: null }}
             useNativeAndroidPickerStyle={false}
             style={{
@@ -452,17 +425,89 @@ export default function OnboardingScreen() {
       );
     }
 
+    if (currentField === 'mood') {
+      const moods = [
+        { label: 'Flirty', value: 'Flirty' },
+        { label: 'Chill', value: 'Chill' },
+        { label: 'Competitive', value: 'Competitive' },
+      ];
+      return (
+        <RNPickerSelect
+          onValueChange={(val) => {
+            Haptics.selectionAsync().catch(() => {});
+            setAnswers((prev) => ({ ...prev, mood: val }));
+          }}
+          value={answers.mood}
+          placeholder={{ label: 'Select mood', value: null }}
+          useNativeAndroidPickerStyle={false}
+          style={{ inputIOS: styles.input, inputAndroid: styles.input }}
+          items={moods}
+        />
+      );
+    }
+
+    if (currentField === 'profilePrompt1') {
+      return (
+        <TextInput
+          style={styles.input}
+          value={answers.profilePrompt1}
+          onChangeText={(text) =>
+            setAnswers((prev) => ({ ...prev, profilePrompt1: text }))
+          }
+          placeholder="My perfect co-op partner is..."
+          placeholderTextColor={darkMode ? '#999' : '#aaa'}
+        />
+      );
+    }
+
+    if (currentField === 'teammateTag') {
+      const tags = [
+        { label: 'Strategist', value: 'Strategist' },
+        { label: 'Speedrunner', value: 'Speedrunner' },
+        { label: 'Trash Talker', value: 'Trash Talker' },
+      ];
+      return (
+        <RNPickerSelect
+          onValueChange={(val) => {
+            Haptics.selectionAsync().catch(() => {});
+            setAnswers((prev) => ({ ...prev, teammateTag: val }));
+          }}
+          value={answers.teammateTag}
+          placeholder={{ label: 'Select tag', value: null }}
+          useNativeAndroidPickerStyle={false}
+          style={{ inputIOS: styles.input, inputAndroid: styles.input }}
+          items={tags}
+        />
+      );
+    }
+
 
     if (currentField === 'favoriteGames') {
       return (
-        <MultiSelectList
-          options={gameOptions}
+        <GameIconPicker
+          games={allGames}
           selected={answers.favoriteGames}
           onChange={(vals) =>
             setAnswers((prev) => ({ ...prev, favoriteGames: vals }))
           }
-          theme={theme}
         />
+      );
+    }
+
+    if (currentField === 'badges') {
+      return (
+        <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+          {BADGE_LIST.map((badge) => (
+            <View key={badge.id} style={{ alignItems: 'center', margin: 6 }}>
+              <Ionicons
+                name={badge.icon}
+                size={28}
+                color={theme.accent}
+              />
+              <Text style={{ color: theme.text, fontSize: 12 }}>{badge.title}</Text>
+            </View>
+          ))}
+        </View>
       );
     }
 
@@ -523,24 +568,32 @@ export default function OnboardingScreen() {
       <SafeKeyboardView style={styles.inner}>
         <Text style={styles.progressText}>{`Step ${step + 1} of ${questions.length}`}</Text>
 
-        <View style={styles.progressContainer}>
-          <Animated.View
-            style={[
-              styles.progressBar,
-              {
-                width: progressAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0%', '100%'],
-                }),
-              },
-            ]}
-          />
+        <View style={styles.dotsRow}>
+          {questions.map((q, idx) => (
+            <View
+              key={q.key}
+              style={[
+                styles.dot,
+                idx <= step ? { backgroundColor: theme.accent } : null,
+              ]}
+            />
+          ))}
         </View>
 
-        <Animated.View style={[styles.card, { opacity: cardOpacity }]}>
+        <View style={styles.card}>
           <Text style={styles.questionText}>{questions[step].label}</Text>
           {renderInput()}
-        </Animated.View>
+        </View>
+        {showTransition && (
+          <View style={styles.transitionOverlay} pointerEvents="none">
+            <LottieView
+              source={require('../assets/hearts.json')}
+              autoPlay
+              loop={false}
+              style={{ width: 200, height: 200 }}
+            />
+          </View>
+        )}
 
         <View style={styles.buttonRow}>
           {step > 0 && (
@@ -593,17 +646,17 @@ const getStyles = (theme) => {
       textAlign: 'center',
       marginBottom: 30,
     },
-    progressContainer: {
-      height: 8,
-      width: '100%',
-      backgroundColor: theme.card,
-      borderRadius: 4,
-      overflow: 'hidden',
+    dotsRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
       marginBottom: 20,
     },
-    progressBar: {
-      height: '100%',
-      backgroundColor: accent,
+    dot: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      marginHorizontal: 4,
+      backgroundColor: theme.card,
     },
     card: {
       backgroundColor: cardBg,
@@ -727,6 +780,15 @@ const getStyles = (theme) => {
       color: accent,
       fontSize: FONT_SIZES.MD,
       textDecorationLine: 'underline',
+    },
+    transitionOverlay: {
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
   });
 };
