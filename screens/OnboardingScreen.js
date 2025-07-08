@@ -42,6 +42,7 @@ import LocationInfoModal from '../components/LocationInfoModal';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
 import useVoicePlayback from '../hooks/useVoicePlayback';
 import { PRESETS } from '../data/presets';
+import Loader from '../components/Loader';
 
 const overlayOptions = [
   { id: 'heart', src: overlayAssets.heart },
@@ -120,6 +121,7 @@ export default function OnboardingScreen() {
   // favorite games selection uses static list from data/games.js
   const badgeOptions = BADGE_LIST.map((b) => ({ label: b.title, value: b.id }));
   const [showLocationInfo, setShowLocationInfo] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const currentField = questions[step].key;
   const progress = (step + 1) / questions.length;
@@ -163,6 +165,7 @@ export default function OnboardingScreen() {
   }, []);
   const handleSkip = async () => {
     Haptics.selectionAsync().catch(() => {});
+    if (saving) return;
     if (!firebase.auth().currentUser) {
       Toast.show({ type: 'error', text1: 'No user signed in' });
       return;
@@ -171,6 +174,8 @@ export default function OnboardingScreen() {
   };
 
   const saveProfile = async () => {
+    if (saving) return;
+    setSaving(true);
     try {
       let photoURL = answers.avatar;
       if (photoURL && !photoURL.startsWith('http')) {
@@ -217,10 +222,13 @@ export default function OnboardingScreen() {
     } catch (e) {
       console.error('Save error:', e);
       Toast.show({ type: 'error', text1: 'Failed to save profile' });
+    } finally {
+      setSaving(false);
     }
   };
   const handleNext = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    if (saving) return;
     if (!firebase.auth().currentUser) {
       Toast.show({ type: 'error', text1: 'No user signed in' });
       return;
@@ -735,17 +743,28 @@ export default function OnboardingScreen() {
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[styles.nextButton, { opacity: isValid ? 1 : 0.5 }]}
+            style={[
+              styles.nextButton,
+              { opacity: saving || !isValid ? 0.5 : 1 },
+            ]}
             onPress={handleNext}
-            disabled={!isValid}
+            disabled={!isValid || saving}
           >
-            <Text style={styles.nextButtonText}>
-              {step < questions.length - 1 ? 'Next' : 'Finish'}
-            </Text>
+            {saving ? (
+              <Loader size="small" />
+            ) : (
+              <Text style={styles.nextButtonText}>
+                {step < questions.length - 1 ? 'Next' : 'Finish'}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
         {step >= lastRequiredIndex && (
-          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={handleSkip}
+            disabled={saving}
+          >
             <Text style={styles.skipButtonText}>Complete Profile Later</Text>
           </TouchableOpacity>
         )}

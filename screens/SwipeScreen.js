@@ -36,6 +36,7 @@ import LottieView from 'lottie-react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
+import Loader from '../components/Loader';
 import { computePriority } from '../utils/priority';
 import { logDev } from '../utils/logger';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
@@ -125,6 +126,7 @@ const SwipeScreen = () => {
   const [showUndoPrompt, setShowUndoPrompt] = useState(false);
   const [showBoostModal, setShowBoostModal] = useState(false);
   const [debugInfo, setDebugInfo] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const pan = useRef(new Animated.ValueXY()).current;
   // 4 main buttons shown in the toolbar
@@ -347,7 +349,8 @@ const SwipeScreen = () => {
   }, [currentIndex]);
 
 const handleSwipe = async (direction) => {
-  if (!displayUser) return;
+  if (!displayUser || actionLoading) return;
+  setActionLoading(true);
 
   // Provide light haptic feedback on every swipe
   Haptics.selectionAsync().catch(() => {});
@@ -355,6 +358,7 @@ const handleSwipe = async (direction) => {
 
     if (direction === 'right') {
       if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
+        setActionLoading(false);
         navigation.navigate('Premium', { context: 'paywall' });
         return;
       }
@@ -460,6 +464,7 @@ const handleSwipe = async (direction) => {
     pan.setValue({ x: 0, y: 0 });
     setImageIndex(0);
     setCurrentIndex((i) => i + 1);
+    setActionLoading(false);
   };
 
   const rewind = () => {
@@ -485,7 +490,7 @@ const handleSwipe = async (direction) => {
   };
 
   const handleSuperLike = async () => {
-    if (!displayUser) return;
+    if (!displayUser || actionLoading) return;
     if (!isPremiumUser && !devMode) {
       navigation.navigate('Premium', { context: 'paywall' });
       return;
@@ -496,6 +501,7 @@ const handleSwipe = async (direction) => {
     Toast.show({ type: 'success', text1: '🌟 Superliked!' });
     handleSwipe('right');
 
+    setActionLoading(true);
     try {
       if (requireCredits()) {
         await sendGameInvite(targetId, '1');
@@ -504,6 +510,8 @@ const handleSwipe = async (direction) => {
       }
     } catch (e) {
       console.warn('Failed to send invite', e);
+    } finally {
+      setActionLoading(false);
     }
 
     setTimeout(() => setShowSuperLikeAnim(false), 1500);
@@ -511,8 +519,9 @@ const handleSwipe = async (direction) => {
 
   const handleGamePickSelect = async (game) => {
     setShowGamePicker(false);
-    if (!displayUser || !game) return;
+    if (!displayUser || !game || actionLoading) return;
     if (!requireCredits()) return;
+    setActionLoading(true);
     try {
       const inviteId = await sendGameInvite(displayUser.id, game.id);
       recordGamePlayed();
@@ -525,6 +534,8 @@ const handleSwipe = async (direction) => {
     } catch (e) {
       console.warn('Failed to send invite', e);
       Toast.show({ type: 'error', text1: 'Failed to send invite' });
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -597,8 +608,9 @@ const handleSwipe = async (direction) => {
 
   const handleGameInvite = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    if (!displayUser) return;
+    if (!displayUser || actionLoading) return;
     if (!requireCredits()) return;
+    setActionLoading(true);
     try {
       const inviteId = await sendGameInvite(displayUser.id, '1');
       Toast.show({ type: 'success', text1: 'Invite sent!' });
@@ -625,6 +637,8 @@ const handleSwipe = async (direction) => {
     } catch (e) {
       console.warn('Failed to send game invite', e);
       Toast.show({ type: 'error', text1: 'Failed to send invite' });
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -796,7 +810,10 @@ const handleSwipe = async (direction) => {
           ].map((btn, i) => (
             <Animated.View
               key={btn.icon}
-              style={{ transform: [{ scale: scaleRefs[i] }] }}
+              style={{
+                transform: [{ scale: scaleRefs[i] }],
+                opacity: actionLoading ? 0.6 : 1,
+              }}
             >
               <TouchableOpacity
                 onPressIn={() =>
@@ -820,6 +837,7 @@ const handleSwipe = async (direction) => {
                 }
                 delayLongPress={300}
                 style={[styles.circleButton, { backgroundColor: btn.color }]}
+                disabled={actionLoading}
               >
                 {btn.icon === 'game-controller' ? (
                   <MaterialCommunityIcons name="gamepad-variant" size={28} color="#fff" />
@@ -830,6 +848,11 @@ const handleSwipe = async (direction) => {
             </Animated.View>
           ))}
         </View>
+        {actionLoading && (
+          <View style={styles.actionLoader} pointerEvents="none">
+            <Loader size="small" />
+          </View>
+        )}
 
         {showDetails && (
           <Modal visible={showDetails} transparent animationType="slide">
@@ -1034,6 +1057,13 @@ const getStyles = (theme) =>
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     paddingHorizontal: SPACING.XL,
+  },
+  actionLoader: {
+    position: 'absolute',
+    bottom: BUTTON_ROW_BOTTOM + 70,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
   },
   circleButton: {
     width: 60,
