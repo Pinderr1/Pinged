@@ -15,6 +15,7 @@ import GradientBackground from '../components/GradientBackground';
 import ScreenContainer from '../components/ScreenContainer';
 import GradientButton from '../components/GradientButton';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Easing } from 'react-native';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { HEADER_SPACING } from '../layout';
@@ -430,7 +431,8 @@ const handleSwipe = async (direction) => {
     if (!displayUser) return;
     Animated.timing(pan, {
       toValue: { x: -SCREEN_WIDTH, y: 0 },
-      duration: 200,
+      duration: 250,
+      easing: Easing.out(Easing.ease),
       useNativeDriver: false,
     }).start(() => handleSwipe('left'));
   };
@@ -439,7 +441,8 @@ const handleSwipe = async (direction) => {
     if (!displayUser) return;
     Animated.timing(pan, {
       toValue: { x: SCREEN_WIDTH, y: 0 },
-      duration: 200,
+      duration: 250,
+      easing: Easing.out(Easing.ease),
       useNativeDriver: false,
     }).start(() => handleSwipe('right'));
   };
@@ -458,13 +461,15 @@ const handleSwipe = async (direction) => {
         } else if (gesture.dx > 120) {
           Animated.timing(pan, {
             toValue: { x: SCREEN_WIDTH, y: 0 },
-            duration: 200,
+            duration: 250,
+            easing: Easing.out(Easing.ease),
             useNativeDriver: false,
           }).start(() => handleSwipe('right'));
         } else if (gesture.dx < -120) {
           Animated.timing(pan, {
             toValue: { x: -SCREEN_WIDTH, y: 0 },
-            duration: 200,
+            duration: 250,
+            easing: Easing.out(Easing.ease),
             useNativeDriver: false,
           }).start(() => handleSwipe('left'));
         } else {
@@ -478,6 +483,7 @@ const handleSwipe = async (direction) => {
   ).current;
 
   const handleGameInvite = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     if (!displayUser) return;
     if (!requireCredits()) return;
     try {
@@ -572,7 +578,10 @@ const handleSwipe = async (direction) => {
                 />
               </View>
               <TouchableOpacity
-                onPress={() => setShowDetails(true)}
+                onPress={() => {
+                  Haptics.selectionAsync().catch(() => {});
+                  setShowDetails(true);
+                }}
                 style={styles.expandIcon}
               >
                 <Ionicons name="chevron-up" size={24} color="#fff" />
@@ -609,7 +618,10 @@ const handleSwipe = async (direction) => {
                 style={{ marginTop: 20 }}
               />
               <TouchableOpacity
-                onPress={() => navigation.navigate('Settings')}
+                onPress={() => {
+                  Haptics.selectionAsync().catch(() => {});
+                  navigation.navigate('Settings');
+                }}
                 style={{ marginTop: 12 }}
               >
                 <Text style={styles.changeFiltersText}>Change Filters</Text>
