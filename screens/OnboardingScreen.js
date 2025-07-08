@@ -41,6 +41,7 @@ import { logDev } from '../utils/logger';
 import LocationInfoModal from '../components/LocationInfoModal';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
 import useVoicePlayback from '../hooks/useVoicePlayback';
+import { PRESETS } from '../data/presets';
 
 const overlayOptions = [
   { id: 'heart', src: overlayAssets.heart },
@@ -55,6 +56,7 @@ const questions = [
   { key: 'ageGender', label: 'Age & gender' },
   { key: 'bio', label: 'Write a short bio' },
   { key: 'location', label: 'Where are you located?' },
+  { key: 'preset', label: 'Choose a preset' },
   { key: 'mood', label: 'How are you feeling today?' },
   { key: 'favoriteGames', label: 'Select your favorite games' },
   { key: 'promptResponses', label: 'Answer some prompts' },
@@ -89,7 +91,8 @@ export default function OnboardingScreen() {
     genderPref: '',
     bio: '',
     location: '',
-    mood: '',
+    preset: 'default',
+    mood: PRESETS[0].mood,
     favoriteGames: [],
     promptResponses: ['', '', ''],
     personalityTags: '',
@@ -203,6 +206,7 @@ export default function OnboardingScreen() {
         personalityTags: sanitizeText(answers.personalityTags.trim()),
         badgePrefs: answers.badgePrefs.map((b) => sanitizeText(b)),
         bio: sanitizeText(answers.bio.trim()),
+        themePreset: answers.preset,
         onboardingComplete: true,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
@@ -462,6 +466,32 @@ export default function OnboardingScreen() {
             <Ionicons name="arrow-forward" size={16} color={theme.accent} />
           </TouchableOpacity>
         </View>
+      );
+    }
+
+    if (currentField === 'preset') {
+      const options = PRESETS.map((p) => ({ label: p.label, value: p.id }));
+      return (
+        <RNPickerSelect
+          onValueChange={(val) => {
+            Haptics.selectionAsync().catch(() => {});
+            const preset = PRESETS.find((p) => p.id === val) || PRESETS[0];
+            setAnswers((prev) => ({
+              ...prev,
+              preset: val,
+              mood: preset.mood,
+            }));
+          }}
+          value={answers.preset}
+          placeholder={{ label: 'Select a preset', value: null }}
+          useNativeAndroidPickerStyle={false}
+          style={{
+            inputIOS: styles.input,
+            inputAndroid: styles.input,
+            placeholder: { color: darkMode ? '#999' : '#aaa' },
+          }}
+          items={options}
+        />
       );
     }
 

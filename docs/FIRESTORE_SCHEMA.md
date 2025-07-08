@@ -14,6 +14,7 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `favoriteGames` (array of string)
 - `bio` (string)
 - `mood` (string)
+- `themePreset` (string)
 - `promptResponses` (array of string)
 - `personalityTags` (string)
 - `badgePrefs` (array of string)

@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View } from 'react-native';
 import Loader from '../components/Loader';
 import { lightTheme, darkTheme } from '../theme';
+import { PRESETS } from '../data/presets';
+import { useUser } from './UserContext';
 
 const ThemeContext = createContext();
 const STORAGE_KEY = 'darkMode';
@@ -10,6 +12,7 @@ const STORAGE_KEY = 'darkMode';
 export const ThemeProvider = ({ children }) => {
   const [loaded, setLoaded] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const { user } = useUser();
 
   useEffect(() => {
     let isMounted = true;
@@ -35,7 +38,15 @@ export const ThemeProvider = ({ children }) => {
     setDarkMode(next);
   };
 
-  const theme = darkMode ? darkTheme : lightTheme;
+  const baseTheme = darkMode ? darkTheme : lightTheme;
+  const preset = PRESETS.find((p) => p.id === user?.themePreset) || PRESETS[0];
+  const theme = {
+    ...baseTheme,
+    accent: preset.accent,
+    gradientStart: preset.gradientStart,
+    gradientEnd: preset.gradientEnd,
+    gradient: [preset.gradientStart, preset.gradientEnd],
+  };
 
   return (
     <ThemeContext.Provider value={{ darkMode, toggleTheme, theme, loaded }}>
