@@ -13,6 +13,10 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `location` (string)
 - `favoriteGames` (array of string)
 - `bio` (string)
+- `preset` (string) – selected style preset
+- `mood` (string)
+- `statusMessage` (string)
+- `themeColors` (map) – `{ accent, gradientStart, gradientEnd }`
 - `jobTitle` (string)
 - `company` (string)
 - `school` (string)

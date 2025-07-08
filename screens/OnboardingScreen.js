@@ -34,12 +34,14 @@ import MultiSelectList from '../components/MultiSelectList';
 import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { allGames } from '../data/games';
+import { PRESETS } from '../data/presets';
 import { logDev } from '../utils/logger';
 import LocationInfoModal from '../components/LocationInfoModal';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
 import useVoicePlayback from '../hooks/useVoicePlayback';
 
 const questions = [
+  { key: 'preset', label: 'Choose a preset' },
   { key: 'avatar', label: 'Upload your photo' },
   { key: 'introClip', label: 'Record a quick intro clip' },
   { key: 'displayName', label: 'What’s your name?' },
@@ -50,7 +52,7 @@ const questions = [
   { key: 'favoriteGames', label: 'Select your favorite games' },
 ];
 
-const requiredFields = ['avatar', 'displayName', 'age'];
+const requiredFields = ['preset', 'avatar', 'displayName', 'age'];
 // Determine the index of the last required question in the flow
 const lastRequiredIndex = Math.max(
   ...requiredFields.map((field) =>
@@ -68,6 +70,10 @@ export default function OnboardingScreen() {
 
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
   const [answers, setAnswers] = useState({
+    preset: '',
+    mood: '',
+    status: '',
+    themeColors: {},
     avatar: '',
     introClip: '',
     displayName: '',
@@ -147,6 +153,7 @@ export default function OnboardingScreen() {
   const validateField = () => {
     const value = answers[currentField];
     if (!requiredFields.includes(currentField)) return true;
+    if (currentField === 'preset') return !!value;
     if (currentField === 'age') return /^\d+$/.test(value) && parseInt(value, 10) >= 18;
     if (currentField === 'avatar') return !!value;
     return value && value.toString().trim().length > 0;
@@ -209,6 +216,10 @@ export default function OnboardingScreen() {
         location: sanitizeText(answers.location),
         favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
         bio: sanitizeText(answers.bio.trim()),
+        preset: answers.preset,
+        mood: answers.mood,
+        statusMessage: answers.status,
+        themeColors: answers.themeColors,
         onboardingComplete: true,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
@@ -356,6 +367,34 @@ export default function OnboardingScreen() {
         { label: 'Any', value: 'Any' },
       ],
     };
+
+    if (currentField === 'preset') {
+      const items = PRESETS.map((p) => ({ label: p.label, value: p.id }));
+      return (
+        <RNPickerSelect
+          onValueChange={(val) => {
+            Haptics.selectionAsync().catch(() => {});
+            const preset = PRESETS.find((p) => p.id === val);
+            setAnswers((prev) => ({
+              ...prev,
+              preset: val,
+              mood: preset?.mood || '',
+              status: preset?.status || '',
+              themeColors: preset?.theme || {},
+            }));
+          }}
+          value={answers.preset}
+          placeholder={{ label: 'Select preset', value: null }}
+          useNativeAndroidPickerStyle={false}
+          style={{
+            inputIOS: styles.input,
+            inputAndroid: styles.input,
+            placeholder: { color: darkMode ? '#999' : '#aaa' },
+          }}
+          items={items}
+        />
+      );
+    }
 
     if (currentField === 'avatar') {
       return (
