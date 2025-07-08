@@ -50,30 +50,46 @@ service cloud.firestore {
       return reqId != null ? reqId : resId;
     }
 
+    function ownerFieldsMatch() {
+      return (!('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid) &&
+             (!('userId' in request.resource.data) || request.resource.data.userId == request.auth.uid) &&
+             (!('hostId' in request.resource.data) || request.resource.data.hostId == request.auth.uid);
+    }
+
     match /users/{userId} {
       allow read: if signedIn();
-      allow create: if isUser(userId);
+      allow create: if isUser(userId) && ownerFieldsMatch();
       // Only allow users to update their own document
       allow update: if isUser(userId) &&
-        canPlayDaily(resource.data, request.resource.data);
+        canPlayDaily(resource.data, request.resource.data) && ownerFieldsMatch();
       match /gameInvites/{inviteId} {
-        allow read, write: if isUser(userId);
+        allow read: if isUser(userId);
+        allow write: if isUser(userId) && ownerFieldsMatch();
       }
       match /notifications/{noteId} {
-        allow read, write: if isUser(userId);
+        allow read: if isUser(userId);
+        allow write: if isUser(userId) && ownerFieldsMatch();
       }
     }
 
     match /matchRequests/{requestId} {
-      allow read, write: if signedIn() &&
+      allow read: if signedIn() &&
         (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to ||
          request.auth.uid == request.resource.data.from || request.auth.uid == request.resource.data.to);
+      allow write: if signedIn() &&
+        (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to ||
+         request.auth.uid == request.resource.data.from || request.auth.uid == request.resource.data.to) &&
+        ownerFieldsMatch();
     }
 
     match /gameInvites/{inviteId} {
-      allow read, write: if signedIn() &&
+      allow read: if signedIn() &&
         (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to ||
          request.auth.uid == request.resource.data.from || request.auth.uid == request.resource.data.to);
+      allow write: if signedIn() &&
+        (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to ||
+         request.auth.uid == request.resource.data.from || request.auth.uid == request.resource.data.to) &&
+        ownerFieldsMatch();
     }
 
     match /gameSessions/{sessionId} {
@@ -83,30 +99,40 @@ service cloud.firestore {
       allow write: if signedIn() &&
         (request.auth.uid in resource.data.players ||
          request.auth.uid in request.resource.data.players) &&
-        (!isPremiumGame(sessionGameId(sessionId)) || isPremium(request.auth.uid));
+        (!isPremiumGame(sessionGameId(sessionId)) || isPremium(request.auth.uid)) &&
+        ownerFieldsMatch();
     }
 
     match /gameStats/{statId} {
-      allow read, write: if signedIn();
+      allow read: if signedIn();
+      allow write: if signedIn() && ownerFieldsMatch();
     }
 
     match /chats/{chatId} {
-      allow read, write: if signedIn() &&
+      allow read: if signedIn() &&
         request.auth.uid in resource.data.participants;
+      allow write: if signedIn() &&
+        request.auth.uid in resource.data.participants && ownerFieldsMatch();
     }
 
     match /matches/{matchId} {
-      allow read, write: if signedIn() &&
+      allow read: if signedIn() &&
         (request.auth.uid in resource.data.users ||
          request.auth.uid in request.resource.data.users);
+      allow write: if signedIn() &&
+        (request.auth.uid in resource.data.users ||
+         request.auth.uid in request.resource.data.users) && ownerFieldsMatch();
       match /messages/{messageId} {
-        allow read, write: if signedIn() &&
+        allow read: if signedIn() &&
           request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
+        allow write: if signedIn() &&
+          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users && ownerFieldsMatch();
       }
     }
 
     match /events/{eventId} {
-      allow read, write: if signedIn();
+      allow read: if signedIn();
+      allow write: if signedIn() && ownerFieldsMatch();
     }
 
     match /matchHistory/{historyId} {
@@ -117,17 +143,21 @@ service cloud.firestore {
     match /games/{gameId} {
       allow read: if true;
       match /messages/{messageId} {
-        allow read, write: if signedIn() &&
+        allow read: if signedIn() &&
           isMatch(request.auth.uid,
             request.resource.data.otherUid != null ?
               request.resource.data.otherUid : resource.data.otherUid);
+        allow write: if signedIn() &&
+          isMatch(request.auth.uid,
+            request.resource.data.otherUid != null ?
+              request.resource.data.otherUid : resource.data.otherUid) && ownerFieldsMatch();
       }
     }
 
     // Community Board posts accessible to all signed-in users
     match /communityPosts/{postId} {
       allow read: if true;
-      allow write: if signedIn();
+      allow write: if signedIn() && ownerFieldsMatch();
     }
   }
 }
