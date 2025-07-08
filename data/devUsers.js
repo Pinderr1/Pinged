@@ -9,6 +9,10 @@ export const devUsers = [
     gender: 'Other',
     genderPref: 'Any',
     location: 'Localhost',
+    mood: 'happy',
+    promptResponses: [],
+    personalityTags: '',
+    badgePrefs: [],
   },
   {
     id: '__devUser2',
@@ -20,6 +24,10 @@ export const devUsers = [
     gender: 'Other',
     genderPref: 'Any',
     location: 'Localhost',
+    mood: 'happy',
+    promptResponses: [],
+    personalityTags: '',
+    badgePrefs: [],
   },
   {
     id: '__devUser3',
@@ -31,5 +39,9 @@ export const devUsers = [
     gender: 'Other',
     genderPref: 'Any',
     location: 'Localhost',
+    mood: 'happy',
+    promptResponses: [],
+    personalityTags: '',
+    badgePrefs: [],
   },
 ];
