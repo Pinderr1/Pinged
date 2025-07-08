@@ -55,7 +55,9 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, delete: if isUser(userId);
+      // Restrict read access to only the authenticated user
+      allow read: if request.auth.uid == userId;
+      allow delete: if isUser(userId);
       allow create: if isUser(userId) &&
         request.resource.data.uid is string &&
         request.resource.data.uid == userId;
