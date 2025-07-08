@@ -9,6 +9,10 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
+    function isOwner(field) {
+      return signedIn() && request.auth.uid == field;
+    }
+
     function canPlayDaily(oldData, newData) {
       let premium = (oldData.isPremium == true) || (newData.isPremium == true);
       if (premium) return true;
@@ -51,10 +55,12 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if signedIn();
-      allow create: if isUser(userId);
-      // Only allow users to update their own document
+      allow read, delete: if isUser(userId);
+      allow create: if isUser(userId) &&
+        request.resource.data.uid is string &&
+        request.resource.data.uid == userId;
       allow update: if isUser(userId) &&
+        request.resource.data.uid == userId &&
         canPlayDaily(resource.data, request.resource.data);
       match /gameInvites/{inviteId} {
         allow read, write: if isUser(userId);
@@ -87,7 +93,9 @@ service cloud.firestore {
     }
 
     match /gameStats/{statId} {
-      allow read, write: if signedIn();
+      allow read: if signedIn() && request.auth.uid in resource.data.players;
+      allow create, update, delete: if signedIn() &&
+        request.auth.uid in request.resource.data.players;
     }
 
     match /chats/{chatId} {
@@ -106,11 +114,20 @@ service cloud.firestore {
     }
 
     match /events/{eventId} {
-      allow read, write: if signedIn();
+      allow read: if resource.data.public == true || signedIn();
+      allow create: if isOwner(request.resource.data.hostId) &&
+        request.resource.data.hostId is string;
+      allow update, delete: if isOwner(resource.data.hostId);
+      match /messages/{messageId} {
+        allow read: if signedIn();
+        allow create: if isOwner(request.resource.data.userId) &&
+          request.resource.data.userId is string;
+        allow update, delete: if isOwner(resource.data.userId);
+      }
     }
 
     match /matchHistory/{historyId} {
-      allow read: if signedIn();
+      allow read, write: if signedIn() && request.auth.uid in resource.data.users;
     }
 
     // List of available games for onboarding
@@ -126,8 +143,10 @@ service cloud.firestore {
 
     // Community Board posts accessible to all signed-in users
     match /communityPosts/{postId} {
-      allow read: if true;
-      allow write: if signedIn();
+      allow read: if resource.data.public == true || signedIn();
+      allow create: if isOwner(request.resource.data.userId) &&
+        request.resource.data.userId is string;
+      allow update, delete: if isOwner(resource.data.userId);
     }
   }
 }
