@@ -29,7 +29,7 @@ import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
-import MultiSelectList from '../components/MultiSelectList';
+import GameSelection from '../components/GameSelection';
 import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { allGames } from '../data/games';
@@ -106,33 +106,7 @@ export default function OnboardingScreen() {
     location: '',
     favoriteGames: [],
   });
-  const defaultGameOptions = allGames.map((g) => ({
-    label: g.title,
-    value: g.title,
-  }));
-  const [gameOptions, setGameOptions] = useState(defaultGameOptions);
   const [showLocationInfo, setShowLocationInfo] = useState(false);
-
-  useEffect(() => {
-    const unsub = firebase
-      .firestore()
-      .collection('games')
-      .orderBy('title')
-      .onSnapshot(
-        (snap) => {
-          if (!snap.empty) {
-            setGameOptions(
-              snap.docs.map((d) => ({
-                label: d.data().title,
-                value: d.data().title,
-              }))
-            );
-          }
-        },
-        (e) => console.warn('Failed to load games', e)
-      );
-    return unsub;
-  }, []);
 
   const currentField = questions[step].key;
   const progress = (step + 1) / questions.length;
@@ -472,13 +446,11 @@ export default function OnboardingScreen() {
 
     if (currentField === 'favoriteGames') {
       return (
-        <MultiSelectList
-          options={gameOptions}
+        <GameSelection
           selected={answers.favoriteGames}
           onChange={(vals) =>
             setAnswers((prev) => ({ ...prev, favoriteGames: vals }))
           }
-          theme={theme}
         />
       );
     }
