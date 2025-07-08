@@ -115,9 +115,8 @@ service cloud.firestore {
 
     match /events/{eventId} {
       allow read: if resource.data.public == true || signedIn();
-      allow create: if isOwner(request.resource.data.hostId) &&
-        request.resource.data.hostId is string;
-      allow update, delete: if isOwner(resource.data.hostId);
+      allow create, update: if request.auth.uid == request.resource.data.hostId;
+      allow delete: if request.auth.uid == resource.data.hostId;
       match /messages/{messageId} {
         allow read: if signedIn();
         allow create: if isOwner(request.resource.data.userId) &&
@@ -144,9 +143,8 @@ service cloud.firestore {
     // Community Board posts accessible to all signed-in users
     match /communityPosts/{postId} {
       allow read: if resource.data.public == true || signedIn();
-      allow create: if isOwner(request.resource.data.userId) &&
-        request.resource.data.userId is string;
-      allow update, delete: if isOwner(resource.data.userId);
+      allow create, update: if request.auth.uid == request.resource.data.hostId;
+      allow delete: if request.auth.uid == resource.data.hostId;
     }
   }
 }
