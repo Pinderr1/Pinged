@@ -71,7 +71,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const { user, addGameXP } = useUser();
   const isPremiumUser = !!user?.isPremium;
   const requireCredits = useRequireGameCredits();
-  const { sendGameInvite } = useMatchmaking();
+  const { sendGameInvite, cancelGameInvite } = useMatchmaking();
 
   const { game, opponent, status = 'waiting', inviteId } = route.params || {};
 
@@ -86,6 +86,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const isReady = devMode || inviteStatus === 'ready';
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const overlayOpacity = useRef(new Animated.Value(1)).current;
+  const [showFallback, setShowFallback] = useState(false);
   const opponentProfile = useUserProfile(opponent?.id);
 
   const userBadges = computeBadges({
@@ -138,6 +139,19 @@ const LiveSessionScreen = ({ route, navigation }) => {
       useNativeDriver: true,
     }).start();
   }, [showGame, overlayOpacity]);
+
+  // Show fallback if waiting too long or invite is cancelled/declined
+  useEffect(() => {
+    if (devMode || showGame) return;
+    if (inviteStatus === 'cancelled' || inviteStatus === 'declined') {
+      setShowFallback(true);
+      return;
+    }
+    if (inviteStatus !== 'ready') {
+      const t = setTimeout(() => setShowFallback(true), 20000);
+      return () => clearTimeout(t);
+    }
+  }, [inviteStatus, showGame, devMode]);
 
   // Countdown logic
   useEffect(() => {
@@ -222,6 +236,15 @@ const LiveSessionScreen = ({ route, navigation }) => {
 
   const [debouncedRematch, rematchWaiting] = useDebouncedCallback(handleRematch, 800);
 
+  const handleCancel = async () => {
+    try {
+      if (inviteId) await cancelGameInvite(inviteId);
+    } catch (e) {
+      console.warn('Failed to cancel invite', e);
+    }
+    navigation.goBack();
+  };
+
   if (!game || !opponent) {
     return (
       <GradientBackground style={globalStyles.swipeScreen}>
@@ -302,17 +325,29 @@ const LiveSessionScreen = ({ route, navigation }) => {
         {!showGame && (
           <Animated.View style={[local.overlay, { opacity: overlayOpacity }]}>
             {countdown === null ? (
-              <>
-                <Text style={[local.waitText, { color: theme.text }]}>Waiting for opponent...</Text>
-                <Loader size="small" style={{ marginTop: 20 }} />
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('GameWithBot')}
-                >
-                  <Text style={{ color: theme.accent, marginTop: 10 }}>
-                    Play with an AI bot instead
-                  </Text>
-                </TouchableOpacity>
-              </>
+              showFallback ? (
+                <>
+                  <Text style={[local.waitText, { color: theme.text }]}>Game didn't start.</Text>
+                  <TouchableOpacity onPress={() => navigation.navigate('GameWithBot')}>
+                    <Text style={{ color: theme.accent, marginTop: 10 }}>
+                      Play with an AI bot instead
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleCancel}>
+                    <Text style={{ color: theme.accent, marginTop: 10 }}>Cancel</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <Text style={[local.waitText, { color: theme.text }]}>Waiting for opponent...</Text>
+                  <Loader size="small" style={{ marginTop: 20 }} />
+                  <TouchableOpacity onPress={() => navigation.navigate('GameWithBot')}>
+                    <Text style={{ color: theme.accent, marginTop: 10 }}>
+                      Play with an AI bot instead
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )
             ) : (
               <Animated.Text style={[local.countText, { transform: [{ scale: scaleAnim }] }]}>{countdown}</Animated.Text>
             )}
