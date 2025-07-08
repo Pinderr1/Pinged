@@ -18,6 +18,7 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loginBonus, setLoginBonus] = useState(false);
+  const [streakReward, setStreakReward] = useState(null);
   const devUser = {
     displayName: "Dev Tester",
     age: 99,
@@ -128,6 +129,19 @@ export const UserProvider = ({ children }) => {
     const newUnlocks = computeUnlocks({ xp: newXP, unlocks: user.unlocks || [] });
     const updates = { xp: newXP, streak: newStreak, lastActiveAt: new Date() };
     if (opts.markPlayed) updates.lastPlayedAt = new Date();
+
+    const rewardedAt = user.streakRewardedAt
+      ? user.streakRewardedAt.toDate?.() || new Date(user.streakRewardedAt)
+      : null;
+    const lastPlayed = user.lastPlayedAt
+      ? user.lastPlayedAt.toDate?.() || new Date(user.lastPlayedAt)
+      : null;
+    let giveReward = false;
+    if (newStreak % 7 === 0 && (!rewardedAt || (lastPlayed && rewardedAt < lastPlayed))) {
+      giveReward = true;
+      setStreakReward(newStreak);
+      updates.streakRewardedAt = new Date();
+    }
     updateUser({ ...updates, badges: newBadges, unlocks: newUnlocks });
     try {
       await firebase
@@ -146,6 +160,9 @@ export const UserProvider = ({ children }) => {
         unlocks: firebase.firestore.FieldValue.arrayUnion(
           ...newUnlocks.filter((u) => !(user.unlocks || []).includes(u))
         ),
+        ...(giveReward
+          ? { streakRewardedAt: firebase.firestore.FieldValue.serverTimestamp() }
+          : {}),
       });
     } catch (e) {
       console.warn("Failed to update XP", e);
@@ -157,6 +174,8 @@ export const UserProvider = ({ children }) => {
   const addLoginXP = (amount = 5) => addActivityXP(amount);
 
   const loginBonusGiven = useRef(false);
+
+  const acknowledgeStreakReward = () => setStreakReward(null);
 
   useEffect(() => {
     if (!user?.uid || loginBonusGiven.current) return;
@@ -181,7 +200,16 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider
-      value={{ user, updateUser, addGameXP, addLoginXP, loginBonus, loading }}
+      value={{
+        user,
+        updateUser,
+        addGameXP,
+        addLoginXP,
+        loginBonus,
+        streakReward,
+        acknowledgeStreakReward,
+        loading,
+      }}
     >
       {loading ? (
         <View

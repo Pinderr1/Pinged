@@ -31,6 +31,7 @@ import PremiumBanner from '../components/PremiumBanner';
 import ActiveGamesPreview from '../components/ActiveGamesPreview';
 import MatchesPreview from '../components/MatchesPreview';
 import { FONT_FAMILY } from '../textStyles';
+import StreakRewardModal from '../components/StreakRewardModal';
 
 // Map app game IDs to boardgame registry keys for AI play
 const aiGameMap = allGames.reduce((acc, g) => {
@@ -44,13 +45,14 @@ const aiGameMap = allGames.reduce((acc, g) => {
 const CARD_SIZE = 140;
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
-  const { user, loginBonus } = useUser();
+  const { user, loginBonus, streakReward, acknowledgeStreakReward } = useUser();
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft } = useGameLimit();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
   const [showBonus, setShowBonus] = useState(false);
   const [showPremiumBanner, setShowPremiumBanner] = useState(!isPremiumUser);
+  const [showStreakReward, setShowStreakReward] = useState(false);
   const local = getStyles(theme);
 
 
@@ -67,6 +69,12 @@ const HomeScreen = ({ navigation }) => {
       return () => clearTimeout(t);
     }
   }, [loginBonus]);
+
+  useEffect(() => {
+    if (streakReward) {
+      setShowStreakReward(true);
+    }
+  }, [streakReward]);
 
   useEffect(() => {
     setShowPremiumBanner(!isPremiumUser);
@@ -223,6 +231,14 @@ const HomeScreen = ({ navigation }) => {
             </View>
           </View>
         </Modal>
+        <StreakRewardModal
+          visible={showStreakReward}
+          streak={streakReward}
+          onClose={() => {
+            setShowStreakReward(false);
+            acknowledgeStreakReward();
+          }}
+        />
       </ScreenContainer>
     </GradientBackground>
   );
