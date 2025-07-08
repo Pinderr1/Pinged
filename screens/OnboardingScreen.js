@@ -13,7 +13,7 @@ import {
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import firebase from '../firebase';
-import { uploadAvatarAsync } from '../utils/upload';
+import { uploadAvatarAsync, uploadVoiceAsync } from '../utils/upload';
 import PropTypes from 'prop-types';
 import { sanitizeText } from '../utils/sanitize';
 import { snapshotExists } from '../utils/firestore';
@@ -28,6 +28,7 @@ import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import MultiSelectList from '../components/MultiSelectList';
+import useVoiceRecorder from '../hooks/useVoiceRecorder';
 import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { allGames } from '../data/games';
@@ -36,22 +37,26 @@ import LocationInfoModal from '../components/LocationInfoModal';
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
-  // TODO: allow recording a short voice or video intro and store URL in profile
-  { key: 'displayName', label: 'What’s your name?' },
-  { key: 'age', label: 'How old are you?' },
-  { key: 'genderInfo', label: 'Gender & preference' },
+  { key: 'introClip', label: 'Record a short intro (optional)' },
+  { key: 'displayName', label: "What's your name?" },
+  { key: 'basicInfo', label: 'Age & gender' },
+  { key: 'mood', label: 'Current mood or status' },
+  { key: 'profilePrompt1', label: 'My perfect co-op partner is...' },
+  { key: 'teammateTag', label: 'Personality tags' },
   { key: 'bio', label: 'Write a short bio' },
   { key: 'location', label: 'Where are you located?' },
   { key: 'favoriteGames', label: 'Select your favorite games' },
 ];
 
-const requiredFields = ['avatar', 'displayName', 'age'];
+const requiredFields = ['avatar', 'displayName', 'basicInfo'];
 
 export default function OnboardingScreen() {
   const { darkMode, theme } = useTheme();
   const { updateUser } = useUser();
   const { markOnboarded, hasOnboarded } = useOnboarding();
   const styles = getStyles(theme);
+  const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
+  const [recordedIntro, setRecordedIntro] = useState(null);
 
   const [step, setStep] = useState(0);
   const cardOpacity = useRef(new Animated.Value(1)).current;
@@ -80,6 +85,10 @@ export default function OnboardingScreen() {
     age: '',
     gender: '',
     genderPref: '',
+    mood: '',
+    profilePrompt1: '',
+    teammateTag: [],
+    introClipUrl: '',
     bio: '',
     location: '',
     favoriteGames: [],
@@ -127,7 +136,9 @@ export default function OnboardingScreen() {
   const validateField = () => {
     const value = answers[currentField];
     if (!requiredFields.includes(currentField)) return true;
-    if (currentField === 'age') return /^\d+$/.test(value) && parseInt(value, 10) >= 18;
+    if (currentField === 'basicInfo') {
+      return /^\d+$/.test(answers.age) && parseInt(answers.age, 10) >= 18;
+    }
     if (currentField === 'avatar') return !!value;
     return value && value.toString().trim().length > 0;
   };
@@ -158,6 +169,14 @@ export default function OnboardingScreen() {
     await saveProfile();
   };
 
+  const skipStep = () => {
+    if (step < questions.length - 1) {
+      animateStepChange(step + 1);
+    } else {
+      handleSkip();
+    }
+  };
+
   const saveProfile = async () => {
     try {
       let photoURL = answers.avatar;
@@ -183,6 +202,10 @@ export default function OnboardingScreen() {
         age: parseInt(answers.age, 10) || null,
         gender: sanitizeText(answers.gender),
         genderPref: sanitizeText(answers.genderPref),
+        mood: sanitizeText(answers.mood),
+        profilePrompt1: sanitizeText(answers.profilePrompt1),
+        teammateTag: answers.teammateTag.map((t) => sanitizeText(t)),
+        introClipUrl: answers.introClipUrl,
         location: sanitizeText(answers.location),
         favoriteGames: answers.favoriteGames.map((g) => sanitizeText(g)),
         bio: sanitizeText(answers.bio.trim()),
@@ -327,32 +350,27 @@ export default function OnboardingScreen() {
       );
     }
 
-    if (currentField === 'age') {
+    if (currentField === 'basicInfo') {
       const ageItems = Array.from({ length: 83 }, (_, i) => i + 18).map((n) => ({
         label: `${n}`, value: `${n}`,
       }));
       return (
-        <RNPickerSelect
-          onValueChange={(val) => {
-            Haptics.selectionAsync().catch(() => {});
-            setAnswers((prev) => ({ ...prev, age: val }));
-          }}
-          value={answers.age}
-          placeholder={{ label: 'Select age', value: null }}
-          useNativeAndroidPickerStyle={false}
-          style={{
-            inputIOS: styles.input,
-            inputAndroid: styles.input,
-            placeholder: { color: theme.textSecondary },
-          }}
-          items={ageItems}
-        />
-      );
-    }
-
-    if (currentField === 'genderInfo') {
-      return (
         <View>
+          <RNPickerSelect
+            onValueChange={(val) => {
+              Haptics.selectionAsync().catch(() => {});
+              setAnswers((prev) => ({ ...prev, age: val }));
+            }}
+            value={answers.age}
+            placeholder={{ label: 'Select age', value: null }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              inputIOS: styles.input,
+              inputAndroid: styles.input,
+              placeholder: { color: theme.textSecondary },
+            }}
+            items={ageItems}
+          />
           <RNPickerSelect
             onValueChange={(val) => {
               Haptics.selectionAsync().catch(() => {});
@@ -362,8 +380,8 @@ export default function OnboardingScreen() {
             placeholder={{ label: 'Select gender', value: null }}
             useNativeAndroidPickerStyle={false}
             style={{
-              inputIOS: styles.input,
-              inputAndroid: styles.input,
+              inputIOS: [styles.input, { marginTop: 20 }],
+              inputAndroid: [styles.input, { marginTop: 20 }],
               placeholder: { color: darkMode ? '#999' : '#aaa' },
             }}
             items={pickerFields.gender}
@@ -398,6 +416,76 @@ export default function OnboardingScreen() {
           }
           theme={theme}
         />
+      );
+    }
+
+    if (currentField === 'mood') {
+      return (
+        <TextInput
+          style={styles.input}
+          value={answers.mood}
+          onChangeText={(text) =>
+            setAnswers((prev) => ({ ...prev, mood: text }))
+          }
+          placeholder="e.g. Flirty, Chill, Competitive"
+          placeholderTextColor={darkMode ? '#999' : '#aaa'}
+        />
+      );
+    }
+
+    if (currentField === 'profilePrompt1') {
+      return (
+        <TextInput
+          style={styles.input}
+          value={answers.profilePrompt1}
+          onChangeText={(text) =>
+            setAnswers((prev) => ({ ...prev, profilePrompt1: text }))
+          }
+          placeholder="My perfect co-op partner is..."
+          placeholderTextColor={darkMode ? '#999' : '#aaa'}
+        />
+      );
+    }
+
+    if (currentField === 'teammateTag') {
+      const tagOptions = [
+        { label: 'Strategist', value: 'Strategist' },
+        { label: 'Speedrunner', value: 'Speedrunner' },
+        { label: 'Trash Talker', value: 'Trash Talker' },
+      ];
+      return (
+        <MultiSelectList
+          options={tagOptions}
+          selected={answers.teammateTag}
+          onChange={(vals) =>
+            setAnswers((prev) => ({ ...prev, teammateTag: vals }))
+          }
+          theme={theme}
+        />
+      );
+    }
+
+    if (currentField === 'introClip') {
+      return (
+        <View style={{ alignItems: 'center' }}>
+          <TouchableOpacity
+            style={[styles.recordButton, isRecording && { backgroundColor: '#f66' }]}
+            onPress={async () => {
+              if (isRecording) {
+                const res = await stopRecording();
+                if (res?.uri) {
+                  const url = await uploadVoiceAsync(res.uri, firebase.auth().currentUser.uid);
+                  setAnswers((prev) => ({ ...prev, introClipUrl: url }));
+                  setRecordedIntro(url);
+                }
+              } else {
+                startRecording();
+              }
+            }}
+          >
+            <Text style={{ color: '#fff' }}>{isRecording ? 'Stop' : recordedIntro ? 'Re-record' : 'Record'}</Text>
+          </TouchableOpacity>
+        </View>
       );
     }
 
@@ -447,7 +535,7 @@ export default function OnboardingScreen() {
         }
         placeholder={questions[step].label}
         placeholderTextColor={darkMode ? '#999' : '#aaa'}
-        keyboardType={currentField === 'age' ? 'numeric' : 'default'}
+        keyboardType={currentField === 'basicInfo' ? 'numeric' : 'default'}
         autoCapitalize="none"
       />
     );
@@ -493,6 +581,11 @@ export default function OnboardingScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+        {!requiredFields.includes(currentField) && (
+          <TouchableOpacity style={styles.skipButton} onPress={skipStep}>
+            <Text style={styles.skipButtonText}>Skip for now</Text>
+          </TouchableOpacity>
+        )}
         {step >= requiredFields.length - 1 && (
           <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
             <Text style={styles.skipButtonText}>Complete Profile Later</Text>
@@ -644,6 +737,13 @@ const getStyles = (theme) => {
       color: accent,
       fontSize: FONT_SIZES.MD,
       textDecorationLine: 'underline',
+    },
+    recordButton: {
+      backgroundColor: accent,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 30,
+      marginTop: 20,
     },
     gradientStart: theme.gradientStart,
     gradientEnd: theme.gradientEnd,
