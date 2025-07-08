@@ -806,7 +806,7 @@ const getPrivateStyles = (theme) =>
     borderRadius: 20,
   },
   playButton: {
-    backgroundColor: '#009688',
+    backgroundColor: theme.primary,
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 16,
@@ -814,7 +814,7 @@ const getPrivateStyles = (theme) =>
     marginLeft: 8,
   },
   menuButton: {
-    backgroundColor: '#009688',
+    backgroundColor: theme.primary,
     padding: 6,
     borderRadius: 16,
     alignSelf: 'center',
@@ -823,7 +823,7 @@ const getPrivateStyles = (theme) =>
   gameMenu: {
     position: 'absolute',
     right: 20,
-    backgroundColor: '#009688',
+    backgroundColor: theme.primary,
     borderRadius: 8,
     padding: 8,
   },
