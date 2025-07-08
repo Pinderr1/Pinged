@@ -25,6 +25,7 @@ import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import GamePickerModal from '../components/GamePickerModal';
+import BoostModal from '../components/BoostModal';
 import { allGames } from '../data/games';
 import { icebreakers } from '../data/prompts';
 import { devUsers } from '../data/devUsers';
@@ -91,7 +92,7 @@ const SwipeScreen = () => {
   const styles = getStyles(theme);
   const navigation = useNavigation();
   const { showNotification } = useNotification();
-  const { user: currentUser } = useUser();
+  const { user: currentUser, updateUser } = useUser();
   const { play } = useSound();
   const { devMode } = useDev();
   const { addMatch } = useChats();
@@ -121,11 +122,12 @@ const SwipeScreen = () => {
   const [showGamePicker, setShowGamePicker] = useState(false);
   const [pendingInviteId, setPendingInviteId] = useState(null);
   const [showUndoPrompt, setShowUndoPrompt] = useState(false);
+  const [showBoostModal, setShowBoostModal] = useState(false);
 
   const pan = useRef(new Animated.ValueXY()).current;
-  // 3 main buttons shown in the toolbar
+  // 4 main buttons shown in the toolbar
   const scaleRefs = useRef(
-    Array(3)
+    Array(4)
       .fill(null)
       .map(() => new Animated.Value(1))
   ).current;
@@ -149,6 +151,10 @@ const SwipeScreen = () => {
 
   const [users, setUsers] = useState([]);
   const displayUser = users[currentIndex] ?? null;
+  const isDisplayBoosted =
+    displayUser?.boostUntil &&
+    (displayUser.boostUntil.toDate?.() || new Date(displayUser.boostUntil)) >
+      new Date();
   const { playing: playingIntro, playPause: playIntro } = useVoicePlayback(
     displayUser?.voiceIntro
   );
@@ -573,6 +579,30 @@ const handleSwipe = async (direction) => {
     }
   };
 
+  const activateBoost = async () => {
+    if (!currentUser?.uid) return;
+    const boostUntil = new Date(Date.now() + 30 * 60 * 1000);
+    const updates = { boostUntil };
+    if (!currentUser.boostTrialUsed) updates.boostTrialUsed = true;
+    updateUser(updates);
+    try {
+      await firebase.firestore().collection('users').doc(currentUser.uid).update(updates);
+      Toast.show({ type: 'success', text1: 'Boost activated!' });
+    } catch (e) {
+      console.warn('Failed to activate boost', e);
+      Toast.show({ type: 'error', text1: 'Boost failed' });
+    }
+    setShowBoostModal(false);
+  };
+
+  const handleBoostPress = () => {
+    if (currentUser?.boostTrialUsed && !isPremiumUser && !devMode) {
+      navigation.navigate('Premium', { context: 'upgrade' });
+    } else {
+      setShowBoostModal(true);
+    }
+  };
+
   const gradientColors = [theme.gradientStart, theme.gradientEnd];
 
 
@@ -634,6 +664,11 @@ const handleSwipe = async (direction) => {
                   color={theme.accent}
                   style={{ marginLeft: 6 }}
                 />
+                {isDisplayBoosted && (
+                  <View style={styles.boostBadge}>
+                    <Text style={styles.boostBadgeText}>🔥 Boosted</Text>
+                  </View>
+                )}
               </View>
               <TouchableOpacity
                 onPress={() => {
@@ -670,9 +705,7 @@ const handleSwipe = async (direction) => {
               <GradientButton
                 text="Boost"
                 width={180}
-                onPress={() =>
-                  navigation.navigate('Premium', { context: 'upgrade' })
-                }
+                onPress={handleBoostPress}
                 style={{ marginTop: 20 }}
               />
               <TouchableOpacity
@@ -689,6 +722,11 @@ const handleSwipe = async (direction) => {
 
         <View style={styles.buttonRow}>
           {[
+            {
+              icon: 'flame',
+              color: '#fb923c',
+              action: handleBoostPress,
+            },
             {
               icon: "close",
               color: "#f87171",
@@ -807,6 +845,13 @@ const handleSwipe = async (direction) => {
           visible={showGamePicker}
           onSelect={handleGamePickSelect}
           onClose={() => setShowGamePicker(false)}
+        />
+        <BoostModal
+          visible={showBoostModal}
+          trialUsed={!!currentUser?.boostTrialUsed}
+          onActivate={activateBoost}
+          onUpgrade={() => navigation.navigate('Premium', { context: 'upgrade' })}
+          onClose={() => setShowBoostModal(false)}
         />
         {showUndoPrompt && (isPremiumUser || devMode) ? (
           <View style={styles.undoBanner}>
@@ -949,6 +994,14 @@ const getStyles = (theme) =>
   nopeText: {
     color: '#f87171',
   },
+  boostBadge: {
+    marginLeft: 8,
+    backgroundColor: theme.accent,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  boostBadgeText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
   superLikeBadge: {
     top: CARD_HEIGHT / 2 - 20,
     left: SCREEN_WIDTH / 2 - 80,
