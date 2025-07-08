@@ -36,7 +36,7 @@ const getStyles = (theme) =>
     menu: {
       position: 'absolute',
       right: 20,
-      backgroundColor: '#009688',
+      backgroundColor: theme.primary,
       borderRadius: 8,
       padding: 8,
     },
