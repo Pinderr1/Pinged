@@ -156,12 +156,18 @@ const SwipeScreen = () => {
     (displayUser.boostUntil.toDate?.() || new Date(displayUser.boostUntil)) >
       new Date();
   const { playing: playingIntro, playPause: playIntro } = useVoicePlayback(
-    displayUser?.voiceIntro
+    displayUser?.introClipUrl && displayUser.introClipUrl.endsWith('.m4a')
+      ? displayUser.introClipUrl
+      : null
   );
   const {
     playing: playingMatchIntro,
     playPause: playMatchIntro,
-  } = useVoicePlayback(matchedUser?.voiceIntro);
+  } = useVoicePlayback(
+    matchedUser?.introClipUrl && matchedUser.introClipUrl.endsWith('.m4a')
+      ? matchedUser.introClipUrl
+      : null
+  );
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -226,7 +232,7 @@ const SwipeScreen = () => {
             displayName: u.displayName || 'User',
             age: u.age || '',
             bio: u.bio || '',
-            voiceIntro: u?.voiceIntro || '',
+            introClipUrl: u?.introClipUrl || '',
             favoriteGames: Array.isArray(u.favoriteGames) ? u.favoriteGames : [],
             gender: u.gender || '',
             genderPref: u.genderPref || '',
@@ -790,18 +796,29 @@ const handleSwipe = async (direction) => {
                   {displayUser?.displayName}, {displayUser?.age}
                 </Text>
                 <Text style={styles.bioText}>{displayUser?.bio}</Text>
-                {displayUser?.voiceIntro ? (
-                  <TouchableOpacity
-                    onPress={playIntro}
-                    style={styles.playIntro}
-                  >
-                    <Ionicons
-                      name={playingIntro ? 'pause' : 'play'}
-                      size={32}
-                      color={theme.accent}
-                    />
-                  </TouchableOpacity>
-                ) : null}
+                {displayUser?.introClipUrl
+                  ? displayUser.introClipUrl.endsWith('.m4a')
+                    ? (
+                        <TouchableOpacity
+                          onPress={playIntro}
+                          style={styles.playIntro}
+                        >
+                          <Ionicons
+                            name={playingIntro ? 'pause' : 'play'}
+                            size={32}
+                            color={theme.accent}
+                          />
+                        </TouchableOpacity>
+                      )
+                    : (
+                        <Video
+                          source={{ uri: displayUser.introClipUrl }}
+                          style={{ width: 200, height: 200, alignSelf: 'center', marginTop: 10 }}
+                          useNativeControls
+                          resizeMode="contain"
+                        />
+                      )
+                  : null}
                 <GradientButton
                   text="Close"
                   width={120}
@@ -823,15 +840,29 @@ const handleSwipe = async (direction) => {
                 style={{ width: 300, height: 300 }}
               />
               <Text style={styles.matchText}>It's a Match with {matchedUser.displayName}!</Text>
-              {matchedUser?.voiceIntro ? (
-                <TouchableOpacity onPress={playMatchIntro} style={styles.playIntro}>
-                  <Ionicons
-                    name={playingMatchIntro ? 'pause' : 'play'}
-                    size={32}
-                    color="#fff"
-                  />
-                </TouchableOpacity>
-              ) : null}
+              {matchedUser?.introClipUrl
+                ? matchedUser.introClipUrl.endsWith('.m4a')
+                  ? (
+                      <TouchableOpacity
+                        onPress={playMatchIntro}
+                        style={styles.playIntro}
+                      >
+                        <Ionicons
+                          name={playingMatchIntro ? 'pause' : 'play'}
+                          size={32}
+                          color="#fff"
+                        />
+                      </TouchableOpacity>
+                    )
+                  : (
+                      <Video
+                        source={{ uri: matchedUser.introClipUrl }}
+                        style={{ width: 200, height: 200, marginTop: 10 }}
+                        useNativeControls
+                        resizeMode="contain"
+                      />
+                    )
+                : null}
               {matchLine ? (
                 <Text style={styles.suggestText}>{`Try: "${matchLine}"`}</Text>
               ) : null}

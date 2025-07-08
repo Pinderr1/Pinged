@@ -13,7 +13,7 @@ import {
 import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import firebase from '../firebase';
-import { uploadAvatarAsync, uploadIntroAsync } from '../utils/upload';
+import { uploadAvatarAsync, uploadIntroClipAsync } from '../utils/upload';
 import PropTypes from 'prop-types';
 import { sanitizeText } from '../utils/sanitize';
 import { snapshotExists } from '../utils/firestore';
@@ -27,6 +27,7 @@ import { avatarSource } from '../utils/avatar';
 import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { Video } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import MultiSelectList from '../components/MultiSelectList';
@@ -40,7 +41,7 @@ import useVoicePlayback from '../hooks/useVoicePlayback';
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
-  { key: 'voiceIntro', label: 'Record a quick voice intro' },
+  { key: 'introClip', label: 'Record a quick intro clip' },
   { key: 'displayName', label: 'What’s your name?' },
   { key: 'age', label: 'How old are you?' },
   { key: 'genderInfo', label: 'Gender & preference' },
@@ -68,7 +69,7 @@ export default function OnboardingScreen() {
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
   const [answers, setAnswers] = useState({
     avatar: '',
-    voiceIntro: '',
+    introClip: '',
     displayName: '',
     age: '',
     gender: '',
@@ -78,7 +79,9 @@ export default function OnboardingScreen() {
     favoriteGames: [],
   });
 
-  const { playing, playPause } = useVoicePlayback(answers.voiceIntro);
+  const { playing, playPause } = useVoicePlayback(
+    answers.introClip && answers.introClip.endsWith('.m4a') ? answers.introClip : null
+  );
 
   const [step, setStep] = useState(0);
   const cardOpacity = useRef(new Animated.Value(1)).current;
@@ -101,17 +104,6 @@ export default function OnboardingScreen() {
       }).start();
     });
   };
-  const [answers, setAnswers] = useState({
-    avatar: '',
-    voiceIntro: '',
-    displayName: '',
-    age: '',
-    gender: '',
-    genderPref: '',
-    bio: '',
-    location: '',
-    favoriteGames: [],
-  });
   const defaultGameOptions = allGames.map((g) => ({
     label: g.title,
     value: g.title,
@@ -210,7 +202,7 @@ export default function OnboardingScreen() {
           (answers.displayName || user.displayName || '').trim()
         ),
         photoURL,
-        voiceIntro: answers.voiceIntro || '',
+        introClipUrl: answers.introClip || '',
         age: parseInt(answers.age, 10) || null,
         gender: sanitizeText(answers.gender),
         genderPref: sanitizeText(answers.genderPref),
@@ -284,24 +276,48 @@ export default function OnboardingScreen() {
     }
   };
 
-  const handleVoicePress = async () => {
+  const handleAudioPress = async () => {
     if (isRecording) {
       const result = await stopRecording();
       if (result) {
         try {
-          const url = await uploadIntroAsync(
+          const url = await uploadIntroClipAsync(
             result.uri,
             firebase.auth().currentUser.uid
           );
-          if (url)
-            setAnswers((prev) => ({ ...prev, voiceIntro: url }));
+          if (url) setAnswers((prev) => ({ ...prev, introClip: url }));
         } catch (e) {
-          console.error('Voice upload failed:', e);
+          console.error('Intro clip upload failed:', e);
           Toast.show({ type: 'error', text1: 'Failed to upload intro' });
         }
       }
     } else {
       await startRecording();
+    }
+  };
+
+  const handleVideoPress = async () => {
+    Haptics.selectionAsync().catch(() => {});
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Toast.show({ type: 'error', text1: 'Permission denied' });
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      videoMaxDuration: 15,
+    });
+    if (!result.canceled) {
+      try {
+        const url = await uploadIntroClipAsync(
+          result.assets[0].uri,
+          firebase.auth().currentUser.uid
+        );
+        if (url) setAnswers((prev) => ({ ...prev, introClip: url }));
+      } catch (e) {
+        console.error('Intro clip upload failed:', e);
+        Toast.show({ type: 'error', text1: 'Failed to upload intro' });
+      }
     }
   };
 
@@ -355,27 +371,41 @@ export default function OnboardingScreen() {
       );
     }
 
-    if (currentField === 'voiceIntro') {
+    if (currentField === 'introClip') {
       return (
         <View style={{ alignItems: 'center' }}>
-          <TouchableOpacity
-            onPress={handleVoicePress}
-            style={styles.voiceButton}
-          >
-            <Ionicons
-              name={isRecording ? 'stop' : 'mic'}
-              size={28}
-              color="#fff"
-            />
-          </TouchableOpacity>
-          {answers.voiceIntro ? (
-            <TouchableOpacity onPress={playPause} style={styles.playButton}>
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity onPress={handleAudioPress} style={styles.voiceButton}>
               <Ionicons
-                name={playing ? 'pause' : 'play'}
+                name={isRecording ? 'stop' : 'mic'}
                 size={28}
                 color="#fff"
               />
             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleVideoPress}
+              style={[styles.voiceButton, { marginLeft: 20 }]}
+            >
+              <Ionicons name="videocam" size={28} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          {answers.introClip ? (
+            answers.introClip.endsWith('.m4a') ? (
+              <TouchableOpacity onPress={playPause} style={styles.playButton}>
+                <Ionicons
+                  name={playing ? 'pause' : 'play'}
+                  size={28}
+                  color="#fff"
+                />
+              </TouchableOpacity>
+            ) : (
+              <Video
+                source={{ uri: answers.introClip }}
+                style={{ width: 200, height: 200, marginTop: 10 }}
+                useNativeControls
+                resizeMode="contain"
+              />
+            )
           ) : null}
         </View>
       );

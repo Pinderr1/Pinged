@@ -82,3 +82,23 @@ export async function uploadIntroAsync(uri, uid) {
     return null;
   }
 }
+
+export async function uploadIntroClipAsync(uri, uid) {
+  if (!uri || !uid) throw new Error('uri and uid required');
+  try {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const extMatch = uri.match(/\.([a-zA-Z0-9]+)$/);
+    const ext = extMatch ? extMatch[1] : 'mp4';
+    const filename = `${Date.now()}.${ext}`;
+    const ref = firebase.storage().ref().child(`introClips/${uid}/${filename}`);
+    const uploadTask = ref.put(blob);
+    await new Promise((resolve, reject) => {
+      uploadTask.on('state_changed', null, reject, resolve);
+    });
+    return ref.getDownloadURL();
+  } catch (e) {
+    console.warn('Failed to upload intro clip', e);
+    return null;
+  }
+}
