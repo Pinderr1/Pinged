@@ -1,7 +1,7 @@
 // /screens/StatsScreen.js
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
@@ -17,6 +17,7 @@ import StatBox from '../components/stats/StatBox';
 import ScreenContainer from '../components/ScreenContainer';
 import { CARD_STYLE } from '../components/Card';
 import { getBadgeMeta } from '../utils/badges';
+import XpInfoModal from '../components/XpInfoModal';
 
 const StatsScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -38,6 +39,7 @@ const StatsScreen = ({ navigation }) => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [showXpInfo, setShowXpInfo] = useState(false);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -186,6 +188,22 @@ const StatsScreen = ({ navigation }) => {
             })}
           </View>
         </StatBox>
+        <StatBox loading={false} styles={styles}>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center' }}
+            onPress={() => setShowXpInfo(true)}
+          >
+            <Ionicons
+              name="information-circle-outline"
+              size={20}
+              color={theme.accent}
+              style={{ marginRight: 4 }}
+            />
+            <Text style={styles.statLabel}>XP & Streak Info</Text>
+          </TouchableOpacity>
+        </StatBox>
+
+        <XpInfoModal visible={showXpInfo} onClose={() => setShowXpInfo(false)} />
 
         {!isPremium && (
           <GradientButton
