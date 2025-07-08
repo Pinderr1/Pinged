@@ -65,16 +65,16 @@ export default function OnboardingScreen() {
   const animateStepChange = (newStep) => {
     Animated.timing(cardOpacity, {
       toValue: 0,
-      duration: 200,
-      easing: Easing.out(Easing.ease),
+      duration: 300,
+      easing: Easing.inOut(Easing.ease),
       useNativeDriver: true,
     }).start(() => {
       setStep(newStep);
       cardOpacity.setValue(0);
       Animated.timing(cardOpacity, {
         toValue: 1,
-        duration: 200,
-        easing: Easing.out(Easing.ease),
+        duration: 300,
+        easing: Easing.inOut(Easing.ease),
         useNativeDriver: true,
       }).start();
     });
@@ -124,8 +124,8 @@ export default function OnboardingScreen() {
   useEffect(() => {
     Animated.timing(progressAnim, {
       toValue: progress,
-      duration: 300,
-      easing: Easing.out(Easing.ease),
+      duration: 400,
+      easing: Easing.inOut(Easing.ease),
       useNativeDriver: false,
     }).start();
   }, [progress, progressAnim]);
@@ -157,6 +157,7 @@ export default function OnboardingScreen() {
     checkExisting();
   }, [hasOnboarded]);
   const handleSkip = async () => {
+    Haptics.selectionAsync().catch(() => {});
     if (!firebase.auth().currentUser) {
       Toast.show({ type: 'error', text1: 'No user signed in' });
       return;
@@ -206,6 +207,7 @@ export default function OnboardingScreen() {
     }
   };
   const handleNext = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     if (!firebase.auth().currentUser) {
       Toast.show({ type: 'error', text1: 'No user signed in' });
       return;
@@ -236,10 +238,12 @@ export default function OnboardingScreen() {
   };
 
   const handleBack = () => {
+    Haptics.selectionAsync().catch(() => {});
     if (step > 0) animateStepChange(step - 1);
   };
 
   const pickImage = async () => {
+    Haptics.selectionAsync().catch(() => {});
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Toast.show({ type: 'error', text1: 'Permission denied' });
@@ -279,6 +283,7 @@ export default function OnboardingScreen() {
   };
 
   const autofillLocation = async () => {
+    Haptics.selectionAsync().catch(() => {});
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') return;
@@ -358,7 +363,10 @@ export default function OnboardingScreen() {
         <View>
           <TouchableOpacity
             style={styles.locationContainer}
-            onPress={autofillLocation}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              autofillLocation();
+            }}
           >
             <MaterialCommunityIcons
               name="crosshairs-gps"
@@ -372,7 +380,10 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.infoLink}
-            onPress={() => setShowLocationInfo(true)}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setShowLocationInfo(true);
+            }}
           >
             <Text style={styles.infoLinkText}>How is my location used?</Text>
             <Ionicons name="arrow-forward" size={16} color={theme.accent} />
