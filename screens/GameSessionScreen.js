@@ -238,11 +238,17 @@ const LiveSessionScreen = ({ route, navigation }) => {
       <Header showLogoOnly />
 
       <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 10 }}>
-        <PlayerInfoBar name="You" xp={user?.xp || 0} badges={userBadges} />
+        <PlayerInfoBar
+          name="You"
+          xp={user?.xp || 0}
+          badges={userBadges}
+          isPremium={user?.isPremium}
+        />
         <PlayerInfoBar
           name={opponent.displayName}
           xp={opponentProfile?.xp || 0}
           badges={oppBadges}
+          isPremium={opponentProfile?.isPremium}
         />
       </View>
 
@@ -507,6 +513,7 @@ function BotSessionScreen({ route }) {
               badges: user?.badges || [],
               isPremium: user?.isPremium,
             })}
+            isPremium={user?.isPremium}
           />
           <PlayerInfoBar name={bot.name} xp={0} badges={[]} />
         </View>

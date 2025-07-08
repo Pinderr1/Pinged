@@ -140,6 +140,9 @@ const StatsScreen = ({ navigation }) => {
         <StatBox loading={loading} styles={styles}>
           <Text style={styles.statLabel}>{`XP Level ${level}`}</Text>
           <ProgressBar value={xpProgress} max={100} color={theme.accent} />
+          {isPremium && (
+            <Text style={styles.premiumXp}>Premium XP</Text>
+          )}
           <Text style={styles.statSub}>{stats.xp} XP</Text>
         </StatBox>
 
@@ -228,6 +231,16 @@ const getStyles = (theme) => StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
     fontSize: FONT_SIZES.SM - 2
+  },
+  premiumXp: {
+    fontSize: FONT_SIZES.SM - 2,
+    color: '#fff',
+    backgroundColor: theme.accent,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginTop: 4,
   },
   sectionTitle: {
     fontSize: FONT_SIZES.MD,

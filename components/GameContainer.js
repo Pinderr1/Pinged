@@ -42,6 +42,7 @@ export default function GameContainer({
             name={player.name || 'You'}
             xp={player.xp}
             badges={player.badges}
+            isPremium={player.isPremium}
           />
           {onToggleChat && (
             <TouchableOpacity style={styles.chatToggle} onPress={onToggleChat}>
@@ -56,6 +57,7 @@ export default function GameContainer({
             name={opponent.name || 'Opponent'}
             xp={opponent.xp}
             badges={opponent.badges}
+            isPremium={opponent.isPremium}
           />
         </View>
       )}

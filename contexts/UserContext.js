@@ -118,7 +118,9 @@ export const UserProvider = ({ children }) => {
       newStreak = 1;
     }
 
-    const newXP = (user.xp || 0) + amount;
+    const multiplier = user.isPremium ? 1.5 : 1;
+    const gained = Math.round(amount * multiplier);
+    const newXP = (user.xp || 0) + gained;
     const newBadges = computeBadges({
       xp: newXP,
       streak: newStreak,

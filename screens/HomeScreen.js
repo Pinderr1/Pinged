@@ -135,6 +135,9 @@ const HomeScreen = ({ navigation }) => {
             <Card style={[local.progressCard, { backgroundColor: theme.card }]}>
               <Text style={[local.levelText, { color: theme.text }]}>{`Level ${level}`}</Text>
               <ProgressBar value={xpProgress} max={100} color={theme.accent} />
+              {isPremiumUser && (
+                <Text style={local.premiumXp}>Premium XP</Text>
+              )}
               <Text style={[local.streakLabel, { color: theme.textSecondary }]}>{`${user?.streak || 0} day streak`}</Text>
               <ProgressBar value={streakProgress} max={7} color="#2ecc71" />
               {nextUnlock && (
@@ -274,6 +277,16 @@ const getStyles = (theme) =>
       fontSize: 16,
       fontFamily: FONT_FAMILY.bold,
       marginBottom: 4,
+    },
+    premiumXp: {
+      fontSize: 10,
+      color: '#fff',
+      backgroundColor: theme.accent,
+      alignSelf: 'flex-start',
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 8,
+      marginTop: 4,
     },
     streakLabel: {
       fontSize: 12,
