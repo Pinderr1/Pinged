@@ -22,6 +22,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { allGames } from '../data/games';
 import { Ionicons } from '@expo/vector-icons';
 import LocationInfoModal from '../components/LocationInfoModal';
+import Loader from '../components/Loader';
 
 const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
@@ -55,6 +56,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
   const [avatar, setAvatar] = useState(user?.photoURL || '');
   const [showLocationInfo, setShowLocationInfo] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -120,7 +122,8 @@ const ProfileScreen = ({ navigation, route }) => {
   }, []);
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user || saving) return;
+    setSaving(true);
     let photoURL = avatar;
   if (avatar && !avatar.startsWith('http')) {
     try {
@@ -169,6 +172,8 @@ const ProfileScreen = ({ navigation, route }) => {
     } catch (e) {
       console.warn('Failed to update profile', e);
       Toast.show({ type: 'error', text1: 'Update failed' });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -365,7 +370,12 @@ const ProfileScreen = ({ navigation, route }) => {
         value={workout}
         onChangeText={setWorkout}
       />
-      <GradientButton text={saveLabel} onPress={handleSave} />
+      <GradientButton
+        text={saveLabel}
+        onPress={handleSave}
+        disabled={saving}
+        icon={saving ? <Loader size="small" /> : undefined}
+      />
       <LocationInfoModal
         visible={showLocationInfo}
         onClose={() => setShowLocationInfo(false)}
