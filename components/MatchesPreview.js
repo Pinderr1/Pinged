@@ -19,7 +19,13 @@ export default function MatchesPreview({ navigation }) {
       style={styles.match}
       onPress={() => navigation.navigate('Chat', { user: item })}
     >
-      <AvatarRing source={item.image} size={56} isMatch isOnline={item.online} />
+      <AvatarRing
+        source={item.image}
+        overlay={item.avatarOverlay}
+        size={56}
+        isMatch
+        isOnline={item.online}
+      />
       <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
         {item.displayName}
       </Text>

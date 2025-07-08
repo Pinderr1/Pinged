@@ -24,7 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import { avatarSource } from '../utils/avatar';
+import { avatarSource, overlayAssets } from '../utils/avatar';
 import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
@@ -40,6 +40,12 @@ import { logDev } from '../utils/logger';
 import LocationInfoModal from '../components/LocationInfoModal';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
 import useVoicePlayback from '../hooks/useVoicePlayback';
+
+const overlayOptions = [
+  { id: 'heart', src: overlayAssets.heart },
+  { id: 'star', src: overlayAssets.star },
+  { id: 'badge', src: overlayAssets.badge },
+];
 
 const questions = [
   { key: 'avatar', label: 'Upload your photo' },
@@ -74,6 +80,7 @@ export default function OnboardingScreen() {
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
   const [answers, setAnswers] = useState({
     avatar: '',
+    overlay: '',
     introClip: '',
     displayName: '',
     age: '',
@@ -206,6 +213,7 @@ export default function OnboardingScreen() {
           (answers.displayName || user.displayName || '').trim()
         ),
         photoURL,
+        avatarOverlay: answers.overlay || '',
         introClipUrl: answers.introClip || '',
         age: parseInt(answers.age, 10) || null,
         gender: sanitizeText(answers.gender),
@@ -369,15 +377,41 @@ export default function OnboardingScreen() {
 
     if (currentField === 'avatar') {
       return (
-        <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-          {answers.avatar ? (
-            <Image source={avatarSource(answers.avatar)} style={styles.avatar} />
-          ) : (
-            <View style={styles.placeholder}>
-              <Text style={{ color: '#999' }}>Tap to select image</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+            {answers.avatar ? (
+              <View>
+                <Image source={avatarSource(answers.avatar)} style={styles.avatar} />
+                {answers.overlay ? (
+                  <Image
+                    source={overlayAssets[answers.overlay]}
+                    style={[styles.avatar, styles.overlayImage]}
+                  />
+                ) : null}
+              </View>
+            ) : (
+              <View style={styles.placeholder}>
+                <Text style={{ color: '#999' }}>Tap to select image</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <View style={styles.overlaySelector}>
+            {overlayOptions.map((o) => (
+              <TouchableOpacity
+                key={o.id}
+                onPress={() =>
+                  setAnswers((prev) => ({ ...prev, overlay: o.id }))
+                }
+                style={[
+                  styles.overlayOption,
+                  answers.overlay === o.id && styles.overlaySelected,
+                ]}
+              >
+                <Image source={o.src} style={styles.overlayThumb} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </>
       );
     }
 
@@ -782,6 +816,26 @@ const getStyles = (theme) => {
       height: 150,
       borderRadius: 75,
     },
+    overlayImage: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+    },
+    overlaySelector: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
+    overlayOption: {
+      marginHorizontal: 6,
+      padding: 4,
+      borderWidth: 2,
+      borderColor: 'transparent',
+      borderRadius: 8,
+    },
+    overlaySelected: {
+      borderColor: accent,
+    },
+    overlayThumb: { width: 40, height: 40, borderRadius: 20 },
     placeholder: {
       width: 150,
       height: 150,

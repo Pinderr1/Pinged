@@ -3,10 +3,11 @@ import { View, Image, Animated, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
-import { avatarSource } from '../utils/avatar';
+import { avatarSource, overlaySource } from '../utils/avatar';
 
 export default function AvatarRing({
   source,
+  overlay,
   size = 56,
   isMatch = false,
   isOnline = false,
@@ -88,14 +89,32 @@ export default function AvatarRing({
             </Animated.View>
           </View>
           <Image source={avatarSource(source)} style={imageStyle} />
+          {overlay && (
+            <Image
+              source={overlaySource(overlay)}
+              style={[StyleSheet.absoluteFill, imageStyle]}
+            />
+          )}
         </View>
       ) : isMatch ? (
         <LinearGradient colors={theme.gradient} style={ringStyle}>
           <Image source={avatarSource(source)} style={imageStyle} />
+          {overlay && (
+            <Image
+              source={overlaySource(overlay)}
+              style={[StyleSheet.absoluteFill, imageStyle]}
+            />
+          )}
         </LinearGradient>
       ) : (
         <View style={ringStyle}>
           <Image source={avatarSource(source)} style={imageStyle} />
+          {overlay && (
+            <Image
+              source={overlaySource(overlay)}
+              style={[StyleSheet.absoluteFill, imageStyle]}
+            />
+          )}
         </View>
       )}
       {isOnline && (
@@ -118,6 +137,7 @@ export default function AvatarRing({
 
 AvatarRing.propTypes = {
   source: PropTypes.any,
+  overlay: PropTypes.string,
   size: PropTypes.number,
   isMatch: PropTypes.bool,
   isOnline: PropTypes.bool,

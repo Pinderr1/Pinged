@@ -113,6 +113,7 @@ const MatchesScreen = ({ navigation }) => {
     >
       <AvatarRing
         source={item.image}
+        overlay={item.avatarOverlay}
         size={56}
         isMatch
         isOnline={item.online}
@@ -132,6 +133,7 @@ const MatchesScreen = ({ navigation }) => {
       <View style={styles.avatarColumn}>
         <AvatarRing
           source={item.image}
+          overlay={item.avatarOverlay}
           size={48}
           isMatch
           isOnline={item.online}
@@ -175,6 +177,7 @@ const MatchesScreen = ({ navigation }) => {
         <View style={styles.avatarColumn}>
           <AvatarRing
             source={item.image}
+            overlay={item.avatarOverlay}
             size={48}
             isMatch
             isOnline={item.online}
