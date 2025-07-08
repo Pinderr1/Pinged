@@ -4,12 +4,13 @@ import {
   Text,
   Image,
   Animated,
-  PanResponder,
   TouchableOpacity,
   Dimensions,
   Modal,
   StyleSheet,
+  Alert,
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import GradientBackground from '../components/GradientBackground';
 import ScreenContainer from '../components/ScreenContainer';
@@ -110,7 +111,7 @@ const SwipeScreen = () => {
   const [likesUsed, setLikesUsed] = useState(0);
   const [matchedUser, setMatchedUser] = useState(null);
   const [showFireworks, setShowFireworks] = useState(false);
-  const [imageIndex, setImageIndex] = useState(0);
+  const [currentPhoto, setCurrentPhoto] = useState(0);
   const [history, setHistory] = useState([]);
   const [showSuperLikeAnim, setShowSuperLikeAnim] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -121,7 +122,6 @@ const SwipeScreen = () => {
   const [pendingInviteId, setPendingInviteId] = useState(null);
   const [showUndoPrompt, setShowUndoPrompt] = useState(false);
 
-  const pan = useRef(new Animated.ValueXY()).current;
   // 3 main buttons shown in the toolbar
   const scaleRefs = useRef(
     Array(3)
@@ -129,22 +129,6 @@ const SwipeScreen = () => {
       .map(() => new Animated.Value(1))
   ).current;
 
-  const likeOpacity = pan.x.interpolate({
-    inputRange: [0, 150],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
-
-  const nopeOpacity = pan.x.interpolate({
-    inputRange: [-150, 0],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
-  const superLikeOpacity = pan.y.interpolate({
-    inputRange: [-150, 0],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
 
   const [users, setUsers] = useState([]);
   const displayUser = users[currentIndex] ?? null;
@@ -285,9 +269,9 @@ const SwipeScreen = () => {
     verifiedOnly,
   ]);
 
-  // Reset card position whenever the index changes
+  // Reset photo index whenever the card changes
   useEffect(() => {
-    pan.setValue({ x: 0, y: 0 });
+    setCurrentPhoto(0);
   }, [currentIndex]);
 
 const handleSwipe = async (direction) => {
@@ -401,8 +385,7 @@ const handleSwipe = async (direction) => {
     }
 
     setHistory((h) => [...h, currentIndex]);
-    pan.setValue({ x: 0, y: 0 });
-    setImageIndex(0);
+    setCurrentPhoto(0);
     setCurrentIndex((i) => i + 1);
   };
 
@@ -415,8 +398,7 @@ const handleSwipe = async (direction) => {
     const prevIndex = history[history.length - 1];
     setHistory((h) => h.slice(0, -1));
     setCurrentIndex(prevIndex);
-    setImageIndex(0);
-    pan.setValue({ x: 0, y: 0 });
+    setCurrentPhoto(0);
   };
 
   const handleSwipeChallenge = () => {
@@ -484,56 +466,45 @@ const handleSwipe = async (direction) => {
     setPendingInviteId(null);
   };
 
+  const swipeableRef = useRef(null);
+
   const swipeLeft = () => {
     if (!displayUser) return;
-    Animated.timing(pan, {
-      toValue: { x: -SCREEN_WIDTH, y: 0 },
-      duration: 200,
-      useNativeDriver: false,
-    }).start(() => handleSwipe('left'));
+    swipeableRef.current?.close();
+    handleSwipe('left');
   };
 
   const swipeRight = () => {
     if (!displayUser) return;
-    Animated.timing(pan, {
-      toValue: { x: SCREEN_WIDTH, y: 0 },
-      duration: 200,
-      useNativeDriver: false,
-    }).start(() => handleSwipe('right'));
+    swipeableRef.current?.close();
+    handleSwipe('right');
   };
 
+  const handleSwipeableOpen = (dir) => {
+    const profile = displayUser;
+    if (profile) {
+      Alert.alert(dir === 'right' ? 'Liked' : 'Skipped', profile.displayName);
+    }
+    handleSwipe(dir === 'right' ? 'right' : 'left');
+  };
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
-        useNativeDriver: false,
-      }),
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy < -120 && Math.abs(gesture.dx) < 80) {
-          handleSwipeChallenge();
-        } else if (gesture.dx > 120) {
-          Animated.timing(pan, {
-            toValue: { x: SCREEN_WIDTH, y: 0 },
-            duration: 200,
-            useNativeDriver: false,
-          }).start(() => handleSwipe('right'));
-        } else if (gesture.dx < -120) {
-          Animated.timing(pan, {
-            toValue: { x: -SCREEN_WIDTH, y: 0 },
-            duration: 200,
-            useNativeDriver: false,
-          }).start(() => handleSwipe('left'));
-        } else {
-          Animated.spring(pan, {
-            toValue: { x: 0, y: 0 },
-            useNativeDriver: false,
-          }).start();
-        }
-      },
-    })
-  ).current;
+  const renderLeftActions = () => (
+    <View style={styles.leftAction}>
+      <Text style={[styles.badgeText, styles.likeText]}>LIKE</Text>
+    </View>
+  );
+
+  const renderRightActions = () => (
+    <View style={styles.rightAction}>
+      <Text style={[styles.badgeText, styles.nopeText]}>NOPE</Text>
+    </View>
+  );
+
+  const tapToCyclePhoto = () => {
+    if (displayUser) {
+      setCurrentPhoto((i) => (i + 1) % displayUser.images.length);
+    }
+  };
 
   const handleGameInvite = async () => {
     if (!displayUser) return;
@@ -575,41 +546,19 @@ const handleSwipe = async (direction) => {
       <ScreenContainer style={styles.container}>
         <Header />
         {displayUser ? (
-          <Animated.View
-            {...panResponder.panHandlers}
-            style={[
-              styles.card,
-              {
-                transform: [
-                  { translateX: pan.x },
-                  { translateY: pan.y },
-                  {
-                    rotate: pan.x.interpolate({
-                      inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
-                      outputRange: ['-15deg', '0deg', '15deg'],
-                    }),
-                  },
-                ],
-              },
-            ]}
+          <Swipeable
+            ref={swipeableRef}
+            onSwipeableOpen={handleSwipeableOpen}
+            renderLeftActions={renderLeftActions}
+            renderRightActions={renderRightActions}
           >
+            <View style={styles.card}>
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() =>
-                setImageIndex((i) => (i + 1) % displayUser.images.length)
-              }
+              onPress={tapToCyclePhoto}
               style={{ flex: 1 }}
             >
-            <Animated.View style={[styles.badge, styles.likeBadge, { opacity: likeOpacity }]}>
-              <Text style={[styles.badgeText, styles.likeText]}>LIKE</Text>
-            </Animated.View>
-            <Animated.View style={[styles.badge, styles.nopeBadge, { opacity: nopeOpacity }]}>
-              <Text style={[styles.badgeText, styles.nopeText]}>NOPE</Text>
-            </Animated.View>
-            <Animated.View style={[styles.badge, styles.superLikeBadge, { opacity: superLikeOpacity }]}>
-              <Text style={[styles.badgeText, styles.superLikeText]}>SUPER{"\n"}LIKE</Text>
-            </Animated.View>
-            <Image source={displayUser.images[imageIndex]} style={styles.image} />
+            <Image source={displayUser.images[currentPhoto]} style={styles.image} />
             <LinearGradient
               colors={['transparent', 'rgba(0,0,0,0.6)']}
               style={styles.imageOverlay}
@@ -637,7 +586,8 @@ const handleSwipe = async (direction) => {
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
-          </Animated.View>
+          </View>
+          </Swipeable>
         ) : null}
         {showSuperLikeAnim ? (
           <View style={styles.superLikeOverlay} pointerEvents="none">
@@ -936,6 +886,20 @@ const getStyles = (theme) =>
   },
   nopeText: {
     color: '#f87171',
+  },
+  leftAction: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: 20,
+    backgroundColor: 'rgba(74, 222, 128, 0.2)',
+  },
+  rightAction: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingRight: 20,
+    backgroundColor: 'rgba(248, 113, 113, 0.2)',
   },
   superLikeBadge: {
     top: CARD_HEIGHT / 2 - 20,
