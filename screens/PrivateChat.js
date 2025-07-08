@@ -448,6 +448,7 @@ function PrivateChat({ user }) {
         {!isUser && user.image && (
           <AvatarRing
             source={user.image}
+            overlay={user.avatarOverlay}
             size={32}
             isMatch
             isOnline={user.online}

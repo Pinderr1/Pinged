@@ -36,6 +36,7 @@ const InviteUserCard = ({
       <View style={{ alignItems: 'center' }}>
         <AvatarRing
           source={item.photo}
+          overlay={item.avatarOverlay}
           size={42}
           isMatch
           isOnline={item.online}

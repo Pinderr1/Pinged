@@ -45,7 +45,7 @@ export default function AdminReviewScreen() {
   const renderItem = ({ item }) => (
     <View style={{ marginBottom: 16 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-        <AvatarRing source={item.photoURL} size={60} />
+        <AvatarRing source={item.photoURL} overlay={item.avatarOverlay} size={60} />
         <Text style={{ marginLeft: 10, color: theme.text, fontWeight: '600' }}>
           {item.displayName || item.email}
         </Text>

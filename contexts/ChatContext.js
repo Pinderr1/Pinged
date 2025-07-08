@@ -27,6 +27,7 @@ export const ChatProvider = ({ children }) => {
     displayName: 'Dev Tester',
     age: 99,
     image: require('../assets/user1.jpg'),
+    avatarOverlay: '',
     messages: [
       { id: 'dev1', text: 'Dev chat ready.', sender: 'system' },
     ],
@@ -117,6 +118,7 @@ export const ChatProvider = ({ children }) => {
             displayName: prevMatch.displayName || 'Match',
             age: prevMatch.age || 0,
             image: prevMatch.image || require('../assets/user1.jpg'),
+            avatarOverlay: prevMatch.avatarOverlay || '',
             online: prevMatch.online || false,
             messages: prevMatch.messages || [],
             matchedAt: m.createdAt
@@ -163,6 +165,7 @@ export const ChatProvider = ({ children }) => {
                         image: info.photoURL
                           ? { uri: info.photoURL }
                           : require('../assets/user1.jpg'),
+                        avatarOverlay: info.avatarOverlay || m.avatarOverlay || '',
                         online: !!info.online,
                       }
                     : m
@@ -348,6 +351,7 @@ export const ChatProvider = ({ children }) => {
             displayName: prevMatch.displayName || 'Match',
             age: prevMatch.age || 0,
             image: prevMatch.image || require('../assets/user1.jpg'),
+            avatarOverlay: prevMatch.avatarOverlay || '',
             online: prevMatch.online || false,
             messages: prevMatch.messages || [],
             matchedAt: m.createdAt

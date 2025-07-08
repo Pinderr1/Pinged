@@ -9,6 +9,7 @@ const ProfileCard = ({ user, isPremium, badges = [], styles, accent }) => (
   <View style={styles.profileCard}>
     <AvatarRing
       source={user?.photoURL}
+      overlay={user?.avatarOverlay}
       size={82}
       isPremium={isPremium}
       style={styles.avatar}

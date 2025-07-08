@@ -48,7 +48,12 @@ const LikedYouScreen = ({ navigation }) => {
   const renderItem = ({ item }) => (
     <Card style={[styles.card, { backgroundColor: theme.card }]}> 
       <View style={styles.row}>
-        <AvatarRing source={item.photoURL} size={48} style={{ marginRight: 12 }} />
+        <AvatarRing
+          source={item.photoURL}
+          overlay={item.avatarOverlay}
+          size={48}
+          style={{ marginRight: 12 }}
+        />
         <View>
           <Text style={[styles.name, { color: theme.text }]}>{item.displayName || 'User'}</Text>
           {item.age ? (
