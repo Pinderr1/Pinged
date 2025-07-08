@@ -19,6 +19,8 @@ import { sanitizeText } from '../utils/sanitize';
 import { snapshotExists } from '../utils/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
+import { useNavigation } from '@react-navigation/native';
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { avatarSource } from '../utils/avatar';
@@ -52,7 +54,9 @@ const requiredFields = ['avatar', 'displayName', 'age'];
 export default function OnboardingScreen() {
   const { darkMode, theme } = useTheme();
   const { updateUser } = useUser();
-  const { markOnboarded, hasOnboarded } = useOnboarding();
+  const { markOnboarded } = useOnboarding();
+  const navigation = useNavigation();
+  const db = getFirestore(firebase.app());
   const styles = getStyles(theme);
 
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
@@ -141,21 +145,22 @@ export default function OnboardingScreen() {
   const isValid = validateField();
 
   useEffect(() => {
-    if (hasOnboarded) {
-      return;
-    }
     const checkExisting = async () => {
       const uid = firebase.auth().currentUser?.uid;
       if (!uid) return;
-      const ref = firebase.firestore().collection('users').doc(uid);
-      const snap = await ref.get();
-      if (snapshotExists(snap) && snap.data().onboardingComplete) {
-        updateUser(snap.data());
-        markOnboarded();
+      try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        if (snapshotExists(snap) && snap.data().onboardingComplete) {
+          updateUser(snap.data());
+          markOnboarded();
+          navigation.reset({ index: 0, routes: [{ name: 'HomeScreen' }] });
+        }
+      } catch (e) {
+        console.warn('Failed to check existing profile', e);
       }
     };
     checkExisting();
-  }, [hasOnboarded]);
+  }, []);
   const handleSkip = async () => {
     if (!firebase.auth().currentUser) {
       Toast.show({ type: 'error', text1: 'No user signed in' });
@@ -196,7 +201,7 @@ export default function OnboardingScreen() {
         onboardingComplete: true,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
-      await firebase.firestore().collection('users').doc(user.uid).set(profile, { merge: true });
+      await setDoc(doc(db, 'users', user.uid), profile, { merge: true });
       updateUser(profile);
       markOnboarded();
       Toast.show({ type: 'success', text1: 'Profile saved!' });
