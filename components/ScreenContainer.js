@@ -25,6 +25,7 @@ export default function ScreenContainer({
     <AnimatedSafeAreaView style={[styles.container, style, { opacity: fadeAnim }]}>
       {scroll ? (
         <ScrollView
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={[styles.content, contentContainerStyle]}
           {...rest}
         >

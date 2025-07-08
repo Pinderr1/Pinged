@@ -524,7 +524,11 @@ function BotSessionScreen({ route }) {
         >
         <ScreenContainer style={{ paddingTop: HEADER_SPACING, paddingBottom: 20 }}>
         <View style={botStyles.gameTabs}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
             {Object.entries(gameMap).map(([key, val]) => (
               <TouchableOpacity
                 key={key}
@@ -658,7 +662,7 @@ function SpectatorSessionScreen({ route }) {
           ))}
         </View>
         <View style={styles.logBox}>
-          <ScrollView ref={scrollRef}>
+          <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled">
             {moveHistory.map((m, idx) => (
               <Text key={idx} style={styles.logText}>
                 Player {Number(m.player) + 1}: {m.action}
