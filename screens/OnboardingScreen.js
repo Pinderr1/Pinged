@@ -56,6 +56,18 @@ export default function OnboardingScreen() {
   const styles = getStyles(theme);
 
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
+  const [answers, setAnswers] = useState({
+    avatar: '',
+    voiceIntro: '',
+    displayName: '',
+    age: '',
+    gender: '',
+    genderPref: '',
+    bio: '',
+    location: '',
+    favoriteGames: [],
+  });
+
   const { playing, playPause } = useVoicePlayback(answers.voiceIntro);
 
   const [step, setStep] = useState(0);
