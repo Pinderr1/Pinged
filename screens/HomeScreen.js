@@ -14,7 +14,7 @@ import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
-import { HEADER_SPACING } from '../layout';
+import { HEADER_SPACING, SPACING } from '../layout';
 
 import { allGames } from '../data/games';
 import { games as gameRegistry } from '../games';
@@ -230,67 +230,67 @@ const getStyles = (theme) =>
   StyleSheet.create({
     container: {
       alignItems: 'stretch',
-      paddingHorizontal: 16,
-      paddingVertical: 20,
+      paddingHorizontal: SPACING.LG,
+      paddingVertical: SPACING.XL,
     },
     welcome: {
       fontSize: 18,
       fontWeight: 'bold',
       alignSelf: 'center',
-      marginTop: 20,
-      marginBottom: 8,
+      marginTop: SPACING.XL,
+      marginBottom: SPACING.SM,
     },
     bonus: {
       fontSize: 14,
       color: '#2ecc71',
-      marginBottom: 8,
+      marginBottom: SPACING.SM,
       alignSelf: 'center',
     },
     sectionTitle: {
       fontSize: 16,
       fontWeight: '700',
       alignSelf: 'center',
-      marginBottom: 8,
+      marginBottom: SPACING.SM,
       color: theme.accent,
     },
     progressCard: {
-      marginBottom: 16,
+      marginBottom: SPACING.LG,
       alignSelf: 'stretch',
     },
     group: {
-      marginBottom: 24,
+      marginBottom: SPACING.XXL,
       alignItems: 'stretch',
       width: '100%',
     },
     levelText: {
       fontSize: 16,
       fontWeight: '600',
-      marginBottom: 4,
+      marginBottom: SPACING.XS,
     },
     streakLabel: {
       fontSize: 12,
-      marginTop: 8,
+      marginTop: SPACING.SM,
       marginBottom: 2,
     },
     carousel: {
-      paddingHorizontal: 16,
-      marginBottom: 12,
+      paddingHorizontal: SPACING.LG,
+      marginBottom: SPACING.MD,
     },
     tile: {
       width: CARD_SIZE,
       height: 100,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: 12,
+      marginRight: SPACING.MD,
     },
     fullTile: {
       alignSelf: 'stretch',
       flexDirection: 'row',
       alignItems: 'center',
       paddingVertical: 18,
-      paddingHorizontal: 16,
+      paddingHorizontal: SPACING.LG,
       borderRadius: 12,
-      marginBottom: 12,
+      marginBottom: SPACING.MD,
     },
     tileEmoji: {
       fontSize: 28,
@@ -299,7 +299,7 @@ const getStyles = (theme) =>
     fullTileText: {
       fontSize: 16,
       fontWeight: '600',
-      marginLeft: 12,
+      marginLeft: SPACING.MD,
     },
     tileText: {
       fontSize: 14,
@@ -314,7 +314,7 @@ const getStyles = (theme) =>
     modalCard: {
       backgroundColor: '#fff',
       borderRadius: 12,
-      padding: 20,
+      padding: SPACING.XL,
       width: '80%',
       alignItems: 'center',
     },
@@ -328,9 +328,9 @@ const getStyles = (theme) =>
     eventCard: {
       flexDirection: 'row',
       borderRadius: 12,
-      padding: 12,
+      padding: SPACING.MD,
       width: '100%',
-      marginRight: 12,
+      marginRight: SPACING.MD,
       alignItems: 'center',
     },
     eventImage: {
@@ -354,14 +354,14 @@ const getStyles = (theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       borderRadius: 12,
-      padding: 12,
-      marginBottom: 12,
+      padding: SPACING.MD,
+      marginBottom: SPACING.MD,
       alignSelf: 'stretch',
       shadowColor: '#000',
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.06,
       shadowOffset: { width: 0, height: 2 },
       shadowRadius: 4,
-      elevation: 3,
+      elevation: 2,
     },
     featuredEventContent: {
       flex: 1,
@@ -369,15 +369,15 @@ const getStyles = (theme) =>
     },
     swipeButtonContainer: {
       position: 'absolute',
-      left: 20,
-      right: 20,
-      bottom: 20,
+      left: SPACING.XL,
+      right: SPACING.XL,
+      bottom: SPACING.XL,
     },
     postCardPreview: {
       borderRadius: 12,
-      padding: 12,
+      padding: SPACING.MD,
       alignSelf: 'stretch',
-      marginBottom: 12,
+      marginBottom: SPACING.MD,
     },
     postTitle: {
       fontSize: 14,
@@ -393,17 +393,17 @@ const getStyles = (theme) =>
     },
     communityBoard: {
       width: '100%',
-      marginBottom: 24,
+      marginBottom: SPACING.XXL,
     },
     boardBackground: {
       backgroundColor: '#deb887',
-      padding: 12,
+      padding: SPACING.MD,
       borderRadius: 12,
       borderWidth: 2,
       borderColor: '#caa76b',
     },
     noteWrapper: {
-      marginBottom: 24,
+      marginBottom: SPACING.XXL,
       alignItems: 'center',
       width: '100%',
     },
@@ -412,10 +412,10 @@ const getStyles = (theme) =>
       borderWidth: 1,
       borderColor: '#e0d4b9',
       shadowColor: '#000',
-      shadowOpacity: 0.25,
+      shadowOpacity: 0.15,
       shadowOffset: { width: 0, height: 2 },
       shadowRadius: 4,
-      elevation: 3,
+      elevation: 2,
     },
     rotateLeft: {
       transform: [{ rotate: '-2deg' }],

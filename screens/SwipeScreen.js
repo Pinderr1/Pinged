@@ -17,7 +17,7 @@ import GradientButton from '../components/GradientButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
-import { HEADER_SPACING } from '../layout';
+import { HEADER_SPACING, SPACING } from '../layout';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
@@ -732,9 +732,9 @@ const getStyles = (theme) =>
     borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: '#fff',
-    elevation: 8,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
@@ -753,7 +753,7 @@ const getStyles = (theme) =>
     bottom: BUTTON_ROW_BOTTOM + 80,
     left: 0,
     right: 0,
-    paddingHorizontal: 20,
+    paddingHorizontal: SPACING.XL,
     paddingVertical: 10,
   },
   distanceBadge: {
@@ -802,7 +802,7 @@ const getStyles = (theme) =>
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    paddingHorizontal: 20,
+    paddingHorizontal: SPACING.XL,
   },
   circleButton: {
     width: 60,
@@ -810,7 +810,7 @@ const getStyles = (theme) =>
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
+    elevation: 2,
   },
   badge: {
     position: 'absolute',
@@ -820,13 +820,13 @@ const getStyles = (theme) =>
     borderRadius: 8,
   },
   likeBadge: {
-    left: 20,
+    left: SPACING.XL,
     borderColor: '#4ade80',
     transform: [{ rotate: '-30deg' }],
     backgroundColor: 'rgba(74, 222, 128, 0.2)',
   },
   nopeBadge: {
-    right: 20,
+    right: SPACING.XL,
     borderColor: '#f87171',
     transform: [{ rotate: '30deg' }],
     backgroundColor: 'rgba(248, 113, 113, 0.2)',
@@ -868,7 +868,7 @@ const getStyles = (theme) =>
   },
   detailsContainer: {
     backgroundColor: theme.card,
-    padding: 20,
+    padding: SPACING.XL,
     borderRadius: 12,
     width: '80%',
   },
@@ -887,14 +887,14 @@ const getStyles = (theme) =>
     fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
-    marginTop: 20,
+    marginTop: SPACING.XL,
   },
   suggestText: {
     fontSize: 14,
     color: '#fff',
     marginTop: 6,
     textAlign: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: SPACING.XL,
   },
 });
 
