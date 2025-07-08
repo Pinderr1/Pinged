@@ -4,6 +4,7 @@ import { SafeAreaView, KeyboardAvoidingView, Platform, Text } from 'react-native
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { useUser } from './contexts/UserContext';
+import StreakRewardModal from './components/StreakRewardModal';
 import Providers from './contexts/Providers';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotificationCenter from './components/NotificationCenter';
@@ -25,7 +26,7 @@ const AppInner = () => {
   // No custom fonts currently loaded
   const [fontsLoaded] = useFonts({});
   const { loaded: themeLoaded } = useTheme();
-  const { loading: userLoading } = useUser();
+  const { loading: userLoading, streakReward, dismissStreakReward } = useUser();
   const {
     loading: configLoading,
     error: configError,
@@ -69,6 +70,11 @@ const AppInner = () => {
             <DevBanner />
           </NavigationContainer>
           <ThemedNotificationCenter />
+          <StreakRewardModal
+            visible={!!streakReward}
+            streak={streakReward}
+            onClose={dismissStreakReward}
+          />
           <LoadingOverlay />
           <Toast />
         </ErrorBoundary>
