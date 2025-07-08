@@ -64,14 +64,18 @@ const PlayScreen = ({ navigation }) => {
   };
 
   const filteredGames = allGames.filter((game) => {
+    const inRegion =
+      !user?.regionPack || user.regionPack.includes(game.id);
     const matchCategory =
       filter === 'All' ||
       (filter === 'Free' && !game.premium) ||
       (filter === 'Premium' && game.premium) ||
       (filter === 'Favorites' && favorites.includes(game.id));
-    const matchSearch = game.title.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = game.title
+      .toLowerCase()
+      .includes(search.toLowerCase());
     const matchTag = category === 'All' || game.category === category;
-    return matchCategory && matchSearch && matchTag;
+    return inRegion && matchCategory && matchSearch && matchTag;
   });
 
 
