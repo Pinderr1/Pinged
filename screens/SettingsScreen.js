@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Text, View, TextInput, Switch } from 'react-native';
+import { Text, View, TextInput, Switch, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as WebBrowser from 'expo-web-browser';
 import ScreenContainer from '../components/ScreenContainer';
 import GradientButton from '../components/GradientButton';
 import GradientBackground from '../components/GradientBackground';
 import getStyles from '../styles';
 import Header from '../components/Header';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme, COLOR_THEMES } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
 import firebase from '../firebase';
@@ -36,6 +37,7 @@ const SettingsScreen = ({ navigation }) => {
     user?.notificationsEnabled !== false
   );
   const [distanceUnit, setDistanceUnit] = useState(user?.distanceUnit || 'mi');
+  const [colorTheme, setColorTheme] = useState(user?.colorTheme || 'pinkOrange');
   const {
     location: filterLocation,
     ageRange,
@@ -48,6 +50,11 @@ const SettingsScreen = ({ navigation }) => {
   } = useFilters();
 
   const toggleAdvanced = () => setShowAdvanced((prev) => !prev);
+
+  const handleSelectTheme = (id) => {
+    setColorTheme(id);
+    saveUserSetting({ colorTheme: id });
+  };
 
   const handleEditProfile = () => navigation.navigate('EditProfile');
   const handleLogout = async () => {
@@ -107,6 +114,30 @@ const SettingsScreen = ({ navigation }) => {
       )}
 
       <GradientButton text="Edit Profile" onPress={handleEditProfile} />
+
+      <Text style={[styles.settingText, { marginTop: 16 }]}>Pick a color theme</Text>
+      <View style={{ flexDirection: 'row', marginBottom: 20 }}>
+        {COLOR_THEMES.map((t) => (
+          <TouchableOpacity
+            key={t.id}
+            onPress={() => handleSelectTheme(t.id)}
+            style={{ marginRight: 10 }}
+          >
+            <LinearGradient
+              colors={[t.gradientStart, t.gradientEnd]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                borderWidth: t.id === colorTheme ? 3 : 1,
+                borderColor: t.id === colorTheme ? '#fff' : '#ccc',
+              }}
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {isPremium && (
         <>

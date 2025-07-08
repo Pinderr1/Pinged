@@ -3,8 +3,38 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View } from 'react-native';
 import Loader from '../components/Loader';
 import { lightTheme, darkTheme } from '../theme';
-import { PRESETS } from '../data/presets';
 import { useUser } from './UserContext';
+
+export const colorThemes = [
+  {
+    id: 'pinkOrange',
+    name: 'Pink & Orange',
+    gradientStart: '#FF75B5',
+    gradientEnd: '#FF9A75',
+    accent: '#FF75B5',
+  },
+  {
+    id: 'purplePink',
+    name: 'Purple',
+    gradientStart: '#8B5CF6',
+    gradientEnd: '#EC4899',
+    accent: '#EC4899',
+  },
+  {
+    id: 'teal',
+    name: 'Teal',
+    gradientStart: '#5EEAD4',
+    gradientEnd: '#2DD4BF',
+    accent: '#2DD4BF',
+  },
+  {
+    id: 'sunny',
+    name: 'Sunny',
+    gradientStart: '#FDE68A',
+    gradientEnd: '#F59E0B',
+    accent: '#F59E0B',
+  },
+];
 
 const ThemeContext = createContext();
 const STORAGE_KEY = 'darkMode';
@@ -39,13 +69,14 @@ export const ThemeProvider = ({ children }) => {
   };
 
   const baseTheme = darkMode ? darkTheme : lightTheme;
-  const preset = PRESETS.find((p) => p.id === user?.themePreset) || PRESETS[0];
+  const selected =
+    colorThemes.find((c) => c.id === user?.colorTheme) || colorThemes[0];
   const theme = {
     ...baseTheme,
-    accent: preset.accent,
-    gradientStart: preset.gradientStart,
-    gradientEnd: preset.gradientEnd,
-    gradient: [preset.gradientStart, preset.gradientEnd],
+    accent: selected.accent,
+    gradientStart: selected.gradientStart,
+    gradientEnd: selected.gradientEnd,
+    gradient: [selected.gradientStart, selected.gradientEnd],
   };
 
   return (
@@ -62,3 +93,5 @@ export const ThemeProvider = ({ children }) => {
 };
 
 export const useTheme = () => useContext(ThemeContext);
+
+export const COLOR_THEMES = colorThemes;
