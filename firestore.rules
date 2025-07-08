@@ -51,7 +51,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if signedIn();
+      allow read: if request.auth.uid == userId;
       allow create: if isUser(userId);
       // Only allow users to update their own document
       allow update: if isUser(userId) &&
