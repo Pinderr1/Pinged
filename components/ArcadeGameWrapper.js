@@ -65,7 +65,7 @@ export default function ArcadeGameWrapper({
 
   return (
     <LinearGradient
-      colors={[theme.gradientStart, theme.gradientEnd]}
+      colors={theme.gradient}
       style={styles.container}
     >
       <View style={styles.header}>

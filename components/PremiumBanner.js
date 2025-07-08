@@ -11,7 +11,7 @@ export default function PremiumBanner({ onClose, onPress }) {
   const styles = getStyles(theme);
   return (
     <LinearGradient
-      colors={[theme.gradientStart, theme.gradientEnd]}
+      colors={theme.gradient}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={styles.container}

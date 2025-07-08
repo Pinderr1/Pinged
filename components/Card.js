@@ -24,7 +24,7 @@ const Card = ({
 }) => {
   const { theme } = useTheme();
   const { scale, handlePressIn, handlePressOut } = useCardPressAnimation();
-  const colors = gradientColors || [theme.gradientStart, theme.gradientEnd];
+  const colors = gradientColors || theme.gradient;
 
   return (
     <AnimatedPressable

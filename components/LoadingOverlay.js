@@ -13,7 +13,7 @@ export default function LoadingOverlay() {
   return (
     <View style={styles.overlay} pointerEvents="none">
       <LinearGradient
-        colors={[theme.gradientStart, theme.gradientEnd]}
+        colors={theme.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[StyleSheet.absoluteFill, { opacity: 0.8 }]}
