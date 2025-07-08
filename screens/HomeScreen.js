@@ -31,6 +31,7 @@ import PremiumBanner from '../components/PremiumBanner';
 import ActiveGamesPreview from '../components/ActiveGamesPreview';
 import MatchesPreview from '../components/MatchesPreview';
 import { FONT_FAMILY } from '../textStyles';
+import useFreeGame from '../hooks/useFreeGame';
 
 // Map app game IDs to boardgame registry keys for AI play
 const aiGameMap = allGames.reduce((acc, g) => {
@@ -47,6 +48,7 @@ const HomeScreen = ({ navigation }) => {
   const { user, loginBonus } = useUser();
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft } = useGameLimit();
+  const { freeGamesToday, recordFreeGame } = useFreeGame();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
   const [showBonus, setShowBonus] = useState(false);
@@ -200,7 +202,14 @@ const HomeScreen = ({ navigation }) => {
         <View style={local.swipeButtonContainer}>
           <GradientButton
             text="Swipe Now"
-            onPress={() => navigation.navigate('Swipe')}
+            onPress={() => {
+              if (!isPremiumUser && freeGamesToday >= 1) {
+                navigation.navigate('Premium', { context: 'paywall' });
+              } else {
+                recordFreeGame();
+                navigation.navigate('Swipe');
+              }
+            }}
           />
         </View>
 
