@@ -13,16 +13,16 @@ export const lightTheme = {
 };
 
 export const darkTheme = {
-  background: '#000000',
-  card: 'rgba(255,255,255,0.05)',
-  text: '#EDEDED',
-  textSecondary: '#A0A0A0',
+  background: '#121212',
+  card: '#1E1E1E',
+  text: '#FFFFFF',
+  textSecondary: '#CCCCCC',
   accent: '#FF75B5',
   primary: '#009688',
   success: '#4CAF50',
-  gradientStart: '#FF75B5',
-  gradientEnd: '#FF9A75',
-  gradient: ['#FF75B5', '#FF9A75'],
-  headerBackground: 'rgba(255,255,255,0.05)',
+  gradientStart: '#FF5C93',
+  gradientEnd: '#FFA65C',
+  gradient: ['#FF5C93', '#FFA65C'],
+  headerBackground: '#1E1E1E',
 };
 
