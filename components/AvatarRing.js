@@ -90,7 +90,7 @@ export default function AvatarRing({
           <Image source={avatarSource(source)} style={imageStyle} />
         </View>
       ) : isMatch ? (
-        <LinearGradient colors={[theme.gradientStart, theme.gradientEnd]} style={ringStyle}>
+        <LinearGradient colors={theme.gradient} style={ringStyle}>
           <Image source={avatarSource(source)} style={imageStyle} />
         </LinearGradient>
       ) : (

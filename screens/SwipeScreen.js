@@ -567,7 +567,7 @@ const handleSwipe = async (direction) => {
     }
   };
 
-  const gradientColors = [theme.gradientStart, theme.gradientEnd];
+  const gradientColors = theme.gradient;
 
 
   return (
