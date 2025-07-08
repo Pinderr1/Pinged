@@ -75,7 +75,7 @@ const SettingsScreen = ({ navigation }) => {
 
   return (
     <GradientBackground style={{ flex: 1 }}>
-      <ScreenContainer style={styles.container}>
+      <ScreenContainer scroll contentContainerStyle={styles.container}>
         <Header />
 
       <Text style={[styles.logoText, { color: theme.text, marginBottom: 10 }]}>
