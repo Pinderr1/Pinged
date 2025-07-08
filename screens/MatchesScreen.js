@@ -19,7 +19,7 @@ import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import useRematchHistory from '../hooks/useRematchHistory';
 import Toast from 'react-native-toast-message';
 import PropTypes from 'prop-types';
-import { HEADER_SPACING } from '../layout';
+import { HEADER_SPACING, SPACING } from '../layout';
 import EmptyState from '../components/EmptyState';
 
 const SKELETON_NEW_COUNT = 5;
@@ -300,23 +300,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     alignSelf: 'center',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: SPACING.SM,
     color: '#ff4081',
   },
   newList: {
-    marginBottom: 12,
-    paddingHorizontal: 8,
+    marginBottom: SPACING.MD,
+    paddingHorizontal: SPACING.SM,
     justifyContent: 'center',
   },
   newMatch: {
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: SPACING.MD,
   },
   newAvatar: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    marginBottom: 6,
+    marginBottom: SPACING.SM,
   },
   newName: {
     fontSize: 13,
@@ -327,8 +327,8 @@ const styles = StyleSheet.create({
   chatItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    padding: 12,
+    marginBottom: SPACING.MD,
+    padding: SPACING.MD,
     alignSelf: 'center',
     width: '90%',
     maxWidth: 400,
@@ -338,15 +338,15 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    marginRight: 12,
+    marginRight: SPACING.MD,
   },
   avatarColumn: {
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: SPACING.MD,
   },
   avatarName: {
     fontSize: 12,
-    marginTop: 4,
+    marginTop: SPACING.XS,
     maxWidth: 64,
     textAlign: 'center',
   },
@@ -360,8 +360,8 @@ const styles = StyleSheet.create({
   },
   playBtn: {
     backgroundColor: '#ff4081',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: SPACING.SM,
+    paddingHorizontal: SPACING.MD,
     borderRadius: 12,
   },
   playText: {

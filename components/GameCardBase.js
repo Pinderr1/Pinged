@@ -1,5 +1,6 @@
 import React from 'react';
 import { Animated, TouchableOpacity, Dimensions } from 'react-native';
+import { SPACING } from '../layout';
 import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
 
@@ -10,18 +11,18 @@ const GameCardBase = ({ children, scale, onPress, onPressIn, onPressOut }) => (
     <TouchableOpacity
       style={{
         width: CARD_WIDTH,
-        marginHorizontal: 8,
-        marginBottom: 20,
+        marginHorizontal: SPACING.SM,
+        marginBottom: SPACING.XL,
         backgroundColor: '#fff',
         borderRadius: 16,
-        paddingVertical: 20,
+        paddingVertical: SPACING.XL,
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: '#000',
-        shadowOpacity: 0.08,
+        shadowOpacity: 0.05,
         shadowOffset: { width: 0, height: 4 },
         shadowRadius: 6,
-        elevation: 4,
+        elevation: 3,
         position: 'relative',
       }}
       onPressIn={onPressIn}

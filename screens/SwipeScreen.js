@@ -17,7 +17,7 @@ import GradientButton from '../components/GradientButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
-import { HEADER_SPACING } from '../layout';
+import { HEADER_SPACING, SPACING } from '../layout';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
@@ -824,9 +824,9 @@ const getStyles = (theme) =>
     borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: '#fff',
-    elevation: 8,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
@@ -845,8 +845,8 @@ const getStyles = (theme) =>
     bottom: BUTTON_ROW_BOTTOM + 80,
     left: 0,
     right: 0,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: SPACING.XL,
+    paddingVertical: SPACING.SM,
   },
   distanceBadge: {
     alignSelf: 'flex-start',
@@ -905,7 +905,7 @@ const getStyles = (theme) =>
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
+    elevation: 3,
   },
   badge: {
     position: 'absolute',
@@ -963,7 +963,7 @@ const getStyles = (theme) =>
   },
   detailsContainer: {
     backgroundColor: theme.card,
-    padding: 20,
+    padding: SPACING.XL,
     borderRadius: 12,
     width: '80%',
   },

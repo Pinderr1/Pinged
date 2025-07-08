@@ -14,7 +14,7 @@ import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
-import { HEADER_SPACING } from '../layout';
+import { HEADER_SPACING, SPACING } from '../layout';
 
 import { allGames } from '../data/games';
 import { games as gameRegistry } from '../games';
@@ -368,14 +368,14 @@ const getStyles = (theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       borderRadius: 12,
-      padding: 12,
-      marginBottom: 12,
+      padding: SPACING.MD,
+      marginBottom: SPACING.MD,
       alignSelf: 'stretch',
       shadowColor: '#000',
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.05,
       shadowOffset: { width: 0, height: 2 },
       shadowRadius: 4,
-      elevation: 3,
+      elevation: 2,
     },
     featuredEventContent: {
       flex: 1,
@@ -383,15 +383,15 @@ const getStyles = (theme) =>
     },
     swipeButtonContainer: {
       position: 'absolute',
-      left: 20,
-      right: 20,
-      bottom: 20,
+      left: SPACING.XL,
+      right: SPACING.XL,
+      bottom: SPACING.XL,
     },
     postCardPreview: {
       borderRadius: 12,
-      padding: 12,
+      padding: SPACING.MD,
       alignSelf: 'stretch',
-      marginBottom: 12,
+      marginBottom: SPACING.MD,
     },
     postTitle: {
       fontSize: 14,
@@ -408,17 +408,17 @@ const getStyles = (theme) =>
     },
     communityBoard: {
       width: '100%',
-      marginBottom: 24,
+      marginBottom: SPACING.XXL,
     },
     boardBackground: {
       backgroundColor: '#deb887',
-      padding: 12,
+      padding: SPACING.MD,
       borderRadius: 12,
       borderWidth: 2,
       borderColor: '#caa76b',
     },
     noteWrapper: {
-      marginBottom: 24,
+      marginBottom: SPACING.XXL,
       alignItems: 'center',
       width: '100%',
     },
@@ -427,10 +427,10 @@ const getStyles = (theme) =>
       borderWidth: 1,
       borderColor: '#e0d4b9',
       shadowColor: '#000',
-      shadowOpacity: 0.25,
+      shadowOpacity: 0.15,
       shadowOffset: { width: 0, height: 2 },
       shadowRadius: 4,
-      elevation: 3,
+      elevation: 2,
     },
     rotateLeft: {
       transform: [{ rotate: '-2deg' }],
