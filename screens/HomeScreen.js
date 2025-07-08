@@ -30,6 +30,8 @@ import { eventImageSource } from '../utils/avatar';
 import PremiumBanner from '../components/PremiumBanner';
 import ActiveGamesPreview from '../components/ActiveGamesPreview';
 import MatchesPreview from '../components/MatchesPreview';
+import StreakRewardModal from '../components/StreakRewardModal';
+import firebase from '../firebase';
 
 // Map app game IDs to boardgame registry keys for AI play
 const aiGameMap = allGames.reduce((acc, g) => {
@@ -50,6 +52,7 @@ const HomeScreen = ({ navigation }) => {
   const [playTarget, setPlayTarget] = useState('match');
   const [showBonus, setShowBonus] = useState(false);
   const [showPremiumBanner, setShowPremiumBanner] = useState(!isPremiumUser);
+  const [showStreakReward, setShowStreakReward] = useState(false);
   const local = getStyles(theme);
 
 
@@ -70,6 +73,28 @@ const HomeScreen = ({ navigation }) => {
   useEffect(() => {
     setShowPremiumBanner(!isPremiumUser);
   }, [isPremiumUser]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const streak = user.streak || 0;
+    if (streak > 0 && streak % 7 === 0) {
+      const rewarded = user.streakRewardedAt
+        ? user.streakRewardedAt.toDate?.() || new Date(user.streakRewardedAt)
+        : null;
+      const last = user.lastActiveAt
+        ? user.lastActiveAt.toDate?.() || new Date(user.lastActiveAt)
+        : null;
+      if (!rewarded || (last && rewarded < last)) {
+        setShowStreakReward(true);
+        firebase
+          .firestore()
+          .collection('users')
+          .doc(user.uid)
+          .update({ streakRewardedAt: firebase.firestore.FieldValue.serverTimestamp() })
+          .catch((e) => console.warn('Failed to set streak reward timestamp', e));
+      }
+    }
+  }, [user?.streak]);
 
   const openGamePicker = (target) => {
     if (target === 'browse') {
@@ -222,6 +247,11 @@ const HomeScreen = ({ navigation }) => {
             </View>
           </View>
         </Modal>
+        <StreakRewardModal
+          visible={showStreakReward}
+          onClose={() => setShowStreakReward(false)}
+          streak={user?.streak || 0}
+        />
       </ScreenContainer>
     </GradientBackground>
   );
