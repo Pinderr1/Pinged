@@ -18,6 +18,7 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loginBonus, setLoginBonus] = useState(false);
+  const [streakReward, setStreakReward] = useState(null);
   const devUser = {
     displayName: "Dev Tester",
     age: 99,
@@ -103,6 +104,8 @@ export const UserProvider = ({ children }) => {
     setUser((prev) => ({ ...prev, ...updates }));
   };
 
+  const dismissStreakReward = () => setStreakReward(null);
+
   const addActivityXP = async (amount = 10, opts = {}) => {
     if (!user?.uid) return;
     const last = user.lastActiveAt
@@ -136,9 +139,26 @@ export const UserProvider = ({ children }) => {
       isPremium: user.isPremium,
     });
     const newUnlocks = computeUnlocks({ xp: newXP, unlocks: user.unlocks || [] });
-    const updates = { xp: newXP, streak: newStreak, lastActiveAt: new Date() };
-    if (opts.markPlayed) updates.lastPlayedAt = new Date();
-    updateUser({ ...updates, badges: newBadges, unlocks: newUnlocks });
+    const now = new Date();
+    const updates = { xp: newXP, streak: newStreak, lastActiveAt: now };
+    if (opts.markPlayed) updates.lastPlayedAt = now;
+
+    let rewardStreak = null;
+    if (newStreak % 7 === 0) {
+      const rewardedAt = user.streakRewardedAt
+        ? user.streakRewardedAt.toDate?.() || new Date(user.streakRewardedAt)
+        : null;
+      if (!rewardedAt || !last || rewardedAt < last) {
+        updates.streakRewardedAt = now;
+        rewardStreak = newStreak;
+      }
+    }
+
+    updateUser({
+      ...updates,
+      badges: newBadges,
+      unlocks: newUnlocks,
+    });
     try {
       await firebase
         .firestore()
@@ -150,6 +170,9 @@ export const UserProvider = ({ children }) => {
         ...(opts.markPlayed
           ? { lastPlayedAt: firebase.firestore.FieldValue.serverTimestamp() }
           : {}),
+        ...(rewardStreak
+          ? { streakRewardedAt: firebase.firestore.FieldValue.serverTimestamp() }
+          : {}),
         badges: firebase.firestore.FieldValue.arrayUnion(
           ...newBadges.filter((b) => !(user.badges || []).includes(b))
         ),
@@ -157,6 +180,7 @@ export const UserProvider = ({ children }) => {
           ...newUnlocks.filter((u) => !(user.unlocks || []).includes(u))
         ),
       });
+      if (rewardStreak) setStreakReward(rewardStreak);
     } catch (e) {
       console.warn("Failed to update XP", e);
     }
@@ -214,6 +238,8 @@ export const UserProvider = ({ children }) => {
         addGameXP,
         addLoginXP,
         redeemEventTicket,
+        streakReward,
+        dismissStreakReward,
         loginBonus,
         loading,
       }}
