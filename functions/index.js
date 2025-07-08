@@ -218,16 +218,18 @@ exports.resetFreeGameUsage = functions.pubsub
     const snap = await admin
       .firestore()
       .collection('users')
-      .where('freeGameUsed', '==', true)
+      .where('freeGamesToday', '>', 0)
       .get();
 
     const tasks = [];
     snap.forEach((doc) => {
-      tasks.push(doc.ref.update({ freeGameUsed: false }));
+      tasks.push(
+        doc.ref.update({ freeGamesToday: 0, freeGameUsed: false })
+      );
     });
 
     await Promise.all(tasks);
-    functions.logger.info(`Reset freeGameUsed for ${tasks.length} users`);
+    functions.logger.info(`Reset freeGamesToday for ${tasks.length} users`);
     return null;
   });
 
