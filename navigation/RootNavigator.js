@@ -1,6 +1,6 @@
 // navigation/RootNavigator.js
 import React, { useEffect, useState, lazy, Suspense } from 'react';
-import { StatusBar, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
