@@ -1,6 +1,4 @@
-import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
-import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -22,7 +20,6 @@ function SkeletonUserCard() {
   );
 }
 
-SkeletonUserCard.propTypes = {};
 
 export default SkeletonUserCard;
 

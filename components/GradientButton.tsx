@@ -1,5 +1,5 @@
 // components/GradientButton.tsx
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { View, Text, Pressable, Animated, StyleSheet } from 'react-native';
 

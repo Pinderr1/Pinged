@@ -1,4 +1,3 @@
-import React from 'react';
 import { Animated, TouchableOpacity, Dimensions } from 'react-native';
 import { SPACING } from '../layout';
 import * as Haptics from 'expo-haptics';
