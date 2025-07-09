@@ -13,7 +13,7 @@ export default function usePushNotifications() {
               .firestore()
               .collection('users')
               .doc(fbUser.uid)
-              .update({ expoPushToken: token })
+              .update({ pushToken: token })
               .catch((e) => console.warn('Failed to save push token', e));
           }
         })

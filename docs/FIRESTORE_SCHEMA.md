@@ -42,7 +42,7 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `streakRewardedAt` (timestamp) – last time a streak reward notification was sent
 - `dailyPlayCount` (number) – count of games started today for free users
 - `lastGamePlayedAt` (timestamp) – when the last game session began
-- `expoPushToken` (string)
+- `pushToken` (string)
 - `online` (boolean)
 - `lastOnline` (timestamp) – last presence update time
 - `badges` (array of string) – earned badge IDs

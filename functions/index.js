@@ -11,7 +11,7 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 async function pushToUser(uid, title, body, extra = {}) {
   const snap = await admin.firestore().collection('users').doc(uid).get();
   const userData = snap.data();
-  const token = userData && userData.expoPushToken;
+  const token = userData && userData.pushToken;
   if (!token) {
     functions.logger.info(`No Expo push token for user ${uid}`);
     return null;
@@ -113,7 +113,7 @@ exports.sendPushNotification = functions.https.onCall(async (data, context) => {
   try {
     const snap = await admin.firestore().collection('users').doc(uid).get();
     const userData = snap.data();
-    const token = userData && userData.expoPushToken;
+    const token = userData && userData.pushToken;
     if (!token) {
       throw new Error('No Expo push token for user');
     }
