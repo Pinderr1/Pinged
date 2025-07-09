@@ -16,8 +16,8 @@ import Header from '../components/Header';
 import SkeletonPlaceholder from '../components/SkeletonPlaceholder';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDev } from '../contexts/DevContext';
-import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
+import firebase from '../firebase';
 import PropTypes from 'prop-types';
 import getGlobalStyles from '../styles';
 import { useChats } from '../contexts/ChatContext';
@@ -43,7 +43,6 @@ const GameInviteScreen = ({ route, navigation }) => {
   const { devMode } = useDev();
   const { user: currentUser } = useUser();
   const { matches: chatMatches, loading: matchesLoading } = useChats();
-  const { sendGameInvite } = useMatchmaking();
   const { gamesLeft } = useGameLimit();
   const requireCredits = useRequireGameCredits();
   const [search, setSearch] = useState('');
@@ -76,7 +75,16 @@ const GameInviteScreen = ({ route, navigation }) => {
 
     let inviteId;
     try {
-      inviteId = await sendGameInvite(user.id, gameId);
+      const ref = await firebase
+        .firestore()
+        .collection('gameInvites')
+        .add({
+          gameId,
+          senderId: currentUser.uid,
+          receiverId: user.id,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+      inviteId = ref.id;
       Toast.show({ type: 'success', text1: 'Invite sent!' });
       Haptics.notificationAsync(
         Haptics.NotificationFeedbackType.Success
