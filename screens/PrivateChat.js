@@ -51,7 +51,7 @@ const INPUT_BAR_HEIGHT = 70;
 /*******************************
  * Private one-on-one chat UI *
  *******************************/
-function PrivateChat({ user }) {
+function PrivateChat({ user, initialGameId }) {
   const navigation = useNavigation();
   const { user: currentUser, addGameXP } = useUser();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
@@ -110,6 +110,12 @@ function PrivateChat({ user }) {
   const loseSound = useRef(null);
   const drawSound = useRef(null);
   const showPlaceholders = loading && messages.length === 0;
+
+  useEffect(() => {
+    if (initialGameId && !activeGameId) {
+      setActiveGame(user.id, initialGameId);
+    }
+  }, [initialGameId, activeGameId, user.id]);
 
   useEffect(() => {
     setFirstLine(

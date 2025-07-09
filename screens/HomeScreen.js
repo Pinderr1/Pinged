@@ -32,6 +32,9 @@ import ActiveGamesPreview from '../components/ActiveGamesPreview';
 import MatchesPreview from '../components/MatchesPreview';
 import { FONT_FAMILY } from '../textStyles';
 import useFreeGame from '../hooks/useFreeGame';
+import { useChats } from '../contexts/ChatContext';
+import firebase from '../firebase';
+import Toast from 'react-native-toast-message';
 
 // Map app game IDs to boardgame registry keys for AI play
 const aiGameMap = allGames.reduce((acc, g) => {
@@ -49,6 +52,7 @@ const HomeScreen = ({ navigation }) => {
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft } = useGameLimit();
   const { freeGamesToday, recordFreeGame } = useFreeGame();
+  const { addMatch } = useChats();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
   const [showBonus, setShowBonus] = useState(false);
@@ -59,6 +63,7 @@ const HomeScreen = ({ navigation }) => {
   const quickPlayOptions = [
     { key: 'match', title: 'Invite Match', emoji: '👥' },
     { key: 'ai', title: 'Play AI', emoji: '🤖' },
+    { key: 'stranger', title: 'Play With Stranger', emoji: '🎲' },
     { key: 'browse', title: 'Browse Games', emoji: '🕹️' },
   ];
 
@@ -87,6 +92,163 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const createChat = async (users) => {
+    const ref = await firebase
+      .firestore()
+      .collection('matches')
+      .add({
+        users,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    return ref.id;
+  };
+
+  const updateDailyUsage = async () => {
+    if (!user?.uid) return;
+    try {
+      await firebase
+        .firestore()
+        .collection('users')
+        .doc(user.uid)
+        .set(
+          {
+            dailyGameUsage: {
+              lastFreeGame: firebase.firestore.FieldValue.serverTimestamp(),
+            },
+          },
+          { merge: true }
+        );
+    } catch (e) {
+      console.warn('Failed to update daily usage', e);
+    }
+  };
+
+  const matchWithStranger = async (gameId) => {
+    try {
+      if (!user?.uid) return;
+      const userSnap = await firebase
+        .firestore()
+        .collection('users')
+        .doc(user.uid)
+        .get();
+      const last =
+        userSnap.data()?.dailyGameUsage?.lastFreeGame?.toDate?.() ||
+        userSnap.data()?.dailyGameUsage?.lastFreeGame ||
+        null;
+      const today = new Date();
+      if (
+        !isPremiumUser &&
+        last &&
+        new Date(last).toDateString() === today.toDateString()
+      ) {
+        navigation.navigate('Premium', { context: 'paywall' });
+        return;
+      }
+
+      const sessionsRef = firebase.firestore().collection('gameSessions');
+      const waiting = await sessionsRef
+        .where('game', '==', gameId)
+        .where('player2', '==', null)
+        .where('status', '==', 'waiting')
+        .limit(1)
+        .get();
+
+      if (!waiting.empty) {
+        const doc = waiting.docs[0];
+        const data = doc.data();
+        await doc.ref.update({ player2: user.uid, status: 'active' });
+        await firebase
+          .firestore()
+          .collection('matches')
+          .doc(data.chatId)
+          .update({ users: firebase.firestore.FieldValue.arrayUnion(user.uid) });
+        const oppSnap = await firebase
+          .firestore()
+          .collection('users')
+          .doc(data.player1)
+          .get();
+        const opp = oppSnap.data() || {};
+        const match = {
+          id: data.chatId,
+          otherUserId: data.player1,
+          displayName: opp.displayName || 'Player',
+          image: opp.photoURL ? { uri: opp.photoURL } : require('../assets/user1.jpg'),
+          avatarOverlay: opp.avatarOverlay || '',
+          online: !!opp.online,
+          messages: [],
+          matchedAt: new Date().toISOString(),
+          activeGameId: gameId,
+          pendingInvite: null,
+        };
+        addMatch(match);
+        await updateDailyUsage();
+        Toast.show({
+          type: 'success',
+          text1: "🎮 You're matched! Say hi & make your move…",
+        });
+        navigation.navigate('Chat', {
+          user: match,
+          gameId,
+          chatId: data.chatId,
+        });
+      } else {
+        const chatId = await createChat([user.uid]);
+        const ref = await sessionsRef.add({
+          game: gameId,
+          player1: user.uid,
+          player2: null,
+          status: 'waiting',
+          chatId,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        await updateDailyUsage();
+        const unsub = ref.onSnapshot(async (snap) => {
+          const d = snap.data();
+          if (d.player2 && d.status === 'active') {
+            unsub();
+            const oppSnap2 = await firebase
+              .firestore()
+              .collection('users')
+              .doc(d.player2)
+              .get();
+            const opp = oppSnap2.data() || {};
+            await firebase
+              .firestore()
+              .collection('matches')
+              .doc(chatId)
+              .update({
+                users: firebase.firestore.FieldValue.arrayUnion(d.player2),
+              });
+            const match = {
+              id: chatId,
+              otherUserId: d.player2,
+              displayName: opp.displayName || 'Player',
+              image: opp.photoURL ? { uri: opp.photoURL } : require('../assets/user1.jpg'),
+              avatarOverlay: opp.avatarOverlay || '',
+              online: !!opp.online,
+              messages: [],
+              matchedAt: new Date().toISOString(),
+              activeGameId: gameId,
+              pendingInvite: null,
+            };
+            addMatch(match);
+            Toast.show({
+              type: 'success',
+              text1: "🎮 You're matched! Say hi & make your move…",
+            });
+            navigation.navigate('Chat', {
+              user: match,
+              gameId,
+              chatId,
+            });
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to match with stranger', e);
+    }
+  };
+
   const selectGame = (game) => {
     const isLocked = !isPremiumUser && game.premium;
     if (isLocked) {
@@ -106,6 +268,8 @@ const HomeScreen = ({ navigation }) => {
         botId: bot.id,
         game: gameKey,
       });
+    } else if (playTarget === 'stranger') {
+      matchWithStranger(game.id);
     } else {
       navigation.navigate('GameInvite', { game: { id: game.id, title: game.title } });
     }
@@ -160,7 +324,7 @@ const HomeScreen = ({ navigation }) => {
 
           <View style={local.group}>
             <Text style={local.sectionTitle}>Quick Play</Text>
-            {quickPlayOptions.slice(0, 2).map((item) => (
+            {quickPlayOptions.slice(0, 3).map((item) => (
               <Card
                 key={item.key}
                 onPress={() => openGamePicker(item.key)}
