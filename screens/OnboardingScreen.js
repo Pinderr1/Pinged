@@ -204,7 +204,7 @@ const validateField = () => {
         if (snapshotExists(snap) && snap.data().onboardingComplete) {
           updateUser(snap.data());
           markOnboarded();
-          navigation.reset({ index: 0, routes: [{ name: 'HomeScreen' }] });
+          navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
         }
       } catch (e) {
         console.warn('Failed to check existing profile', e);
@@ -219,7 +219,7 @@ const validateField = () => {
       Toast.show({ type: 'error', text1: 'No user signed in' });
       return;
     }
-    if (!validateAnswers()) return;
+    if (!validateAnswers(true)) return;
     await saveProfile();
   };
 
