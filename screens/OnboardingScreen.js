@@ -177,19 +177,21 @@ export default function OnboardingScreen() {
     if (saving) return;
     setSaving(true);
     try {
+      const user = firebase.auth().currentUser;
+
+      const ref = doc(db, 'users', user.uid);
+      const existingSnap = await getDoc(ref);
+      const exists = snapshotExists(existingSnap);
+
       let photoURL = answers.avatar;
       if (photoURL && !photoURL.startsWith('http')) {
         try {
-          photoURL = await uploadAvatarAsync(
-            photoURL,
-            firebase.auth().currentUser.uid
-          );
+          photoURL = await uploadAvatarAsync(photoURL, user.uid);
         } catch (e) {
           throw e;
         }
       }
 
-      const user = firebase.auth().currentUser;
       const profile = {
         uid: user.uid,
         email: user.email,
@@ -213,9 +215,11 @@ export default function OnboardingScreen() {
         bio: sanitizeText(answers.bio.trim()),
         themePreset: answers.preset,
         onboardingComplete: true,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        ...(exists
+          ? {}
+          : { createdAt: firebase.firestore.FieldValue.serverTimestamp() }),
       };
-      await setDoc(doc(db, 'users', user.uid), profile, { merge: true });
+      await setDoc(ref, profile, { merge: true });
       updateUser(profile);
       markOnboarded();
       Toast.show({ type: 'success', text1: 'Profile saved!' });
