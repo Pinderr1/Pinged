@@ -46,6 +46,8 @@ import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import useDebouncedCallback from '../hooks/useDebouncedCallback';
 import EmptyState from '../components/EmptyState';
 
+const REACTIONS = ['🔥', '😂', '❤️'];
+
 const INPUT_BAR_HEIGHT = 70;
 
 /*******************************
@@ -100,6 +102,7 @@ function PrivateChat({ user, initialGameId }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [reactionTarget, setReactionTarget] = useState(null);
   const [firstLine, setFirstLine] = useState('');
   const [firstGame, setFirstGame] = useState(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
@@ -182,6 +185,7 @@ function PrivateChat({ user, initialGameId }) {
         .add({
           senderId: sender === 'system' ? 'system' : currentUser?.uid,
           text: msgText.trim(),
+          reactions: [],
           ...extras,
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
@@ -279,6 +283,7 @@ function PrivateChat({ user, initialGameId }) {
         return {
           id: d.id,
           text: val.text,
+          reactions: val.reactions || [],
           readBy: val.readBy || [],
           sender: val.senderId === currentUser.uid ? 'you' : val.senderId || 'them',
           voice: !!val.voice,
@@ -336,6 +341,7 @@ function PrivateChat({ user, initialGameId }) {
         return {
           id: d.id,
           text: val.text,
+          reactions: val.reactions || [],
           readBy: val.readBy || [],
           sender: val.senderId === currentUser.uid ? 'you' : val.senderId || 'them',
           voice: !!val.voice,
@@ -348,6 +354,21 @@ function PrivateChat({ user, initialGameId }) {
       console.warn('Failed to refresh messages', e);
     }
     setRefreshing(false);
+  };
+
+  const addReaction = async (msgId, emoji) => {
+    try {
+      await firebase
+        .firestore()
+        .collection('matches')
+        .doc(user.id)
+        .collection('messages')
+        .doc(msgId)
+        .update({ reactions: firebase.firestore.FieldValue.arrayUnion(emoji) });
+    } catch (e) {
+      console.warn('Failed to add reaction', e);
+    }
+    setReactionTarget(null);
   };
 
   const playSound = async (type) => {
@@ -427,11 +448,31 @@ function PrivateChat({ user, initialGameId }) {
   const renderMessage = ({ item }) => {
     if (item.voice) {
       return (
-        <VoiceMessageBubble
-          message={item}
-          userName={user.displayName}
-          otherUserId={otherUserId}
-        />
+        <TouchableOpacity onLongPress={() => setReactionTarget(item.id)}>
+          <VoiceMessageBubble
+            message={item}
+            userName={user.displayName}
+            otherUserId={otherUserId}
+          />
+          {item.reactions.length > 0 && (
+            <View style={privateStyles.reactionRow}>
+              {item.reactions.map((emoji, i) => (
+                <Text key={i} style={privateStyles.reactionEmoji}>
+                  {emoji}
+                </Text>
+              ))}
+            </View>
+          )}
+          {reactionTarget === item.id && (
+            <View style={privateStyles.reactionBar}>
+              {REACTIONS.map((emoji, i) => (
+                <TouchableOpacity key={i} onPress={() => addReaction(item.id, emoji)}>
+                  <Text style={privateStyles.reactionEmoji}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </TouchableOpacity>
       );
     }
 
@@ -448,7 +489,8 @@ function PrivateChat({ user, initialGameId }) {
 
     const isUser = item.sender === 'you';
     return (
-      <View
+      <TouchableOpacity
+        onLongPress={() => setReactionTarget(item.id)}
         style={[privateStyles.messageRow, isUser ? privateStyles.rowRight : privateStyles.rowLeft]}
       >
         {!isUser && user.image && (
@@ -461,9 +503,7 @@ function PrivateChat({ user, initialGameId }) {
             style={privateStyles.avatar}
           />
         )}
-        <View
-          style={[privateStyles.message, isUser ? privateStyles.right : privateStyles.left]}
-        >
+        <View style={[privateStyles.message, isUser ? privateStyles.right : privateStyles.left]}>
           <Text style={privateStyles.sender}>{isUser ? 'You' : user.displayName}</Text>
           <Text style={privateStyles.text}>{item.text}</Text>
           {isUser && (
@@ -472,7 +512,27 @@ function PrivateChat({ user, initialGameId }) {
             </Text>
           )}
         </View>
-      </View>
+
+        {item.reactions.length > 0 && (
+          <View style={privateStyles.reactionRow}>
+            {item.reactions.map((emoji, i) => (
+              <Text key={i} style={privateStyles.reactionEmoji}>
+                {emoji}
+              </Text>
+            ))}
+          </View>
+        )}
+
+        {reactionTarget === item.id && (
+          <View style={privateStyles.reactionBar}>
+            {REACTIONS.map((emoji, i) => (
+              <TouchableOpacity key={i} onPress={() => addReaction(item.id, emoji)}>
+                <Text style={privateStyles.reactionEmoji}>{emoji}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </TouchableOpacity>
     );
   };
 
@@ -786,6 +846,21 @@ const getPrivateStyles = (theme) =>
     fontSize: 10,
     alignSelf: 'flex-end',
     marginTop: 2,
+  },
+  reactionRow: {
+    flexDirection: 'row',
+    marginTop: 4,
+  },
+  reactionEmoji: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  reactionBar: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 6,
+    marginTop: 4,
   },
   inputBar: {
     flexDirection: 'row',
