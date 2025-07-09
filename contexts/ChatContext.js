@@ -22,30 +22,14 @@ export const ChatProvider = ({ children }) => {
   const { user } = useUser();
   const { getMessages } = useListeners();
   const { play } = useSound();
-  const devMatch = {
-    id: '__testMatch',
-    displayName: 'Dev Tester',
-    age: 99,
-    image: require('../assets/user1.jpg'),
-    avatarOverlay: '',
-    messages: [
-      { id: 'dev1', text: 'Dev chat ready.', sender: 'system' },
-    ],
-    matchedAt: 'now',
-    online: true,
-    activeGameId: null,
-    pendingInvite: null,
-  };
-
-  // Start with no matches and inject a tester match when dev mode is enabled.
-  const [matches, setMatches] = useState(devMode ? [devMatch] : []);
+  const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
     if (!user?.uid) {
       if (isMounted) {
-        setMatches(devMode ? [devMatch] : []);
+        setMatches([]);
         setLoading(false);
       }
       return () => {
@@ -67,23 +51,17 @@ export const ChatProvider = ({ children }) => {
               };
             });
             if (isMounted) {
-              setMatches(
-                devMode
-                  ? [...converted, devMatch].filter(
-                      (v, i, a) => a.findIndex((x) => x.id === v.id) === i
-                    )
-                  : converted
-              );
+              setMatches(converted);
             }
           } else {
-            if (isMounted) setMatches(devMode ? [devMatch] : []);
+            if (isMounted) setMatches([]);
           }
         } catch (e) {
           console.warn('Failed to parse matches from storage', e);
-          if (isMounted) setMatches(devMode ? [devMatch] : []);
+          if (isMounted) setMatches([]);
         }
       } else {
-        if (isMounted) setMatches(devMode ? [devMatch] : []);
+        if (isMounted) setMatches([]);
       }
       })
       .finally(() => {
@@ -92,7 +70,7 @@ export const ChatProvider = ({ children }) => {
     return () => {
       isMounted = false;
     };
-  }, [user?.uid, devMode]);
+  }, [user?.uid]);
 
   // Subscribe to Firestore matches for the current user
   const userUnsubs = useRef({});
@@ -182,23 +160,10 @@ export const ChatProvider = ({ children }) => {
     };
   }, [user?.uid]);
 
-  useEffect(() => {
-    setMatches((prev) => {
-      if (devMode) {
-        if (!prev.find((m) => m.id === devMatch.id)) {
-          logDev('Adding dev match');
-          return [...prev, devMatch];
-        }
-        return prev;
-      }
-      return prev.filter((m) => m.id !== devMatch.id);
-    });
-  }, [devMode]);
 
   useEffect(() => {
     if (!user?.uid) return;
-    const data = matches.filter((m) => m.id !== devMatch.id);
-    AsyncStorage.setItem(getStorageKey(user.uid), JSON.stringify(data)).catch((err) => {
+    AsyncStorage.setItem(getStorageKey(user.uid), JSON.stringify(matches)).catch((err) => {
       console.warn('Failed to save matches to storage', err);
     });
   }, [matches, user?.uid]);
