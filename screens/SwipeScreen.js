@@ -42,6 +42,7 @@ import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import * as Haptics from 'expo-haptics';
 import SkeletonUserCard from '../components/SkeletonUserCard';
 import EmptyState from '../components/EmptyState';
+import FullProfileModal from '../components/FullProfileModal';
 import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
@@ -117,6 +118,7 @@ const SwipeScreen = () => {
   const [history, setHistory] = useState([]);
   const [showSuperLikeAnim, setShowSuperLikeAnim] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [matchLine, setMatchLine] = useState('');
   const [matchGame, setMatchGame] = useState(null);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -569,6 +571,18 @@ const handleSwipe = async (direction) => {
         useNativeDriver: false,
       }),
       onPanResponderRelease: (_, gesture) => {
+        const isTap = Math.abs(gesture.dx) < 10 && Math.abs(gesture.dy) < 10;
+        if (isTap) {
+          setImageIndex((i) =>
+            (i + 1) % (displayUser?.images?.length || 1)
+          );
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            useNativeDriver: false,
+          }).start();
+          return;
+        }
+
         if (gesture.dy < -120 && Math.abs(gesture.dx) < 80) {
           handleSwipeChallenge();
         } else if (gesture.dx > 120) {
@@ -727,6 +741,15 @@ const handleSwipe = async (direction) => {
                 style={styles.expandIcon}
               >
                 <Ionicons name="chevron-up" size={24} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  Haptics.selectionAsync().catch(() => {});
+                  setShowProfile(true);
+                }}
+                style={styles.infoIcon}
+              >
+                <Ionicons name="information-circle" size={24} color="#fff" />
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
@@ -920,6 +943,11 @@ const handleSwipe = async (direction) => {
           onSelect={handleGamePickSelect}
           onClose={() => setShowGamePicker(false)}
         />
+        <FullProfileModal
+          visible={showProfile}
+          onClose={() => setShowProfile(false)}
+          user={displayUser}
+        />
         <BoostModal
           visible={showBoostModal}
           trialUsed={!!currentUser?.boostTrialUsed}
@@ -1008,6 +1036,11 @@ const getStyles = (theme) =>
     position: 'absolute',
     bottom: -30,
     alignSelf: 'center',
+  },
+  infoIcon: {
+    position: 'absolute',
+    top: SPACING.MD,
+    right: SPACING.MD,
   },
   noMoreWrapper: {
     alignItems: 'center',
