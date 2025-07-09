@@ -1,6 +1,10 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // Allow each user to access only their own avatar stored as avatars/{uid}.jpg
+    match /avatars/{userId}.jpg {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
     match /avatars/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
