@@ -16,6 +16,16 @@ import useRemoteConfig from './hooks/useRemoteConfig';
 import RootNavigator from './navigation/RootNavigator';
 import { useTheme } from './contexts/ThemeContext';
 
+const linking = {
+  prefixes: ['https://pinged.app', 'pinged://'],
+  config: {
+    screens: {
+      HomeScreen: 'home',
+      MatchScreen: 'match/:id',
+    },
+  },
+};
+
 const ThemedNotificationCenter = () => {
   const { theme } = useTheme();
   return <NotificationCenter color={theme.accent} />;
@@ -65,7 +75,7 @@ const AppInner = () => {
         keyboardVerticalOffset={60}
       >
         <ErrorBoundary>
-          <NavigationContainer>
+          <NavigationContainer linking={linking}>
             <RootNavigator />
             <DevBanner />
           </NavigationContainer>
