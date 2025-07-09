@@ -14,14 +14,19 @@ export { default as PrivateChat } from './PrivateChat';
 export { default as GroupChat } from './GroupChat';
 
 export default function ChatScreen({ route }) {
-  const { user: paramUser, event } = route.params || {};
-  const { matches } = useChats();
+  const { user: paramUser, event, gameId, chatId } = route.params || {};
+  const { matches, addMatch } = useChats();
 
   if (event) return <GroupChat event={event} />;
 
-  const match = matches.find(
-    (m) => m.id === paramUser?.id || m.otherUserId === paramUser?.id
+  let match = matches.find(
+    (m) => m.id === (chatId || paramUser?.id) || m.otherUserId === paramUser?.id
   );
+
+  if (!match && paramUser && chatId) {
+    match = { ...paramUser, id: chatId };
+    addMatch(match);
+  }
 
   if (!match) {
     return (
@@ -38,7 +43,7 @@ export default function ChatScreen({ route }) {
     );
   }
 
-  return <PrivateChat user={match} />;
+  return <PrivateChat user={match} initialGameId={gameId} />;
 }
 
 ChatScreen.propTypes = {
@@ -50,6 +55,8 @@ ChatScreen.propTypes = {
         image: PropTypes.any,
       }),
       event: PropTypes.object,
+      gameId: PropTypes.string,
+      chatId: PropTypes.string,
     }),
   }).isRequired,
 };
