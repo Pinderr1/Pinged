@@ -21,7 +21,6 @@ import { snapshotExists } from '../utils/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import { useNavigation } from '@react-navigation/native';
-import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { avatarSource, overlayAssets } from '../utils/avatar';
@@ -77,7 +76,6 @@ export default function OnboardingScreen() {
   const { updateUser } = useUser();
   const { markOnboarded } = useOnboarding();
   const navigation = useNavigation();
-  const db = getFirestore(firebase.app());
   const styles = getStyles(theme);
 
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
@@ -149,7 +147,11 @@ export default function OnboardingScreen() {
       const uid = firebase.auth().currentUser?.uid;
       if (!uid) return;
       try {
-        const snap = await getDoc(doc(db, 'users', uid));
+        const snap = await firebase
+          .firestore()
+          .collection('users')
+          .doc(uid)
+          .get();
         if (snapshotExists(snap) && snap.data().onboardingComplete) {
           updateUser(snap.data());
           markOnboarded();
@@ -210,7 +212,11 @@ export default function OnboardingScreen() {
         onboardingComplete: true,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
-      await setDoc(doc(db, 'users', user.uid), profile, { merge: true });
+      await firebase
+        .firestore()
+        .collection('users')
+        .doc(user.uid)
+        .set(profile, { merge: true });
       updateUser(profile);
       markOnboarded();
       Toast.show({ type: 'success', text1: 'Profile saved!' });
