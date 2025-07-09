@@ -5,9 +5,9 @@ import Loader from "../components/Loader";
 import { useAuth } from "./AuthContext";
 import { clearStoredOnboarding } from "../utils/onboarding";
 import Toast from "react-native-toast-message";
+import * as Analytics from "expo-firebase-analytics";
 
 const OnboardingContext = createContext();
-
 
 export const OnboardingProvider = ({ children }) => {
   const { user } = useAuth();
@@ -43,6 +43,7 @@ export const OnboardingProvider = ({ children }) => {
     try {
       await AsyncStorage.setItem(`hasOnboarded_${user.uid}`, "true");
       setHasOnboarded(true);
+      await Analytics.logEvent("onboarding_complete");
     } catch (e) {
       console.warn("Failed to persist onboarding flag", e);
     }
@@ -58,7 +59,7 @@ export const OnboardingProvider = ({ children }) => {
       setHasOnboarded(false);
     } catch (e) {
       console.warn("Failed to clear onboarding", e);
-      Toast.show({ type: 'error', text1: 'Failed to clear onboarding' });
+      Toast.show({ type: "error", text1: "Failed to clear onboarding" });
     }
   };
 
