@@ -528,7 +528,10 @@ function PrivateChat({ user }) {
   }
 
   const chatSection = (
-    <View style={privateStyles.chatSection}>
+    <View style={[
+      privateStyles.chatSection,
+      { paddingBottom: INPUT_BAR_HEIGHT + insets.bottom },
+    ]}>
       <FlatList
         style={{ flex: 1 }}
         data={messages}
@@ -702,8 +705,8 @@ function PrivateChat({ user }) {
           </View>
         </View>
       </Modal>
-      <ScreenContainer>
-        <SafeKeyboardView style={{ flex: 1, paddingTop: HEADER_SPACING }} offset={0}>
+      <SafeKeyboardView offset={insets.top + 80} style={{ flex: 1, paddingTop: HEADER_SPACING }}>
+        <ScreenContainer scroll contentContainerStyle={{ paddingBottom: 120 }}>
           <View style={[privateStyles.gameWrapper, { height: gameVisible ? BOARD_HEIGHT : 0 }]}>
             {gameSection}
           </View>
@@ -725,8 +728,8 @@ function PrivateChat({ user }) {
             onCancel={handleCancelGame}
             onChange={handleChangeGame}
           />
-        </SafeKeyboardView>
-      </ScreenContainer>
+        </ScreenContainer>
+      </SafeKeyboardView>
     </GradientBackground>
   );
 }
