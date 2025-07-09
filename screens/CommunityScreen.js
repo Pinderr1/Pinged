@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -23,7 +23,6 @@ import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
-import PropTypes from 'prop-types';
 import { useUser } from '../contexts/UserContext';
 import firebase from '../firebase';
 import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
@@ -636,6 +635,5 @@ const getStyles = (theme, skeletonColor) =>
   },
 });
 
-CommunityScreen.propTypes = {};
 
 export default CommunityScreen;

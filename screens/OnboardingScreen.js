@@ -1,5 +1,5 @@
 // screens/OnboardingScreen.js
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,6 @@ import GradientBackground from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import firebase from '../firebase';
 import { uploadAvatarAsync, uploadIntroClipAsync } from '../utils/upload';
-import PropTypes from 'prop-types';
 import { sanitizeText } from '../utils/sanitize';
 import { snapshotExists } from '../utils/firestore';
 import { useUser } from '../contexts/UserContext';
@@ -34,7 +33,6 @@ import MultiSelectList from '../components/MultiSelectList';
 import GameSelectList from '../components/GameSelectList';
 import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
-import { allGames } from '../data/games';
 import { BADGE_LIST } from '../data/badges';
 import { logDev } from '../utils/logger';
 import LocationInfoModal from '../components/LocationInfoModal';
@@ -1043,4 +1041,3 @@ const getStyles = (theme) => {
   });
 };
 
-OnboardingScreen.propTypes = {};

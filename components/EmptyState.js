@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 import LottieView from 'lottie-react-native';

@@ -1,5 +1,4 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import ScreenContainer from '../components/ScreenContainer';

@@ -1,6 +1,6 @@
 // /screens/ProfileScreen.js
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, View, Image, ScrollView, Share } from 'react-native';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';

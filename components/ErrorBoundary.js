@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text } from 'react-native';
 import PropTypes from 'prop-types';
 import Toast from 'react-native-toast-message';

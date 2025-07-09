@@ -1,5 +1,5 @@
 // components/GradientBackground.js
-import React from 'react';
+
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import PropTypes from 'prop-types';
