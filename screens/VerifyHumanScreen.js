@@ -1,5 +1,5 @@
 // screens/VerifyHumanScreen.js
-
+import React from "react";
 import { Image } from "react-native";
 import GradientBackground from "../components/GradientBackground";
 import GradientButton from "../components/GradientButton";

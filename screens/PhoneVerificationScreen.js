@@ -1,5 +1,5 @@
 // screens/PhoneVerificationScreen.js
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, TextInput, Text } from "react-native";
 import GradientBackground from "../components/GradientBackground";
 import GradientButton from "../components/GradientButton";

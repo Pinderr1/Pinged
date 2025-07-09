@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import PropTypes from 'prop-types';
 import { useDev } from '../contexts/DevContext';
 import DevPanel from './DevPanel';
 
@@ -24,6 +25,7 @@ export default function DevBanner() {
   );
 }
 
+DevBanner.propTypes = {};
 
 const styles = StyleSheet.create({
   banner: {

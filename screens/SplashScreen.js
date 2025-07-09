@@ -1,5 +1,5 @@
 // screens/SplashScreen.js
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Animated, Image, StatusBar, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LottieView from 'lottie-react-native';

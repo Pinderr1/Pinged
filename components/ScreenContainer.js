@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Animated } from 'react-native';
 import PropTypes from 'prop-types';
 

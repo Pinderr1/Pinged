@@ -1,4 +1,6 @@
+import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
+import PropTypes from 'prop-types';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import { eventImageSource } from '../utils/avatar';
@@ -37,6 +39,7 @@ export default function EventBanner() {
   );
 }
 
+EventBanner.propTypes = {};
 
 const getStyles = (theme) =>
   StyleSheet.create({

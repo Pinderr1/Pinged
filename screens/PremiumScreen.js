@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';

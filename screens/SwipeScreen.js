@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,7 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Easing } from 'react-native';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
-import { SPACING } from '../layout';
+import { HEADER_SPACING, SPACING } from '../layout';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useDev } from '../contexts/DevContext';
@@ -46,6 +46,7 @@ import FullProfileModal from '../components/FullProfileModal';
 import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
+import PropTypes from 'prop-types';
 import { FONT_FAMILY } from '../textStyles';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -1233,5 +1234,6 @@ const getStyles = (theme) =>
   debugText: { color: '#fff', fontSize: 12, fontFamily: FONT_FAMILY.regular },
 });
 
+SwipeScreen.propTypes = {};
 
 export default SwipeScreen;

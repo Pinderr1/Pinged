@@ -1,6 +1,6 @@
 // /screens/EditProfileScreen.js
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, View, Image, Switch } from 'react-native';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
@@ -19,6 +19,7 @@ import PropTypes from 'prop-types';
 import RNPickerSelect from 'react-native-picker-select';
 import GameSelectList from '../components/GameSelectList';
 import { useTheme } from '../contexts/ThemeContext';
+import { allGames } from '../data/games';
 
 const EditProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();

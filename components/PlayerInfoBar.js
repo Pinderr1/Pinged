@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ProgressBar from './ProgressBar';

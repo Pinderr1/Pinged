@@ -1,3 +1,4 @@
+import React from 'react';
 import GameSessionScreen from './GameSessionScreen';
 import PropTypes from 'prop-types';
 

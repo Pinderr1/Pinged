@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Modal, View, Text, Image, Pressable, StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { BlurView } from 'expo-blur';

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, Easing } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import PropTypes from 'prop-types';

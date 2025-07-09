@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, TextInput } from 'react-native';
 import { textStyles } from '../textStyles';
 import { useTheme } from '../contexts/ThemeContext';

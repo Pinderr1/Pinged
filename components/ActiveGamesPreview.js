@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useGameSessions } from '../contexts/GameSessionContext';

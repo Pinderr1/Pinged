@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, Text, Animated } from 'react-native';
 import PropTypes from 'prop-types';
 import Card from './Card';

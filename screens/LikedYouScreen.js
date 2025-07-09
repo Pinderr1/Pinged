@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { View, FlatList, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import getStyles from '../styles';
 import GradientBackground from '../components/GradientBackground';
 import ScreenContainer from '../components/ScreenContainer';

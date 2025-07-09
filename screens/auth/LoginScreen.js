@@ -1,5 +1,5 @@
 // screens/LoginScreen.js
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import Toast from 'react-native-toast-message';
 import GradientBackground from '../../components/GradientBackground';

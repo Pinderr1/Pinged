@@ -1,3 +1,4 @@
+import React from 'react';
 import { View } from 'react-native';
 import Loader from './Loader';
 import useGameSession from '../hooks/useGameSession';

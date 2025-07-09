@@ -1,3 +1,4 @@
+import React from 'react';
 import { Text, Linking, Platform } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';

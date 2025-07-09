@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, Text, Modal, ScrollView, StyleSheet, Button, Platform } from 'react-native';
 import PropTypes from 'prop-types';
 import AsyncStorage from '@react-native-async-storage/async-storage';

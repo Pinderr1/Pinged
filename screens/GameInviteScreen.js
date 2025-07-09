@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import * as Haptics from 'expo-haptics';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import GradientBackground from '../components/GradientBackground';
 import ScreenContainer from '../components/ScreenContainer';
+import GradientButton from '../components/GradientButton';
 import Header from '../components/Header';
 import SkeletonPlaceholder from '../components/SkeletonPlaceholder';
 import { useTheme } from '../contexts/ThemeContext';
