@@ -346,92 +346,54 @@ const SwipeScreen = () => {
     pan.setValue({ x: 0, y: 0 });
   }, [currentIndex]);
 
-const handleSwipe = async (direction) => {
+const handleLike = async () => {
   if (!displayUser) return;
 
-  // Provide light haptic feedback on every swipe
-  Haptics.selectionAsync().catch(() => {});
-  play(direction === 'left' ? 'swipe_left' : 'swipe_right');
+  if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
+    navigation.navigate('Premium', { context: 'paywall' });
+    return;
+  }
 
-    if (direction === 'right') {
-      if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
-        navigation.navigate('Premium', { context: 'paywall' });
-        return;
-      }
+  setLikesUsed((prev) => prev + 1);
+  showNotification(`You liked ${displayUser.displayName}`);
 
-      setLikesUsed((prev) => prev + 1);
-      showNotification(`You liked ${displayUser.displayName}`);
+  if (currentUser?.uid && displayUser.id && !devMode) {
+    try {
+      await firebase
+        .firestore()
+        .collection('likes')
+        .doc(currentUser.uid)
+        .collection('liked')
+        .doc(displayUser.id)
+        .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
 
-      if (currentUser?.uid && displayUser.id && !devMode) {
-        try {
-          await firebase
-            .firestore()
-            .collection('likes')
-            .doc(currentUser.uid)
-            .collection('liked')
-            .doc(displayUser.id)
-            .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      await firebase
+        .firestore()
+        .collection('likes')
+        .doc(displayUser.id)
+        .collection('likedBy')
+        .doc(currentUser.uid)
+        .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
 
-          await firebase
-            .firestore()
-            .collection('likes')
-            .doc(displayUser.id)
-            .collection('likedBy')
-            .doc(currentUser.uid)
-            .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      const reciprocal = await firebase
+        .firestore()
+        .collection('likes')
+        .doc(displayUser.id)
+        .collection('liked')
+        .doc(currentUser.uid)
+        .get();
 
-          const reciprocal = await firebase
-            .firestore()
-            .collection('likes')
-            .doc(displayUser.id)
-            .collection('liked')
-            .doc(currentUser.uid)
-            .get();
+      if (reciprocal.exists) {
+        const matchRef = await firebase
+          .firestore()
+          .collection('matches')
+          .add({
+            users: [currentUser.uid, displayUser.id],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
 
-          if (reciprocal.exists) {
-            const matchRef = await firebase
-              .firestore()
-              .collection('matches')
-              .add({
-                users: [currentUser.uid, displayUser.id],
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-              });
-
-            addMatch({
-              id: matchRef.id,
-              displayName: displayUser.displayName,
-              age: displayUser.age,
-              image: displayUser.images[0],
-              messages: [],
-              matchedAt: 'now',
-              activeGameId: null,
-              pendingInvite: null,
-            });
-
-            setMatchedUser(displayUser);
-            setMatchLine(
-              icebreakers[Math.floor(Math.random() * icebreakers.length)] || ''
-            );
-            setMatchGame(
-              allGames[Math.floor(Math.random() * allGames.length)] || null
-            );
-            // Provide a stronger haptic pulse when a match occurs
-            Haptics.notificationAsync(
-              Haptics.NotificationFeedbackType.Success
-            ).catch(() => {});
-            play('match');
-            Toast.show({ type: 'success', text1: "It's a match!" });
-            showNotification("It's a match!");
-            setShowFireworks(true);
-            setTimeout(() => setShowFireworks(false), 2000);
-          }
-        } catch (e) {
-          console.warn('Failed to process like', e);
-        }
-      } else if (devMode) {
-        // In dev mode instantly match
         addMatch({
-          id: displayUser.id,
+          id: matchRef.id,
           displayName: displayUser.displayName,
           age: displayUser.age,
           image: displayUser.images[0],
@@ -440,27 +402,71 @@ const handleSwipe = async (direction) => {
           activeGameId: null,
           pendingInvite: null,
         });
+
         setMatchedUser(displayUser);
         setMatchLine(
           icebreakers[Math.floor(Math.random() * icebreakers.length)] || ''
         );
-        setMatchGame(allGames[Math.floor(Math.random() * allGames.length)] || null);
+        setMatchGame(
+          allGames[Math.floor(Math.random() * allGames.length)] || null
+        );
         // Provide a stronger haptic pulse when a match occurs
         Haptics.notificationAsync(
           Haptics.NotificationFeedbackType.Success
         ).catch(() => {});
         play('match');
         Toast.show({ type: 'success', text1: "It's a match!" });
+        showNotification("It's a match!");
         setShowFireworks(true);
         setTimeout(() => setShowFireworks(false), 2000);
       }
+    } catch (e) {
+      console.warn('Failed to process like', e);
     }
+  } else if (devMode) {
+    // In dev mode instantly match
+    addMatch({
+      id: displayUser.id,
+      displayName: displayUser.displayName,
+      age: displayUser.age,
+      image: displayUser.images[0],
+      messages: [],
+      matchedAt: 'now',
+      activeGameId: null,
+      pendingInvite: null,
+    });
+    setMatchedUser(displayUser);
+    setMatchLine(
+      icebreakers[Math.floor(Math.random() * icebreakers.length)] || ''
+    );
+    setMatchGame(allGames[Math.floor(Math.random() * allGames.length)] || null);
+    // Provide a stronger haptic pulse when a match occurs
+    Haptics.notificationAsync(
+      Haptics.NotificationFeedbackType.Success
+    ).catch(() => {});
+    play('match');
+    Toast.show({ type: 'success', text1: "It's a match!" });
+    setShowFireworks(true);
+    setTimeout(() => setShowFireworks(false), 2000);
+  }
+};
 
-    setHistory((h) => [...h, currentIndex]);
-    pan.setValue({ x: 0, y: 0 });
-    setImageIndex(0);
-    setCurrentIndex((i) => i + 1);
-  };
+const handleSwipe = async (direction) => {
+  if (!displayUser) return;
+
+  // Provide light haptic feedback on every swipe
+  Haptics.selectionAsync().catch(() => {});
+  play(direction === 'left' ? 'swipe_left' : 'swipe_right');
+
+  if (direction === 'right') {
+    await handleLike();
+  }
+
+  setHistory((h) => [...h, currentIndex]);
+  pan.setValue({ x: 0, y: 0 });
+  setImageIndex(0);
+  setCurrentIndex((i) => i + 1);
+};
 
   const rewind = () => {
     if (!isPremiumUser && !devMode) {
