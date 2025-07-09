@@ -1,191 +1,32 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
+    // Require the user to be authenticated
+    function isSignedIn() {
       return request.auth != null;
     }
 
-    function isUser(uid) {
-      return signedIn() && request.auth.uid == uid;
-    }
-
-    function isOwner(field) {
-      return signedIn() && request.auth.uid == field;
-    }
-
-    function canPlayDaily(oldData, newData) {
-      let premium = (oldData.isPremium == true) || (newData.isPremium == true);
-      if (premium) return true;
-
-      // When play count fields aren't being modified just allow
-      let countChanged = newData.dailyPlayCount != oldData.dailyPlayCount ||
-        newData.lastGamePlayedAt != oldData.lastGamePlayedAt;
-      if (!countChanged) return true;
-
-      // require lastGamePlayedAt to be set to server time when updating
-      if (newData.lastGamePlayedAt != request.time) return false;
-
-      let limit = 1;
-      // No previous timestamp or more than 24h since last game -> reset count
-      return (!oldData.lastGamePlayedAt ||
-          request.time - oldData.lastGamePlayedAt > duration.value(1, 'd'))
-        ? newData.dailyPlayCount == 1 && newData.dailyPlayCount <= limit
-        : newData.dailyPlayCount == oldData.dailyPlayCount + 1 &&
-          newData.dailyPlayCount <= limit;
-    }
-
-    function isPremium(uid) {
-      return get(/databases/$(database)/documents/users/$(uid)).data.isPremium == true;
-    }
-
-    function isPremiumGame(gameId) {
-      return get(/databases/$(database)/documents/games/$(gameId)).data.premium == true;
-    }
-
-    function isMatch(uid, otherUid) {
-      let id = [uid, otherUid].sort().join('_');
-      return exists(/databases/$(database)/documents/matchHistory/$(id));
-    }
-
-    function sessionGameId(sessionId) {
-      let reqId = request.resource.data.gameId;
-      let resId = exists(/databases/$(database)/documents/gameSessions/$(sessionId)) ?
-        get(/databases/$(database)/documents/gameSessions/$(sessionId)).data.gameId : null;
-      return reqId != null ? reqId : resId;
-    }
-
-    function validUserFields() {
-      return !('uid' in request.resource.data && request.resource.data.uid != request.auth.uid) &&
-             !('userId' in request.resource.data && request.resource.data.userId != request.auth.uid) &&
-             !('hostId' in request.resource.data && request.resource.data.hostId != request.auth.uid);
-    }
-
+    // User can read and write only their own profile
     match /users/{userId} {
-      // Restrict read access to only the authenticated user
-      allow read: if request.auth.uid == userId;
-      allow delete: if isUser(userId);
-      allow create: if isUser(userId) &&
-        request.resource.data.uid is string &&
-        request.resource.data.uid == userId &&
-        validUserFields();
-      allow update: if isUser(userId) &&
-        request.resource.data.uid == userId &&
-        canPlayDaily(resource.data, request.resource.data) &&
-        validUserFields();
-      match /gameInvites/{inviteId} {
-        allow read, write: if isUser(userId);
-      }
-      match /notifications/{noteId} {
-        allow read, write: if isUser(userId);
-      }
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
-    match /matchRequests/{requestId} {
-      allow read: if signedIn() &&
-        (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to ||
-         request.auth.uid == request.resource.data.from || request.auth.uid == request.resource.data.to);
-      allow write: if signedIn() &&
-        (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to ||
-         request.auth.uid == request.resource.data.from || request.auth.uid == request.resource.data.to) &&
-        validUserFields();
-    }
-
-    match /gameInvites/{inviteId} {
-      allow read: if signedIn() &&
-        (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to ||
-         request.auth.uid == request.resource.data.from || request.auth.uid == request.resource.data.to);
-      allow write: if signedIn() &&
-        (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to ||
-         request.auth.uid == request.resource.data.from || request.auth.uid == request.resource.data.to) &&
-        validUserFields();
-    }
-
-    match /gameSessions/{sessionId} {
-      allow read: if signedIn() &&
-        (request.auth.uid in resource.data.players ||
-         request.auth.uid in request.resource.data.players);
-      allow write: if signedIn() &&
-        (request.auth.uid in resource.data.players ||
-         request.auth.uid in request.resource.data.players) &&
-        (!isPremiumGame(sessionGameId(sessionId)) || isPremium(request.auth.uid)) &&
-        validUserFields();
-    }
-
-    match /gameStats/{statId} {
-      allow read: if request.auth.uid == resource.data.userId;
-      allow write: if request.auth.uid == resource.data.userId &&
-        validUserFields();
-      allow create: if request.auth.uid == request.resource.data.userId &&
-        validUserFields();
-    }
-
-    match /chats/{chatId} {
-      allow read: if signedIn() &&
-        request.auth.uid in resource.data.participants;
-      allow write: if signedIn() &&
-        request.auth.uid in resource.data.participants &&
-        validUserFields();
-    }
-
+    // Match documents are readable/writable only by the two users involved
     match /matches/{matchId} {
-      allow read: if signedIn() &&
+      allow read, write: if isSignedIn() &&
         (request.auth.uid in resource.data.users ||
          request.auth.uid in request.resource.data.users);
-      allow write: if signedIn() &&
-        (request.auth.uid in resource.data.users ||
-         request.auth.uid in request.resource.data.users) &&
-        validUserFields();
+
+      // Messages inside a match are also restricted to the matched users
       match /messages/{messageId} {
-        allow read: if signedIn() &&
+        allow read, write: if isSignedIn() &&
           request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
-        allow write: if signedIn() &&
-          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users &&
-          validUserFields();
       }
     }
 
-    match /events/{eventId} {
-      allow read: if resource.data.public == true || signedIn();
-      allow create, update: if request.auth.uid == request.resource.data.hostId &&
-        validUserFields();
-      allow delete: if request.auth.uid == resource.data.hostId;
-      match /messages/{messageId} {
-        allow read: if signedIn();
-        allow create: if isOwner(request.resource.data.userId) &&
-          request.resource.data.userId is string &&
-          validUserFields();
-        allow update: if isOwner(resource.data.userId) &&
-          validUserFields();
-        allow delete: if isOwner(resource.data.userId);
-      }
-    }
-
-    match /matchHistory/{historyId} {
-      allow read: if request.auth.uid in [resource.data.player1, resource.data.player2];
-    }
-
-    // List of available games for onboarding
-    match /games/{gameId} {
-      allow read: if true;
-      match /messages/{messageId} {
-        allow read: if signedIn() &&
-          isMatch(request.auth.uid,
-            request.resource.data.otherUid != null ?
-              request.resource.data.otherUid : resource.data.otherUid);
-        allow write: if signedIn() &&
-          isMatch(request.auth.uid,
-            request.resource.data.otherUid != null ?
-              request.resource.data.otherUid : resource.data.otherUid) &&
-          validUserFields();
-      }
-    }
-
-    // Community Board posts accessible to all signed-in users
-    match /communityPosts/{postId} {
-      allow read: if resource.data.public == true || signedIn();
-      allow create, update: if request.auth.uid == request.resource.data.hostId &&
-        validUserFields();
-      allow delete: if request.auth.uid == resource.data.hostId;
+    // Deny all other reads and writes
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
