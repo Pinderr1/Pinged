@@ -133,13 +133,60 @@ export default function OnboardingScreen() {
     }).start();
   }, [progress, progressAnim]);
 
-  const validateField = () => {
-    const value = answers[currentField];
-    if (!requiredFields.includes(currentField)) return true;
-    if (currentField === 'ageGender')
-      return /^\d+$/.test(answers.age) && parseInt(answers.age, 10) >= 18;
-    if (currentField === 'avatar') return !!value;
-    return value && value.toString().trim().length > 0;
+const validateField = () => {
+  const value = answers[currentField];
+  if (!requiredFields.includes(currentField)) return true;
+  if (currentField === 'ageGender')
+    return /^\d+$/.test(answers.age) && parseInt(answers.age, 10) >= 18;
+  if (currentField === 'avatar') return !!value;
+  return value && value.toString().trim().length > 0;
+};
+
+  const validateAnswers = (checkAll = false) => {
+    const keys = checkAll
+      ? questions.map((q) => q.key)
+      : requiredFields;
+    for (const key of keys) {
+      const val = answers[key];
+      const label = questions.find((q) => q.key === key)?.label || key;
+      if (key === 'ageGender') {
+        if (!/^\d+$/.test(answers.age) || parseInt(answers.age, 10) < 18) {
+          Toast.show({ type: 'error', text1: 'Age must be 18 or older' });
+          return false;
+        }
+        if (!answers.gender) {
+          Toast.show({ type: 'error', text1: 'Please select a gender' });
+          return false;
+        }
+        continue;
+      }
+      if (key === 'favoriteGames') {
+        if (!Array.isArray(val) || val.length === 0) {
+          Toast.show({ type: 'error', text1: 'Select at least one favorite game' });
+          return false;
+        }
+        continue;
+      }
+      if (key === 'promptResponses') {
+        if (!Array.isArray(val) || val.some((p) => !p.trim())) {
+          Toast.show({ type: 'error', text1: 'Please answer all prompts' });
+          return false;
+        }
+        continue;
+      }
+      if (key === 'badgePrefs') {
+        if (!Array.isArray(val) || val.length === 0) {
+          Toast.show({ type: 'error', text1: 'Choose badge preferences' });
+          return false;
+        }
+        continue;
+      }
+      if (!val || !val.toString().trim()) {
+        Toast.show({ type: 'error', text1: `Please complete: ${label}` });
+        return false;
+      }
+    }
+    return true;
   };
 
   const isValid = validateField();
@@ -172,6 +219,7 @@ export default function OnboardingScreen() {
       Toast.show({ type: 'error', text1: 'No user signed in' });
       return;
     }
+    if (!validateAnswers()) return;
     await saveProfile();
   };
 
@@ -261,6 +309,7 @@ export default function OnboardingScreen() {
       }
       animateStepChange(step + 1);
     } else {
+      if (!validateAnswers(true)) return;
       await saveProfile();
     }
   };
