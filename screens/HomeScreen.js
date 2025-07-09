@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-  Image,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
@@ -25,8 +24,7 @@ import { getNextUnlock } from '../utils/unlocks';
 import Card from '../components/Card';
 import EventFlyer from "../components/EventFlyer";
 import GradientButton from '../components/GradientButton';
-import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
-import { eventImageSource } from '../utils/avatar';
+import { SAMPLE_EVENTS } from '../data/community';
 import PremiumBanner from '../components/PremiumBanner';
 import ActiveGamesPreview from '../components/ActiveGamesPreview';
 import MatchesPreview from '../components/MatchesPreview';
