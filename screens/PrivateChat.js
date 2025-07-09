@@ -11,6 +11,7 @@ import {
   Keyboard,
   LayoutAnimation,
   Dimensions,
+  Animated,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GradientBackground from '../components/GradientBackground';
@@ -47,7 +48,19 @@ import useDebouncedCallback from '../hooks/useDebouncedCallback';
 import EmptyState from '../components/EmptyState';
 
 const INPUT_BAR_HEIGHT = 70;
-const REACTIONS = ['🔥', '😂', '❤️'];
+const REACTIONS = ['❤️', '🔥', '😂'];
+
+const FadeInView = ({ children, style }) => {
+  const fade = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(fade, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [fade]);
+  return <Animated.View style={[style, { opacity: fade }]}>{children}</Animated.View>;
+};
 
 /*******************************
  * Private one-on-one chat UI *
@@ -184,7 +197,7 @@ function PrivateChat({ user, initialGameId }) {
         .add({
           senderId: sender === 'system' ? 'system' : currentUser?.uid,
           text: msgText.trim(),
-          reactions: [],
+          reactions: {},
           ...extras,
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
@@ -286,7 +299,7 @@ function PrivateChat({ user, initialGameId }) {
           id: d.id,
           text: val.text,
           readBy: val.readBy || [],
-          reactions: val.reactions || [],
+          reactions: val.reactions || {},
           sender: val.senderId === currentUser.uid ? 'you' : val.senderId || 'them',
           voice: !!val.voice,
           url: val.url,
@@ -350,7 +363,7 @@ function PrivateChat({ user, initialGameId }) {
           id: d.id,
           text: val.text,
           readBy: val.readBy || [],
-          reactions: val.reactions || [],
+          reactions: val.reactions || {},
           sender: val.senderId === currentUser.uid ? 'you' : val.senderId || 'them',
           voice: !!val.voice,
           url: val.url,
@@ -370,7 +383,10 @@ function PrivateChat({ user, initialGameId }) {
     setRefreshing(false);
   };
 
-  const addReaction = async (msgId, emoji) => {
+  const toggleReaction = async (msgId, emoji) => {
+    const msg = messages.find((m) => m.id === msgId);
+    const current = msg?.reactions?.[currentUser.uid];
+    const field = `reactions.${currentUser.uid}`;
     try {
       await firebase
         .firestore()
@@ -378,9 +394,13 @@ function PrivateChat({ user, initialGameId }) {
         .doc(user.id)
         .collection('messages')
         .doc(msgId)
-        .update({ reactions: firebase.firestore.FieldValue.arrayUnion(emoji) });
+        .update(
+          current === emoji
+            ? { [field]: firebase.firestore.FieldValue.delete() }
+            : { [field]: emoji }
+        );
     } catch (e) {
-      console.warn('Failed to add reaction', e);
+      console.warn('Failed to update reaction', e);
     }
     setReactionTarget(null);
   };
@@ -517,24 +537,31 @@ function PrivateChat({ user, initialGameId }) {
         )}
         {bubble}
 
-        {item.reactions.length > 0 && (
-          <View style={privateStyles.reactionRow}>
-            {item.reactions.map((emoji, i) => (
-              <Text key={i} style={privateStyles.reactionEmoji}>
+        {Object.keys(item.reactions || {}).length > 0 && (
+          <FadeInView style={privateStyles.reactionRow}>
+            {Object.entries(
+              Object.values(item.reactions || {}).reduce((acc, r) => {
+                if (!r) return acc;
+                acc[r] = (acc[r] || 0) + 1;
+                return acc;
+              }, {})
+            ).map(([emoji, count]) => (
+              <Text key={emoji} style={privateStyles.reactionEmoji}>
                 {emoji}
+                {count > 1 ? ` ${count}` : ''}
               </Text>
             ))}
-          </View>
+          </FadeInView>
         )}
 
         {reactionTarget === item.id && (
-          <View style={privateStyles.reactionBar}>
+          <FadeInView style={privateStyles.reactionBar}>
             {REACTIONS.map((emoji, i) => (
-              <TouchableOpacity key={i} onPress={() => addReaction(item.id, emoji)}>
+              <TouchableOpacity key={i} onPress={() => toggleReaction(item.id, emoji)}>
                 <Text style={privateStyles.reactionEmoji}>{emoji}</Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </FadeInView>
         )}
       </TouchableOpacity>
     );
