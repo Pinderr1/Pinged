@@ -375,9 +375,17 @@ const SettingsScreen = ({ navigation }) => {
             }
           />
           <GradientButton
-            text="Privacy"
+            text="Privacy Policy"
             onPress={() =>
-              WebBrowser.openBrowserAsync('https://example.com/privacy')
+              WebBrowser.openBrowserAsync(
+                'https://example.com/privacy-policy.html'
+              )
+            }
+          />
+          <GradientButton
+            text="Terms of Service"
+            onPress={() =>
+              WebBrowser.openBrowserAsync('https://example.com/terms.html')
             }
           />
         </View>
