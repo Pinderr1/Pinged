@@ -38,6 +38,7 @@ import { imageSource } from '../utils/avatar';
 import Loader from '../components/Loader';
 import { computePriority } from '../utils/priority';
 import { logDev } from '../utils/logger';
+import { handleLike } from '../utils/matchUtils';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import * as Haptics from 'expo-haptics';
 import SkeletonUserCard from '../components/SkeletonUserCard';
@@ -328,111 +329,6 @@ const SwipeScreen = () => {
     pan.setValue({ x: 0, y: 0 });
   }, [currentIndex]);
 
-  const handleLike = async (target) => {
-    if (!target) return false;
-
-    if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
-      navigation.navigate('PremiumPaywall', { context: 'paywall' });
-      return false;
-    }
-
-    setLikesUsed((prev) => prev + 1);
-    showNotification(`You liked ${target.displayName}`);
-
-    if (currentUser?.uid && target.id && !devMode) {
-      try {
-        await firebase
-          .firestore()
-          .collection('likes')
-          .doc(currentUser.uid)
-          .collection('liked')
-          .doc(target.id)
-          .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-
-        await firebase
-          .firestore()
-          .collection('likes')
-          .doc(target.id)
-          .collection('likedBy')
-          .doc(currentUser.uid)
-          .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-
-        const reciprocal = await firebase
-          .firestore()
-          .collection('likes')
-          .doc(target.id)
-          .collection('liked')
-          .doc(currentUser.uid)
-          .get();
-
-        if (reciprocal.exists) {
-          const matchRef = await firebase
-            .firestore()
-            .collection('matches')
-            .add({
-              users: [currentUser.uid, target.id],
-              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            });
-
-          addMatch({
-            id: matchRef.id,
-            displayName: target.displayName,
-            age: target.age,
-            image: target.images[0],
-            messages: [],
-            matchedAt: 'now',
-            activeGameId: null,
-            pendingInvite: null,
-          });
-
-          setMatchedUser(target);
-          setMatchLine(
-            icebreakers[Math.floor(Math.random() * icebreakers.length)] || ''
-          );
-          setMatchGame(
-            allGames[Math.floor(Math.random() * allGames.length)] || null
-          );
-          Haptics.notificationAsync(
-            Haptics.NotificationFeedbackType.Success
-          ).catch(() => {});
-          play('match');
-          Toast.show({ type: 'success', text1: "It's a match!" });
-          showNotification("It's a match!");
-          setShowFireworks(true);
-          setTimeout(() => setShowFireworks(false), 2000);
-          return true;
-        }
-      } catch (e) {
-        console.warn('Failed to process like', e);
-        return false;
-      }
-    } else if (devMode) {
-      addMatch({
-        id: target.id,
-        displayName: target.displayName,
-        age: target.age,
-        image: target.images[0],
-        messages: [],
-        matchedAt: 'now',
-        activeGameId: null,
-        pendingInvite: null,
-      });
-      setMatchedUser(target);
-      setMatchLine(
-        icebreakers[Math.floor(Math.random() * icebreakers.length)] || ''
-      );
-      setMatchGame(allGames[Math.floor(Math.random() * allGames.length)] || null);
-      Haptics.notificationAsync(
-        Haptics.NotificationFeedbackType.Success
-      ).catch(() => {});
-      play('match');
-      Toast.show({ type: 'success', text1: "It's a match!" });
-      setShowFireworks(true);
-      setTimeout(() => setShowFireworks(false), 2000);
-      return true;
-    }
-    return true;
-  };
 
   const handleSwipe = async (direction) => {
     if (!displayUser || actionLoading) return;
@@ -453,7 +349,23 @@ const SwipeScreen = () => {
         return;
       }
 
-      const success = await handleLike(displayUser);
+      const success = await handleLike({
+        currentUser,
+        targetUser: displayUser,
+        firestore: firebase.firestore(),
+        navigation,
+        likesUsed,
+        isPremiumUser,
+        devMode,
+        setLikesUsed,
+        showNotification,
+        addMatch,
+        setMatchedUser,
+        setMatchLine,
+        setMatchGame,
+        play,
+        setShowFireworks,
+      });
       if (!success) {
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
