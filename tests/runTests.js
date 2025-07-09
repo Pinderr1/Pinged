@@ -20,4 +20,3 @@ function runFile(file) {
 
 const files = fs.readdirSync(__dirname).filter(f => f.endsWith('.test.js'));
 files.forEach(f => runFile(path.join(__dirname, f)));
-console.log('All tests passed');

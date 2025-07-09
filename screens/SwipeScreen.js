@@ -28,7 +28,6 @@ import GamePickerModal from '../components/GamePickerModal';
 import BoostModal from '../components/BoostModal';
 import { allGames } from '../data/games';
 import { icebreakers } from '../data/prompts';
-import { devUsers } from '../data/devUsers';
 import { useChats } from '../contexts/ChatContext';
 import firebase from '../firebase';
 import { useNavigation } from '@react-navigation/native';
@@ -221,10 +220,6 @@ const SwipeScreen = () => {
         data = data.filter((u) => u.uid !== currentUser.uid);
         debug.afterSelfFilter = data.length;
 
-        if (devMode) {
-          data = [...devUsers.slice(0, 3), ...data];
-          debug.withDevUsers = data.length;
-        }
 
         let formatted = data.map((u) => {
           const imgs = Array.isArray(u.photos) && u.photos.length
@@ -297,23 +292,6 @@ const SwipeScreen = () => {
         debug.finalCount = formatted.length;
 
         if (devMode && formatted.length === 0) {
-          formatted = devUsers.map((u) => ({
-            id: u.id,
-            displayName: u.displayName,
-            age: u.age,
-            bio: u.bio,
-            introClipUrl: u.introClipUrl,
-            favoriteGames: u.favoriteGames,
-            gender: u.gender,
-            genderPref: u.genderPref,
-            location: u.location,
-            priorityScore: 0,
-            boostUntil: null,
-            isVerified: true,
-            images: u.photos.map((img) =>
-              imageSource(img, require('../assets/user1.jpg'))
-            ),
-          }));
           debug.devFallback = true;
         }
 

@@ -23,10 +23,7 @@ import { getRandomBot } from '../ai/bots';
 import ProgressBar from '../components/ProgressBar';
 import { getNextUnlock } from '../utils/unlocks';
 import Card from '../components/Card';
-import EventFlyer from "../components/EventFlyer";
 import GradientButton from '../components/GradientButton';
-import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
-import { eventImageSource } from '../utils/avatar';
 import PremiumBanner from '../components/PremiumBanner';
 import ActiveGamesPreview from '../components/ActiveGamesPreview';
 import MatchesPreview from '../components/MatchesPreview';
@@ -183,24 +180,6 @@ const HomeScreen = ({ navigation }) => {
             </Card>
           </View>
 
-          <View style={local.communityBoard}>
-            <Text style={local.sectionTitle}>Community Board</Text>
-            <View style={local.boardBackground}>
-              {SAMPLE_EVENTS.slice(0, 3).map((ev, idx) => (
-                <View key={ev.id} style={local.noteWrapper}>
-                  <View style={local.pin} />
-                  <EventFlyer
-                    event={ev}
-                    onJoin={() => navigation.navigate('Community')}
-                    style={[
-                      local.noteCard,
-                      idx % 2 === 0 ? local.rotateLeft : local.rotateRight,
-                    ]}
-                  />
-                </View>
-              ))}
-            </View>
-          </View>
         </ScrollView>
         <View style={local.swipeButtonContainer}>
           <GradientButton
@@ -427,49 +406,6 @@ const getStyles = (theme) =>
     postDesc: {
       fontSize: 12,
       fontFamily: FONT_FAMILY.regular,
-    },
-    communityBoard: {
-      width: '100%',
-      marginBottom: SPACING.XXXL,
-    },
-    boardBackground: {
-      backgroundColor: '#deb887',
-      padding: SPACING.LG,
-      borderRadius: 12,
-      borderWidth: 2,
-      borderColor: '#caa76b',
-    },
-    noteWrapper: {
-      marginBottom: SPACING.XXXL,
-      alignItems: 'center',
-      width: '100%',
-    },
-    noteCard: {
-      backgroundColor: '#fffef8',
-      borderWidth: 1,
-      borderColor: '#e0d4b9',
-      shadowColor: '#000',
-      shadowOpacity: 0.15,
-      shadowOffset: { width: 0, height: 2 },
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    rotateLeft: {
-      transform: [{ rotate: '-1deg' }],
-    },
-    rotateRight: {
-      transform: [{ rotate: '1deg' }],
-    },
-    pin: {
-      position: 'absolute',
-      top: -6,
-      width: 12,
-      height: 12,
-      borderRadius: 6,
-      backgroundColor: '#c0392b',
-      borderWidth: 1,
-      borderColor: '#922b21',
-      zIndex: 1,
     },
   });
 
