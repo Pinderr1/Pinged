@@ -471,7 +471,7 @@ const handleSwipe = async (direction) => {
 
   const rewind = () => {
     if (!isPremiumUser && !devMode) {
-      navigation.navigate('Premium', { context: 'paywall' });
+      navigation.navigate('PremiumPaywall', { context: 'paywall' });
       return;
     }
     if (history.length === 0) return;
@@ -485,7 +485,7 @@ const handleSwipe = async (direction) => {
   const handleSwipeChallenge = () => {
     if (!displayUser) return;
     if (!isPremiumUser && !devMode) {
-      navigation.navigate('Premium', { context: 'paywall' });
+      navigation.navigate('PremiumPaywall', { context: 'paywall' });
       return;
     }
     setShowGamePicker(true);
@@ -494,7 +494,7 @@ const handleSwipe = async (direction) => {
   const handleSuperLike = async () => {
     if (!displayUser || actionLoading) return;
     if (!isPremiumUser && !devMode) {
-      navigation.navigate('Premium', { context: 'paywall' });
+      navigation.navigate('PremiumPaywall', { context: 'paywall' });
       return;
     }
 
@@ -674,7 +674,7 @@ const handleSwipe = async (direction) => {
 
   const handleBoostPress = () => {
     if (currentUser?.boostTrialUsed && !isPremiumUser && !devMode) {
-      navigation.navigate('Premium', { context: 'upgrade' });
+      navigation.navigate('PremiumPaywall', { context: 'upgrade' });
     } else {
       setShowBoostModal(true);
     }
@@ -856,7 +856,7 @@ const handleSwipe = async (direction) => {
                 onLongPress={() =>
                   btn.longAction && (isPremiumUser || devMode)
                     ? btn.longAction()
-                    : btn.longAction && navigation.navigate('Premium', { context: 'paywall' })
+                    : btn.longAction && navigation.navigate('PremiumPaywall', { context: 'paywall' })
                 }
                 delayLongPress={300}
                 style={[styles.circleButton, { backgroundColor: btn.color }]}
@@ -975,7 +975,7 @@ const handleSwipe = async (direction) => {
           visible={showBoostModal}
           trialUsed={!!currentUser?.boostTrialUsed}
           onActivate={activateBoost}
-          onUpgrade={() => navigation.navigate('Premium', { context: 'upgrade' })}
+          onUpgrade={() => navigation.navigate('PremiumPaywall', { context: 'upgrade' })}
           onClose={() => setShowBoostModal(false)}
         />
         {showUndoPrompt && (isPremiumUser || devMode) ? (
