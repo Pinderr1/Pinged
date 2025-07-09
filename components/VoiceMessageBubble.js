@@ -37,6 +37,9 @@ export default function VoiceMessageBubble({ message, userName, otherUserId }) {
         </Text>
         <Text style={[styles.time, { color: theme.text }]}>{`${minutes}:${seconds}`}</Text>
       </TouchableOpacity>
+      {message.time ? (
+        <Text style={styles.timestamp}>{message.time}</Text>
+      ) : null}
       {message.sender === 'you' && (
         <Text style={styles.read}>
           {message.readBy.includes(otherUserId) ? '✓✓' : '✓'}
@@ -52,6 +55,7 @@ VoiceMessageBubble.propTypes = {
     duration: PropTypes.number,
     sender: PropTypes.string.isRequired,
     readBy: PropTypes.arrayOf(PropTypes.string).isRequired,
+    time: PropTypes.string,
   }).isRequired,
   userName: PropTypes.string.isRequired,
   otherUserId: PropTypes.string.isRequired,
@@ -92,6 +96,11 @@ const styles = StyleSheet.create({
   },
   time: {
     fontSize: 14,
+  },
+  timestamp: {
+    fontSize: 11,
+    color: '#555',
+    marginTop: 4,
   },
   read: {
     fontSize: 10,

@@ -271,7 +271,10 @@ function PrivateChat({ user, initialGameId }) {
     const unsub = msgRef.onSnapshot((snap) => {
       const data = snap.docs.map((d) => {
         const val = d.data();
-        if (val.senderId !== currentUser.uid && !(val.readBy || []).includes(currentUser.uid)) {
+        if (
+          val.senderId !== currentUser.uid &&
+          !(val.readBy || []).includes(currentUser.uid)
+        ) {
           d.ref.update({
             readBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
           });
@@ -284,6 +287,12 @@ function PrivateChat({ user, initialGameId }) {
           voice: !!val.voice,
           url: val.url,
           duration: val.duration,
+          time: val.timestamp
+            ? val.timestamp.toDate().toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+              })
+            : '',
         };
       });
       setMessages(data.reverse());
@@ -341,6 +350,12 @@ function PrivateChat({ user, initialGameId }) {
           voice: !!val.voice,
           url: val.url,
           duration: val.duration,
+          time: val.timestamp
+            ? val.timestamp.toDate().toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+              })
+            : '',
         };
       });
       setMessages(data.reverse());
@@ -441,6 +456,7 @@ function PrivateChat({ user, initialGameId }) {
           <View style={[privateStyles.message, privateStyles.system]}>
             <Text style={privateStyles.sender}>System</Text>
             <Text style={privateStyles.text}>{item.text}</Text>
+            <Text style={privateStyles.time}>{item.time}</Text>
           </View>
         </View>
       );
@@ -466,6 +482,7 @@ function PrivateChat({ user, initialGameId }) {
         >
           <Text style={privateStyles.sender}>{isUser ? 'You' : user.displayName}</Text>
           <Text style={privateStyles.text}>{item.text}</Text>
+          <Text style={privateStyles.time}>{item.time}</Text>
           {isUser && (
             <Text style={privateStyles.readReceipt}>
               {item.readBy.includes(otherUserId) ? '✓✓' : '✓'}
@@ -786,6 +803,11 @@ const getPrivateStyles = (theme) =>
     fontSize: 10,
     alignSelf: 'flex-end',
     marginTop: 2,
+  },
+  time: {
+    fontSize: 11,
+    color: '#666',
+    marginTop: 4,
   },
   inputBar: {
     flexDirection: 'row',
