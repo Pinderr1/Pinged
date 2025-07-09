@@ -331,7 +331,7 @@ const SwipeScreen = () => {
     if (!target) return false;
 
     if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
-      navigation.navigate('Premium', { context: 'paywall' });
+      navigation.navigate('PremiumPaywall', { context: 'paywall' });
       return false;
     }
 
@@ -403,6 +403,7 @@ const SwipeScreen = () => {
         }
       } catch (e) {
         console.warn('Failed to process like', e);
+        return false;
       }
     } else if (devMode) {
       addMatch({
@@ -429,7 +430,7 @@ const SwipeScreen = () => {
       setTimeout(() => setShowFireworks(false), 2000);
       return true;
     }
-    return false;
+    return true;
   };
 
   const handleSwipe = async (direction) => {
@@ -441,7 +442,29 @@ const SwipeScreen = () => {
     play(direction === 'left' ? 'swipe_left' : 'swipe_right');
 
     if (direction === 'right') {
-      await handleLike(displayUser);
+      if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
+        navigation.navigate('PremiumPaywall', { context: 'paywall' });
+        Animated.spring(pan, {
+          toValue: { x: 0, y: 0 },
+          useNativeDriver: false,
+        }).start();
+        setActionLoading(false);
+        return;
+      }
+
+      const success = await handleLike(displayUser);
+      if (!success) {
+        Animated.spring(pan, {
+          toValue: { x: 0, y: 0 },
+          useNativeDriver: false,
+        }).start();
+        setActionLoading(false);
+        return;
+      }
+    } else if (direction !== 'left') {
+      Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
+      setActionLoading(false);
+      return;
     }
 
     setHistory((h) => [...h, currentIndex]);
