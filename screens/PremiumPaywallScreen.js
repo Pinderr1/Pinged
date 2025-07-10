@@ -1,15 +1,52 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+import Toast from 'react-native-toast-message';
+import firebase from '../firebase';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import ScreenContainer from '../components/ScreenContainer';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 import PropTypes from 'prop-types';
 
 export default function PremiumPaywallScreen({ navigation }) {
   const { theme } = useTheme();
+  const { user } = useUser();
   const styles = getStyles(theme);
+
+  const startCheckout = async () => {
+    if (!user?.uid) return;
+    try {
+      const createSession = firebase
+        .functions()
+        .httpsCallable('createCheckoutSession');
+      const result = await createSession({ uid: user.uid });
+      const { url } = result.data || {};
+      if (!url) return;
+      if (Platform.OS === 'web') {
+        const stripe = window.Stripe?.(
+          process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+        );
+        if (stripe) {
+          const sessionId = url.split('session_id=')[1];
+          if (sessionId) {
+            await stripe.redirectToCheckout({ sessionId });
+          } else {
+            window.location.assign(url);
+          }
+        } else {
+          window.location.assign(url);
+        }
+      } else {
+        await WebBrowser.openBrowserAsync(url);
+      }
+    } catch (e) {
+      console.warn('Checkout failed', e);
+      Toast.show({ type: 'error', text1: 'Checkout failed' });
+    }
+  };
   return (
     <GradientBackground style={{ flex: 1 }}>
       <Header />
@@ -22,6 +59,11 @@ export default function PremiumPaywallScreen({ navigation }) {
           text="Go Premium"
           onPress={() => navigation.replace('Premium')}
           style={{ marginTop: 20 }}
+        />
+        <GradientButton
+          text="Subscribe"
+          onPress={startCheckout}
+          style={{ marginTop: 12 }}
         />
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.cancel}>Maybe Later</Text>
