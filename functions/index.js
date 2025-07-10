@@ -211,6 +211,9 @@ exports.onGameInviteCreated = functions.firestore
   return null;
 });
 
+// Alias for backward compatibility
+exports.onNewInvite = exports.onGameInviteCreated;
+
 exports.resetFreeGameUsage = functions.pubsub
   .schedule('0 0 * * *')
   .timeZone('UTC')
