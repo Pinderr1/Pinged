@@ -179,6 +179,48 @@ export const MatchmakingProvider = ({ children }) => {
     }
   };
 
+  const cancelInvite = async (id) => {
+    if (!user?.uid || !id) return;
+
+    try {
+      const ref = firebase.firestore().collection('gameInvites').doc(id);
+      const snap = await ref.get();
+
+      if (!snapshotExists(snap)) return;
+
+      const data = snap.data();
+      if (data.from !== user.uid && data.to !== user.uid) return;
+
+      try {
+        await ref.delete();
+
+        await firebase
+          .firestore()
+          .collection('users')
+          .doc(data.from)
+          .collection('gameInvites')
+          .doc(id)
+          .delete()
+          .catch(() => {});
+
+        await firebase
+          .firestore()
+          .collection('users')
+          .doc(data.to)
+          .collection('gameInvites')
+          .doc(id)
+          .delete()
+          .catch(() => {});
+      } catch (e) {
+        console.warn('Failed to cancel invite', e);
+        Toast.show({ type: 'error', text1: 'Failed to cancel invite' });
+      }
+    } catch (e) {
+      console.warn('Failed to load game invite', e);
+      Toast.show({ type: 'error', text1: 'Failed to cancel invite' });
+    }
+  };
+
   return (
     <MatchmakingContext.Provider
       value={{
@@ -192,6 +234,7 @@ export const MatchmakingProvider = ({ children }) => {
         sendGameInvite,
         acceptGameInvite,
         cancelGameInvite,
+        cancelInvite,
       }}
     >
       {children}
