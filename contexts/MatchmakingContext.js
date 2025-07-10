@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import firebase from '../firebase';
+import firebase, { firestore } from '../firebase';
 import { useUser } from './UserContext';
 import { useListeners } from './ListenerContext';
 import { snapshotExists } from '../utils/firestore';
