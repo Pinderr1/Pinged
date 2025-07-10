@@ -19,6 +19,8 @@ export const ListenerProvider = ({ children }) => {
 
   const messageUnsubs = useRef({});
   const prevInvites = useRef([]);
+  const prevMatches = useRef([]);
+  const prevMessagesMap = useRef({});
 
   // Subscribe to match messages for current user
   useEffect(() => {
@@ -29,9 +31,19 @@ export const ListenerProvider = ({ children }) => {
       .where('users', 'array-contains', user.uid);
     const unsubMatches = matchQ.onSnapshot((snap) => {
       const ids = snap.docs.map((d) => d.id);
+
+      if (prevMatches.current.length) {
+        const newMatchIds = ids.filter((id) => !prevMatches.current.includes(id));
+        if (newMatchIds.length > 0) {
+          showNotification('New Match!');
+        }
+      }
+      prevMatches.current = ids;
+
       // Clean up previous listeners
       Object.values(messageUnsubs.current).forEach((u) => u && u());
       messageUnsubs.current = {};
+
       ids.forEach((id) => {
         const q = firebase
           .firestore()
@@ -39,11 +51,26 @@ export const ListenerProvider = ({ children }) => {
           .doc(id)
           .collection('messages')
           .orderBy('timestamp', 'asc');
+
+        if (!prevMessagesMap.current[id]) {
+          prevMessagesMap.current[id] = [];
+        }
+
         messageUnsubs.current[id] = q.onSnapshot((msgSnap) => {
           const msgs = msgSnap.docs.map((doc) => {
             const val = doc.data();
             return { id: doc.id, text: val.text, senderId: val.senderId };
           });
+
+          const prevMsgs = prevMessagesMap.current[id];
+          if (prevMsgs && prevMsgs.length && msgs.length > prevMsgs.length) {
+            const newMsgs = msgs.slice(prevMsgs.length);
+            if (newMsgs.some((m) => m.senderId && m.senderId !== user.uid)) {
+              showNotification('New Message');
+            }
+          }
+
+          prevMessagesMap.current[id] = msgs;
           setMessagesMap((prev) => ({ ...prev, [id]: msgs }));
         });
       });
@@ -52,6 +79,8 @@ export const ListenerProvider = ({ children }) => {
       unsubMatches();
       Object.values(messageUnsubs.current).forEach((u) => u && u());
       messageUnsubs.current = {};
+      prevMatches.current = [];
+      prevMessagesMap.current = {};
     };
   }, [user?.uid]);
 
