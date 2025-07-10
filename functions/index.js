@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const Stripe = require('stripe');
-const fetch = require('node-fetch');
+const fetch = global.fetch;
 require('dotenv').config();
 
 admin.initializeApp();
