@@ -557,3 +557,5 @@ exports.notifyStreakRewards = functions.pubsub
     functions.logger.info(`Sent ${tasks.length} streak reward notifications`);
     return null;
   });
+
+exports._test = { pushToUser };

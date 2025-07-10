@@ -8,7 +8,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "deploy": "firebase deploy --only functions,firestore,storage && expo export && firebase hosting:channel:deploy live",
-    "test": "node tests/runTests.js && node tests/firestoreRules.test.js"
+    "test": "node tests/runTests.js && node tests/firestoreRules.test.js && npm --prefix functions test"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
