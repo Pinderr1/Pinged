@@ -214,9 +214,32 @@ const ProfileScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
       <Text style={styles.logoText}>{title}</Text>
+
       <TouchableOpacity onPress={pickImage} style={{ alignSelf: 'center', marginBottom: 10 }}>
         <Image source={avatarSource(avatar)} style={{ width: 100, height: 100, borderRadius: 50 }} />
       </TouchableOpacity>
+
+      {displayName ? (
+        <View style={{ flexDirection: 'row', alignSelf: 'center', alignItems: 'center', marginBottom: 10 }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: theme.text }}>{displayName}</Text>
+          {user?.isPremium && (
+            <Text
+              style={{
+                marginLeft: 6,
+                fontSize: 12,
+                color: '#fff',
+                backgroundColor: '#FFD700',
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+                borderRadius: 8,
+                overflow: 'hidden',
+              }}
+            >
+              Premium
+            </Text>
+          )}
+        </View>
+      ) : null}
 
       <TextInput
         style={styles.input}

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
 import { HEADER_HEIGHT } from '../layout';
 
@@ -15,6 +16,7 @@ export interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ showLogoOnly = false }) => {
   const navigation = useNavigation();
   const { darkMode, toggleTheme, theme } = useTheme();
+  const { user } = useUser();
   const notificationCount = useUnreadNotifications();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -34,7 +36,17 @@ const Header: React.FC<HeaderProps> = ({ showLogoOnly = false }) => {
           <Image source={require('../assets/logo.png')} style={styles.logo} />
         ) : (
           <>
-            <Image source={require('../assets/logo.png')} style={styles.logo} />
+            <View style={styles.leftRow}>
+              <Image source={require('../assets/logo.png')} style={styles.logo} />
+              {user?.displayName && (
+                <View style={styles.nameRow}>
+                  <Text style={[styles.userName, { color: theme.text }]}>{user.displayName}</Text>
+                  {user?.isPremium && (
+                    <Text style={styles.premiumBadge}>Premium</Text>
+                  )}
+                </View>
+              )}
+            </View>
             <View style={styles.rightIcons}>
               <TouchableOpacity
                 accessibilityLabel="open menu"
@@ -113,6 +125,29 @@ const styles = StyleSheet.create({
   rightIcons: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  leftRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  premiumBadge: {
+    marginLeft: 4,
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    color: '#fff',
+    fontSize: 12,
+    overflow: 'hidden',
   },
   iconWrapper: {
     width: 32,
