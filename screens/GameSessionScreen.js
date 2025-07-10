@@ -71,7 +71,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const { user, addGameXP } = useUser();
   const isPremiumUser = !!user?.isPremium;
   const requireCredits = useRequireGameCredits();
-  const { sendGameInvite, cancelGameInvite } = useMatchmaking();
+  const { sendGameInvite, cancelInvite } = useMatchmaking();
 
   const { game, opponent, status = 'waiting', inviteId } = route.params || {};
 
@@ -238,7 +238,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
 
   const handleCancel = async () => {
     try {
-      if (inviteId) await cancelGameInvite(inviteId);
+      if (inviteId) await cancelInvite(inviteId);
     } catch (e) {
       console.warn('Failed to cancel invite', e);
     }

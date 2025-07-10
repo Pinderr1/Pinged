@@ -100,7 +100,7 @@ const SwipeScreen = () => {
   const { devMode } = useDev();
   const { addMatch } = useChats();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
-  const { sendGameInvite, cancelGameInvite } = useMatchmaking();
+  const { sendGameInvite, cancelInvite } = useMatchmaking();
   const isPremiumUser = !!currentUser?.isPremium;
   const requireCredits = useRequireGameCredits();
   const {
@@ -462,7 +462,7 @@ const SwipeScreen = () => {
   const undoInvite = async () => {
     if (!pendingInviteId) return;
     try {
-      await cancelGameInvite(pendingInviteId);
+      await cancelInvite(pendingInviteId);
       Toast.show({ type: 'success', text1: 'Invite cancelled' });
     } catch (e) {
       console.warn('Failed to cancel invite', e);
