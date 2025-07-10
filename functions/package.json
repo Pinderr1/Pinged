@@ -7,5 +7,11 @@
     "firebase-functions": "^4.4.1",
     "stripe": "^12.18.0",
     "dotenv": "^16.5.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "scripts": {
+    "test": "jest"
   }
 }
