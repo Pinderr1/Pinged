@@ -1,5 +1,5 @@
 import firebase from "../firebase";
-import * as Analytics from "expo-firebase-analytics";
+import * as Analytics from "./analytics";
 
 export async function createMatchIfMissing(uid, otherUid) {
   if (!uid || !otherUid) return null;

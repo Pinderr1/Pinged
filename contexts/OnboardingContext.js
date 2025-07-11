@@ -5,7 +5,7 @@ import Loader from "../components/Loader";
 import { useAuth } from "./AuthContext";
 import { clearStoredOnboarding } from "../utils/onboarding";
 import Toast from "react-native-toast-message";
-import * as Analytics from "expo-firebase-analytics";
+import * as Analytics from "../utils/analytics";
 
 const OnboardingContext = createContext();
 

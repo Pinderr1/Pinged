@@ -16,7 +16,7 @@ import NotificationCenter from "./components/NotificationCenter";
 import DevBanner from "./components/DevBanner";
 import LoadingOverlay from "./components/LoadingOverlay";
 import Toast from "react-native-toast-message";
-import * as Analytics from "expo-firebase-analytics";
+import * as Analytics from "./utils/analytics";
 import usePushNotifications from "./hooks/usePushNotifications";
 import useRemoteConfig from "./hooks/useRemoteConfig";
 import RootNavigator from "./navigation/RootNavigator";
