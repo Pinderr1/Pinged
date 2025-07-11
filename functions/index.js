@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-require('dotenv').config();
+// Load environment variables from root .env file without external packages
+require('../loadEnv.js');
 
 admin.initializeApp();
 

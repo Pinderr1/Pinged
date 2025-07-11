@@ -1,4 +1,5 @@
-import 'dotenv/config';
+// Minimal environment loader to avoid external dependencies
+import './loadEnv.js';
 
 export default {
   expo: {

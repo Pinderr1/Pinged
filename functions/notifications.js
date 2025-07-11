@@ -1,7 +1,8 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const fetch = global.fetch;
-require('dotenv').config();
+// Load environment variables from root .env file without external packages
+require('../loadEnv.js');
 
 async function pushToUser(uid, title, body, extra = {}) {
   const snap = await admin.firestore().collection('users').doc(uid).get();
