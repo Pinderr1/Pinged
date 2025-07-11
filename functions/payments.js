@@ -1,7 +1,8 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const Stripe = require('stripe');
-require('dotenv').config();
+// Load environment variables from root .env file without external packages
+require('../loadEnv.js');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
