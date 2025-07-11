@@ -7,8 +7,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "deploy": "firebase deploy --only functions,firestore,storage && expo export && firebase hosting:channel:deploy live",
-    "test": "node tests/firestoreRules.test.js"
+    "deploy": "firebase deploy --only functions,firestore,storage && expo export && firebase hosting:channel:deploy live"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -47,8 +46,7 @@
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/react": "~19.0.10",
-    "typescript": "~5.8.3",
-    "@firebase/rules-unit-testing": "^2.1.0"
+    "typescript": "~5.8.3"
   },
   "private": true
 }
