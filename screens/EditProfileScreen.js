@@ -67,7 +67,8 @@ const EditProfileScreen = ({ navigation, route }) => {
     });
 
     if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
+      const uri = result.assets?.[0]?.uri || result.uri;
+      if (uri) setAvatar(uri);
     }
   };
 

@@ -337,7 +337,10 @@ const validateField = () => {
     });
 
     if (!result.canceled) {
-      setAnswers((prev) => ({ ...prev, avatar: result.assets[0].uri }));
+      const uri = result.assets?.[0]?.uri || result.uri;
+      if (uri) {
+        setAnswers((prev) => ({ ...prev, avatar: uri }));
+      }
     }
   };
 
