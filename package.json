@@ -48,7 +48,7 @@
     "@babel/core": "^7.20.0",
     "@types/react": "~19.0.10",
     "typescript": "~5.8.3",
-    "@firebase/rules-unit-testing": "^3.0.0"
+    "@firebase/rules-unit-testing": "^2.1.0"
   },
   "private": true
 }
