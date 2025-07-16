@@ -97,8 +97,3 @@ This deploys:
 License
 
 This project is private and not licensed for redistribution.
-
-
----
-
-You're good to paste this directly. No exposed secrets, no emojis, no marketing — just clean, useful docs. Let me know if you want  to include API function references or future roadmap sections.
