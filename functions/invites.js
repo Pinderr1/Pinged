@@ -104,9 +104,26 @@ const syncPresence = functions.database
   .ref('/status/{uid}')
   .onWrite(async (change, context) => {
     const status = change.after.val();
-    if (!status) return null;
     const uid = context.params.uid;
     const userRef = admin.firestore().collection('users').doc(uid);
+
+    if (!status) {
+      const before = change.before.val() || {};
+      const updates = {
+        online: false,
+        lastOnline: before.last_changed
+          ? admin.firestore.Timestamp.fromMillis(before.last_changed)
+          : admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      try {
+        await userRef.set(updates, { merge: true });
+      } catch (e) {
+        console.error('Failed to sync presence on delete', e);
+      }
+      return null;
+    }
+
     const updates = {
       online: status.state === 'online',
     };
