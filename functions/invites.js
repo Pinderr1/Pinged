@@ -104,17 +104,27 @@ const syncPresence = functions.database
   .ref('/status/{uid}')
   .onWrite(async (change, context) => {
     const status = change.after.val();
-    if (!status) return null;
     const uid = context.params.uid;
     const userRef = admin.firestore().collection('users').doc(uid);
-    const updates = {
-      online: status.state === 'online',
-    };
 
-    if (status.last_changed) {
-      updates.lastOnline = admin.firestore.Timestamp.fromMillis(status.last_changed);
+    const updates = {};
+
+    if (status) {
+      updates.online = status.state === 'online';
+
+      if (status.last_changed) {
+        updates.lastOnline = admin.firestore.Timestamp.fromMillis(status.last_changed);
+      } else {
+        updates.lastOnline = admin.firestore.FieldValue.serverTimestamp();
+      }
     } else {
-      updates.lastOnline = admin.firestore.FieldValue.serverTimestamp();
+      updates.online = false;
+      const before = change.before.val();
+      if (before && before.last_changed) {
+        updates.lastOnline = admin.firestore.Timestamp.fromMillis(before.last_changed);
+      } else {
+        updates.lastOnline = admin.firestore.FieldValue.serverTimestamp();
+      }
     }
 
     try {
