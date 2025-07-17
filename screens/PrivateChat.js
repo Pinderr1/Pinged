@@ -624,11 +624,14 @@ function PrivateChat({ user, initialGameId }) {
     );
   }
 
+  const inputBarOffset = keyboardOpen ? keyboardHeight - insets.bottom : 0;
   const chatSection = (
-    <View style={[
-      privateStyles.chatSection,
-      { paddingBottom: INPUT_BAR_HEIGHT + insets.bottom },
-    ]}>
+    <View
+      style={[
+        privateStyles.chatSection,
+        { paddingBottom: INPUT_BAR_HEIGHT + inputBarOffset + insets.bottom },
+      ]}
+    >
       <FlatList
         style={{ flex: 1 }}
         data={messages}
@@ -698,7 +701,7 @@ function PrivateChat({ user, initialGameId }) {
     setShowGameMenu(false);
   };
 
-  const inputBarBottom = keyboardOpen ? keyboardHeight : 0;
+  const inputBarBottom = keyboardOpen ? keyboardHeight - insets.bottom : 0;
   const menuBottom = inputBarBottom + insets.bottom + INPUT_BAR_HEIGHT + 10;
   const playButtonText = activeGameId
     ? showGame
