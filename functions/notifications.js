@@ -144,41 +144,53 @@ const notifyStreakRewards = functions.pubsub
   .schedule('15 0 * * *')
   .timeZone('UTC')
   .onRun(async () => {
-    const threshold = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const cutoff = admin.firestore.Timestamp.fromDate(
+      new Date(Date.now() - 86400e3),
+    );
     const snap = await admin
       .firestore()
       .collection('users')
       .where('streak', '>=', 7)
-      .where('lastPlayedAt', '>=', threshold)
       .get();
 
     const tasks = [];
+    let notified = 0;
     snap.forEach((doc) => {
-      const data = doc.data();
-      if (!data) return;
-      const lastPlayed = data.lastPlayedAt?.toDate?.() || data.lastPlayedAt;
-      const rewardedAt = data.streakRewardedAt?.toDate?.() || data.streakRewardedAt;
-      if (!lastPlayed) return;
-      if (data.streak % 7 === 0 && (!rewardedAt || rewardedAt < lastPlayed)) {
-        tasks.push(
-          pushToUser(
-            doc.id,
-            'Streak Reward!',
-            `You reached a ${data.streak}-day streak!`,
-            { type: 'streak', streak: data.streak },
-          )
-            .then(() =>
-              doc.ref.update({
-                streakRewardedAt: admin.firestore.FieldValue.serverTimestamp(),
-              }),
+      try {
+        const data = doc.data();
+        if (!data) return;
+        const lastPlayed = data.lastPlayedAt?.toDate?.() || data.lastPlayedAt;
+        if (!lastPlayed || lastPlayed < cutoff.toDate()) return;
+        const rewardedAt =
+          data.streakRewardedAt?.toDate?.() || data.streakRewardedAt;
+
+        if (data.streak % 7 === 0 && (!rewardedAt || rewardedAt < lastPlayed)) {
+          notified += 1;
+          tasks.push(
+            pushToUser(
+              doc.id,
+              'Streak Reward!',
+              `You reached a ${data.streak}-day streak!`,
+              { type: 'streak', streak: data.streak },
             )
-            .catch((e) => console.error('Failed to send streak reward', e)),
-        );
+              .then(() =>
+                doc.ref.update({
+                  streakRewardedAt:
+                    admin.firestore.FieldValue.serverTimestamp(),
+                }),
+              )
+              .catch((e) =>
+                console.error('Failed to send streak reward', e),
+              ),
+          );
+        }
+      } catch (e) {
+        console.error(`Failed processing user ${doc.id} for rewards`, e);
       }
     });
 
     await Promise.all(tasks);
-    functions.logger.info(`Sent ${tasks.length} streak reward notifications`);
+    functions.logger.info(`Sent ${notified} streak reward notifications`);
     return null;
   });
 
