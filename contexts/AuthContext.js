@@ -8,6 +8,7 @@ import Toast from "react-native-toast-message";
 import { clearStoredOnboarding } from "../utils/onboarding";
 import { snapshotExists } from "../utils/firestore";
 import { isAllowedDomain } from "../utils/email";
+import { initPresence } from "../utils/presence";
 
 const AuthContext = createContext();
 
@@ -107,7 +108,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsub = firebase.auth().onAuthStateChanged(async (fbUser) => {
       setUser(fbUser);
-      if (fbUser) await ensureUserDoc(fbUser);
+      if (fbUser) {
+        await ensureUserDoc(fbUser);
+        initPresence(fbUser.uid);
+      }
       setLoading(false);
     });
     return unsub;
