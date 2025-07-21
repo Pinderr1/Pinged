@@ -276,7 +276,6 @@ const onChatMessageCreated = functions.firestore
       }
 
       await matchRef.set(updates, { merge: true });
-      await admin.firestore().collection('matchHistory').doc(matchId).set(updates, { merge: true });
 
       const users = matchData.users || [];
       const recipientId = users.find((u) => u !== senderId);
