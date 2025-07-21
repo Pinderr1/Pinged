@@ -11,16 +11,16 @@ service cloud.firestore {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
-    // Match documents are readable/writable only by the two users involved
+    // Match documents are readable by the matched users but writable only by admin
     match /matches/{matchId} {
-      allow read, write: if isSignedIn() &&
-        (request.auth.uid in resource.data.users ||
-         request.auth.uid in request.resource.data.users);
+      allow read: if isSignedIn() && request.auth.uid in resource.data.users;
+      allow create, update, delete: if request.auth.token.admin == true;
 
-      // Messages inside a match are also restricted to the matched users
-      match /messages/{messageId} {
-        allow read, write: if isSignedIn() &&
+      // All subcollections under a match follow the same access pattern
+      match /{document=**} {
+        allow read: if isSignedIn() &&
           request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
+        allow write: if request.auth.token.admin == true;
       }
     }
 
@@ -38,11 +38,11 @@ service cloud.firestore {
           (resource.data.userId != null ? resource.data.userId : request.resource.data.userId);
     }
 
-    // Game invites can be read or written only by the involved users
+    // Game invites are writable only by the sender and must target a valid match
     match /gameInvites/{inviteId} {
-      allow read, write: if isSignedIn() &&
-        (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to ||
-         request.auth.uid == request.resource.data.from || request.auth.uid == request.resource.data.to);
+      allow read: if isSignedIn();
+      allow write: if request.auth.uid == resource.data.from &&
+        resource.data.to == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.matches[request.auth.uid];
     }
 
     // Mirrored invites under each user are private to that user

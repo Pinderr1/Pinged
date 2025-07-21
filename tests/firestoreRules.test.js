@@ -9,7 +9,8 @@ const fs = require('fs');
     },
   });
 
-  const getDb = (uid) => testEnv.authenticatedContext(uid).firestore();
+  const getDb = (uid, token = {}) =>
+    testEnv.authenticatedContext(uid, token).firestore();
 
   await testEnv.clearFirestore();
 
@@ -22,19 +23,39 @@ const fs = require('fs');
 
   try {
     // users can read/write their own profiles
-    await assertSucceeds(getDb('alice').collection('users').doc('alice').set({name: 'Alice'}));
+    await assertSucceeds(getDb('alice').collection('users').doc('alice').set({ name: 'Alice' }));
     await assertSucceeds(getDb('alice').collection('users').doc('alice').get());
     await assertFails(getDb('bob').collection('users').doc('alice').get());
-    await assertFails(getDb('bob').collection('users').doc('alice').set({name: 'Hacker'}));
+    await assertFails(getDb('bob').collection('users').doc('alice').set({ name: 'Hacker' }));
 
-    // only matched users can access matches
+    // matches are writeable only by admin
     await seed(async (db) => {
       await db.collection('matches').doc('match1').set({ users: ['alice', 'bob'] });
     });
     await assertSucceeds(getDb('alice').collection('matches').doc('match1').get());
-    await assertSucceeds(getDb('bob').collection('matches').doc('match1').collection('messages').doc('m1').set({ text: 'hi' }));
-    await assertFails(getDb('carol').collection('matches').doc('match1').get());
-    await assertFails(getDb('carol').collection('matches').doc('match1').collection('messages').doc('m2').set({ text: 'bad' }));
+    await assertFails(getDb('bob').collection('matches').doc('match1').set({ typing: { bob: true } }));
+    await assertFails(getDb('bob').collection('matches').add({ users: ['bob', 'carol'] }));
+    await assertSucceeds(getDb('admin', { admin: true }).collection('matches').add({ users: ['bob', 'carol'] }));
+    await assertFails(getDb('bob').collection('matches').doc('match1').collection('messages').doc('m1').set({ text: 'hi' }));
+
+    // likes can only be written by the owner
+    await assertSucceeds(
+      getDb('alice').collection('likes').doc('alice').collection('liked').doc('bob').set({})
+    );
+    await assertFails(
+      getDb('bob').collection('likes').doc('alice').collection('liked').doc('carol').set({})
+    );
+
+    // game invites restricted to sender and existing match
+    await seed(async (db) => {
+      await db.collection('users').doc('alice').set({ matches: { alice: 'bob' } });
+    });
+    await assertSucceeds(
+      getDb('alice').collection('gameInvites').doc('invite1').set({ from: 'alice', to: 'bob' })
+    );
+    await assertFails(
+      getDb('bob').collection('gameInvites').doc('invite1').set({ from: 'alice', to: 'bob' })
+    );
 
     // event participants only
     await seed(async (db) => {
