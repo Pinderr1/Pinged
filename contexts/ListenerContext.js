@@ -10,7 +10,7 @@ export const ListenerProvider = ({ children }) => {
   const { user } = useUser();
   const { showNotification } = useNotification();
 
-  const [messagesMap, setMessagesMap] = useState({});
+  const [messageInfoMap, setMessageInfoMap] = useState({});
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [outgoingRequests, setOutgoingRequests] = useState([]);
   const [incomingInvites, setIncomingInvites] = useState([]);
@@ -20,9 +20,9 @@ export const ListenerProvider = ({ children }) => {
   const messageUnsubs = useRef({});
   const prevInvites = useRef([]);
   const prevMatches = useRef([]);
-  const prevMessagesMap = useRef({});
+  const prevInfoMap = useRef({});
 
-  // Subscribe to match messages for current user
+  // Subscribe to match metadata for current user
   useEffect(() => {
     if (!user?.uid) return;
     const matchQ = firebase
@@ -44,35 +44,40 @@ export const ListenerProvider = ({ children }) => {
       Object.values(messageUnsubs.current).forEach((u) => u && u());
       messageUnsubs.current = {};
 
-      ids.forEach((id) => {
-        const q = firebase
+      snap.docs.forEach((d) => {
+        const id = d.id;
+
+        if (!prevInfoMap.current[id]) {
+          prevInfoMap.current[id] = { lastMessage: '', unreadCount: 0 };
+        }
+
+        messageUnsubs.current[id] = firebase
           .firestore()
           .collection('matches')
           .doc(id)
-          .collection('messages')
-          .orderBy('timestamp', 'asc');
+          .onSnapshot((doc) => {
+            const data = doc.data() || {};
+            const info = {
+              lastMessage: data.lastMessage || '',
+              unreadCount: data.unreadCounts?.[user.uid] || 0,
+            };
 
-        if (!prevMessagesMap.current[id]) {
-          prevMessagesMap.current[id] = [];
-        }
-
-        messageUnsubs.current[id] = q.onSnapshot((msgSnap) => {
-          const msgs = msgSnap.docs.map((doc) => {
-            const val = doc.data();
-            return { id: doc.id, text: val.text, senderId: val.senderId };
-          });
-
-          const prevMsgs = prevMessagesMap.current[id];
-          if (prevMsgs && prevMsgs.length && msgs.length > prevMsgs.length) {
-            const newMsgs = msgs.slice(prevMsgs.length);
-            if (newMsgs.some((m) => m.senderId && m.senderId !== user.uid)) {
+            const prevInfo = prevInfoMap.current[id];
+            if (
+              prevInfo &&
+              info.unreadCount > prevInfo.unreadCount &&
+              data.lastSenderId &&
+              data.lastSenderId !== user.uid
+            ) {
               showNotification('New Message');
             }
-          }
 
-          prevMessagesMap.current[id] = msgs;
-          setMessagesMap((prev) => ({ ...prev, [id]: msgs }));
-        });
+            prevInfoMap.current[id] = info;
+            setMessageInfoMap((prev) => ({
+              ...prev,
+              [id]: { matchId: id, ...info },
+            }));
+          });
       });
     });
     return () => {
@@ -80,7 +85,7 @@ export const ListenerProvider = ({ children }) => {
       Object.values(messageUnsubs.current).forEach((u) => u && u());
       messageUnsubs.current = {};
       prevMatches.current = [];
-      prevMessagesMap.current = {};
+      prevInfoMap.current = {};
     };
   }, [user?.uid]);
 
@@ -148,12 +153,12 @@ export const ListenerProvider = ({ children }) => {
     return unsub;
   }, [user?.uid]);
 
-  const getMessages = (matchId) => messagesMap[matchId] || [];
+  const getMatchInfo = (matchId) => messageInfoMap[matchId] || { lastMessage: '', unreadCount: 0 };
 
   return (
     <ListenerContext.Provider
       value={{
-        getMessages,
+        getMatchInfo,
         incomingRequests,
         outgoingRequests,
         incomingInvites,
