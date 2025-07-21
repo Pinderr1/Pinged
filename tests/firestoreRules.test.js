@@ -68,9 +68,23 @@ const fs = require('fs');
     await seed(async (db) => {
       await db.collection('communityPosts').doc('post1').set({ hostId: 'alice', text: 'hello' });
     });
-    await assertSucceeds(getDb('bob').collection('communityPosts').doc('post1').get());
-    await assertSucceeds(getDb('alice').collection('communityPosts').doc('post1').set({ hostId: 'alice', text: 'edit' }));
-    await assertFails(getDb('bob').collection('communityPosts').doc('post1').set({ hostId: 'alice', text: 'hack' }));
+      await assertSucceeds(getDb('bob').collection('communityPosts').doc('post1').get());
+      await assertSucceeds(getDb('alice').collection('communityPosts').doc('post1').set({ hostId: 'alice', text: 'edit' }));
+      await assertFails(getDb('bob').collection('communityPosts').doc('post1').set({ hostId: 'alice', text: 'hack' }));
+
+      // blocks private per user
+      await assertSucceeds(
+        getDb('alice').collection('blocks').doc('alice').collection('blocked').doc('bob').set({ blockedAt: 1 })
+      );
+      await assertFails(
+        getDb('bob').collection('blocks').doc('alice').collection('blocked').doc('carol').set({})
+      );
+      await assertSucceeds(
+        getDb('alice').collection('blocks').doc('alice').collection('blocked').get()
+      );
+      await assertFails(
+        getDb('bob').collection('blocks').doc('alice').collection('blocked').get()
+      );
 
   } finally {
     await testEnv.cleanup();
