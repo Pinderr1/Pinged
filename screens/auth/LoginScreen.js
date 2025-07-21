@@ -131,10 +131,12 @@ export default function LoginScreen() {
           onPress={() => navigation.navigate('Signup')}
         />
 
-        <GradientButton
-          text="Dev Onboarding"
-          onPress={handleDevLogin}
-        />
+        {__DEV__ && (
+          <GradientButton
+            text="Dev Onboarding"
+            onPress={handleDevLogin}
+          />
+        )}
       </ScreenContainer>
     </GradientBackground>
   );

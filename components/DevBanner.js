@@ -3,7 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import PropTypes from 'prop-types';
 import { useDev } from '../contexts/DevContext';
-import DevPanel from './DevPanel';
+let DevPanel;
+if (__DEV__) {
+  DevPanel = require('./DevPanel').default;
+}
 
 export default function DevBanner() {
   const { devMode } = useDev();
@@ -20,7 +23,9 @@ export default function DevBanner() {
       >
         <Text style={styles.text}>DEV MODE</Text>
       </TouchableOpacity>
-      <DevPanel visible={showPanel} onClose={() => setShowPanel(false)} />
+      {__DEV__ && (
+        <DevPanel visible={showPanel} onClose={() => setShowPanel(false)} />
+      )}
     </>
   );
 }
