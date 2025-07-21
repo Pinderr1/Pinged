@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-  RefreshControl,
   Keyboard,
   LayoutAnimation,
   Dimensions,
@@ -46,9 +45,25 @@ import Toast from 'react-native-toast-message';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import useDebouncedCallback from '../hooks/useDebouncedCallback';
 import EmptyState from '../components/EmptyState';
+import * as chatApi from '../utils/chatApi';
 
 const INPUT_BAR_HEIGHT = 70;
 const REACTIONS = ['❤️', '🔥', '😂'];
+
+const formatMessage = (val, id, currentUid) => ({
+  id,
+  text: val.text,
+  readBy: val.readBy || [],
+  reactions: val.reactions || {},
+  sender: val.senderId === currentUid ? 'you' : val.senderId || 'them',
+  voice: !!val.voice,
+  url: val.url,
+  duration: val.duration,
+  time: val.timestamp
+    ? val.timestamp.toDate().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    : '',
+  timestamp: val.timestamp,
+});
 
 const FadeInView = ({ children, style }) => {
   const fade = useRef(new Animated.Value(0)).current;
@@ -113,7 +128,9 @@ function PrivateChat({ user, initialGameId }) {
   const pendingInvite = getPendingInvite(user.id);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [loadingEarlier, setLoadingEarlier] = useState(false);
+  const [oldestTs, setOldestTs] = useState(null);
+  const [hasEarlier, setHasEarlier] = useState(true);
   const [firstLine, setFirstLine] = useState('');
   const [firstGame, setFirstGame] = useState(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
@@ -277,46 +294,65 @@ function PrivateChat({ user, initialGameId }) {
 
   useEffect(() => {
     if (!user?.id || !currentUser?.uid) return;
-    setLoading(true);
-    const msgRef = firebase
-      .firestore()
-      .collection('matches')
-      .doc(user.id)
-      .collection('messages')
-      .orderBy('timestamp', 'asc');
-    const unsub = msgRef.onSnapshot((snap) => {
-      const data = snap.docs.map((d) => {
-        const val = d.data();
-        if (
-          val.senderId !== currentUser.uid &&
-          !(val.readBy || []).includes(currentUser.uid)
-        ) {
-          d.ref.update({
-            readBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+    let unsub = null;
+    let isMounted = true;
+
+
+    const loadInitial = async () => {
+      setLoading(true);
+      try {
+        const data = await chatApi.getMessages(user.id);
+        const mapped = data.map((m) => formatMessage(m, m.id, currentUser.uid));
+        if (!isMounted) return;
+        setMessages(mapped);
+        setHasEarlier(data.length === 30);
+        setOldestTs(data[data.length - 1]?.timestamp || null);
+        setLoading(false);
+      } catch (e) {
+        console.warn('Failed to load messages', e);
+        setLoading(false);
+      }
+
+      unsub = firebase
+        .firestore()
+        .collection('matches')
+        .doc(user.id)
+        .collection('messages')
+        .orderBy('timestamp', 'desc')
+        .limit(1)
+        .onSnapshot((snap) => {
+          snap.docChanges().forEach((change) => {
+            const val = change.doc.data();
+            const msg = formatMessage(val, change.doc.id, currentUser.uid);
+            if (change.type === 'added') {
+              setMessages((prev) => {
+                if (prev.find((m) => m.id === msg.id)) return prev;
+                return [msg, ...prev];
+              });
+            } else if (change.type === 'modified') {
+              setMessages((prev) =>
+                prev.map((m) => (m.id === msg.id ? msg : m))
+              );
+            }
+
+            if (
+              val.senderId !== currentUser.uid &&
+              !(val.readBy || []).includes(currentUser.uid)
+            ) {
+              change.doc.ref.update({
+                readBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+              });
+            }
           });
-        }
-        return {
-          id: d.id,
-          text: val.text,
-          readBy: val.readBy || [],
-          reactions: val.reactions || {},
-          sender: val.senderId === currentUser.uid ? 'you' : val.senderId || 'them',
-          voice: !!val.voice,
-          url: val.url,
-          duration: val.duration,
-          time: val.timestamp
-            ? val.timestamp.toDate().toLocaleTimeString([], {
-                hour: 'numeric',
-                minute: '2-digit',
-              })
-            : '',
-        };
-      });
-      setMessages(data.reverse());
-      setLoading(false);
-      setRefreshing(false);
-    });
-    return unsub;
+        });
+    };
+
+    loadInitial();
+
+    return () => {
+      isMounted = false;
+      if (unsub) unsub();
+    };
   }, [user?.id, currentUser?.uid]);
 
   const handleSend = () => {
@@ -346,42 +382,35 @@ function PrivateChat({ user, initialGameId }) {
     }
   };
 
-  const handleRefresh = async () => {
-    if (!user?.id || !currentUser?.uid) return;
-    setRefreshing(true);
+  const loadEarlier = async () => {
+    if (loadingEarlier || !oldestTs) return;
+    setLoadingEarlier(true);
     try {
       const snap = await firebase
         .firestore()
         .collection('matches')
         .doc(user.id)
         .collection('messages')
-        .orderBy('timestamp', 'asc')
+        .orderBy('timestamp', 'desc')
+        .startAfter(oldestTs)
+        .limit(30)
         .get();
-      const data = snap.docs.map((d) => {
-        const val = d.data();
-        return {
-          id: d.id,
-          text: val.text,
-          readBy: val.readBy || [],
-          reactions: val.reactions || {},
-          sender: val.senderId === currentUser.uid ? 'you' : val.senderId || 'them',
-          voice: !!val.voice,
-          url: val.url,
-          duration: val.duration,
-          time: val.timestamp
-            ? val.timestamp.toDate().toLocaleTimeString([], {
-                hour: 'numeric',
-                minute: '2-digit',
-              })
-            : '',
-        };
-      });
-      setMessages(data.reverse());
+      const data = snap.docs.map((d) =>
+        formatMessage(d.data(), d.id, currentUser.uid)
+      );
+      if (data.length > 0) {
+        setOldestTs(data[data.length - 1].timestamp);
+        setMessages((prev) => [...prev, ...data]);
+        setHasEarlier(data.length === 30);
+      } else {
+        setHasEarlier(false);
+      }
     } catch (e) {
-      console.warn('Failed to refresh messages', e);
+      console.warn('Failed to load earlier messages', e);
     }
-    setRefreshing(false);
+    setLoadingEarlier(false);
   };
+
 
   const toggleReaction = async (msgId, emoji) => {
     const msg = messages.find((m) => m.id === msgId);
@@ -640,8 +669,18 @@ function PrivateChat({ user, initialGameId }) {
         contentContainerStyle={{ paddingBottom: 0 }}
         inverted
         keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        ListFooterComponent={
+          hasEarlier ? (
+            <TouchableOpacity
+              style={{ padding: 10, alignItems: 'center' }}
+              onPress={loadEarlier}
+              disabled={loadingEarlier}
+            >
+              <Text style={{ color: theme.primary }}>
+                {loadingEarlier ? 'Loading...' : 'Load earlier'}
+              </Text>
+            </TouchableOpacity>
+          ) : null
         }
         ListEmptyComponent={
           !loading && (

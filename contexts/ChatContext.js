@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDev } from './DevContext';
 import { useUser } from './UserContext';
 import firebase from '../firebase';
-import { useListeners } from './ListenerContext';
 import Toast from 'react-native-toast-message';
 import * as Haptics from 'expo-haptics';
 import { useSound } from './SoundContext';
@@ -20,7 +19,6 @@ const getGameStateKey = (matchId) => `${GAME_STATE_PREFIX}${matchId}`;
 export const ChatProvider = ({ children }) => {
   const { devMode } = useDev();
   const { user } = useUser();
-  const { getMessages } = useListeners();
   const { play } = useSound();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -340,7 +338,6 @@ export const ChatProvider = ({ children }) => {
         matches,
         loading,
         sendMessage,
-        getMessages,
         addMatch,
         removeMatch,
         setActiveGame,
