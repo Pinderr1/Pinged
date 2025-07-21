@@ -48,21 +48,16 @@ export async function handleLike({
         .doc(currentUser.uid)
         .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
 
-      const reciprocal = await firestore
-        .collection('likes')
-        .doc(targetUser.id)
-        .collection('liked')
-        .doc(currentUser.uid)
-        .get();
-
-      if (reciprocal.exists) {
-        const matchRef = await firestore.collection('matches').add({
-          users: [currentUser.uid, targetUser.id],
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      const res = await firebase
+        .functions()
+        .httpsCallable('createMatchIfMutualLike')({
+          uid: currentUser.uid,
+          targetUid: targetUser.id,
         });
 
+      if (res?.data?.matchId) {
         addMatch({
-          id: matchRef.id,
+          id: res.data.matchId,
           displayName: targetUser.displayName,
           age: targetUser.age,
           image: targetUser.images[0],
