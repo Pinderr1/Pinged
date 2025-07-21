@@ -78,6 +78,10 @@ service cloud.firestore {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
+    match /likes/{uid}/liked/{targetId} {
+      allow create, delete: if request.auth.uid == uid;
+    }
+
     // Deny all other reads and writes
     match /{document=**} {
       allow read, write: if false;
