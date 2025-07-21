@@ -129,7 +129,7 @@ function PrivateChat({ user, initialGameId }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingEarlier, setLoadingEarlier] = useState(false);
-  const [oldestTs, setOldestTs] = useState(null);
+  const [oldestDoc, setOldestDoc] = useState(null);
   const [hasEarlier, setHasEarlier] = useState(true);
   const [firstLine, setFirstLine] = useState('');
   const [firstGame, setFirstGame] = useState(null);
@@ -301,12 +301,12 @@ function PrivateChat({ user, initialGameId }) {
     const loadInitial = async () => {
       setLoading(true);
       try {
-        const data = await chatApi.getMessages(user.id);
-        const mapped = data.map((m) => formatMessage(m, m.id, currentUser.uid));
+        const { messages: fetched, lastDoc } = await chatApi.getMessages(user.id);
+        const mapped = fetched.map((m) => formatMessage(m, m.id, currentUser.uid));
         if (!isMounted) return;
         setMessages(mapped);
-        setHasEarlier(data.length === 30);
-        setOldestTs(data[data.length - 1]?.timestamp || null);
+        setHasEarlier(fetched.length === 30);
+        setOldestDoc(lastDoc);
         setLoading(false);
       } catch (e) {
         console.warn('Failed to load messages', e);
@@ -383,7 +383,7 @@ function PrivateChat({ user, initialGameId }) {
   };
 
   const loadEarlier = async () => {
-    if (loadingEarlier || !oldestTs) return;
+    if (loadingEarlier || !oldestDoc) return;
     setLoadingEarlier(true);
     try {
       const snap = await firebase
@@ -392,14 +392,14 @@ function PrivateChat({ user, initialGameId }) {
         .doc(user.id)
         .collection('messages')
         .orderBy('timestamp', 'desc')
-        .startAfter(oldestTs)
+        .startAfter(oldestDoc)
         .limit(30)
         .get();
       const data = snap.docs.map((d) =>
         formatMessage(d.data(), d.id, currentUser.uid)
       );
       if (data.length > 0) {
-        setOldestTs(data[data.length - 1].timestamp);
+        setOldestDoc(snap.docs[snap.docs.length - 1]);
         setMessages((prev) => [...prev, ...data]);
         setHasEarlier(data.length === 30);
       } else {

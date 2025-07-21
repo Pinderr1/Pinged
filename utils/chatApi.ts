@@ -15,7 +15,7 @@ export interface MSG {
 export async function getMessages(
   matchId: string,
   limit = 30
-): Promise<MSG[]> {
+): Promise<{ messages: MSG[]; lastDoc: firebase.firestore.DocumentSnapshot | null }> {
   const snap = await firebase
     .firestore()
     .collection('matches')
@@ -25,6 +25,7 @@ export async function getMessages(
     .limit(limit)
     .get();
 
-  const msgs = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
-  return msgs; // descending order
+  const messages = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+  const lastDoc = snap.docs[snap.docs.length - 1] || null;
+  return { messages, lastDoc }; // descending order
 }
