@@ -19,6 +19,7 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [loginBonus, setLoginBonus] = useState(false);
   const [streakReward, setStreakReward] = useState(null);
+  const [blocked, setBlocked] = useState([]);
   const devUser = {
     displayName: "Dev Tester",
     age: 99,
@@ -35,6 +36,7 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     let unsubProfile;
+    let unsubBlocks;
     let currentUid = null;
     const unsubAuth = firebase.auth().onAuthStateChanged((fbUser) => {
       if (fbUser?.uid !== currentUid) {
@@ -46,6 +48,10 @@ export const UserProvider = ({ children }) => {
       if (unsubProfile) {
         unsubProfile();
         unsubProfile = null;
+      }
+      if (unsubBlocks) {
+        unsubBlocks();
+        unsubBlocks = null;
       }
 
       if (fbUser) {
@@ -89,14 +95,27 @@ export const UserProvider = ({ children }) => {
             setLoading(false);
           },
         );
+        const bRef = firebase
+          .firestore()
+          .collection('blocks')
+          .doc(fbUser.uid)
+          .collection('blocked');
+        unsubBlocks = bRef.onSnapshot(
+          (snap) => {
+            setBlocked(snap.docs.map((d) => d.id));
+          },
+          () => setBlocked([]),
+        );
       } else {
         setUser(null);
+        setBlocked([]);
         setLoading(false);
       }
     });
     return () => {
       unsubAuth();
       if (unsubProfile) unsubProfile();
+      if (unsubBlocks) unsubBlocks();
     };
   }, [devMode]);
 
@@ -209,6 +228,17 @@ export const UserProvider = ({ children }) => {
 
   const loginBonusGiven = useRef(false);
 
+  const blockUserAccount = async (targetUid) => {
+    if (!user?.uid || !targetUid) return;
+    try {
+      await firebase.functions().httpsCallable('blockUser')({ targetUid });
+      setBlocked((prev) => (prev.includes(targetUid) ? prev : [...prev, targetUid]));
+    } catch (e) {
+      console.warn('Failed to block user', e);
+      Toast.show({ type: 'error', text1: 'Failed to block user' });
+    }
+  };
+
   useEffect(() => {
     if (!user?.uid || loginBonusGiven.current) return;
     const last = user.lastActiveAt
@@ -238,6 +268,8 @@ export const UserProvider = ({ children }) => {
         addGameXP,
         addLoginXP,
         redeemEventTicket,
+        blockUser: blockUserAccount,
+        blocked,
         streakReward,
         dismissStreakReward,
         loginBonus,

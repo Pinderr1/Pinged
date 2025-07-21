@@ -1,11 +1,15 @@
-import React from 'react';
-import { Modal, View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { Modal, View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { BlurView } from 'expo-blur';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
+import { Ionicons } from '@expo/vector-icons';
+import { useUser } from '../contexts/UserContext';
 
 export default function FullProfileModal({ visible, onClose, user }) {
   const { theme } = useTheme();
+  const { blockUser } = useUser();
+  const [menuOpen, setMenuOpen] = useState(false);
   const styles = getStyles(theme);
   if (!user) return null;
   const games = Array.isArray(user.favoriteGames)
@@ -19,12 +23,40 @@ export default function FullProfileModal({ visible, onClose, user }) {
     { label: 'Favorite Games', value: games },
     { label: 'Bio', value: user.bio },
   ];
+  const confirmBlock = () => {
+    Alert.alert('Block User', 'Are you sure you want to block this user?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Block',
+        style: 'destructive',
+        onPress: () => blockUser(user.id || user.uid),
+      },
+    ]);
+  };
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <BlurView intensity={60} tint="dark" style={styles.backdrop}>
         <View style={styles.card}>
           <ScrollView contentContainerStyle={styles.content}>
-            <Text style={styles.name}>{user.displayName}</Text>
+            <View style={styles.headerRow}>
+              <Text style={styles.name}>{user.displayName}</Text>
+              <TouchableOpacity onPress={() => setMenuOpen((v) => !v)}>
+                <Ionicons name="ellipsis-vertical" size={18} color={theme.text} />
+              </TouchableOpacity>
+            </View>
+            {menuOpen && (
+              <View style={[styles.menu, { backgroundColor: theme.card }]}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setMenuOpen(false);
+                    confirmBlock();
+                  }}
+                >
+                  <Text style={[styles.menuItem, { color: theme.text }]}>Block</Text>
+                </TouchableOpacity>
+              </View>
+            )}
             {fields.map(
               (f) =>
                 f.value ? (
@@ -66,6 +98,20 @@ const getStyles = (theme) =>
       marginBottom: 12,
     },
     field: { color: theme.text, fontSize: 16, marginBottom: 6 },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    menu: {
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      borderRadius: 6,
+      padding: 6,
+    },
+    menuItem: { paddingVertical: 4, paddingHorizontal: 8 },
     button: {
       marginTop: 20,
       alignSelf: 'center',
