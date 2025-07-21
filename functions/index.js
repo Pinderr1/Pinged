@@ -9,6 +9,7 @@ admin.initializeApp();
 const payments = require('./payments');
 const notifications = require('./notifications');
 const invites = require('./invites');
+const match = require('./src/match');
 
 // Re-export all handlers for Firebase deployment
 module.exports = {
@@ -18,4 +19,5 @@ module.exports = {
     return rest;
   })(),
   ...invites,
+  ...match,
 };
