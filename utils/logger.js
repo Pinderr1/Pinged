@@ -1,5 +1,3 @@
-export function logDev(..._args) {
-  if (__DEV__) {
-    // logging disabled in cleaned build
-  }
-}
+export const logDev = (...args) => {
+  if (__DEV__) console.log(...args);
+};

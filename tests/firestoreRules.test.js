@@ -72,7 +72,6 @@ const fs = require('fs');
     await assertSucceeds(getDb('alice').collection('communityPosts').doc('post1').set({ hostId: 'alice', text: 'edit' }));
     await assertFails(getDb('bob').collection('communityPosts').doc('post1').set({ hostId: 'alice', text: 'hack' }));
 
-    console.log('Firestore rules tests completed');
   } finally {
     await testEnv.cleanup();
   }
