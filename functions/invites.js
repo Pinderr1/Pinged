@@ -218,7 +218,35 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
 
   const db = admin.firestore();
   const inviteRef = db.collection('gameInvites').doc(inviteId);
-  let matchId = null;
+
+  const inviteSnap = await inviteRef.get();
+  if (!inviteSnap.exists) {
+    throw new functions.https.HttpsError('not-found', 'Invite not found');
+  }
+  const invite = inviteSnap.data() || {};
+  if (invite.to !== uid) {
+    throw new functions.https.HttpsError('permission-denied', 'Not invite recipient');
+  }
+  if (invite.status !== 'pending' && invite.status !== 'accepted') {
+    throw new functions.https.HttpsError('failed-precondition', 'Invite is not pending');
+  }
+
+  const alreadyAccepted = Array.isArray(invite.acceptedBy) && invite.acceptedBy.includes(uid);
+  const fromUid = invite.from;
+  const matchId = [uid, fromUid].sort().join('_');
+  const matchRef = db.collection('matches').doc(matchId);
+
+  if (alreadyAccepted) {
+    const snap = await matchRef.get();
+    if (!snap.exists) {
+      await matchRef.set({
+        users: [uid, fromUid],
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    return { matchId };
+  }
+
 
   await db.runTransaction(async (tx) => {
     const inviteSnap = await tx.get(inviteRef);
@@ -229,24 +257,33 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
     if (invite.to !== uid) {
       throw new functions.https.HttpsError('permission-denied', 'Not invite recipient');
     }
-    if (invite.status !== 'pending') {
+    if (invite.status !== 'pending' && invite.status !== 'accepted') {
       throw new functions.https.HttpsError('failed-precondition', 'Invite is not pending');
     }
 
-    const fromUid = invite.from;
-    tx.update(inviteRef, { status: 'accepted' });
-    tx.set(db.collection('users').doc(uid).collection('gameInvites').doc(inviteId), { status: 'accepted' }, { merge: true });
-    tx.set(db.collection('users').doc(fromUid).collection('gameInvites').doc(inviteId), { status: 'accepted' }, { merge: true });
+    const acceptedBy = new Set(invite.acceptedBy || []);
+    acceptedBy.add(uid);
 
-    const matchQuery = db.collection('matches').where('users', 'array-contains', uid);
-    const matchSnap = await tx.get(matchQuery);
-    const existing = matchSnap.docs.find((d) => (d.get('users') || []).includes(fromUid));
-    if (existing) {
-      matchId = existing.id;
+    const bothAccepted = acceptedBy.has(fromUid) && acceptedBy.has(invite.to);
+
+    const update = {
+      acceptedBy: Array.from(acceptedBy),
+      status: bothAccepted ? 'ready' : 'accepted',
+    };
+    if (bothAccepted) {
+      const gameSessionId = invite.gameSessionId || db.collection('gameSessions').doc().id;
+      update.gameSessionId = gameSessionId;
+      tx.set(db.collection('users').doc(uid).collection('gameInvites').doc(inviteId), { status: 'ready', gameSessionId }, { merge: true });
+      tx.set(db.collection('users').doc(fromUid).collection('gameInvites').doc(inviteId), { status: 'ready', gameSessionId }, { merge: true });
     } else {
-      const newRef = db.collection('matches').doc();
-      matchId = newRef.id;
-      tx.set(newRef, {
+      tx.set(db.collection('users').doc(uid).collection('gameInvites').doc(inviteId), { status: 'accepted' }, { merge: true });
+      tx.set(db.collection('users').doc(fromUid).collection('gameInvites').doc(inviteId), { status: 'accepted' }, { merge: true });
+    }
+    tx.update(inviteRef, update);
+
+    const matchSnap = await tx.get(matchRef);
+    if (!matchSnap.exists) {
+      tx.set(matchRef, {
         users: [uid, fromUid],
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });

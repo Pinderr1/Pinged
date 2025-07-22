@@ -74,9 +74,13 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `to` (string) – recipient uid
 - `gameId` (string)
 - `fromName` (string)
-- `status` (string) – `pending`, `ready`, `accepted`, `declined`, `cancelled`
+- `status` (string) – `pending`, `accepted`, `ready`, `active`, `finished`, `declined`, `cancelled`
 - `acceptedBy` (array of strings) – user ids who accepted the invite
+- `gameSessionId` (string) – id of the created `gameSessions` document once both users accept
 - `createdAt` (timestamp)
+
+Invite status flow: `pending` → `accepted` → `ready` → `active` → `finished` (or `declined`/`cancelled`).
+When both players accept an invite, the backend automatically sets `status` to `ready` and fills `gameSessionId`.
 
 A copy of each invite is also stored under `users/{uid}/gameInvites/{inviteId}` for quick access.
 

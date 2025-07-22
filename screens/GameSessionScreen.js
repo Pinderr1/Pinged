@@ -76,6 +76,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const { game, opponent, status = 'waiting', inviteId } = route.params || {};
 
   const [inviteStatus, setInviteStatus] = useState(status);
+  const [sessionId, setSessionId] = useState(inviteId);
   const [showGame, setShowGame] = useState(false);
   const [countdown, setCountdown] = useState(null);
   const [devPlayer, setDevPlayer] = useState('0');
@@ -111,6 +112,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
         const data = snap.data();
         if (data.from === user.uid || data.to === user.uid) {
           setInviteStatus(data.status);
+          if (data.gameSessionId) setSessionId(data.gameSessionId);
         }
       }
     });
@@ -140,16 +142,11 @@ const LiveSessionScreen = ({ route, navigation }) => {
     }).start();
   }, [showGame, overlayOpacity]);
 
-  // Show fallback if waiting too long or invite is cancelled/declined
+  // Show fallback if invite is cancelled/declined
   useEffect(() => {
     if (devMode || showGame) return;
     if (inviteStatus === 'cancelled' || inviteStatus === 'declined') {
       setShowFallback(true);
-      return;
-    }
-    if (inviteStatus !== 'ready') {
-      const t = setTimeout(() => setShowFallback(true), 20000);
-      return () => clearTimeout(t);
     }
   }, [inviteStatus, showGame, devMode]);
 
@@ -314,7 +311,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
               </>
             ) : (
               <SyncedGame
-                sessionId={inviteId}
+                sessionId={sessionId}
                 gameId={game.id}
                 opponent={{ id: opponent.id, photo: opponent.photo, online: true }}
                 onGameEnd={handleGameEnd}
