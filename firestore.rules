@@ -6,9 +6,17 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // User can read and write only their own profile
+    // Users may read their own profile. Writes are restricted so that clients
+    // cannot modify premium status, badges or roles. Admin requests bypass
+    // these checks.
     match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if request.auth.token.admin == true ||
+        (isSignedIn() &&
+          request.auth.uid == userId &&
+          !('isPremium' in request.resource.data) &&
+          !('badges' in request.resource.data ? request.resource.data.badges.contains('premium') : false) &&
+          !('roles' in request.resource.data));
     }
 
     // Match documents are readable by the matched users but writable only by admin

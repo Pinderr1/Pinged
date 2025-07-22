@@ -28,6 +28,14 @@ const fs = require('fs');
     await assertFails(getDb('bob').collection('users').doc('alice').get());
     await assertFails(getDb('bob').collection('users').doc('alice').set({ name: 'Hacker' }));
 
+    // clients cannot modify premium fields
+    await assertFails(
+      getDb('alice').collection('users').doc('alice').set({ isPremium: true })
+    );
+    await assertSucceeds(
+      getDb('admin', { admin: true }).collection('users').doc('alice').set({ isPremium: true })
+    );
+
     // matches are writeable only by admin
     await seed(async (db) => {
       await db.collection('matches').doc('match1').set({ users: ['alice', 'bob'] });
