@@ -50,7 +50,7 @@ const fs = require('fs');
 
     // game invites restricted to sender and existing match
     await seed(async (db) => {
-      await db.collection('users').doc('alice').set({ matches: { alice: 'bob' } });
+      await db.collection('users').doc('alice').set({ matches: { bob: 'match1' } });
     });
     await assertSucceeds(
       getDb('alice').collection('gameInvites').doc('invite1').set({ from: 'alice', to: 'bob' })
