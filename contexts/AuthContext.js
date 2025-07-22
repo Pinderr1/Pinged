@@ -9,12 +9,29 @@ import { clearStoredOnboarding } from "../utils/onboarding";
 import { snapshotExists } from "../utils/firestore";
 import { isAllowedDomain } from "../utils/email";
 import { initPresence } from "../utils/presence";
+import { useDev } from "./DevContext";
+import { useOnboarding } from "./OnboardingContext";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const { devMode } = useDev();
+  const { markOnboarded, clearOnboarding } = useOnboarding();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const devUser = {
+    displayName: "Dev Tester",
+    age: 99,
+    gender: "Other",
+    bio: "Development user",
+    location: "Localhost",
+    photoURL: null,
+    xp: 0,
+    streak: 0,
+    badges: [],
+    unlocks: [],
+    eventTickets: [],
+  };
   const redirectUri = AuthSession.makeRedirectUri({ scheme: "pinged" });
 
   useEffect(() => {
@@ -52,15 +69,15 @@ export const AuthProvider = ({ children }) => {
         .signInWithEmailAndPassword(email.trim(), password);
       await ensureUserDoc(userCred.user);
     } catch (e) {
-      console.warn('Login failed', e);
-      Toast.show({ type: 'error', text1: 'Login failed' });
+      console.warn("Login failed", e);
+      Toast.show({ type: "error", text1: "Login failed" });
       throw e;
     }
   };
 
   const signUpWithEmail = async (email, password) => {
     if (!isAllowedDomain(email)) {
-      throw new Error('Email domain not supported');
+      throw new Error("Email domain not supported");
     }
     try {
       const userCred = await firebase
@@ -68,26 +85,26 @@ export const AuthProvider = ({ children }) => {
         .createUserWithEmailAndPassword(email.trim(), password);
       try {
         const keys = await AsyncStorage.getAllKeys();
-        const matchKeys = keys.filter((k) => k.startsWith('chatMatches'));
+        const matchKeys = keys.filter((k) => k.startsWith("chatMatches"));
         if (matchKeys.length) await AsyncStorage.multiRemove(matchKeys);
       } catch (e) {
-        console.warn('Failed to clear stored matches', e);
+        console.warn("Failed to clear stored matches", e);
       }
       await firebase
         .firestore()
-        .collection('users')
+        .collection("users")
         .doc(userCred.user.uid)
         .set({
           uid: userCred.user.uid,
           email: userCred.user.email,
-          displayName: userCred.user.displayName || '',
-          photoURL: userCred.user.photoURL || '',
+          displayName: userCred.user.displayName || "",
+          photoURL: userCred.user.photoURL || "",
           onboardingComplete: false,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
     } catch (e) {
-      console.warn('Signup failed', e);
-      Toast.show({ type: 'error', text1: 'Signup failed' });
+      console.warn("Signup failed", e);
+      Toast.show({ type: "error", text1: "Signup failed" });
       throw e;
     }
   };
@@ -100,22 +117,79 @@ export const AuthProvider = ({ children }) => {
       if (user?.uid) await clearStoredOnboarding(user.uid);
       await firebase.auth().signOut();
     } catch (e) {
-      console.warn('Logout failed', e);
-      Toast.show({ type: 'error', text1: 'Logout failed' });
+      console.warn("Logout failed", e);
+      Toast.show({ type: "error", text1: "Logout failed" });
     }
   };
 
   useEffect(() => {
+    let unsubProfile;
+    let currentUid = null;
     const unsub = firebase.auth().onAuthStateChanged(async (fbUser) => {
-      setUser(fbUser);
+      if (fbUser?.uid !== currentUid) {
+        if (!fbUser && currentUid) clearStoredOnboarding(currentUid);
+        clearOnboarding();
+        currentUid = fbUser?.uid || null;
+      }
+
+      if (unsubProfile) {
+        unsubProfile();
+        unsubProfile = null;
+      }
+
       if (fbUser) {
+        setLoading(true);
         await ensureUserDoc(fbUser);
         initPresence(fbUser.uid);
+        const ref = firebase.firestore().collection("users").doc(fbUser.uid);
+        unsubProfile = ref.onSnapshot(
+          (snap) => {
+            if (snapshotExists(snap)) {
+              const data = snap.data();
+              if (data.onboardingComplete) markOnboarded();
+              setUser({
+                uid: fbUser.uid,
+                email: fbUser.email,
+                isPremium: !!data.isPremium,
+                badges: data.badges || [],
+                unlocks: data.unlocks || [],
+                eventTickets: data.eventTickets || [],
+                ...data,
+              });
+            } else if (devMode) {
+              setUser({ uid: fbUser.uid, email: fbUser.email, ...devUser });
+            } else {
+              setUser({
+                uid: fbUser.uid,
+                email: fbUser.email,
+                isPremium: false,
+                unlocks: [],
+                eventTickets: [],
+              });
+            }
+            setLoading(false);
+          },
+          (err) => {
+            console.warn("Failed to subscribe user doc", err);
+            setUser({
+              uid: fbUser.uid,
+              email: fbUser.email,
+              isPremium: false,
+              eventTickets: [],
+            });
+            setLoading(false);
+          },
+        );
+      } else {
+        setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
-    return unsub;
-  }, []);
+    return () => {
+      unsub();
+      if (unsubProfile) unsubProfile();
+    };
+  }, [devMode]);
 
   useEffect(() => {
     if (response?.type === "success") {
