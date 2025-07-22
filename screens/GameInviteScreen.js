@@ -109,10 +109,8 @@ const GameInviteScreen = ({ route, navigation }) => {
 
     if (devMode) {
       logDev('Auto-accepting invite');
-      toLobby();
-    } else {
-      setTimeout(toLobby, 2000);
     }
+    toLobby();
   };
 
   const [debouncedInvite, inviting] = useDebouncedCallback(handleInvite, 800);

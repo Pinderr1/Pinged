@@ -140,16 +140,11 @@ const LiveSessionScreen = ({ route, navigation }) => {
     }).start();
   }, [showGame, overlayOpacity]);
 
-  // Show fallback if waiting too long or invite is cancelled/declined
+  // Show fallback if invite is cancelled or declined
   useEffect(() => {
     if (devMode || showGame) return;
     if (inviteStatus === 'cancelled' || inviteStatus === 'declined') {
       setShowFallback(true);
-      return;
-    }
-    if (inviteStatus !== 'ready') {
-      const t = setTimeout(() => setShowFallback(true), 20000);
-      return () => clearTimeout(t);
     }
   }, [inviteStatus, showGame, devMode]);
 
@@ -164,17 +159,6 @@ const LiveSessionScreen = ({ route, navigation }) => {
         recordGamePlayed();
         if (opponent?.id && user?.uid) {
           await createMatchIfMissing(user.uid, opponent.id);
-        }
-        if (inviteId && user?.uid) {
-          const ref = firebase.firestore().collection('gameInvites').doc(inviteId);
-          const snap = await ref.get();
-          const data = snap.data();
-          if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
-            ref.update({
-              status: 'active',
-              startedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            });
-          }
         }
       } catch (e) {
         console.warn('Failed to start game', e);
