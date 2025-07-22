@@ -93,6 +93,7 @@ This deploys:
     Firestore Indexes
 
     Static web build (via Expo export)
+    Image compression enabled with --image-compression flag
 
 License
 

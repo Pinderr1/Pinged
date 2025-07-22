@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useSound } from './SoundContext';
 import { logDev } from '../utils/logger';
 import { useListeners } from './ListenerContext';
+import debounce from '../utils/debounce';
 
 const ChatContext = createContext();
 
@@ -160,11 +161,22 @@ export const ChatProvider = ({ children }) => {
   }, [user?.uid]);
 
 
+  const saveMatchesToStorageRef = useRef(null);
+
   useEffect(() => {
     if (!user?.uid) return;
-    AsyncStorage.setItem(getStorageKey(user.uid), JSON.stringify(matches)).catch((err) => {
-      console.warn('Failed to save matches to storage', err);
-    });
+    saveMatchesToStorageRef.current = debounce((data) => {
+      AsyncStorage.setItem(getStorageKey(user.uid), JSON.stringify(data)).catch(
+        (err) => {
+          console.warn('Failed to save matches to storage', err);
+        }
+      );
+    }, 2000);
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid || !saveMatchesToStorageRef.current) return;
+    saveMatchesToStorageRef.current(matches);
   }, [matches, user?.uid]);
 
 
