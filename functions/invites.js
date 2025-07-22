@@ -205,6 +205,57 @@ const trackGameInvite = functions.firestore
     return null;
   });
 
+const acceptInvite = functions.https.onCall(async (data, context) => {
+  const inviteId = data?.inviteId;
+  const uid = context.auth?.uid;
+
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+  if (!inviteId) {
+    throw new functions.https.HttpsError('invalid-argument', 'inviteId is required');
+  }
+
+  const db = admin.firestore();
+  const inviteRef = db.collection('gameInvites').doc(inviteId);
+  let matchId = null;
+
+  await db.runTransaction(async (tx) => {
+    const inviteSnap = await tx.get(inviteRef);
+    if (!inviteSnap.exists) {
+      throw new functions.https.HttpsError('not-found', 'Invite not found');
+    }
+    const invite = inviteSnap.data() || {};
+    if (invite.to !== uid) {
+      throw new functions.https.HttpsError('permission-denied', 'Not invite recipient');
+    }
+    if (invite.status !== 'pending') {
+      throw new functions.https.HttpsError('failed-precondition', 'Invite is not pending');
+    }
+
+    const fromUid = invite.from;
+    tx.update(inviteRef, { status: 'accepted' });
+    tx.set(db.collection('users').doc(uid).collection('gameInvites').doc(inviteId), { status: 'accepted' }, { merge: true });
+    tx.set(db.collection('users').doc(fromUid).collection('gameInvites').doc(inviteId), { status: 'accepted' }, { merge: true });
+
+    const matchQuery = db.collection('matches').where('users', 'array-contains', uid);
+    const matchSnap = await tx.get(matchQuery);
+    const existing = matchSnap.docs.find((d) => (d.get('users') || []).includes(fromUid));
+    if (existing) {
+      matchId = existing.id;
+    } else {
+      const newRef = db.collection('matches').doc();
+      matchId = newRef.id;
+      tx.set(newRef, {
+        users: [uid, fromUid],
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+  });
+
+  return { matchId };
+});
+
 const autoStartLobby = functions.firestore
   .document('gameLobbies/{lobbyId}')
   .onUpdate(async (change, context) => {
@@ -316,4 +367,5 @@ module.exports = {
   trackGameInvite,
   autoStartLobby,
   onChatMessageCreated,
+  acceptInvite,
 };

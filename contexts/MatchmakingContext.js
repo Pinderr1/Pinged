@@ -3,7 +3,6 @@ import firebase, { firestore } from '../firebase';
 import { useUser } from './UserContext';
 import { useListeners } from './ListenerContext';
 import { snapshotExists } from '../utils/firestore';
-import { createMatchIfMissing } from '../utils/matches';
 import Toast from 'react-native-toast-message';
 import { useLoading } from './LoadingContext';
 
@@ -114,36 +113,13 @@ export const MatchmakingProvider = ({ children }) => {
   const acceptGameInvite = async (id) => {
     if (!user?.uid || !id) return;
     try {
-      const ref = firebase.firestore().collection('gameInvites').doc(id);
-      const snap = await ref.get();
-      const data = snap.data();
-      if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
-      await ref.update({
-        acceptedBy: firebase.firestore.FieldValue.arrayUnion(user.uid),
-      });
-
-      if (data.acceptedBy?.length + 1 >= 2 && !data.acceptedBy?.includes(user.uid)) {
-        await ref.update({ status: 'ready' });
-      } else if (data.acceptedBy?.length >= 2) {
-        await ref.update({ status: 'ready' });
-      }
-
-      try {
-        await firebase
-          .firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('gameInvites')
-          .doc(id)
-          .update({ status: 'accepted' });
-      } catch (e) {
-        console.warn('Failed to update invite status', e);
-      }
-
-      await createMatchIfMissing(user.uid, data.from === user.uid ? data.to : data.from);
+      show();
+      await firebase.functions().httpsCallable('acceptInvite')({ inviteId: id });
     } catch (e) {
       console.warn('Failed to accept game invite', e);
       Toast.show({ type: 'error', text1: 'Failed to accept invite' });
+    } finally {
+      hide();
     }
   };
 
