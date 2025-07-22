@@ -191,6 +191,22 @@ const SwipeScreen = () => {
       try {
         let userQuery = firebase.firestore().collection('users');
 
+        const blockedSnap = await firebase
+          .firestore()
+          .collection('blocks')
+          .doc(currentUser.uid)
+          .collection('blocked')
+          .get();
+        const blockedIds = blockedSnap.docs.map((d) => d.id);
+        const notInIds = blockedIds.slice(0, 10);
+        if (notInIds.length) {
+          userQuery = userQuery.where(
+            firebase.firestore.FieldPath.documentId(),
+            'not-in',
+            notInIds,
+          );
+        }
+
         if (filterLocation) {
           userQuery = userQuery.where('location', '==', filterLocation);
         } else if (currentUser.location) {
@@ -222,7 +238,9 @@ const SwipeScreen = () => {
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         const debug = { queryCount: data.length };
 
-        data = data.filter((u) => u.uid !== currentUser.uid);
+        data = data.filter(
+          (u) => u.uid !== currentUser.uid && !blockedIds.includes(u.uid || u.id),
+        );
         debug.afterSelfFilter = data.length;
 
 
@@ -250,39 +268,7 @@ const SwipeScreen = () => {
           };
         });
 
-        if (filterLocation) {
-          const before = formatted.length;
-          formatted = formatted.filter((u) => u.location === filterLocation);
-          debug.locationCount = `${before}->${formatted.length}`;
-        }
-
-        if (filterGender) {
-          const before = formatted.length;
-          formatted = formatted.filter((u) => u.gender === filterGender);
-          debug.genderCount = `${before}->${formatted.length}`;
-        }
-
-        if (verifiedOnly) {
-          const before = formatted.length;
-          formatted = formatted.filter((u) => u.isVerified);
-          debug.verifiedCount = `${before}->${formatted.length}`;
-        }
-
-        if (Array.isArray(ageRange) && ageRange.length === 2) {
-          const before = formatted.length;
-          formatted = formatted.filter(
-            (u) => u.age >= ageRange[0] && u.age <= ageRange[1]
-          );
-          debug.ageCount = `${before}->${formatted.length}`;
-        }
-
-        if (Array.isArray(interests) && interests.length) {
-          const before = formatted.length;
-          formatted = formatted.filter((u) =>
-            u.favoriteGames.some((g) => interests.includes(g))
-          );
-          debug.interestCount = `${before}->${formatted.length}`;
-        }
+        // filters are now handled server-side via the initial query
 
         // Sort by priority then compatibility so premium/boosted users surface first
         formatted.sort((aUser, bUser) => {
