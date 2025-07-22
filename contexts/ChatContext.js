@@ -168,29 +168,55 @@ export const ChatProvider = ({ children }) => {
   }, [matches, user?.uid]);
 
 
-  const sendMessage = async (matchId, text, sender = 'you') => {
-    if (!text || !matchId || !user?.uid) return;
+  const removeEmojis = (str) =>
+    str?.replace(/\p{Extended_Pictographic}/gu, '') || '';
+
+  const sendMessage = async ({ matchId, text = '', meta = {} }) => {
+    if (!matchId || !user?.uid) return;
+    const trimmed = removeEmojis(text).trim();
+    if (!trimmed && !meta.voice) return;
+
+    const { group, system, ...extras } = meta || {};
+
     try {
-      await firebase
-        .firestore()
-        .collection('matches')
-        .doc(matchId)
-        .collection('messages')
-        .add({
-          senderId: sender === 'you' ? user.uid : sender,
-          text: text.trim(),
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-      if (sender === 'you') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-        play('message');
-        Toast.show({ type: 'success', text1: 'Message sent' });
+      const payload = {
+        text: trimmed,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        ...extras,
+      };
+
+      if (group) {
+        await firebase
+          .firestore()
+          .collection('events')
+          .doc(matchId)
+          .collection('messages')
+          .add({
+            user: user?.displayName || 'You',
+            userId: user?.uid || null,
+            reactions: [],
+            pinned: false,
+            ...payload,
+          });
+      } else {
+        await firebase
+          .firestore()
+          .collection('matches')
+          .doc(matchId)
+          .collection('messages')
+          .add({
+            senderId: system ? 'system' : user.uid,
+            reactions: {},
+            ...payload,
+          });
       }
+
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      play('message');
+      Toast.show({ type: 'success', text1: 'Message sent' });
     } catch (e) {
       console.warn('Failed to send message', e);
-      if (sender === 'you') {
-        Toast.show({ type: 'error', text1: 'Failed to send message' });
-      }
+      Toast.show({ type: 'error', text1: 'Failed to send message' });
     }
   };
 
