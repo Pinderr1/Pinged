@@ -89,6 +89,7 @@ function PrivateChat({ user, initialGameId }) {
   const {
     setActiveGame,
     getActiveGame,
+    sendMessage,
     getPendingInvite,
     startLocalGame,
     getSavedGameState,
@@ -201,34 +202,6 @@ function PrivateChat({ user, initialGameId }) {
   }, []);
 
   // Initial prompt and game suggestion
-
-  const sendChatMessage = async (msgText = '', sender = 'user', extras = {}) => {
-    if (!msgText.trim() && !extras.voice) return;
-    if (!user?.id) return;
-    try {
-      await firebase
-        .firestore()
-        .collection('matches')
-        .doc(user.id)
-        .collection('messages')
-        .add({
-          senderId: sender === 'system' ? 'system' : currentUser?.uid,
-          text: msgText.trim(),
-          reactions: {},
-          ...extras,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-      if (sender === 'user') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-        Toast.show({ type: 'success', text1: 'Message sent' });
-      }
-    } catch (e) {
-      console.warn('Failed to send message', e);
-      if (sender === 'user') {
-        Toast.show({ type: 'error', text1: 'Failed to send message' });
-      }
-    }
-  };
 
   const updateTyping = (state) => {
     if (!user?.id || !currentUser?.uid) return;
@@ -355,9 +328,9 @@ function PrivateChat({ user, initialGameId }) {
     };
   }, [user?.id, currentUser?.uid]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (text.trim()) {
-      sendChatMessage(text);
+      await sendMessage({ matchId: user.id, text: text.trim() });
       setText('');
       updateTyping(false);
     }
@@ -371,10 +344,10 @@ function PrivateChat({ user, initialGameId }) {
     if (!result) return;
     try {
       const url = await uploadVoiceAsync(result.uri, currentUser.uid);
-      await sendChatMessage('', 'user', {
-        voice: true,
-        url,
-        duration: result.duration,
+      await sendMessage({
+        matchId: user.id,
+        text: '',
+        meta: { voice: true, url, duration: result.duration },
       });
     } catch (e) {
       console.warn('Failed to send voice message', e);
@@ -460,7 +433,7 @@ function PrivateChat({ user, initialGameId }) {
     setGameResult(result);
     if (result.winner !== undefined) {
       const msg = result.winner === '0' ? 'You win!' : `${user.displayName} wins.`;
-      sendChatMessage(`Game over. ${msg}`, 'system');
+      sendMessage({ matchId: user.id, text: `Game over. ${msg}`, meta: { system: true } });
       if (result.winner === '0') {
         playSound('win');
         Haptics.notificationAsync(
@@ -473,7 +446,7 @@ function PrivateChat({ user, initialGameId }) {
         ).catch(() => {});
       }
     } else if (result.draw) {
-      sendChatMessage('Game over. Draw.', 'system');
+      sendMessage({ matchId: user.id, text: 'Game over. Draw.', meta: { system: true } });
       playSound('draw');
       Haptics.selectionAsync().catch(() => {});
     }
@@ -499,9 +472,9 @@ function PrivateChat({ user, initialGameId }) {
     }
     const title = games[gameId].meta.title;
     if (activeGameId && activeGameId !== gameId) {
-      sendChatMessage(`Switched game to ${title}`, 'system');
+      sendMessage({ matchId: user.id, text: `Switched game to ${title}`, meta: { system: true } });
     } else if (!activeGameId) {
-      sendChatMessage(`Game started: ${title}`, 'system');
+      sendMessage({ matchId: user.id, text: `Game started: ${title}`, meta: { system: true } });
       recordGamePlayed();
     }
     setActiveGame(user.id, gameId);

@@ -16,11 +16,10 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
 import firebase from '../firebase';
-import * as Haptics from 'expo-haptics';
-import Toast from 'react-native-toast-message';
 import { useTheme } from '../contexts/ThemeContext';
 import { HEADER_SPACING, FONT_SIZES } from '../layout';
 import { useUser } from '../contexts/UserContext';
+import { useChats } from '../contexts/ChatContext';
 import useDebouncedCallback from '../hooks/useDebouncedCallback';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -35,6 +34,7 @@ function GroupChat({ event }) {
   const flatListRef = useRef();
   const { theme } = useTheme();
   const { user } = useUser();
+  const { sendMessage } = useChats();
   const groupStyles = getGroupStyles(theme);
 
   const [messages, setMessages] = useState([]);
@@ -78,33 +78,14 @@ function GroupChat({ event }) {
     return unsub;
   }, [event.id]);
 
-  const sendMessage = async () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
-    try {
-      await firebase
-        .firestore()
-        .collection('events')
-        .doc(event.id)
-        .collection('messages')
-        .add({
-          user: user?.displayName || 'You',
-          userId: user?.uid || null,
-          text: input.trim(),
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          reactions: [],
-          pinned: false,
-        });
-      setInput('');
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-      Toast.show({ type: 'success', text1: 'Message sent' });
-    } catch (e) {
-      console.warn('Failed to send message', e);
-      Toast.show({ type: 'error', text1: 'Failed to send message' });
-    }
+    await sendMessage({ matchId: event.id, text: input.trim(), meta: { group: true } });
+    setInput('');
+    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
   };
 
-  const [debouncedSend, sending] = useDebouncedCallback(sendMessage, 800);
+  const [debouncedSend, sending] = useDebouncedCallback(handleSend, 800);
 
   useEffect(() => {
     const handleShow = (e) => {
