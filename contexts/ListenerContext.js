@@ -16,8 +16,10 @@ export const ListenerProvider = ({ children }) => {
   const [incomingInvites, setIncomingInvites] = useState([]);
   const [outgoingInvites, setOutgoingInvites] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const [matches, setMatches] = useState([]);
 
   const messageUnsubs = useRef({});
+  const currentMatchIds = useRef({});
   const prevInvites = useRef([]);
   const prevMatches = useRef([]);
   const prevInfoMap = useRef({});
@@ -29,6 +31,7 @@ export const ListenerProvider = ({ children }) => {
       .firestore()
       .collection('matches')
       .where('users', 'array-contains', user.uid);
+
     const unsubMatches = matchQ.onSnapshot((snap) => {
       const ids = snap.docs.map((d) => d.id);
 
@@ -40,52 +43,71 @@ export const ListenerProvider = ({ children }) => {
       }
       prevMatches.current = ids;
 
-      // Clean up previous listeners
-      Object.values(messageUnsubs.current).forEach((u) => u && u());
-      messageUnsubs.current = {};
+      setMatches(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
 
-      snap.docs.forEach((d) => {
-        const id = d.id;
+      snap.docChanges().forEach((change) => {
+        const id = change.doc.id;
 
-        if (!prevInfoMap.current[id]) {
-          prevInfoMap.current[id] = { lastMessage: '', unreadCount: 0 };
-        }
+        if (change.type === 'added') {
+          if (!currentMatchIds.current[id]) {
+            currentMatchIds.current[id] = true;
 
-        messageUnsubs.current[id] = firebase
-          .firestore()
-          .collection('matches')
-          .doc(id)
-          .onSnapshot((doc) => {
-            const data = doc.data() || {};
-            const info = {
-              lastMessage: data.lastMessage || '',
-              unreadCount: data.unreadCounts?.[user.uid] || 0,
-            };
-
-            const prevInfo = prevInfoMap.current[id];
-            if (
-              prevInfo &&
-              info.unreadCount > prevInfo.unreadCount &&
-              data.lastSenderId &&
-              data.lastSenderId !== user.uid
-            ) {
-              showNotification('New Message');
+            if (!prevInfoMap.current[id]) {
+              prevInfoMap.current[id] = { lastMessage: '', unreadCount: 0 };
             }
 
-            prevInfoMap.current[id] = info;
-            setMessageInfoMap((prev) => ({
-              ...prev,
-              [id]: { matchId: id, ...info },
-            }));
+            messageUnsubs.current[id] = firebase
+              .firestore()
+              .collection('matches')
+              .doc(id)
+              .onSnapshot((doc) => {
+                const data = doc.data() || {};
+                const info = {
+                  lastMessage: data.lastMessage || '',
+                  unreadCount: data.unreadCounts?.[user.uid] || 0,
+                };
+
+                const prevInfo = prevInfoMap.current[id];
+                if (
+                  prevInfo &&
+                  info.unreadCount > prevInfo.unreadCount &&
+                  data.lastSenderId &&
+                  data.lastSenderId !== user.uid
+                ) {
+                  showNotification('New Message');
+                }
+
+                prevInfoMap.current[id] = info;
+                setMessageInfoMap((prev) => ({
+                  ...prev,
+                  [id]: { matchId: id, ...info },
+                }));
+              });
+          }
+        } else if (change.type === 'removed') {
+          if (messageUnsubs.current[id]) {
+            messageUnsubs.current[id]();
+            delete messageUnsubs.current[id];
+          }
+          delete currentMatchIds.current[id];
+          delete prevInfoMap.current[id];
+          setMessageInfoMap((prev) => {
+            const { [id]: _removed, ...rest } = prev;
+            return rest;
           });
+        }
       });
     });
+
     return () => {
       unsubMatches();
       Object.values(messageUnsubs.current).forEach((u) => u && u());
       messageUnsubs.current = {};
+      currentMatchIds.current = {};
       prevMatches.current = [];
       prevInfoMap.current = {};
+      setMatches([]);
+      setMessageInfoMap({});
     };
   }, [user?.uid]);
 
@@ -164,6 +186,7 @@ export const ListenerProvider = ({ children }) => {
         incomingInvites,
         outgoingInvites,
         sessions,
+        matches,
       }}
     >
       {children}
