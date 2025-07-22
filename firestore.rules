@@ -6,6 +6,13 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isNotBlocked(a, b) {
+      return !(
+        exists(/databases/$(database)/documents/blocks/$(a)/blocked/$(b)) ||
+        exists(/databases/$(database)/documents/blocks/$(b)/blocked/$(a))
+      );
+    }
+
     // User can read and write only their own profile, but certain fields are
     // server controlled and may not be written by the client. Admins may write
     // unrestricted for server-side updates such as Stripe webhooks.
@@ -28,7 +35,8 @@ service cloud.firestore {
     match /matches/{matchId} {
       allow read: if request.auth.token.admin == true ||
         (isSignedIn() && request.auth.uid in resource.data.users);
-      allow create, delete: if request.auth.token.admin == true;
+      allow create, delete: if request.auth.token.admin == true &&
+        isNotBlocked(request.resource.data.users[0], request.resource.data.users[1]);
       allow update: if request.auth.token.admin == true || (
         isSignedIn() &&
         request.auth.uid in resource.data.users &&
@@ -111,7 +119,9 @@ service cloud.firestore {
     }
 
     match /likes/{uid}/liked/{targetId} {
-      allow create, delete: if request.auth.token.admin == true || request.auth.uid == uid;
+      allow create: if (request.auth.token.admin == true || request.auth.uid == uid) &&
+        isNotBlocked(uid, targetId);
+      allow delete: if request.auth.token.admin == true || request.auth.uid == uid;
     }
 
     match /likes/{uid}/likedBy/{otherUid} {
