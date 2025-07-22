@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { Modal, View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useUser } from '../contexts/UserContext';
+import BlockAction from './BlockAction';
 
 export default function FullProfileModal({ visible, onClose, user }) {
   const { theme } = useTheme();
-  const { blockUser } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const styles = getStyles(theme);
   if (!user) return null;
@@ -23,16 +22,6 @@ export default function FullProfileModal({ visible, onClose, user }) {
     { label: 'Favorite Games', value: games },
     { label: 'Bio', value: user.bio },
   ];
-  const confirmBlock = () => {
-    Alert.alert('Block User', 'Are you sure you want to block this user?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Block',
-        style: 'destructive',
-        onPress: () => blockUser(user.id || user.uid),
-      },
-    ]);
-  };
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -47,14 +36,11 @@ export default function FullProfileModal({ visible, onClose, user }) {
             </View>
             {menuOpen && (
               <View style={[styles.menu, { backgroundColor: theme.card }]}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setMenuOpen(false);
-                    confirmBlock();
-                  }}
-                >
-                  <Text style={[styles.menuItem, { color: theme.text }]}>Block</Text>
-                </TouchableOpacity>
+                <BlockAction
+                  targetUid={user.id || user.uid}
+                  displayName={user.displayName}
+                  style={[styles.menuItem, { color: theme.text }]}
+                />
               </View>
             )}
             {fields.map(
