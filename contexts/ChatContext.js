@@ -7,6 +7,7 @@ import Toast from 'react-native-toast-message';
 import * as Haptics from 'expo-haptics';
 import { useSound } from './SoundContext';
 import { logDev } from '../utils/logger';
+import { sanitizeText } from '../utils/sanitize';
 
 const ChatContext = createContext();
 
@@ -167,29 +168,39 @@ export const ChatProvider = ({ children }) => {
   }, [matches, user?.uid]);
 
 
-  const sendMessage = async (matchId, text, sender = 'you') => {
-    if (!text || !matchId || !user?.uid) return;
+  const sendMessage = async ({ matchId, text = '', meta = {} }) => {
+    if ((!text || !text.trim()) && !meta.voice && !meta.url) return;
+    if (!matchId || !user?.uid) return;
+
+    const collection = meta.collection === 'events' ? 'events' : 'matches';
+    const payload = {
+      ...meta,
+      text: sanitizeText(text.trim()),
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (!meta.senderId && collection === 'matches') {
+      payload.senderId = user.uid;
+    }
+
+    if (!('reactions' in payload) && collection === 'matches') {
+      payload.reactions = {};
+    }
+
     try {
       await firebase
         .firestore()
-        .collection('matches')
+        .collection(collection)
         .doc(matchId)
         .collection('messages')
-        .add({
-          senderId: sender === 'you' ? user.uid : sender,
-          text: text.trim(),
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-      if (sender === 'you') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-        play('message');
-        Toast.show({ type: 'success', text1: 'Message sent' });
-      }
+        .add(payload);
+
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      play('message');
+      Toast.show({ type: 'success', text1: 'Message sent' });
     } catch (e) {
       console.warn('Failed to send message', e);
-      if (sender === 'you') {
-        Toast.show({ type: 'error', text1: 'Failed to send message' });
-      }
+      Toast.show({ type: 'error', text1: 'Failed to send message' });
     }
   };
 
