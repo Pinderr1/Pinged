@@ -7,6 +7,7 @@ import Toast from 'react-native-toast-message';
 import * as Haptics from 'expo-haptics';
 import { useSound } from './SoundContext';
 import { logDev } from '../utils/logger';
+import { useListeners } from './ListenerContext';
 
 const ChatContext = createContext();
 
@@ -70,89 +71,89 @@ export const ChatProvider = ({ children }) => {
     };
   }, [user?.uid]);
 
-  // Subscribe to Firestore matches for the current user
+  // Matches from ListenerContext
   const userUnsubs = useRef({});
+  const { matches: listenerMatches } = useListeners();
+
   useEffect(() => {
     if (!user?.uid) return;
-    const q = firebase
-      .firestore()
-      .collection('matches')
-      .where('users', 'array-contains', user.uid);
-    const unsub = q.onSnapshot((snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-      setMatches((prev) => {
-        const others = prev.filter((m) => !data.find((d) => d.id === m.id));
-        const converted = data.map((m) => {
-          const otherId = Array.isArray(m.users)
-            ? m.users.find((u) => u !== user.uid)
-            : null;
-          const prevMatch = prev.find((p) => p.id === m.id) || {};
-          return {
-            id: m.id,
-            otherUserId: otherId,
-            displayName: prevMatch.displayName || 'Match',
-            age: prevMatch.age || 0,
-            image: prevMatch.image || require('../assets/user1.jpg'),
-            avatarOverlay: prevMatch.avatarOverlay || '',
-            online: prevMatch.online || false,
-            messages: prevMatch.messages || [],
-            matchedAt: m.createdAt
-              ? m.createdAt.toDate?.().toISOString()
-              : 'now',
-            activeGameId: prevMatch.activeGameId || null,
-            pendingInvite: prevMatch.pendingInvite || null,
-          };
-        });
-        return [...others, ...converted];
+    const data = listenerMatches;
+
+    setMatches((prev) => {
+      const others = prev.filter((m) => !data.find((d) => d.id === m.id));
+      const converted = data.map((m) => {
+        const otherId = Array.isArray(m.users)
+          ? m.users.find((u) => u !== user.uid)
+          : null;
+        const prevMatch = prev.find((p) => p.id === m.id) || {};
+        return {
+          id: m.id,
+          otherUserId: otherId,
+          displayName: prevMatch.displayName || 'Match',
+          age: prevMatch.age || 0,
+          image: prevMatch.image || require('../assets/user1.jpg'),
+          avatarOverlay: prevMatch.avatarOverlay || '',
+          online: prevMatch.online || false,
+          messages: prevMatch.messages || [],
+          matchedAt: m.createdAt
+            ? m.createdAt.toDate?.().toISOString()
+            : 'now',
+          activeGameId: prevMatch.activeGameId || null,
+          pendingInvite: prevMatch.pendingInvite || null,
+        };
       });
-      setLoading(false);
-
-      const userIds = data
-        .map((m) =>
-          Array.isArray(m.users) ? m.users.find((u) => u !== user.uid) : null
-        )
-        .filter(Boolean);
-
-      // Cleanup listeners for removed users
-      Object.keys(userUnsubs.current).forEach((uid) => {
-        if (!userIds.includes(uid)) {
-          userUnsubs.current[uid]();
-          delete userUnsubs.current[uid];
-        }
-      });
-
-      // Subscribe to each user's profile for presence
-      userIds.forEach((uid) => {
-        if (!userUnsubs.current[uid]) {
-          userUnsubs.current[uid] = firebase
-            .firestore()
-            .collection('users')
-            .doc(uid)
-            .onSnapshot((doc) => {
-              const info = doc.data() || {};
-              setMatches((prev) =>
-                prev.map((m) =>
-                  m.otherUserId === uid
-                    ? {
-                        ...m,
-            displayName: info.displayName || 'User',
-                        age: info.age || 0,
-                        image: info.photoURL
-                          ? { uri: info.photoURL }
-                          : require('../assets/user1.jpg'),
-                        avatarOverlay: info.avatarOverlay || m.avatarOverlay || '',
-                        online: !!info.online,
-                      }
-                    : m
-                )
-              );
-            });
-        }
-      });
+      return [...others, ...converted];
     });
+
+    setLoading(false);
+
+    const userIds = data
+      .map((m) =>
+        Array.isArray(m.users) ? m.users.find((u) => u !== user.uid) : null
+      )
+      .filter(Boolean);
+
+    // Cleanup listeners for removed users
+    Object.keys(userUnsubs.current).forEach((uid) => {
+      if (!userIds.includes(uid)) {
+        userUnsubs.current[uid]();
+        delete userUnsubs.current[uid];
+      }
+    });
+
+    // Subscribe to each user's profile for presence
+    userIds.forEach((uid) => {
+      if (!userUnsubs.current[uid]) {
+        userUnsubs.current[uid] = firebase
+          .firestore()
+          .collection('users')
+          .doc(uid)
+          .onSnapshot((doc) => {
+            const info = doc.data() || {};
+            setMatches((prev) =>
+              prev.map((m) =>
+                m.otherUserId === uid
+                  ? {
+                      ...m,
+                      displayName: info.displayName || 'User',
+                      age: info.age || 0,
+                      image: info.photoURL
+                        ? { uri: info.photoURL }
+                        : require('../assets/user1.jpg'),
+                      avatarOverlay: info.avatarOverlay || m.avatarOverlay || '',
+                      online: !!info.online,
+                    }
+                  : m
+              )
+            );
+          });
+      }
+    });
+  }, [listenerMatches, user?.uid]);
+
+  useEffect(() => {
     return () => {
-      unsub();
       Object.values(userUnsubs.current).forEach((fn) => fn && fn());
       userUnsubs.current = {};
     };
