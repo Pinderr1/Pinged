@@ -60,7 +60,6 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `seeVerifiedOnly` (boolean) – show only verified profiles
 
 ### Subcollections
-- **gameInvites** – invitations sent or received by the user. Each invite document mirrors the root `gameInvites` collection.
 - **notifications** – optional per-user notifications (see `notifications` below).
 
 ## Match Requests (`matchRequests/{requestId}`)
@@ -78,7 +77,6 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `acceptedBy` (array of strings) – user ids who accepted the invite
 - `createdAt` (timestamp)
 
-A copy of each invite is also stored under `users/{uid}/gameInvites/{inviteId}` for quick access.
 
 ## Matches (`matches/{matchId}`)
 - `users` (array of string) – exactly two user ids

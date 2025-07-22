@@ -10,18 +10,7 @@ async function deleteRelatedInvites(uid, targetUid) {
   const tasks = [];
   const remove = (snap) => {
     snap.forEach((doc) => {
-      const data = doc.data() || {};
       tasks.push(doc.ref.delete());
-      if (data.from) {
-        tasks.push(
-          db.collection('users').doc(data.from).collection('gameInvites').doc(doc.id).delete().catch(() => {})
-        );
-      }
-      if (data.to) {
-        tasks.push(
-          db.collection('users').doc(data.to).collection('gameInvites').doc(doc.id).delete().catch(() => {})
-        );
-      }
     });
   };
   remove(s1);

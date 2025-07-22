@@ -10,6 +10,6 @@ Use local games for quick, in-person play when both players share the same devic
 
 ## Online Games
 
-Online games are coordinated through the `MatchmakingContext`. When an online invite is sent a new document is created under the `gameInvites` collection and mirrored in each user's subcollection. Once every player accepts, the game session is launched remotely.
+Online games are coordinated through the `MatchmakingContext`. When an online invite is sent a new document is created under the `gameInvites` collection. Once every player accepts, the game session is launched remotely.
 
 Online games are best when players are on separate devices and need to coordinate over the network.
