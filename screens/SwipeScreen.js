@@ -536,11 +536,7 @@ const SwipeScreen = () => {
           status: devMode ? 'ready' : 'waiting',
         });
 
-      if (devMode) {
-        toLobby();
-      } else {
-        setTimeout(toLobby, 2000);
-      }
+      toLobby();
     } catch (e) {
       console.warn('Failed to send game invite', e);
       Toast.show({ type: 'error', text1: 'Failed to send invite' });

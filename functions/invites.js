@@ -201,34 +201,47 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
   let matchId = null;
 
   await db.runTransaction(async (tx) => {
-    const inviteSnap = await tx.get(inviteRef);
-    if (!inviteSnap.exists) {
+    const snap = await tx.get(inviteRef);
+    if (!snap.exists) {
       throw new functions.https.HttpsError('not-found', 'Invite not found');
     }
-    const invite = inviteSnap.data() || {};
-    if (invite.to !== uid) {
-      throw new functions.https.HttpsError('permission-denied', 'Not invite recipient');
-    }
-    if (invite.status !== 'pending') {
-      throw new functions.https.HttpsError('failed-precondition', 'Invite is not pending');
-    }
 
+    const invite = snap.data() || {};
     const fromUid = invite.from;
-    tx.update(inviteRef, { status: 'accepted' });
+    const toUid = invite.to;
 
-    const matchQuery = db.collection('matches').where('users', 'array-contains', uid);
-    const matchSnap = await tx.get(matchQuery);
-    const existing = matchSnap.docs.find((d) => (d.get('users') || []).includes(fromUid));
-    if (existing) {
-      matchId = existing.id;
-    } else {
-      const newRef = db.collection('matches').doc();
-      matchId = newRef.id;
-      tx.set(newRef, {
-        users: [uid, fromUid],
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
+    if (toUid !== uid && fromUid !== uid) {
+      throw new functions.https.HttpsError('permission-denied', 'Not an invite participant');
     }
+
+    const alreadyAccepted = Array.isArray(invite.acceptedBy) && invite.acceptedBy.includes(uid);
+    if (alreadyAccepted) {
+      matchId = [fromUid, toUid].sort().join('_');
+      return;
+    }
+
+    const acceptedBy = Array.isArray(invite.acceptedBy) ? [...invite.acceptedBy, uid] : [uid];
+    const updates = { acceptedBy };
+
+    const bothAccepted = acceptedBy.includes(fromUid) && acceptedBy.includes(toUid);
+    if (bothAccepted) {
+      updates.status = 'ready';
+      if (!invite.gameSessionId) {
+        updates.gameSessionId = db.collection('gameSessions').doc().id;
+      }
+
+      matchId = [fromUid, toUid].sort().join('_');
+      const matchRef = db.collection('matches').doc(matchId);
+      const matchSnap = await tx.get(matchRef);
+      if (!matchSnap.exists) {
+        tx.set(matchRef, {
+          users: [fromUid, toUid],
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    }
+
+    tx.update(inviteRef, updates);
   });
 
   return { matchId };

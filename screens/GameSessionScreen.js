@@ -140,16 +140,11 @@ const LiveSessionScreen = ({ route, navigation }) => {
     }).start();
   }, [showGame, overlayOpacity]);
 
-  // Show fallback if waiting too long or invite is cancelled/declined
+  // Show fallback if invite is cancelled or declined
   useEffect(() => {
     if (devMode || showGame) return;
     if (inviteStatus === 'cancelled' || inviteStatus === 'declined') {
       setShowFallback(true);
-      return;
-    }
-    if (inviteStatus !== 'ready') {
-      const t = setTimeout(() => setShowFallback(true), 20000);
-      return () => clearTimeout(t);
     }
   }, [inviteStatus, showGame, devMode]);
 
