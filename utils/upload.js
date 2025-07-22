@@ -1,4 +1,5 @@
 import firebase from '../firebase';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 async function detectCelebrityFace(uri) {
   try {
@@ -16,9 +17,30 @@ export async function uploadAvatarAsync(uri, uid) {
   if (!uri || !uid) throw new Error('uri and uid required');
 
   try {
-    const response = await fetch(uri);
-    const blob = await response.blob();
+    // Step 1: validate type from file extension
+    const extMatch = uri.match(/\.(png|jpe?g)$/i);
+    if (!extMatch) {
+      console.warn('Unsupported avatar format', uri);
+      return null;
+    }
+    const finalExtension = extMatch[1].toLowerCase().replace('jpeg', 'jpg');
 
+    // Step 2: load and compress image
+    const compressed = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 1080 } }],
+      {
+        compress: 0.8,
+        format:
+          finalExtension === 'png'
+            ? ImageManipulator.SaveFormat.PNG
+            : ImageManipulator.SaveFormat.JPEG,
+      }
+    );
+    const compressedRes = await fetch(compressed.uri);
+    const compressedBlob = await compressedRes.blob();
+
+    // Step 3: detect celebrity faces (stub)
     const isCelebrity = await detectCelebrityFace(uri);
     if (isCelebrity) {
       try {
@@ -33,8 +55,12 @@ export async function uploadAvatarAsync(uri, uid) {
     }
 
     // Store avatar inside a user specific folder so it matches storage.rules
-    const avatarRef = firebase.storage().ref().child(`avatars/${uid}/avatar.jpg`);
-    const uploadTask = avatarRef.put(blob);
+    // Step 4: upload processed avatar
+    const avatarRef = firebase
+      .storage()
+      .ref()
+      .child(`avatars/${uid}/avatar.${finalExtension}`);
+    const uploadTask = avatarRef.put(compressedBlob);
 
     await new Promise((resolve, reject) => {
       uploadTask.on('state_changed', null, reject, resolve);
