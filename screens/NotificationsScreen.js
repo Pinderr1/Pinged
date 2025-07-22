@@ -95,13 +95,6 @@ const NotificationsScreen = ({ navigation }) => {
     setLoadingId(invite.id);
     await acceptGameInvite(invite.id);
     try {
-      await firebase
-        .firestore()
-        .collection('users')
-        .doc(user.uid)
-        .collection('gameInvites')
-        .doc(invite.id)
-        .update({ status: 'accepted' });
       const snap = await firebase.firestore().collection('users').doc(invite.from).get();
       const opp = snap.data() || {};
       navigation.navigate('GameSession', {
@@ -132,14 +125,6 @@ const NotificationsScreen = ({ navigation }) => {
   const handleDecline = async (invite) => {
     setLoadingId(invite.id + '_decline');
     cancelGameInvite(invite.id);
-    await firebase
-      .firestore()
-      .collection('users')
-      .doc(user.uid)
-      .collection('gameInvites')
-      .doc(invite.id)
-      .update({ status: 'declined' })
-      .catch((e) => console.warn('Failed to decline invite', e));
     setLoadingId(null);
     Vibration.vibrate(40);
     dismissNotification(invite.id);

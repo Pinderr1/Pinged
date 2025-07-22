@@ -83,23 +83,6 @@ export const MatchmakingProvider = ({ children }) => {
         .firestore()
         .collection('gameInvites')
         .add(payload);
-      const inviteData = { ...payload, inviteId: ref.id };
-      try {
-        await firestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('gameInvites')
-          .doc(ref.id)
-          .set(inviteData);
-        await firestore
-          .collection('users')
-          .doc(to)
-          .collection('gameInvites')
-          .doc(ref.id)
-          .set(inviteData);
-      } catch (e) {
-        console.warn('Failed to create invite subdocs', e);
-      }
       return ref.id;
     } catch (e) {
       console.warn('Failed to send game invite', e);
@@ -137,14 +120,6 @@ export const MatchmakingProvider = ({ children }) => {
 
       try {
         await ref.update({ status: 'cancelled' });
-
-        await firebase
-          .firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('gameInvites')
-          .doc(id)
-          .update({ status: 'cancelled' });
       } catch (e) {
         console.warn('Failed to cancel game invite', e);
         Toast.show({ type: 'error', text1: 'Failed to cancel invite' });
@@ -169,24 +144,6 @@ export const MatchmakingProvider = ({ children }) => {
 
       try {
         await ref.delete();
-
-        await firebase
-          .firestore()
-          .collection('users')
-          .doc(data.from)
-          .collection('gameInvites')
-          .doc(id)
-          .delete()
-          .catch(() => {});
-
-        await firebase
-          .firestore()
-          .collection('users')
-          .doc(data.to)
-          .collection('gameInvites')
-          .doc(id)
-          .delete()
-          .catch(() => {});
       } catch (e) {
         console.warn('Failed to cancel invite', e);
         Toast.show({ type: 'error', text1: 'Failed to cancel invite' });

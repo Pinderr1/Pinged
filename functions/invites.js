@@ -142,16 +142,6 @@ const autoStartGame = functions.firestore
 
     if (after.from) {
       tasks.push(
-        admin
-          .firestore()
-          .collection('users')
-          .doc(after.from)
-          .collection('gameInvites')
-          .doc(inviteId)
-          .update(updates)
-          .catch((e) => console.error('Failed to update sender invite', e)),
-      );
-      tasks.push(
         pushToUser(after.from, 'Game Starting', 'Your game is starting!', {
           type: 'game',
           inviteId,
@@ -160,16 +150,6 @@ const autoStartGame = functions.firestore
     }
 
     if (after.to) {
-      tasks.push(
-        admin
-          .firestore()
-          .collection('users')
-          .doc(after.to)
-          .collection('gameInvites')
-          .doc(inviteId)
-          .update(updates)
-          .catch((e) => console.error('Failed to update recipient invite', e)),
-      );
       tasks.push(
         pushToUser(after.to, 'Game Starting', 'Your game is starting!', {
           type: 'game',
@@ -235,8 +215,6 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
 
     const fromUid = invite.from;
     tx.update(inviteRef, { status: 'accepted' });
-    tx.set(db.collection('users').doc(uid).collection('gameInvites').doc(inviteId), { status: 'accepted' }, { merge: true });
-    tx.set(db.collection('users').doc(fromUid).collection('gameInvites').doc(inviteId), { status: 'accepted' }, { merge: true });
 
     const matchQuery = db.collection('matches').where('users', 'array-contains', uid);
     const matchSnap = await tx.get(matchQuery);

@@ -67,11 +67,6 @@ service cloud.firestore {
         resource.data.to in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.matches.keys();
     }
 
-    // Mirrored invites under each user are private to that user
-    match /users/{userId}/gameInvites/{inviteId} {
-      allow read, write: if request.auth.uid == userId;
-    }
-
     // Game sessions are restricted to the listed players
     match /gameSessions/{sessionId} {
       allow read, write: if isSignedIn() &&
