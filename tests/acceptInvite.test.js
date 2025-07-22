@@ -1,7 +1,7 @@
-import { initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import * as functionsTest from 'firebase-functions-test';
-import * as admin from 'firebase-admin';
-import { acceptInvite } from '../functions/invites';
+const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
+const functionsTest = require('firebase-functions-test');
+const admin = require('firebase-admin');
+const { acceptInvite } = require('../functions/invites');
 
 (async () => {
   const testEnv = await initializeTestEnvironment({ projectId: 'demo-project' });

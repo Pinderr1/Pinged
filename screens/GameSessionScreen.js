@@ -160,17 +160,6 @@ const LiveSessionScreen = ({ route, navigation }) => {
         if (opponent?.id && user?.uid) {
           await createMatchIfMissing(user.uid, opponent.id);
         }
-        if (inviteId && user?.uid) {
-          const ref = firebase.firestore().collection('gameInvites').doc(inviteId);
-          const snap = await ref.get();
-          const data = snap.data();
-          if (snapshotExists(snap) && (data.from === user.uid || data.to === user.uid)) {
-            ref.update({
-              status: 'active',
-              startedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            });
-          }
-        }
       } catch (e) {
         console.warn('Failed to start game', e);
       }
