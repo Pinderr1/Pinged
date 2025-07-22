@@ -3,26 +3,19 @@ import * as Analytics from "./analytics";
 
 export async function createMatchIfMissing(uid, otherUid) {
   if (!uid || !otherUid) return null;
+  const sorted = [uid, otherUid].sort();
+  const matchId = sorted.join("_");
   try {
-    const q = await firebase
-      .firestore()
-      .collection("matches")
-      .where("users", "array-contains", uid)
-      .get();
-    const exists = q.docs.some((d) =>
-      (d.data().users || []).includes(otherUid),
-    );
-    if (!exists) {
-      const ref = await firebase
-        .firestore()
-        .collection("matches")
-        .add({
-          users: [uid, otherUid],
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
+    const ref = firebase.firestore().collection("matches").doc(matchId);
+    const snap = await ref.get();
+    if (!snap.exists) {
+      await ref.set({
+        users: sorted,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
       await Analytics.logEvent("match_created");
-      return ref.id;
     }
+    return matchId;
   } catch (e) {
     console.warn("Failed to ensure match document", e);
   }

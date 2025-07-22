@@ -14,23 +14,35 @@ export const createMatchIfMutualLike = functions.https.onCall(async (data, conte
     throw new functions.https.HttpsError('permission-denied', 'Cannot create match for another user');
   }
 
-  try {
-    const [like1, like2] = await Promise.all([
-      admin.firestore().collection('likes').doc(uid).collection('liked').doc(targetUid).get(),
-      admin.firestore().collection('likes').doc(targetUid).collection('liked').doc(uid).get(),
-    ]);
+  const db = admin.firestore();
+  const sorted = [uid, targetUid].sort();
+  const matchId = sorted.join('_');
 
-    if (like1.exists && like2.exists) {
-      const matchRef = await admin.firestore().collection('matches').add({
-        users: [uid, targetUid],
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-      return { matchId: matchRef.id };
-    }
+  try {
+    return await db.runTransaction(async (tx) => {
+      const matchRef = db.collection('matches').doc(matchId);
+      const matchSnap = await tx.get(matchRef);
+      if (matchSnap.exists) {
+        return { matchId };
+      }
+
+      const [like1, like2] = await Promise.all([
+        tx.get(db.collection('likes').doc(uid).collection('liked').doc(targetUid)),
+        tx.get(db.collection('likes').doc(targetUid).collection('liked').doc(uid)),
+      ]);
+
+      if (like1.exists && like2.exists) {
+        tx.set(matchRef, {
+          users: sorted,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return { matchId };
+      }
+
+      return { matchId: null };
+    });
   } catch (e) {
     console.error('Failed to create match', e);
     throw new functions.https.HttpsError('internal', 'Failed to create match');
   }
-
-  return { match: false };
 });
