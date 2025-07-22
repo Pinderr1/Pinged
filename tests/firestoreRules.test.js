@@ -25,8 +25,10 @@ const fs = require('fs');
     // users can read/write their own profiles but cannot modify premium fields
     await assertSucceeds(getDb('alice').collection('users').doc('alice').set({ name: 'Alice' }));
     await assertSucceeds(getDb('alice').collection('users').doc('alice').get());
-    await assertFails(getDb('bob').collection('users').doc('alice').get());
+    await assertSucceeds(getDb('bob').collection('users').doc('alice').get());
     await assertFails(getDb('bob').collection('users').doc('alice').set({ name: 'Hacker' }));
+    await assertFails(getDb('bob').collection('users').doc('alice').set({ isPremium: true }));
+    await assertFails(getDb('bob').collection('users').doc('alice').set({ badges: ['premiumMember'] }));
     await assertFails(getDb('alice').collection('users').doc('alice').set({ isPremium: true }, { merge: true }));
 
     // matches are writeable only by admin
@@ -89,9 +91,28 @@ const fs = require('fs');
       await assertSucceeds(
         getDb('alice').collection('blocks').doc('alice').collection('blocked').get()
       );
-      await assertFails(
-        getDb('bob').collection('blocks').doc('alice').collection('blocked').get()
-      );
+    await assertFails(
+      getDb('bob').collection('blocks').doc('alice').collection('blocked').get()
+    );
+
+    // admin can read flagged profiles
+    await seed(async (db) => {
+      await db.collection('users').doc('flagged').set({ flaggedForReview: true });
+    });
+    await assertSucceeds(
+      getDb('admin', { admin: true }).collection('users').doc('flagged').get()
+    );
+
+    // likedBy subcollection read restrictions
+    await seed(async (db) => {
+      await db.collection('likes').doc('alice').collection('likedBy').doc('bob').set({});
+    });
+    await assertSucceeds(
+      getDb('alice').collection('likes').doc('alice').collection('likedBy').get()
+    );
+    await assertFails(
+      getDb('carol').collection('likes').doc('alice').collection('likedBy').get()
+    );
 
   } finally {
     await testEnv.cleanup();

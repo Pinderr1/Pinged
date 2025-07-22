@@ -10,17 +10,24 @@ service cloud.firestore {
     // server controlled and may not be written by the client. Admins may write
     // unrestricted for server-side updates such as Stripe webhooks.
     match /users/{uid} {
-      allow read: if isSignedIn() && request.auth.uid == uid;
+      // Public profile data may be read by any signed-in user
+      allow read: if isSignedIn();
+
+      // Clients may only update their own profile and cannot spoof premium
       allow write: if isSignedIn() && request.auth.uid == uid &&
-        !('isPremium' in request.resource.data) &&
-        !('badges' in request.resource.data ? request.resource.data.badges.contains('premium') : false) &&
-        !('roles' in request.resource.data);
-      allow write: if request.auth.token.admin == true;
+        !("isPremium" in request.resource.data) &&
+        !("badges" in request.resource.data ?
+            request.resource.data.badges.hasAny(["premium", "premiumMember"]) : false) &&
+        !("roles" in request.resource.data);
+
+      // Admins may read or write unrestricted
+      allow read, write: if request.auth.token.admin == true;
     }
 
     // Match documents are readable by the matched users but writable only by admin
     match /matches/{matchId} {
-      allow read: if isSignedIn() && request.auth.uid in resource.data.users;
+      allow read: if request.auth.token.admin == true ||
+        (isSignedIn() && request.auth.uid in resource.data.users);
       allow create, delete: if request.auth.token.admin == true;
       allow update: if request.auth.token.admin == true || (
         isSignedIn() &&
@@ -30,25 +37,29 @@ service cloud.firestore {
 
       // Chat messages can be created by participants
       match /messages/{messageId} {
-        allow read: if isSignedIn() &&
-          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
-        allow create: if isSignedIn() &&
-          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
+        allow read: if request.auth.token.admin == true || (
+          isSignedIn() &&
+          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users);
+        allow create: if request.auth.token.admin == true || (
+          isSignedIn() &&
+          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users);
         allow update, delete: if request.auth.token.admin == true;
       }
 
       // All other subcollections under a match follow the admin-only write pattern
       match /{document=**} {
-        allow read: if isSignedIn() &&
-          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
+        allow read: if request.auth.token.admin == true || (
+          isSignedIn() &&
+          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users);
         allow write: if request.auth.token.admin == true;
       }
     }
 
     // Event chats are only accessible to participants
     match /events/{eventId}/messages/{messageId} {
-      allow read, write: if isSignedIn() &&
-        request.auth.uid in get(/databases/$(database)/documents/events/$(eventId)).data.participants;
+      allow read, write: if request.auth.token.admin == true || (
+        isSignedIn() &&
+        request.auth.uid in get(/databases/$(database)/documents/events/$(eventId)).data.participants);
     }
 
     // Community posts are public read but only the creator may write
@@ -101,11 +112,15 @@ service cloud.firestore {
     }
 
     match /blocks/{uid}/blocked/{targetUid} {
-      allow read, write: if request.auth.uid == uid;
+      allow read, write: if request.auth.token.admin == true || request.auth.uid == uid;
     }
 
     match /likes/{uid}/liked/{targetId} {
-      allow create, delete: if request.auth.uid == uid;
+      allow create, delete: if request.auth.token.admin == true || request.auth.uid == uid;
+    }
+
+    match /likes/{uid}/likedBy/{otherUid} {
+      allow read, write: if request.auth.token.admin == true || request.auth.uid == uid;
     }
 
     // Deny all other reads and writes

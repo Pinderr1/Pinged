@@ -211,13 +211,6 @@ const SwipeScreen = () => {
           userQuery = userQuery.where('isVerified', '==', true);
         }
 
-        if (Array.isArray(interests) && interests.length) {
-          userQuery = userQuery.where(
-            'favoriteGames',
-            'array-contains-any',
-            interests.slice(0, 10)
-          );
-        }
         const snap = await userQuery.limit(50).get();
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         const debug = { queryCount: data.length };
@@ -227,32 +220,21 @@ const SwipeScreen = () => {
 
 
         let formatted = data.map((u) => {
-          const imgs = Array.isArray(u.photos) && u.photos.length
-            ? u.photos
-            : [u.photoURL];
-          const images = imgs.map((img) =>
-            imageSource(img, require('../assets/user1.jpg'))
-          );
           return {
             id: u.uid || u.id,
             displayName: u.displayName || 'User',
             age: u.age || '',
-            bio: u.bio || '',
-            introClipUrl: u?.introClipUrl || '',
-            favoriteGames: Array.isArray(u.favoriteGames) ? u.favoriteGames : [],
             gender: u.gender || '',
-            genderPref: u.genderPref || '',
-            location: u.location || '',
-            priorityScore: u.priorityScore || 0,
-            boostUntil: u.boostUntil || null,
+            photoURL: u.photoURL || '',
+            city: u.city || u.location || '',
             isVerified: !!u.isVerified,
-            images,
+            images: [imageSource(u.photoURL, require('../assets/user1.jpg'))],
           };
         });
 
         if (filterLocation) {
           const before = formatted.length;
-          formatted = formatted.filter((u) => u.location === filterLocation);
+          formatted = formatted.filter((u) => u.city === filterLocation);
           debug.locationCount = `${before}->${formatted.length}`;
         }
 
@@ -276,13 +258,6 @@ const SwipeScreen = () => {
           debug.ageCount = `${before}->${formatted.length}`;
         }
 
-        if (Array.isArray(interests) && interests.length) {
-          const before = formatted.length;
-          formatted = formatted.filter((u) =>
-            u.favoriteGames.some((g) => interests.includes(g))
-          );
-          debug.interestCount = `${before}->${formatted.length}`;
-        }
 
         // Sort by priority then compatibility so premium/boosted users surface first
         formatted.sort((aUser, bUser) => {
