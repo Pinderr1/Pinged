@@ -95,7 +95,7 @@ const SwipeScreen = () => {
   const styles = getStyles(theme);
   const navigation = useNavigation();
   const { showNotification } = useNotification();
-  const { user: currentUser, updateUser } = useUser();
+  const { user: currentUser, updateUser, blocked } = useUser();
   const { play } = useSound();
   const { devMode } = useDev();
   const { addMatch } = useChats();
@@ -191,6 +191,16 @@ const SwipeScreen = () => {
       try {
         let userQuery = firebase.firestore().collection('users');
 
+        const blockedIds = Array.isArray(blocked) ? blocked : [];
+        if (blockedIds.length) {
+          const slice = blockedIds.slice(0, 10);
+          userQuery = userQuery.where(
+            firebase.firestore.FieldPath.documentId(),
+            'not-in',
+            slice,
+          );
+        }
+
         if (filterLocation) {
           userQuery = userQuery.where('location', '==', filterLocation);
         } else if (currentUser.location) {
@@ -215,7 +225,9 @@ const SwipeScreen = () => {
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         const debug = { queryCount: data.length };
 
-        data = data.filter((u) => u.uid !== currentUser.uid);
+        data = data.filter(
+          (u) => u.uid !== currentUser.uid && !blockedIds.includes(u.uid || u.id),
+        );
         debug.afterSelfFilter = data.length;
 
 
@@ -232,31 +244,7 @@ const SwipeScreen = () => {
           };
         });
 
-        if (filterLocation) {
-          const before = formatted.length;
-          formatted = formatted.filter((u) => u.city === filterLocation);
-          debug.locationCount = `${before}->${formatted.length}`;
-        }
 
-        if (filterGender) {
-          const before = formatted.length;
-          formatted = formatted.filter((u) => u.gender === filterGender);
-          debug.genderCount = `${before}->${formatted.length}`;
-        }
-
-        if (verifiedOnly) {
-          const before = formatted.length;
-          formatted = formatted.filter((u) => u.isVerified);
-          debug.verifiedCount = `${before}->${formatted.length}`;
-        }
-
-        if (Array.isArray(ageRange) && ageRange.length === 2) {
-          const before = formatted.length;
-          formatted = formatted.filter(
-            (u) => u.age >= ageRange[0] && u.age <= ageRange[1]
-          );
-          debug.ageCount = `${before}->${formatted.length}`;
-        }
 
 
         // Sort by priority then compatibility so premium/boosted users surface first
@@ -297,6 +285,7 @@ const SwipeScreen = () => {
     interests,
     filterGender,
     verifiedOnly,
+    blocked,
   ]);
 
   // Reset card position whenever the index changes
