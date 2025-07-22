@@ -22,21 +22,23 @@ const fs = require('fs');
   };
 
   try {
-    // users can read/write their own profiles
+    // users can read/write their own profiles but cannot modify premium fields
     await assertSucceeds(getDb('alice').collection('users').doc('alice').set({ name: 'Alice' }));
     await assertSucceeds(getDb('alice').collection('users').doc('alice').get());
     await assertFails(getDb('bob').collection('users').doc('alice').get());
     await assertFails(getDb('bob').collection('users').doc('alice').set({ name: 'Hacker' }));
+    await assertFails(getDb('alice').collection('users').doc('alice').set({ isPremium: true }, { merge: true }));
 
     // matches are writeable only by admin
     await seed(async (db) => {
       await db.collection('matches').doc('match1').set({ users: ['alice', 'bob'] });
     });
     await assertSucceeds(getDb('alice').collection('matches').doc('match1').get());
-    await assertFails(getDb('bob').collection('matches').doc('match1').set({ typing: { bob: true } }));
+    await assertSucceeds(getDb('bob').collection('matches').doc('match1').update({ typingIndicator: { bob: true } }));
     await assertFails(getDb('bob').collection('matches').add({ users: ['bob', 'carol'] }));
     await assertSucceeds(getDb('admin', { admin: true }).collection('matches').add({ users: ['bob', 'carol'] }));
-    await assertFails(getDb('bob').collection('matches').doc('match1').collection('messages').doc('m1').set({ text: 'hi' }));
+    await assertSucceeds(getDb('alice').collection('matches').doc('match1').collection('messages').doc('m1').set({ text: 'hi' }));
+    await assertFails(getDb('bob').collection('matches').doc('match1').collection('messages').doc('m1').update({ text: 'edit' }));
 
     // likes can only be written by the owner
     await assertSucceeds(
@@ -48,13 +50,18 @@ const fs = require('fs');
 
     // game invites restricted to sender and existing match
     await seed(async (db) => {
-      await db.collection('users').doc('alice').set({ matches: { alice: 'bob' } });
+      await db.collection('users').doc('alice').set({ matches: { bob: 'match1' } });
     });
     await assertSucceeds(
       getDb('alice').collection('gameInvites').doc('invite1').set({ from: 'alice', to: 'bob' })
     );
+    await assertSucceeds(getDb('bob').collection('gameInvites').doc('invite1').get());
+    await assertFails(getDb('carol').collection('gameInvites').doc('invite1').get());
     await assertFails(
       getDb('bob').collection('gameInvites').doc('invite1').set({ from: 'alice', to: 'bob' })
+    );
+    await assertFails(
+      getDb('alice').collection('gameInvites').doc('invite2').set({ from: 'alice', to: 'carol' })
     );
 
     // event participants only
