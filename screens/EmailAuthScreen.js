@@ -9,7 +9,8 @@ import { HEADER_SPACING } from '../layout';
 import firebase from '../firebase';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import { snapshotExists } from '../utils/firestore';
-import { isAllowedDomain } from '../utils/email';
+import { useAuth } from '../contexts/AuthContext';
+import Toast from 'react-native-toast-message';
 import getStyles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
 import PropTypes from 'prop-types';
@@ -67,34 +68,25 @@ export default function EmailAuthScreen({ route, navigation }) {
     }
   };
 
+  const { signUpWithEmail } = useAuth();
+
   const handleSignup = async () => {
     if (!email || !password) {
       Alert.alert('Missing Fields', 'Enter both email and password.');
       return;
     }
-    if (!isAllowedDomain(email)) {
-      Alert.alert('Invalid Email', 'Please use a supported email provider (e.g. gmail.com).');
-      return;
-    }
     try {
-      const userCred = await firebase
-        .auth()
-        .createUserWithEmailAndPassword(email.trim(), password);
-      await firebase
-        .firestore()
-        .collection('users')
-        .doc(userCred.user.uid)
-        .set({
-        uid: userCred.user.uid,
-        email: userCred.user.email,
-        displayName: userCred.user.displayName || '',
-        photoURL: userCred.user.photoURL || '',
-        onboardingComplete: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
+      await signUpWithEmail(email, password);
       Alert.alert('Signup Successful', 'Your account has been created.');
     } catch (error) {
-      Alert.alert('Signup Failed', error.message);
+      if (error.message === 'UNSUPPORTED_DOMAIN') {
+        Toast.show({
+          type: 'error',
+          text1: 'Use Gmail, Outlook, Yahoo, or iCloud addresses.',
+        });
+      } else {
+        Toast.show({ type: 'error', text1: 'Signup failed' });
+      }
     }
   };
 
