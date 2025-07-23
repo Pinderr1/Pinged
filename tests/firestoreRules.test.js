@@ -30,6 +30,8 @@ const fs = require('fs');
     await assertFails(getDb('bob').collection('users').doc('alice').set({ isPremium: true }));
     await assertFails(getDb('bob').collection('users').doc('alice').set({ badges: ['premiumMember'] }));
     await assertFails(getDb('alice').collection('users').doc('alice').set({ isPremium: true }, { merge: true }));
+    await assertFails(getDb('alice').collection('users').doc('alice').update({ xp: 10 }));
+    await assertFails(getDb('alice').collection('users').doc('alice').update({ streak: 5 }));
 
     // matches can only be created by the server user
     await seed(async (db) => {

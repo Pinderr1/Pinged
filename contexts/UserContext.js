@@ -95,7 +95,7 @@ export const UserProvider = ({ children }) => {
       unlocks: user.unlocks || [],
     });
     const now = new Date();
-    const updates = { xp: newXP, streak: newStreak, lastActiveAt: now };
+    const updates = { lastActiveAt: now };
     if (opts.markPlayed) updates.lastPlayedAt = now;
 
     let rewardStreak = null;
@@ -110,11 +110,15 @@ export const UserProvider = ({ children }) => {
     }
 
     updateUser({
+      xp: newXP,
+      streak: newStreak,
       ...updates,
       badges: newBadges,
       unlocks: newUnlocks,
     });
+    const callIncrement = firebase.functions().httpsCallable('incrementXp');
     try {
+      await callIncrement({ amount: gained });
       await firebase
         .firestore()
         .collection("users")
