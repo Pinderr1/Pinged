@@ -126,7 +126,8 @@ service cloud.firestore {
     }
 
     match /likes/{uid}/likedBy/{otherUid} {
-      allow read, write: if request.auth.token.admin == true || request.auth.uid == uid;
+      allow read: if request.auth.token.admin == true || request.auth.uid == uid;
+      allow write: if request.auth.token.admin == true;
     }
 
     // Deny all other reads and writes
