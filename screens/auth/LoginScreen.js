@@ -11,20 +11,17 @@ import { HEADER_SPACING } from '../../layout';
 import getStyles from '../../styles';
 import { useTheme } from '../../contexts/ThemeContext';
 import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import * as AuthSession from 'expo-auth-session';
 import firebase from '../../firebase';
-import { snapshotExists } from '../../utils/firestore';
-import { useOnboarding } from '../../contexts/OnboardingContext';
 import { useNavigation } from '@react-navigation/native';
 import { useDev } from '../../contexts/DevContext';
+import { useAuth } from '../../contexts/AuthContext';
 import PropTypes from 'prop-types';
 import { logDev } from '../../utils/logger';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
-  const { markOnboarded } = useOnboarding();
   const { toggleDevMode } = useDev();
+  const { loginWithGoogle } = useAuth();
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
@@ -32,44 +29,6 @@ export default function LoginScreen() {
     WebBrowser.maybeCompleteAuthSession();
   }, []);
 
-  const redirectUri = AuthSession.makeRedirectUri({ scheme: 'pinged' });
-
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
-    redirectUri,
-  });
-
-  useEffect(() => {
-    let isMounted = true;
-    if (response?.type === 'success') {
-      const { id_token } = response.params;
-      const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
-      firebase
-        .auth()
-        .signInWithCredential(credential)
-        .then(async (res) => {
-          if (!isMounted) return;
-          logDev('✅ Google login success:', res.user.uid);
-          const snap = await firebase
-            .firestore()
-            .collection('users')
-            .doc(res.user.uid)
-            .get();
-          if (snapshotExists(snap) && snap.data().onboardingComplete) {
-            markOnboarded();
-          }
-        })
-        .catch((error) => {
-          if (isMounted) {
-            console.error('❌ Firebase SignIn Error', error);
-            Toast.show({ type: 'error', text1: 'Login failed.' });
-          }
-        });
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, [response]);
 
   const handleDevLogin = async () => {
     toggleDevMode();
@@ -118,7 +77,7 @@ export default function LoginScreen() {
 
         <GradientButton
           text="Sign in with Google"
-          onPress={() => promptAsync({ useProxy: false, prompt: 'select_account' })}
+          onPress={loginWithGoogle}
         />
 
         <GradientButton
