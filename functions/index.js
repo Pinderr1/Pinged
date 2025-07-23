@@ -13,6 +13,7 @@ const match = require('./src/match');
 const blocks = require('./blocks');
 const matches = require('./matches');
 const stats = require('./stats');
+const likes = require('./likes');
 
 // Re-export all handlers for Firebase deployment
 module.exports = {
@@ -26,4 +27,5 @@ module.exports = {
   ...matches,
   ...blocks,
   ...stats,
+  ...likes,
 };
