@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
 
   const signUpWithEmail = async (email, password) => {
     if (!isAllowedDomain(email)) {
-      throw new Error("Email domain not supported");
+      throw new Error("UNSUPPORTED_DOMAIN");
     }
     try {
       const userCred = await firebase
