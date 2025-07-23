@@ -20,12 +20,25 @@ service cloud.firestore {
       // Public profile data may be read by any signed-in user
       allow read: if isSignedIn();
 
-      // Clients may only update their own profile and cannot spoof premium
-      allow write: if isSignedIn() && request.auth.uid == uid &&
+      // Clients may only create their own profile and cannot spoof premium
+      allow create: if isSignedIn() && request.auth.uid == uid &&
         !("isPremium" in request.resource.data) &&
         !("badges" in request.resource.data ?
             request.resource.data.badges.hasAny(["premium", "premiumMember"]) : false) &&
-        !("roles" in request.resource.data);
+        !("roles" in request.resource.data) &&
+        !("xp" in request.resource.data) &&
+        !("streak" in request.resource.data) &&
+        !("gamesPlayed" in request.resource.data);
+
+      // Updates may not modify XP or streak counters from the client
+      allow update: if isSignedIn() && request.auth.uid == uid &&
+        !("isPremium" in request.resource.data) &&
+        !("badges" in request.resource.data ?
+            request.resource.data.badges.hasAny(["premium", "premiumMember"]) : false) &&
+        !("roles" in request.resource.data) &&
+        !("xp" in request.resource.data) &&
+        !("streak" in request.resource.data) &&
+        !("gamesPlayed" in request.resource.data);
 
       // Admins may read or write unrestricted
       allow read, write: if request.auth.token.admin == true;

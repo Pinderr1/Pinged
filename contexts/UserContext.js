@@ -60,76 +60,43 @@ export const UserProvider = ({ children }) => {
 
   const addActivityXP = async (amount = 10, opts = {}) => {
     if (!user?.uid) return;
-    const last = user.lastActiveAt
-      ? user.lastActiveAt.toDate?.() || new Date(user.lastActiveAt)
-      : null;
-    let newStreak = user.streak || 0;
-    if (last) {
-      const lastMid = new Date(last);
-      lastMid.setHours(0, 0, 0, 0);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const diff = Math.floor((today - lastMid) / 86400000);
-      if (diff === 0) {
-        newStreak = user.streak || 1;
-      } else if (diff === 1) {
-        newStreak = (user.streak || 0) + 1;
-      } else {
-        newStreak = 1;
-      }
-    } else {
-      newStreak = 1;
-    }
 
     const multiplier = user.isPremium ? 1.5 : 1;
     const gained = Math.round(amount * multiplier);
-    const newXP = (user.xp || 0) + gained;
-    const newBadges = computeBadges({
-      xp: newXP,
-      streak: newStreak,
-      badges: user.badges || [],
-      isPremium: user.isPremium,
-    });
-    const newUnlocks = computeUnlocks({
-      xp: newXP,
-      unlocks: user.unlocks || [],
-    });
-    const now = new Date();
-    const updates = { xp: newXP, streak: newStreak, lastActiveAt: now };
-    if (opts.markPlayed) updates.lastPlayedAt = now;
 
-    let rewardStreak = null;
-    if (newStreak % 7 === 0) {
-      const rewardedAt = user.streakRewardedAt
-        ? user.streakRewardedAt.toDate?.() || new Date(user.streakRewardedAt)
-        : null;
-      if (!rewardedAt || !last || rewardedAt < last) {
-        updates.streakRewardedAt = now;
-        rewardStreak = newStreak;
-      }
-    }
-
-    updateUser({
-      ...updates,
-      badges: newBadges,
-      unlocks: newUnlocks,
-    });
     try {
+      const res = await firebase
+        .functions()
+        .httpsCallable('incrementXp')({ amount: gained });
+      const newXP = res.data?.xp ?? user.xp;
+      const newStreak = res.data?.streak ?? user.streak;
+
+      const newBadges = computeBadges({
+        xp: newXP,
+        streak: newStreak,
+        badges: user.badges || [],
+        isPremium: user.isPremium,
+      });
+      const newUnlocks = computeUnlocks({
+        xp: newXP,
+        unlocks: user.unlocks || [],
+      });
+
+      updateUser({
+        xp: newXP,
+        streak: newStreak,
+        badges: newBadges,
+        unlocks: newUnlocks,
+      });
+
       await firebase
         .firestore()
-        .collection("users")
+        .collection('users')
         .doc(user.uid)
         .update({
-          ...updates,
           lastActiveAt: firebase.firestore.FieldValue.serverTimestamp(),
           ...(opts.markPlayed
             ? { lastPlayedAt: firebase.firestore.FieldValue.serverTimestamp() }
-            : {}),
-          ...(rewardStreak
-            ? {
-                streakRewardedAt:
-                  firebase.firestore.FieldValue.serverTimestamp(),
-              }
             : {}),
           badges: firebase.firestore.FieldValue.arrayUnion(
             ...newBadges.filter((b) => !(user.badges || []).includes(b)),
@@ -138,9 +105,8 @@ export const UserProvider = ({ children }) => {
             ...newUnlocks.filter((u) => !(user.unlocks || []).includes(u)),
           ),
         });
-      if (rewardStreak) setStreakReward(rewardStreak);
     } catch (e) {
-      console.warn("Failed to update XP", e);
+      console.warn('Failed to increment XP', e);
     }
   };
 

@@ -91,9 +91,26 @@ const fs = require('fs');
       await assertSucceeds(
         getDb('alice').collection('blocks').doc('alice').collection('blocked').get()
       );
-    await assertFails(
-      getDb('bob').collection('blocks').doc('alice').collection('blocked').get()
-    );
+      await assertFails(
+        getDb('bob').collection('blocks').doc('alice').collection('blocked').get()
+      );
+
+      // users cannot directly modify xp or streak
+      await seed(async (db) => {
+        await db.collection('users').doc('charlie').set({ xp: 0, streak: 1 });
+      });
+      await assertFails(
+        getDb('charlie').collection('users').doc('charlie').update({ xp: 10 })
+      );
+      await assertFails(
+        getDb('charlie').collection('users').doc('charlie').update({ streak: 5 })
+      );
+      await assertSucceeds(
+        getDb('admin', { admin: true })
+          .collection('users')
+          .doc('charlie')
+          .update({ xp: 10 })
+      );
 
     // admin can read flagged profiles
     await seed(async (db) => {
