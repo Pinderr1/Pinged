@@ -54,6 +54,7 @@ const HomeScreen = ({ navigation }) => {
   const [playTarget, setPlayTarget] = useState('match');
   const [showBonus, setShowBonus] = useState(false);
   const [showPremiumBanner, setShowPremiumBanner] = useState(!isPremiumUser);
+  const matchTimeout = useRef(null);
   const local = getStyles(theme);
 
 
@@ -75,6 +76,15 @@ const HomeScreen = ({ navigation }) => {
   useEffect(() => {
     setShowPremiumBanner(!isPremiumUser);
   }, [isPremiumUser]);
+
+  useEffect(() => {
+    return () => {
+      if (matchTimeout.current) {
+        clearTimeout(matchTimeout.current);
+        matchTimeout.current = null;
+      }
+    };
+  }, []);
 
   const openGamePicker = (target) => {
     if (target === 'browse') {
@@ -199,9 +209,12 @@ const HomeScreen = ({ navigation }) => {
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
         await updateDailyUsage();
-        const unsub = ref.onSnapshot(async (snap) => {
+        if (matchTimeout.current) clearTimeout(matchTimeout.current);
+        let unsub = ref.onSnapshot(async (snap) => {
           const d = snap.data();
           if (d.player2 && d.status === 'active') {
+            clearTimeout(matchTimeout.current);
+            matchTimeout.current = null;
             unsub();
             const oppSnap2 = await firebase
               .firestore()
@@ -240,6 +253,13 @@ const HomeScreen = ({ navigation }) => {
             });
           }
         });
+        matchTimeout.current = setTimeout(async () => {
+          unsub();
+          try {
+            await ref.delete();
+          } catch (_) {}
+          Toast.show({ type: 'error', text1: 'No match found, try again' });
+        }, 30000);
       }
     } catch (e) {
       console.warn('Failed to match with stranger', e);

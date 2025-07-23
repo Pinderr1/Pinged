@@ -11,6 +11,8 @@ import { useListeners } from './ListenerContext';
 import debounce from '../utils/debounce';
 
 const ChatContext = createContext();
+// Expose runtime actions for contexts that mount before ChatProvider
+export const chatActions = {};
 
 const STORAGE_PREFIX = 'chatMatches_';
 const GAME_STATE_PREFIX = 'gameState_';
@@ -330,6 +332,14 @@ export const ChatProvider = ({ children }) => {
   const removeMatch = (matchId) =>
     setMatches((prev) => prev.filter((m) => m.id !== matchId));
 
+  const removeMatchesWithUser = (uid) =>
+    setMatches((prev) => {
+      const remaining = prev.filter((m) => m.otherUserId !== uid);
+      const removed = prev.filter((m) => m.otherUserId === uid);
+      removed.forEach((m) => clearGameState(m.id));
+      return remaining;
+    });
+
   const refreshMatches = async () => {
     if (!user?.uid) return;
     setLoading(true);
@@ -371,6 +381,11 @@ export const ChatProvider = ({ children }) => {
     setLoading(false);
   };
 
+  // expose functions for other contexts (e.g., UserContext) that load earlier
+  chatActions.removeMatchesWithUser = removeMatchesWithUser;
+  chatActions.removeMatch = removeMatch;
+  chatActions.clearGameState = clearGameState;
+
   return (
     <ChatContext.Provider
       value={{
@@ -379,6 +394,7 @@ export const ChatProvider = ({ children }) => {
         sendMessage,
         addMatch,
         removeMatch,
+        removeMatchesWithUser,
         setActiveGame,
         getActiveGame,
         getSavedGameState,
