@@ -12,6 +12,7 @@ import firebase from "../firebase";
 import { useAuth } from "./AuthContext";
 import { computeBadges } from "../utils/badges";
 import { computeUnlocks } from "../utils/unlocks";
+import { chatActions } from "./ChatContext";
 
 const UserContext = createContext();
 
@@ -175,6 +176,8 @@ export const UserProvider = ({ children }) => {
       setBlocked((prev) =>
         prev.includes(targetUid) ? prev : [...prev, targetUid],
       );
+      chatActions.removeMatchesWithUser?.(targetUid);
+      Toast.show({ type: "success", text1: "User blocked" });
     } catch (e) {
       console.warn("Failed to block user", e);
       Toast.show({ type: "error", text1: "Failed to block user" });
