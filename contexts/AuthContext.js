@@ -11,6 +11,7 @@ import { isAllowedDomain } from "../utils/email";
 import { initPresence } from "../utils/presence";
 import { useDev } from "./DevContext";
 import { useOnboarding } from "./OnboardingContext";
+import { createLoginWithGoogle } from "./googleAuth";
 
 const AuthContext = createContext();
 
@@ -38,7 +39,7 @@ export const AuthProvider = ({ children }) => {
     WebBrowser.maybeCompleteAuthSession();
   }, []);
 
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+  const [request, , promptAsync] = Google.useIdTokenAuthRequest({
     clientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
     redirectUri,
   });
@@ -109,8 +110,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const loginWithGoogle = () =>
-    promptAsync({ useProxy: false, prompt: "select_account" });
+  const loginWithGoogle = createLoginWithGoogle({
+    promptAsync,
+    firebase,
+    ensureUserDoc,
+    markOnboarded,
+  });
 
   const logout = async () => {
     try {
@@ -191,18 +196,6 @@ export const AuthProvider = ({ children }) => {
     };
   }, [devMode]);
 
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { id_token } = response.params;
-      const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
-      firebase
-        .auth()
-        .signInWithCredential(credential)
-        .then((res) => ensureUserDoc(res.user))
-        .catch((err) => console.warn("Google login failed", err));
-    }
-  }, [response]);
-
   return (
     <AuthContext.Provider
       value={{
@@ -221,3 +214,4 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+
