@@ -12,6 +12,7 @@ const invites = require('./invites');
 const match = require('./src/match');
 const blocks = require('./blocks');
 const matches = require('./matches');
+const stats = require('./stats');
 
 // Re-export all handlers for Firebase deployment
 module.exports = {
@@ -24,4 +25,5 @@ module.exports = {
   ...match,
   ...matches,
   ...blocks,
+  ...stats,
 };
