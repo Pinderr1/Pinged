@@ -31,12 +31,13 @@ service cloud.firestore {
       allow read, write: if request.auth.token.admin == true;
     }
 
-    // Match documents are readable by the matched users but writable only by admin
+    // Match documents are readable by the matched users but may only be created by the server
     match /matches/{matchId} {
       allow read: if request.auth.token.admin == true ||
         (isSignedIn() && request.auth.uid in resource.data.users);
-      allow create, delete: if request.auth.token.admin == true &&
+      allow create: if request.auth.uid == "server" &&
         isNotBlocked(request.resource.data.users[0], request.resource.data.users[1]);
+      allow delete: if request.auth.token.admin == true;
       allow update: if request.auth.token.admin == true || (
         isSignedIn() &&
         request.auth.uid in resource.data.users &&

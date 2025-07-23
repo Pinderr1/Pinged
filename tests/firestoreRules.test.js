@@ -31,14 +31,14 @@ const fs = require('fs');
     await assertFails(getDb('bob').collection('users').doc('alice').set({ badges: ['premiumMember'] }));
     await assertFails(getDb('alice').collection('users').doc('alice').set({ isPremium: true }, { merge: true }));
 
-    // matches are writeable only by admin
+    // matches can only be created by the server user
     await seed(async (db) => {
       await db.collection('matches').doc('match1').set({ users: ['alice', 'bob'] });
     });
     await assertSucceeds(getDb('alice').collection('matches').doc('match1').get());
     await assertSucceeds(getDb('bob').collection('matches').doc('match1').update({ typingIndicator: { bob: true } }));
     await assertFails(getDb('bob').collection('matches').add({ users: ['bob', 'carol'] }));
-    await assertSucceeds(getDb('admin', { admin: true }).collection('matches').add({ users: ['bob', 'carol'] }));
+    await assertSucceeds(getDb('server').collection('matches').add({ users: ['bob', 'carol'] }));
     await assertSucceeds(getDb('alice').collection('matches').doc('match1').collection('messages').doc('m1').set({ text: 'hi' }));
     await assertFails(getDb('bob').collection('matches').doc('match1').collection('messages').doc('m1').update({ text: 'edit' }));
 

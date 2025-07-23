@@ -89,16 +89,6 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const createChat = async (users) => {
-    const ref = await firebase
-      .firestore()
-      .collection('matches')
-      .add({
-        users,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-    return ref.id;
-  };
 
   const updateDailyUsage = async () => {
     if (!user?.uid) return;
@@ -154,11 +144,10 @@ const HomeScreen = ({ navigation }) => {
         const doc = waiting.docs[0];
         const data = doc.data();
         await doc.ref.update({ player2: user.uid, status: 'active' });
-        await firebase
-          .firestore()
-          .collection('matches')
-          .doc(data.chatId)
-          .update({ users: firebase.firestore.FieldValue.arrayUnion(user.uid) });
+        const res = await firebase
+          .functions()
+          .httpsCallable('createMatch')({ opponentUid: data.player1 });
+        const chatId = res.data?.matchId;
         const oppSnap = await firebase
           .firestore()
           .collection('users')
@@ -166,7 +155,7 @@ const HomeScreen = ({ navigation }) => {
           .get();
         const opp = oppSnap.data() || {};
         const match = {
-          id: data.chatId,
+          id: chatId,
           otherUserId: data.player1,
           displayName: opp.displayName || 'Player',
           image: opp.photoURL ? { uri: opp.photoURL } : require('../assets/user1.jpg'),
@@ -186,16 +175,14 @@ const HomeScreen = ({ navigation }) => {
         navigation.navigate('Chat', {
           user: match,
           gameId,
-          chatId: data.chatId,
+          chatId,
         });
       } else {
-        const chatId = await createChat([user.uid]);
         const ref = await sessionsRef.add({
           game: gameId,
           player1: user.uid,
           player2: null,
           status: 'waiting',
-          chatId,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
         await updateDailyUsage();
@@ -209,13 +196,10 @@ const HomeScreen = ({ navigation }) => {
               .doc(d.player2)
               .get();
             const opp = oppSnap2.data() || {};
-            await firebase
-              .firestore()
-              .collection('matches')
-              .doc(chatId)
-              .update({
-                users: firebase.firestore.FieldValue.arrayUnion(d.player2),
-              });
+            const res2 = await firebase
+              .functions()
+              .httpsCallable('createMatch')({ opponentUid: d.player2 });
+            const chatId = res2.data?.matchId;
             const match = {
               id: chatId,
               otherUserId: d.player2,
