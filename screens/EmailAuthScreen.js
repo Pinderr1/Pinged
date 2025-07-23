@@ -7,11 +7,10 @@ import SafeKeyboardView from '../components/SafeKeyboardView';
 import Header from '../components/Header';
 import { HEADER_SPACING } from '../layout';
 import firebase from '../firebase';
-import { useOnboarding } from '../contexts/OnboardingContext';
-import { snapshotExists } from '../utils/firestore';
-import { isAllowedDomain } from '../utils/email';
+import Toast from 'react-native-toast-message';
 import getStyles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import PropTypes from 'prop-types';
 
 export default function EmailAuthScreen({ route, navigation }) {
@@ -20,41 +19,11 @@ export default function EmailAuthScreen({ route, navigation }) {
   const [password, setPassword] = useState('');
   const { theme } = useTheme();
   const styles = getStyles(theme);
-  const { markOnboarded } = useOnboarding();
-
-  const ensureUserDoc = async (fbUser) => {
-    try {
-      const ref = firestore.collection('users').doc(fbUser.uid);
-      const snap = await ref.get();
-      if (!snapshotExists(snap)) {
-        await ref.set({
-          uid: fbUser.uid,
-          email: fbUser.email,
-          displayName: fbUser.displayName || '',
-          photoURL: fbUser.photoURL || '',
-          onboardingComplete: false,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-      }
-    } catch (e) {
-      console.warn('Failed to ensure user doc', e);
-    }
-  };
+  const { signUpWithEmail } = useAuth();
 
   const handleLogin = async () => {
     try {
-      const userCred = await firebase
-        .auth()
-        .signInWithEmailAndPassword(email, password);
-      await ensureUserDoc(userCred.user);
-      const snap = await firebase
-        .firestore()
-        .collection('users')
-        .doc(userCred.user.uid)
-        .get();
-      if (snapshotExists(snap) && snap.data().onboardingComplete) {
-        markOnboarded();
-      }
+      await firebase.auth().signInWithEmailAndPassword(email, password);
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
         Alert.alert('No Account Found', 'Would you like to sign up with this email?', [
@@ -72,29 +41,18 @@ export default function EmailAuthScreen({ route, navigation }) {
       Alert.alert('Missing Fields', 'Enter both email and password.');
       return;
     }
-    if (!isAllowedDomain(email)) {
-      Alert.alert('Invalid Email', 'Please use a supported email provider (e.g. gmail.com).');
-      return;
-    }
     try {
-      const userCred = await firebase
-        .auth()
-        .createUserWithEmailAndPassword(email.trim(), password);
-      await firebase
-        .firestore()
-        .collection('users')
-        .doc(userCred.user.uid)
-        .set({
-        uid: userCred.user.uid,
-        email: userCred.user.email,
-        displayName: userCred.user.displayName || '',
-        photoURL: userCred.user.photoURL || '',
-        onboardingComplete: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-      Alert.alert('Signup Successful', 'Your account has been created.');
+      await signUpWithEmail(email, password);
+      Toast.show({ type: 'success', text1: 'Signup successful' });
     } catch (error) {
-      Alert.alert('Signup Failed', error.message);
+      if (error.message === 'UNSUPPORTED_DOMAIN') {
+        Toast.show({
+          type: 'error',
+          text1: 'Use Gmail, Outlook, Yahoo, or iCloud addresses.',
+        });
+      } else {
+        Toast.show({ type: 'error', text1: 'Signup failed' });
+      }
     }
   };
 
