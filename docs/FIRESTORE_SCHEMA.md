@@ -62,12 +62,6 @@ This document outlines the final Firestore structure used by the Pinged applicat
 ### Subcollections
 - **notifications** – optional per-user notifications (see `notifications` below).
 
-## Match Requests (`matchRequests/{requestId}`)
-- `from` (string) – user id of requester
-- `to` (string) – user id of target
-- `status` (string) – `pending`, `accepted`, or `cancelled`
-- `createdAt` (timestamp)
-
 ## Game Invites (`gameInvites/{inviteId}`)
 - `from` (string) – sender uid
 - `to` (string) – recipient uid

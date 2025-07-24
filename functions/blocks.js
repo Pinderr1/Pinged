@@ -18,18 +18,6 @@ async function deleteRelatedInvites(uid, targetUid) {
   await Promise.all(tasks);
 }
 
-async function deleteMatchRequests(uid, targetUid) {
-  const db = admin.firestore();
-  const reqRef = db.collection('matchRequests');
-  const q1 = reqRef.where('from', '==', uid).where('to', '==', targetUid).get();
-  const q2 = reqRef.where('from', '==', targetUid).where('to', '==', uid).get();
-  const [s1, s2] = await Promise.all([q1, q2]);
-  const tasks = [];
-  const remove = (snap) => snap.forEach((doc) => tasks.push(doc.ref.delete()));
-  remove(s1);
-  remove(s2);
-  await Promise.all(tasks);
-}
 
 async function deleteMatches(uid, targetUid) {
   const db = admin.firestore();
@@ -75,7 +63,6 @@ const blockUser = functions.https.onCall(async (data, context) => {
     await Promise.all([
       deleteMatches(uid, targetUid),
       deleteRelatedInvites(uid, targetUid),
-      deleteMatchRequests(uid, targetUid),
       deleteLikes(uid, targetUid),
     ]);
     return { success: true };
