@@ -11,60 +11,8 @@ const MatchmakingContext = createContext();
 export const MatchmakingProvider = ({ children }) => {
   const { user } = useUser();
   const { show, hide } = useLoading();
-  const {
-    incomingRequests,
-    outgoingRequests,
-    incomingInvites,
-    outgoingInvites,
-  } = useListeners();
+  const { incomingInvites, outgoingInvites } = useListeners();
 
-  const sendMatchRequest = async (to) => {
-    if (!user?.uid || !to) return null;
-    try {
-      const ref = await firebase
-        .firestore()
-        .collection('matchRequests')
-        .add({
-          from: user.uid,
-          to,
-          status: 'pending',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-      return ref.id;
-    } catch (e) {
-      console.warn('Failed to send match request', e);
-      Toast.show({ type: 'error', text1: 'Failed to send match request' });
-      return null;
-    }
-  };
-
-  const acceptMatchRequest = async (id) => {
-    if (!user?.uid || !id) return;
-    try {
-      const ref = firebase.firestore().collection('matchRequests').doc(id);
-      const snap = await ref.get();
-      const data = snap.data();
-      if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
-      await ref.update({ status: 'accepted' });
-    } catch (e) {
-      console.warn('Failed to accept match request', e);
-      Toast.show({ type: 'error', text1: 'Failed to accept request' });
-    }
-  };
-
-  const cancelMatchRequest = async (id) => {
-    if (!user?.uid || !id) return;
-    try {
-      const ref = firebase.firestore().collection('matchRequests').doc(id);
-      const snap = await ref.get();
-      const data = snap.data();
-      if (!snapshotExists(snap) || (data.from !== user.uid && data.to !== user.uid)) return;
-      await ref.update({ status: 'cancelled' });
-    } catch (e) {
-      console.warn('Failed to cancel match request', e);
-      Toast.show({ type: 'error', text1: 'Failed to cancel request' });
-    }
-  };
 
   const sendGameInvite = async (to, gameId) => {
     if (!user?.uid || !to || !gameId) return null;
@@ -157,13 +105,8 @@ export const MatchmakingProvider = ({ children }) => {
   return (
     <MatchmakingContext.Provider
       value={{
-        incomingRequests,
-        outgoingRequests,
         incomingInvites,
         outgoingInvites,
-        sendMatchRequest,
-        acceptMatchRequest,
-        cancelMatchRequest,
         sendGameInvite,
         acceptGameInvite,
         cancelGameInvite,

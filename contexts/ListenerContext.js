@@ -11,8 +11,6 @@ export const ListenerProvider = ({ children }) => {
   const { showNotification } = useNotification();
 
   const [messageInfoMap, setMessageInfoMap] = useState({});
-  const [incomingRequests, setIncomingRequests] = useState([]);
-  const [outgoingRequests, setOutgoingRequests] = useState([]);
   const [incomingInvites, setIncomingInvites] = useState([]);
   const [outgoingInvites, setOutgoingInvites] = useState([]);
   const [sessions, setSessions] = useState([]);
@@ -122,23 +120,9 @@ export const ListenerProvider = ({ children }) => {
     prevInvites.current = incomingInvites;
   }, [incomingInvites]);
 
-  // Subscribe to invites and match requests
+  // Subscribe to game invites
   useEffect(() => {
     if (!user?.uid) return;
-    const reqRef = firebase.firestore().collection('matchRequests');
-    const outQ = reqRef.where('from', '==', user.uid);
-    const inQ = reqRef.where('to', '==', user.uid);
-
-    const unsubOut = outQ.onSnapshot((snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setOutgoingRequests(data);
-    });
-
-    const unsubIn = inQ.onSnapshot((snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setIncomingRequests(data);
-    });
-
     const inviteRef = firebase.firestore().collection('gameInvites');
     const outInvQ = inviteRef.where('from', '==', user.uid);
     const inInvQ = inviteRef.where('to', '==', user.uid);
@@ -154,8 +138,6 @@ export const ListenerProvider = ({ children }) => {
     });
 
     return () => {
-      unsubOut();
-      unsubIn();
       unsubOutInv();
       unsubInInv();
     };
@@ -181,8 +163,6 @@ export const ListenerProvider = ({ children }) => {
     <ListenerContext.Provider
       value={{
         getMatchInfo,
-        incomingRequests,
-        outgoingRequests,
         incomingInvites,
         outgoingInvites,
         sessions,
