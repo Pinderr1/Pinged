@@ -9,7 +9,7 @@ admin.initializeApp();
 const payments = require('./payments');
 const notifications = require('./notifications');
 const invites = require('./invites');
-const match = require('./src/match');
+const match = require('./src/match.js');
 const blocks = require('./blocks');
 const matches = require('./matches');
 const stats = require('./stats');
