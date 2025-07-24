@@ -37,7 +37,7 @@ Other scripts:
 npm run android     # Launch on Android emulator
 npm run ios         # Launch on iOS simulator
 npm run web         # Launch in browser
-npm run deploy      # Deploy Firebase functions, rules, and static build
+npm run deploy      # Deploy Firebase backend and build for release
 
 Project Structure
 
@@ -88,12 +88,13 @@ This deploys:
 
     Cloud Functions
 
-    Firestore Rules
+    Firestore
 
-    Firestore Indexes
+    Storage
 
-    Static web build (via Expo export)
-    Image compression enabled with --image-compression flag
+    Hosting
+
+    Mobile/web build via EAS or Expo export
 
 License
 

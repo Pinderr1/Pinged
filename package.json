@@ -7,7 +7,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "deploy": "firebase deploy --only functions,firestore,storage && expo export && firebase hosting:channel:deploy live"
+    "deploy": "./scripts/deploy.sh"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
