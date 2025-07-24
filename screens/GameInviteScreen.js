@@ -15,7 +15,6 @@ import GradientButton from '../components/GradientButton';
 import Header from '../components/Header';
 import SkeletonPlaceholder from '../components/SkeletonPlaceholder';
 import { useTheme } from '../contexts/ThemeContext';
-import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import firebase from '../firebase';
 import PropTypes from 'prop-types';
@@ -28,7 +27,6 @@ import EmptyState from '../components/EmptyState';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import useDebouncedCallback from '../hooks/useDebouncedCallback';
 import InviteUserCard from '../components/InviteUserCard';
-import { logDev } from '../utils/logger';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH / 2 - 24;
@@ -40,7 +38,6 @@ const GameInviteScreen = ({ route, navigation }) => {
   const gameId = typeof rawGame === 'object' ? rawGame.id : null;
   const { darkMode, theme } = useTheme();
   const styles = getGlobalStyles(theme);
-  const { devMode } = useDev();
   const { user: currentUser } = useUser();
   const { matches: chatMatches, loading: matchesLoading } = useChats();
   const { gamesLeft } = useGameLimit();
@@ -53,7 +50,7 @@ const GameInviteScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     requireCredits({ replace: true });
-  }, [gamesLeft, currentUser?.isPremium, devMode]);
+  }, [gamesLeft, currentUser?.isPremium]);
 
   useEffect(() => {
     setMatches(
@@ -104,12 +101,9 @@ const GameInviteScreen = ({ route, navigation }) => {
         game: { id: gameId, title: gameTitle },
         opponent: { id: user.id, displayName: user.displayName, photo: user.photo },
         inviteId,
-        status: devMode ? 'ready' : 'waiting',
+        status: 'waiting',
       });
 
-    if (devMode) {
-      logDev('Auto-accepting invite');
-    }
     toLobby();
   };
 

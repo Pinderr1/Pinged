@@ -17,7 +17,6 @@ import getStyles from '../styles';
 import Header from '../components/Header';
 import { useTheme, COLOR_THEMES } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
-import { useDev } from '../contexts/DevContext';
 import firebase from '../firebase';
 import PropTypes from 'prop-types';
 import RNPickerSelect from 'react-native-picker-select';
@@ -32,7 +31,6 @@ const SettingsScreen = ({ navigation }) => {
   const styles = getStyles(theme);
   const { user, updateUser } = useUser();
   const isPremium = !!user?.isPremium;
-  const { devMode, toggleDevMode } = useDev();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showDiscovery, setShowDiscovery] = useState(false);
   const [visibility, setVisibility] = useState(user?.visibility || 'standard');
@@ -409,10 +407,6 @@ const SettingsScreen = ({ navigation }) => {
               onPress={() => navigation.navigate('Stats')}
             />
 
-            <GradientButton
-              text={devMode ? 'Disable Dev Mode' : 'Enable Dev Mode'}
-              onPress={toggleDevMode}
-            />
 
             {user?.isAdmin && (
               <GradientButton

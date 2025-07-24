@@ -17,7 +17,6 @@ import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
-import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { HEADER_SPACING } from '../layout';
 import { useUser } from '../contexts/UserContext';
@@ -66,7 +65,6 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const { darkMode, theme } = useTheme();
   const globalStyles = getGlobalStyles(theme);
   const local = createStyles(theme);
-  const { devMode } = useDev();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { user, addGameXP } = useUser();
   const isPremiumUser = !!user?.isPremium;
@@ -78,12 +76,10 @@ const LiveSessionScreen = ({ route, navigation }) => {
   const [inviteStatus, setInviteStatus] = useState(status);
   const [showGame, setShowGame] = useState(false);
   const [countdown, setCountdown] = useState(null);
-  const [devPlayer, setDevPlayer] = useState('0');
   const [gameResult, setGameResult] = useState(null);
   const gameActive = showGame && !gameResult;
-
   const GameComponent = game?.id ? games[game.id]?.Client : null;
-  const isReady = devMode || inviteStatus === 'ready';
+  const isReady = inviteStatus === 'ready';
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const overlayOpacity = useRef(new Animated.Value(1)).current;
   const [showFallback, setShowFallback] = useState(false);
@@ -119,7 +115,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
 
   // Trigger countdown if ready
   useEffect(() => {
-    if (isReady && !showGame && countdown === null && !devMode) {
+    if (isReady && !showGame && countdown === null) {
       setCountdown(3);
     }
   }, [isReady]);
@@ -142,11 +138,11 @@ const LiveSessionScreen = ({ route, navigation }) => {
 
   // Show fallback if invite is cancelled or declined
   useEffect(() => {
-    if (devMode || showGame) return;
+    if (showGame) return;
     if (inviteStatus === 'cancelled' || inviteStatus === 'declined') {
       setShowFallback(true);
     }
-  }, [inviteStatus, showGame, devMode]);
+  }, [inviteStatus, showGame]);
 
   // Countdown logic
   useEffect(() => {
@@ -211,7 +207,7 @@ const LiveSessionScreen = ({ route, navigation }) => {
         game,
         opponent,
         inviteId: newId,
-        status: devMode ? 'ready' : 'waiting',
+        status: 'waiting',
       });
     } catch (e) {
       console.warn('Failed to start rematch', e);
@@ -262,48 +258,12 @@ const LiveSessionScreen = ({ route, navigation }) => {
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         {GameComponent && gameActive && (
           <View style={{ alignItems: 'center' }}>
-            {devMode ? (
-              <>
-                <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-                  <TouchableOpacity
-                    onPress={() => setDevPlayer('0')}
-                    style={{
-                      backgroundColor: devPlayer === '0' ? theme.accent : '#ccc',
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 10,
-                      marginRight: 8,
-                    }}
-                  >
-                    <Text style={{ color: '#fff' }}>Player 1</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => setDevPlayer('1')}
-                    style={{
-                      backgroundColor: devPlayer === '1' ? theme.accent : '#ccc',
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 10,
-                    }}
-                  >
-                    <Text style={{ color: '#fff' }}>Player 2</Text>
-                  </TouchableOpacity>
-                </View>
-                <GameContainer
-                  player={{ name: 'You', xp: user?.xp }}
-                  opponent={{ name: 'Opponent' }}
-                >
-                  <GameComponent playerID={devPlayer} matchID="dev" />
-                </GameContainer>
-              </>
-            ) : (
-              <SyncedGame
-                sessionId={inviteId}
-                gameId={game.id}
-                opponent={{ id: opponent.id, photo: opponent.photo, online: true }}
-                onGameEnd={handleGameEnd}
-              />
-            )}
+            <SyncedGame
+              sessionId={inviteId}
+              gameId={game.id}
+              opponent={{ id: opponent.id, photo: opponent.photo, online: true }}
+              onGameEnd={handleGameEnd}
+            />
           </View>
         )}
         {!showGame && (

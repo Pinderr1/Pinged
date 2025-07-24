@@ -5,6 +5,6 @@ export const clearStoredOnboarding = async (uid) => {
   try {
     await AsyncStorage.removeItem(`hasOnboarded_${uid}`);
   } catch (e) {
-    console.warn('Failed to clear onboarding flag', e);
+    console.error('Failed to clear onboarding flag', e);
   }
 };

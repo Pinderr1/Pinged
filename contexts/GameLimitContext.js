@@ -1,16 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
-import { useDev } from './DevContext';
 import useRemoteConfig from '../hooks/useRemoteConfig';
 import firebase from '../firebase';
-import { logDev } from '../utils/logger';
 
 const GameLimitContext = createContext();
 const DEFAULT_LIMIT = 1;
 
 export const GameLimitProvider = ({ children }) => {
   const { user } = useUser();
-  const { devMode } = useDev();
   const { maxFreeGames } = useRemoteConfig();
   const isPremium = !!user?.isPremium;
   const limit = maxFreeGames ?? DEFAULT_LIMIT;
@@ -18,7 +15,7 @@ export const GameLimitProvider = ({ children }) => {
 
   useEffect(() => {
     const dailyLimit = maxFreeGames ?? DEFAULT_LIMIT;
-    if (isPremium || devMode) {
+    if (isPremium) {
       setGamesLeft(Infinity);
       return;
     }
@@ -30,10 +27,10 @@ export const GameLimitProvider = ({ children }) => {
     } else {
       setGamesLeft(dailyLimit);
     }
-  }, [isPremium, devMode, user?.dailyPlayCount, user?.lastGamePlayedAt, maxFreeGames]);
+  }, [isPremium, user?.dailyPlayCount, user?.lastGamePlayedAt, maxFreeGames]);
 
   const recordGamePlayed = async () => {
-    if (isPremium || devMode || !user?.uid) return;
+    if (isPremium || !user?.uid) return;
 
     const last = user.lastGamePlayedAt?.toDate?.() ||
       (user.lastGamePlayedAt ? new Date(user.lastGamePlayedAt) : null);
@@ -54,7 +51,7 @@ export const GameLimitProvider = ({ children }) => {
           lastGamePlayedAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
     } catch (e) {
-      logDev('Failed to update play count', e);
+      console.error('Failed to update play count', e);
     }
   };
 

@@ -9,29 +9,14 @@ import { clearStoredOnboarding } from "../utils/onboarding";
 import { snapshotExists } from "../utils/firestore";
 import { isAllowedDomain } from "../utils/email";
 import { initPresence } from "../utils/presence";
-import { useDev } from "./DevContext";
 import { useOnboarding } from "./OnboardingContext";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const { devMode } = useDev();
   const { markOnboarded, clearOnboarding } = useOnboarding();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const devUser = {
-    displayName: "Dev Tester",
-    age: 99,
-    gender: "Other",
-    bio: "Development user",
-    location: "Localhost",
-    photoURL: null,
-    xp: 0,
-    streak: 0,
-    badges: [],
-    unlocks: [],
-    eventTickets: [],
-  };
   const redirectUri = AuthSession.makeRedirectUri({ scheme: "pinged" });
 
   useEffect(() => {
@@ -156,8 +141,6 @@ export const AuthProvider = ({ children }) => {
                 eventTickets: data.eventTickets || [],
                 ...data,
               });
-            } else if (devMode) {
-              setUser({ uid: fbUser.uid, email: fbUser.email, ...devUser });
             } else {
               setUser({
                 uid: fbUser.uid,
@@ -189,7 +172,7 @@ export const AuthProvider = ({ children }) => {
       unsub();
       if (unsubProfile) unsubProfile();
     };
-  }, [devMode]);
+  }, []);
 
   useEffect(() => {
     if (response?.type === "success") {

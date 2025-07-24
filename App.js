@@ -13,7 +13,6 @@ import StreakRewardModal from "./components/StreakRewardModal";
 import Providers from "./contexts/Providers";
 import ErrorBoundary from "./components/ErrorBoundary";
 import NotificationCenter from "./components/NotificationCenter";
-import DevBanner from "./components/DevBanner";
 import LoadingOverlay from "./components/LoadingOverlay";
 import Toast from "react-native-toast-message";
 import * as Analytics from "./utils/analytics";
@@ -96,7 +95,6 @@ const AppInner = () => {
         <ErrorBoundary>
           <NavigationContainer linking={linking}>
             <RootNavigator />
-            <DevBanner />
           </NavigationContainer>
           <ThemedNotificationCenter />
           <StreakRewardModal

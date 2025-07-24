@@ -1,12 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useDev } from './DevContext';
 import { useUser } from './UserContext';
 import firebase from '../firebase';
 import Toast from 'react-native-toast-message';
 import * as Haptics from 'expo-haptics';
 import { useSound } from './SoundContext';
-import { logDev } from '../utils/logger';
 import { useListeners } from './ListenerContext';
 import debounce from '../utils/debounce';
 
@@ -21,7 +19,6 @@ const getStorageKey = (uid) => `${STORAGE_PREFIX}${uid}`;
 const getGameStateKey = (matchId) => `${GAME_STATE_PREFIX}${matchId}`;
 
 export const ChatProvider = ({ children }) => {
-  const { devMode } = useDev();
   const { user } = useUser();
   const { play } = useSound();
   const [matches, setMatches] = useState([]);
@@ -254,10 +251,6 @@ export const ChatProvider = ({ children }) => {
           : m
       )
     );
-    if (devMode) {
-      logDev('Auto-accepting game invite');
-      acceptGameInvite(matchId);
-    }
   };
 
   const clearGameInvite = (matchId) => {

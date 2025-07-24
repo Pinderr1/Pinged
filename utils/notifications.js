@@ -2,19 +2,15 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
-import { logDev } from './logger';
 
 export async function registerForPushNotificationsAsync() {
   try {
     if (!Constants.isDevice) {
-      logDev('Must use physical device for Push Notifications');
       return null;
     }
 
     if (Constants.appOwnership === 'expo' && Platform.OS === 'android') {
-      logDev(
-        'Remote push notifications are not supported in Expo Go on Android. Use a development build.'
-      );
+      return null;
       return null;
     }
 
@@ -26,7 +22,6 @@ export async function registerForPushNotificationsAsync() {
     }
 
     if (finalStatus !== 'granted') {
-      logDev('Failed to get push token for push notification!');
       return null;
     }
 
@@ -44,7 +39,7 @@ export async function registerForPushNotificationsAsync() {
 
     return token;
   } catch (e) {
-    console.warn('Push registration failed', e);
+    console.error('Push registration failed', e);
     return null;
   }
 }

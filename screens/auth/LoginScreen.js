@@ -17,14 +17,11 @@ import firebase from '../../firebase';
 import { snapshotExists } from '../../utils/firestore';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { useNavigation } from '@react-navigation/native';
-import { useDev } from '../../contexts/DevContext';
 import PropTypes from 'prop-types';
-import { logDev } from '../../utils/logger';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
   const { markOnboarded } = useOnboarding();
-  const { toggleDevMode } = useDev();
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
@@ -49,7 +46,6 @@ export default function LoginScreen() {
         .signInWithCredential(credential)
         .then(async (res) => {
           if (!isMounted) return;
-          logDev('✅ Google login success:', res.user.uid);
           const snap = await firebase
             .firestore()
             .collection('users')
@@ -71,22 +67,6 @@ export default function LoginScreen() {
     };
   }, [response]);
 
-  const handleDevLogin = async () => {
-    toggleDevMode();
-    try {
-      const cred = await firebase.auth().signInAnonymously();
-      await firebase.firestore().collection('users').doc(cred.user.uid).set({
-        uid: cred.user.uid,
-        email: '',
-        displayName: 'Dev Tester',
-        photoURL: '',
-        onboardingComplete: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      console.warn('Dev login failed', e);
-    }
-  };
 
   const anim = useRef(new Animated.Value(0)).current;
 
@@ -131,12 +111,6 @@ export default function LoginScreen() {
           onPress={() => navigation.navigate('Signup')}
         />
 
-        {__DEV__ && (
-          <GradientButton
-            text="Dev Onboarding"
-            onPress={handleDevLogin}
-          />
-        )}
       </ScreenContainer>
     </GradientBackground>
   );

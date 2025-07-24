@@ -11,7 +11,6 @@ export async function handleLike({
   navigation,
   likesUsed = 0,
   isPremiumUser = false,
-  devMode = false,
   setLikesUsed = () => {},
   showNotification = () => {},
   addMatch = () => {},
@@ -24,7 +23,7 @@ export async function handleLike({
 }) {
   if (!targetUser) return false;
 
-  if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
+  if (likesUsed >= MAX_LIKES && !isPremiumUser) {
     navigation.navigate('PremiumPaywall', { context: 'paywall' });
     return false;
   }
@@ -32,7 +31,7 @@ export async function handleLike({
   setLikesUsed((prev) => prev + 1);
   showNotification(`You liked ${targetUser.displayName}`);
 
-  if (currentUser?.uid && targetUser.id && !devMode) {
+  if (currentUser?.uid && targetUser.id) {
     try {
       await firestore
         .collection('likes')
@@ -78,33 +77,9 @@ export async function handleLike({
         return true;
       }
     } catch (e) {
-      console.warn('Failed to process like', e);
+      console.error('Failed to process like', e);
       return false;
     }
-  } else if (devMode) {
-    addMatch({
-      id: targetUser.id,
-      displayName: targetUser.displayName,
-      age: targetUser.age,
-      image: targetUser.images[0],
-      messages: [],
-      matchedAt: 'now',
-      activeGameId: null,
-      pendingInvite: null,
-    });
-    setMatchedUser(targetUser);
-    setMatchLine(
-      icebreakers[Math.floor(Math.random() * icebreakers.length)] || ''
-    );
-    setMatchGame(allGames[Math.floor(Math.random() * allGames.length)] || null);
-    Haptics.notificationAsync(
-      Haptics.NotificationFeedbackType.Success
-    ).catch(() => {});
-    play('match');
-    Toast.show({ type: 'success', text1: "It's a match!" });
-    setShowFireworks(true);
-    setTimeout(() => setShowFireworks(false), 2000);
-    return true;
   }
 
   return true;

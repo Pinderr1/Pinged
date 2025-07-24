@@ -8,16 +8,13 @@ import { HEADER_SPACING } from '../layout';
 import { useChats } from '../contexts/ChatContext';
 
 import PrivateChat from './PrivateChat';
-import GroupChat from './GroupChat';
 
 export { default as PrivateChat } from './PrivateChat';
-export { default as GroupChat } from './GroupChat';
 
 export default function ChatScreen({ route }) {
-  const { user: paramUser, event, gameId, chatId } = route.params || {};
+  const { user: paramUser, gameId, chatId } = route.params || {};
   const { matches, addMatch } = useChats();
 
-  if (event) return <GroupChat event={event} />;
 
   let match = matches.find(
     (m) => m.id === (chatId || paramUser?.id) || m.otherUserId === paramUser?.id
@@ -54,7 +51,6 @@ ChatScreen.propTypes = {
         displayName: PropTypes.string,
         image: PropTypes.any,
       }),
-      event: PropTypes.object,
       gameId: PropTypes.string,
       chatId: PropTypes.string,
     }),
