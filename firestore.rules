@@ -13,6 +13,17 @@ service cloud.firestore {
       );
     }
 
+    function areMatched(a, b) {
+      let id = (a < b) ? a + '_' + b : b + '_' + a;
+      return exists(/databases/$(database)/documents/matches/$(id));
+    }
+
+    function validGamePlayers(players) {
+      return players.size() == 2 &&
+        request.auth.uid in players &&
+        (players[0] == players[1] || areMatched(players[0], players[1]));
+    }
+
     // User can read and write only their own profile, but certain fields are
     // server controlled and may not be written by the client. Admins may write
     // unrestricted for server-side updates such as Stripe webhooks.
@@ -48,8 +59,7 @@ service cloud.firestore {
     match /matches/{matchId} {
       allow read: if request.auth.token.admin == true ||
         (isSignedIn() && request.auth.uid in resource.data.users);
-      allow create: if request.auth.uid == "server" &&
-        isNotBlocked(request.resource.data.users[0], request.resource.data.users[1]);
+      allow create: if isNotBlocked(request.resource.data.users[0], request.resource.data.users[1]);
       allow delete: if request.auth.token.admin == true;
       allow update: if request.auth.token.admin == true || (
         isSignedIn() &&
@@ -102,8 +112,8 @@ service cloud.firestore {
 
     // Game sessions are restricted to the listed players
     match /gameSessions/{sessionId} {
-      allow read, write: if isSignedIn() &&
-        (request.auth.uid in resource.data.players || request.auth.uid in request.resource.data.players);
+      allow read: if isSignedIn() && validGamePlayers(resource.data.players);
+      allow write: if isSignedIn() && validGamePlayers(request.resource.data.players);
     }
 
     // Realtime games restrict access to participating players
@@ -133,14 +143,26 @@ service cloud.firestore {
     }
 
     match /likes/{uid}/liked/{targetId} {
-      allow create: if (request.auth.token.admin == true || request.auth.uid == uid) &&
+      allow create: if request.auth.uid == uid &&
         isNotBlocked(uid, targetId);
-      allow delete: if request.auth.token.admin == true || request.auth.uid == uid;
+      allow delete: if request.auth.uid == uid;
     }
 
     match /likes/{uid}/likedBy/{otherUid} {
       allow read: if request.auth.token.admin == true || request.auth.uid == uid;
+    }
+
+    // Cloud Functions may mirror likes here
+    match /server/likes/{uid}/likedBy/{otherUid} {
       allow write: if request.auth.token.admin == true;
+    }
+
+    match /emails/{uid} {
+      allow read, write: if request.auth.uid == uid;
+    }
+
+    match /pushTokens/{uid} {
+      allow read, write: if request.auth.uid == uid;
     }
 
     // Deny all other reads and writes
