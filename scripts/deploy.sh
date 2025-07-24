@@ -1,11 +1,15 @@
 #!/bin/bash
 set -e
 
-# Deploy firestore rules
-firebase deploy --only firestore:rules
+# Install Cloud Functions dependencies
+(cd functions && npm install)
 
-# Deploy firestore indexes
-firebase deploy --only firestore:indexes
+# Deploy backend resources
+firebase deploy --only functions,firestore,storage,hosting
 
-# Deploy cloud functions
-cd functions && npm install && firebase deploy --only functions && cd ..
+# Build client for production
+if command -v eas >/dev/null 2>&1; then
+  eas build --profile production --platform all
+else
+  expo export
+fi
