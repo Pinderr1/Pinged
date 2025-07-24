@@ -1,7 +1,7 @@
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
 
-export const createMatchIfMutualLike = functions.https.onCall(async (data, context) => {
+const createMatchIfMutualLike = functions.https.onCall(async (data, context) => {
   const { uid, targetUid } = data || {};
 
   if (!context.auth) {
@@ -46,3 +46,5 @@ export const createMatchIfMutualLike = functions.https.onCall(async (data, conte
     throw new functions.https.HttpsError('internal', 'Failed to create match');
   }
 });
+
+module.exports = { createMatchIfMutualLike };
