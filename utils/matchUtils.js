@@ -41,13 +41,6 @@ export async function handleLike({
         .doc(targetUser.id)
         .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
 
-      await firestore
-        .collection('likes')
-        .doc(targetUser.id)
-        .collection('likedBy')
-        .doc(currentUser.uid)
-        .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-
       const res = await firebase
         .functions()
         .httpsCallable('createMatchIfMutualLike')({

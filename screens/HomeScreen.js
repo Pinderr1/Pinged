@@ -144,8 +144,8 @@ const HomeScreen = ({ navigation }) => {
 
       const sessionsRef = firebase.firestore().collection('gameSessions');
       const waiting = await sessionsRef
-        .where('game', '==', gameId)
-        .where('player2', '==', null)
+        .where('gameId', '==', gameId)
+        .where('players', 'array-contains', null)
         .where('status', '==', 'waiting')
         .limit(1)
         .get();
@@ -153,20 +153,21 @@ const HomeScreen = ({ navigation }) => {
       if (!waiting.empty) {
         const doc = waiting.docs[0];
         const data = doc.data();
-        await doc.ref.update({ player2: user.uid, status: 'active' });
+        const firstPlayer = Array.isArray(data.players) ? data.players[0] : null;
+        await doc.ref.update({ players: [firstPlayer, user.uid], status: 'active' });
         const res = await firebase
           .functions()
-          .httpsCallable('createMatch')({ opponentUid: data.player1 });
+          .httpsCallable('createMatch')({ opponentUid: firstPlayer });
         const chatId = res.data?.matchId;
         const oppSnap = await firebase
           .firestore()
           .collection('users')
-          .doc(data.player1)
+          .doc(firstPlayer)
           .get();
         const opp = oppSnap.data() || {};
         const match = {
           id: chatId,
-          otherUserId: data.player1,
+          otherUserId: firstPlayer,
           displayName: opp.displayName || 'Player',
           image: opp.photoURL ? { uri: opp.photoURL } : require('../assets/user1.jpg'),
           avatarOverlay: opp.avatarOverlay || '',
@@ -189,9 +190,8 @@ const HomeScreen = ({ navigation }) => {
         });
       } else {
         const ref = await sessionsRef.add({
-          game: gameId,
-          player1: user.uid,
-          player2: null,
+          gameId,
+          players: [user.uid, null],
           status: 'waiting',
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
@@ -199,23 +199,23 @@ const HomeScreen = ({ navigation }) => {
         if (matchTimeout.current) clearTimeout(matchTimeout.current);
         let unsub = ref.onSnapshot(async (snap) => {
           const d = snap.data();
-          if (d.player2 && d.status === 'active') {
+          if (Array.isArray(d.players) && d.players[1] && d.status === 'active') {
             clearTimeout(matchTimeout.current);
             matchTimeout.current = null;
             unsub();
             const oppSnap2 = await firebase
               .firestore()
               .collection('users')
-              .doc(d.player2)
+              .doc(d.players[1])
               .get();
             const opp = oppSnap2.data() || {};
             const res2 = await firebase
               .functions()
-              .httpsCallable('createMatch')({ opponentUid: d.player2 });
+              .httpsCallable('createMatch')({ opponentUid: d.players[1] });
             const chatId = res2.data?.matchId;
             const match = {
               id: chatId,
-              otherUserId: d.player2,
+              otherUserId: d.players[1],
               displayName: opp.displayName || 'Player',
               image: opp.photoURL ? { uri: opp.photoURL } : require('../assets/user1.jpg'),
               avatarOverlay: opp.avatarOverlay || '',
