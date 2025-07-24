@@ -21,7 +21,6 @@ import { useTheme } from '../contexts/ThemeContext';
 import { HEADER_SPACING, SPACING } from '../layout';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
-import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import GamePickerModal from '../components/GamePickerModal';
@@ -37,7 +36,6 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
 import Loader from '../components/Loader';
 import { computePriority } from '../utils/priority';
-import { logDev } from '../utils/logger';
 import { handleLike } from '../utils/matchUtils';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import * as Haptics from 'expo-haptics';
@@ -97,7 +95,6 @@ const SwipeScreen = () => {
   const { showNotification } = useNotification();
   const { user: currentUser, updateUser, blocked } = useUser();
   const { play } = useSound();
-  const { devMode } = useDev();
   const { addMatch } = useChats();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const { sendGameInvite, cancelInvite } = useMatchmaking();
@@ -178,7 +175,7 @@ const SwipeScreen = () => {
   useEffect(() => {
     setCurrentIndex(0);
     setHistory([]);
-  }, [devMode]);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -259,17 +256,13 @@ const SwipeScreen = () => {
 
         debug.finalCount = formatted.length;
 
-        if (devMode && formatted.length === 0) {
-          debug.devFallback = true;
-        }
 
         if (mounted) {
           setUsers(formatted);
           setDebugInfo(debug);
         }
-        logDev('Suggested users:', JSON.stringify(debug));
       } catch (e) {
-        console.warn('Failed to load users', e);
+        console.error('Failed to load users', e);
       }
       if (mounted) setLoadingUsers(false);
     };
@@ -279,7 +272,6 @@ const SwipeScreen = () => {
     };
   }, [
     currentUser?.uid,
-    devMode,
     filterLocation,
     ageRange,
     interests,
@@ -303,7 +295,7 @@ const SwipeScreen = () => {
     play(direction === 'left' ? 'swipe_left' : 'swipe_right');
 
     if (direction === 'right') {
-      if (likesUsed >= MAX_LIKES && !isPremiumUser && !devMode) {
+      if (likesUsed >= MAX_LIKES && !isPremiumUser) {
         navigation.navigate('PremiumPaywall', { context: 'paywall' });
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
@@ -320,7 +312,6 @@ const SwipeScreen = () => {
         navigation,
         likesUsed,
         isPremiumUser,
-        devMode,
         setLikesUsed,
         showNotification,
         addMatch,
@@ -352,7 +343,7 @@ const SwipeScreen = () => {
   };
 
   const rewind = () => {
-    if (!isPremiumUser && !devMode) {
+    if (!isPremiumUser) {
       navigation.navigate('PremiumPaywall', { context: 'paywall' });
       return;
     }
@@ -366,7 +357,7 @@ const SwipeScreen = () => {
 
   const handleSwipeChallenge = () => {
     if (!displayUser) return;
-    if (!isPremiumUser && !devMode) {
+    if (!isPremiumUser) {
       navigation.navigate('PremiumPaywall', { context: 'paywall' });
       return;
     }
@@ -375,7 +366,7 @@ const SwipeScreen = () => {
 
   const handleSuperLike = async () => {
     if (!displayUser || actionLoading) return;
-    if (!isPremiumUser && !devMode) {
+    if (!isPremiumUser) {
       navigation.navigate('PremiumPaywall', { context: 'paywall' });
       return;
     }
@@ -522,7 +513,7 @@ const SwipeScreen = () => {
             photo: displayUser.images[0],
           },
           inviteId,
-          status: devMode ? 'ready' : 'waiting',
+          status: 'waiting',
         });
 
       toLobby();
@@ -551,7 +542,7 @@ const SwipeScreen = () => {
   };
 
   const handleBoostPress = () => {
-    if (currentUser?.boostTrialUsed && !isPremiumUser && !devMode) {
+    if (currentUser?.boostTrialUsed && !isPremiumUser) {
       navigation.navigate('PremiumPaywall', { context: 'upgrade' });
     } else {
       setShowBoostModal(true);
@@ -606,9 +597,7 @@ const SwipeScreen = () => {
               style={styles.imageOverlay}
             />
             <View style={styles.bottomInfo}>
-              <Text style={styles.distanceBadge}>
-                {devMode ? '1 mile away' : 'Nearby'}
-              </Text>
+              <Text style={styles.distanceBadge}>Nearby</Text>
               <View style={styles.nameRow}>
                 <Text style={styles.nameText}>
                   {displayUser.displayName}, {displayUser.age}
@@ -732,9 +721,10 @@ const SwipeScreen = () => {
                 }
                 onPress={btn.action}
                 onLongPress={() =>
-                  btn.longAction && (isPremiumUser || devMode)
+                  btn.longAction && isPremiumUser
                     ? btn.longAction()
-                    : btn.longAction && navigation.navigate('PremiumPaywall', { context: 'paywall' })
+                    : btn.longAction &&
+                      navigation.navigate('PremiumPaywall', { context: 'paywall' })
                 }
                 delayLongPress={300}
                 style={[styles.circleButton, { backgroundColor: btn.color }]}
@@ -856,7 +846,7 @@ const SwipeScreen = () => {
           onUpgrade={() => navigation.navigate('PremiumPaywall', { context: 'upgrade' })}
           onClose={() => setShowBoostModal(false)}
         />
-        {showUndoPrompt && (isPremiumUser || devMode) ? (
+        {showUndoPrompt && isPremiumUser ? (
           <View style={styles.undoBanner}>
             <Text style={styles.undoText}>Invite sent</Text>
             <TouchableOpacity onPress={undoInvite}>
@@ -864,7 +854,7 @@ const SwipeScreen = () => {
             </TouchableOpacity>
           </View>
         ) : null}
-        {devMode && debugInfo ? (
+        {debugInfo ? (
           <View style={styles.debugOverlay}>
             <Text style={styles.debugText}>{JSON.stringify(debugInfo)}</Text>
           </View>

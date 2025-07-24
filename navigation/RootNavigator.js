@@ -4,7 +4,6 @@ import { Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
-import { logDev } from '../utils/logger';
 import Constants from 'expo-constants';
 import firebase from '../firebase';
 import { isVersionLess } from '../utils/version';
@@ -56,7 +55,7 @@ export default function RootNavigator() {
     const handleDeepLink = ({ url }) => {
       const parsed = Linking.parse(url);
       if (parsed.path === 'chat') {
-        logDev('Deep linking to Chat');
+        // deep link to chat
       }
     };
     const sub = Linking.addEventListener('url', handleDeepLink);

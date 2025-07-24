@@ -32,6 +32,6 @@ export async function logGameStats(sessionId) {
         loggedAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
   } catch (e) {
-    console.warn('Failed to log game stats', e);
+    console.error('Failed to log game stats', e);
   }
 }

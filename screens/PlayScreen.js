@@ -11,7 +11,6 @@ import getGlobalStyles from '../styles';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
-import { useDev } from '../contexts/DevContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { allGames } from '../data/games';
 import GameCard from '../components/GameCard';
@@ -45,7 +44,6 @@ const PlayScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
   const styles = getGlobalStyles(theme);
   const { user } = useUser();
-  const { devMode } = useDev();
   const { gamesLeft } = useGameLimit();
   const isPremiumUser = !!user?.isPremium;
   const requireCredits = useRequireGameCredits();
@@ -89,7 +87,7 @@ const PlayScreen = ({ navigation }) => {
   const handleStartGame = () => {
     if (!previewGame) return;
     setPreviewGame(null);
-    if (previewGame.premium && !isPremiumUser && !devMode) {
+    if (previewGame.premium && !isPremiumUser) {
       navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
@@ -104,7 +102,7 @@ const PlayScreen = ({ navigation }) => {
   const handlePracticeGame = () => {
     if (!previewGame) return;
     setPreviewGame(null);
-    if (previewGame.premium && !isPremiumUser && !devMode) {
+    if (previewGame.premium && !isPremiumUser) {
       navigation.navigate('Premium', { context: 'paywall' });
       return;
     }

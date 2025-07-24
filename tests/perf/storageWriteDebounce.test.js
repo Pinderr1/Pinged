@@ -11,7 +11,6 @@ const debounce = require('../../utils/debounce').default || require('../../utils
   }
 
   await new Promise((r) => setTimeout(r, 2500));
-  console.log('writeCount', writes);
   if (writes >= 5) {
     throw new Error(`Too many writes: ${writes}`);
   }

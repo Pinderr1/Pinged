@@ -11,7 +11,7 @@ export async function createMatchIfMissing(uid, otherUid) {
     await Analytics.logEvent("match_created");
     return matchId;
   } catch (e) {
-    console.warn("Failed to ensure match document", e);
+    console.error('Failed to ensure match document', e);
   }
   return null;
 }

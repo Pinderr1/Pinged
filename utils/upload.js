@@ -8,7 +8,7 @@ async function detectCelebrityFace(uri) {
     // face is recognized.
     return false;
   } catch (e) {
-    console.warn('Celebrity face check failed', e);
+    console.error('Celebrity face check failed', e);
     return false;
   }
 }
@@ -20,7 +20,7 @@ export async function uploadAvatarAsync(uri, uid) {
     // Step 1: validate type from file extension
     const extMatch = uri.match(/\.(png|jpe?g)$/i);
     if (!extMatch) {
-      console.warn('Unsupported avatar format', uri);
+      console.error('Unsupported avatar format', uri);
       return null;
     }
     const finalExtension = extMatch[1].toLowerCase().replace('jpeg', 'jpg');
@@ -50,7 +50,7 @@ export async function uploadAvatarAsync(uri, uid) {
           .doc(uid)
           .set({ flaggedForReview: true }, { merge: true });
       } catch (err) {
-        console.warn('Failed to flag user for review', err);
+        console.error('Failed to flag user for review', err);
       }
     }
 
@@ -68,7 +68,7 @@ export async function uploadAvatarAsync(uri, uid) {
 
     return avatarRef.getDownloadURL();
   } catch (e) {
-    console.warn('Failed to upload avatar', e);
+    console.error('Failed to upload avatar', e);
     throw e;
   }
 }
@@ -86,7 +86,7 @@ export async function uploadVoiceAsync(uri, uid) {
     });
     return ref.getDownloadURL();
   } catch (e) {
-    console.warn('Failed to upload voice message', e);
+    console.error('Failed to upload voice message', e);
     return null;
   }
 }
@@ -104,7 +104,7 @@ export async function uploadIntroAsync(uri, uid) {
     });
     return ref.getDownloadURL();
   } catch (e) {
-    console.warn('Failed to upload voice intro', e);
+    console.error('Failed to upload voice intro', e);
     return null;
   }
 }
@@ -124,7 +124,7 @@ export async function uploadIntroClipAsync(uri, uid) {
     });
     return ref.getDownloadURL();
   } catch (e) {
-    console.warn('Failed to upload intro clip', e);
+    console.error('Failed to upload intro clip', e);
     return null;
   }
 }

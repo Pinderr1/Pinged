@@ -36,7 +36,6 @@ import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
 import { allGames } from '../data/games';
 import { BADGE_LIST } from '../data/badges';
-import { logDev } from '../utils/logger';
 import LocationInfoModal from '../components/LocationInfoModal';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
 import useVoicePlayback from '../hooks/useVoicePlayback';
@@ -400,7 +399,7 @@ const validateField = () => {
       const { city, region } = geo[0];
       setAnswers((prev) => ({ ...prev, location: `${city}, ${region}` }));
     } catch (e) {
-      logDev('Geo error:', e);
+      console.warn('Geo error:', e);
     }
   };
 

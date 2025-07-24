@@ -17,7 +17,6 @@ const StatsScreen = lazy(() => import("../screens/StatsScreen"));
 const PlayScreen = lazy(() => import("../screens/PlayScreen"));
 const SwipeScreen = lazy(() => import("../screens/SwipeScreen"));
 const LikedYouScreen = lazy(() => import("../screens/LikedYouScreen"));
-const VerifyHumanScreen = lazy(() => import("../screens/VerifyHumanScreen"));
 const PhoneVerificationScreen = lazy(() => import("../screens/PhoneVerificationScreen"));
 const AdminReviewScreen = lazy(() => import("../screens/AdminReviewScreen"));
 
@@ -61,7 +60,6 @@ export default function AppStack() {
         component={SwipeScreen}
         options={{ animation: "slide_from_bottom" }}
       />
-      <Stack.Screen name="VerifyHuman" component={VerifyHumanScreen} />
       <Stack.Screen
         name="PhoneVerification"
         component={PhoneVerificationScreen}

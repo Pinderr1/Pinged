@@ -18,7 +18,7 @@ export default function BlockAction({ targetUid, displayName, style }) {
     try {
       await blockUser(targetUid);
     } catch (e) {
-      console.warn('Failed to block user', e);
+      console.error('Failed to block user', e);
       Toast.show({ type: 'error', text1: 'Could not block user. Try later.' });
     } finally {
       setLoading(false);

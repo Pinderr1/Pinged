@@ -38,7 +38,6 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useChats } from '../contexts/ChatContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useUser } from '../contexts/UserContext';
-import { useDev } from '../contexts/DevContext';
 import VoiceMessageBubble from '../components/VoiceMessageBubble';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
 import Toast from 'react-native-toast-message';
@@ -84,7 +83,6 @@ function PrivateChat({ user, initialGameId }) {
   const navigation = useNavigation();
   const { user: currentUser, addGameXP } = useUser();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
-  const { devMode } = useDev();
   const requireCredits = useRequireGameCredits();
   const {
     setActiveGame,
@@ -117,7 +115,6 @@ function PrivateChat({ user, initialGameId }) {
   const [showGameModal, setShowGameModal] = useState(false);
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [text, setText] = useState('');
-  const [devPlayer, setDevPlayer] = useState('0');
   const [isTyping, setIsTyping] = useState(false);
   const inputRef = useRef(null);
   const typingTimeout = useRef(null);
@@ -616,7 +613,7 @@ function PrivateChat({ user, initialGameId }) {
         >
           <SelectedGameClient
             matchID={user.id}
-            playerID={devMode ? devPlayer : '0'}
+            playerID="0"
             onGameEnd={handleGameEnd}
             initialState={savedState}
             onStateChange={handleStateChange}

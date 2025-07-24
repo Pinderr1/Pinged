@@ -14,7 +14,7 @@ export default class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
-    console.warn('ErrorBoundary caught an error', error, info);
+    console.error('ErrorBoundary caught an error', error, info);
     Toast.show({ type: 'error', text1: 'Something went wrong.' });
   }
 

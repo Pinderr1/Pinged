@@ -1,5 +1,4 @@
 import React from 'react';
-import { DevProvider } from './DevContext';
 import { ThemeProvider } from './ThemeContext';
 import { AuthProvider } from './AuthContext';
 import { NotificationProvider } from './NotificationContext';
@@ -16,8 +15,7 @@ import { FilterProvider } from './FilterContext';
 import { LoadingProvider } from './LoadingContext';
 
 const Providers = ({ children }) => (
-  <DevProvider>
-    <AuthProvider>
+  <AuthProvider>
       <OnboardingProvider>
         <UserProvider>
           <ThemeProvider>
@@ -46,7 +44,6 @@ const Providers = ({ children }) => (
         </UserProvider>
       </OnboardingProvider>
     </AuthProvider>
-  </DevProvider>
 );
 
 export default Providers;
