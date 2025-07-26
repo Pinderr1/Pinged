@@ -2,8 +2,7 @@ import React from 'react';
 import {
   MaterialCommunityIcons,
   FontAwesome5,
-  Entypo,
-  Ionicons
+  Entypo
 } from '@expo/vector-icons';
 
 export const allGames = [
