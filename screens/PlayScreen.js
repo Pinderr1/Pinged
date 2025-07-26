@@ -111,7 +111,8 @@ const PlayScreen = ({ navigation }) => {
     const aiKeyMap = { rockPaperScissors: 'rps' };
     const key = aiGameMap[previewGame.id];
     const gameKey = key ? aiKeyMap[key] || key : 'ticTacToe';
-    navigation.navigate('GameWithBot', {
+    navigation.navigate('GameSession', {
+      sessionType: 'bot',
       botId: bot.id,
       game: gameKey,
     });

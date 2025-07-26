@@ -272,7 +272,11 @@ const LiveSessionScreen = ({ route, navigation }) => {
               showFallback ? (
                 <>
                   <Text style={[local.waitText, { color: theme.text }]}>Game didn't start.</Text>
-                  <TouchableOpacity onPress={() => navigation.navigate('GameWithBot')}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate('GameSession', { sessionType: 'bot' })
+                    }
+                  >
                     <Text style={{ color: theme.accent, marginTop: 10 }}>
                       Play with an AI bot instead
                     </Text>
@@ -285,7 +289,11 @@ const LiveSessionScreen = ({ route, navigation }) => {
                 <>
                   <Text style={[local.waitText, { color: theme.text }]}>Waiting for opponent...</Text>
                   <Loader size="small" style={{ marginTop: 20 }} />
-                  <TouchableOpacity onPress={() => navigation.navigate('GameWithBot')}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate('GameSession', { sessionType: 'bot' })
+                    }
+                  >
                     <Text style={{ color: theme.accent, marginTop: 10 }}>
                       Play with an AI bot instead
                     </Text>
