@@ -233,7 +233,11 @@ const MatchesScreen = ({ navigation }) => {
                 text="No matches yet."
                 animation={require('../assets/hearts.json')}
               />
-              <TouchableOpacity onPress={() => navigation.navigate('GameWithBot')}>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('GameSession', { sessionType: 'bot' })
+                }
+              >
                 <Text
                   style={{
                     textAlign: 'center',

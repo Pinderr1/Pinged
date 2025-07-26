@@ -265,7 +265,8 @@ const HomeScreen = ({ navigation }) => {
       const key = aiGameMap[game.id];
       if (!key) console.warn('No AI mapping for game id', game.id);
       const gameKey = key ? aiKeyMap[key] || key : 'ticTacToe';
-      navigation.navigate('GameWithBot', {
+      navigation.navigate('GameSession', {
+        sessionType: 'bot',
         botId: bot.id,
         game: gameKey,
       });
