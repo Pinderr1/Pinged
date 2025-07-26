@@ -87,12 +87,6 @@ service cloud.firestore {
       }
     }
 
-    // Event chats are only accessible to participants
-    match /events/{eventId}/messages/{messageId} {
-      allow read, write: if request.auth.token.admin == true || (
-        isSignedIn() &&
-        request.auth.uid in get(/databases/$(database)/documents/events/$(eventId)).data.participants);
-    }
 
     // Community posts are public read but only the creator may write
     match /communityPosts/{postId} {
@@ -106,8 +100,7 @@ service cloud.firestore {
     // the sender for existing matches
     match /gameInvites/{inviteId} {
       allow read: if request.auth.uid in [resource.data.from, resource.data.to];
-      allow write: if request.auth.uid == resource.data.from &&
-        resource.data.to in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.matches.keys();
+      allow write: if request.auth.token.admin == true;
     }
 
     // Game sessions are restricted to the listed players
