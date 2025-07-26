@@ -26,7 +26,6 @@ import { useNavigation } from '@react-navigation/native';
 import PropTypes from 'prop-types';
 import { useUser } from '../contexts/UserContext';
 import firebase from '../firebase';
-import { SAMPLE_EVENTS, SAMPLE_POSTS } from '../data/community';
 import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 import * as Haptics from 'expo-haptics';
 import EmptyState from '../components/EmptyState';
@@ -77,7 +76,7 @@ const CommunityScreen = () => {
     const q = firebase.firestore().collection('events').orderBy('createdAt', 'desc');
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setEvents(data.length ? data : SAMPLE_EVENTS);
+      setEvents(data);
       setLoadingEvents(false);
       setRefreshing(false);
     });
@@ -88,7 +87,7 @@ const CommunityScreen = () => {
     const q = firebase.firestore().collection('communityPosts').orderBy('createdAt', 'desc');
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setPosts(data.length ? data : SAMPLE_POSTS);
+      setPosts(data);
       setLoadingPosts(false);
       setRefreshing(false);
     });
@@ -100,9 +99,19 @@ const CommunityScreen = () => {
     : events.filter((e) => e.category === activeFilter);
   const displayEvents = filteredEvents.slice(0, 4);
 
-  const toggleJoin = async (id) => {
-    const isJoined = joinedEvents.includes(id);
-    if (!isJoined && joinedEvents.length === 0) {
+  const joinEvent = async (id) => {
+    try {
+      await firebase
+        .firestore()
+        .collection('events')
+        .doc(id)
+        .update({
+          participants: firebase.firestore.FieldValue.arrayUnion(user.uid),
+        });
+    } catch (e) {
+      console.warn('Failed to join event', e);
+    }
+    if (joinedEvents.length === 0) {
       setFirstJoin(true);
       if (user?.uid && !(user.badges || []).includes('socialButterfly')) {
         try {
@@ -118,13 +127,22 @@ const CommunityScreen = () => {
         }
       }
     }
-    setJoinedEvents(
-      isJoined ? joinedEvents.filter((e) => e !== id) : [...joinedEvents, id]
-    );
-    Alert.alert(
-      isJoined ? 'RSVP Cancelled' : 'Event Joined',
-      isJoined ? 'You left the event.' : 'You’re in! XP applied.'
-    );
+    setJoinedEvents([...joinedEvents, id]);
+  };
+
+  const leaveEvent = async (id) => {
+    try {
+      await firebase
+        .firestore()
+        .collection('events')
+        .doc(id)
+        .update({
+          participants: firebase.firestore.FieldValue.arrayRemove(user.uid),
+        });
+    } catch (e) {
+      console.warn('Failed to leave event', e);
+    }
+    setJoinedEvents(joinedEvents.filter((e) => e !== id));
   };
 
   const handleJoin = (event) => {
@@ -135,7 +153,8 @@ const CommunityScreen = () => {
           text: 'Use Ticket',
           onPress: () => {
             redeemEventTicket(event.id);
-            toggleJoin(event.id);
+            joinEvent(event.id);
+            Alert.alert('Event Joined', 'You\u2019re in! XP applied.');
           },
         },
         {
@@ -146,7 +165,13 @@ const CommunityScreen = () => {
       ]);
       return;
     }
-    toggleJoin(event.id);
+    if (isJoined) {
+      leaveEvent(event.id);
+      Alert.alert('RSVP Cancelled', 'You left the event.');
+    } else {
+      joinEvent(event.id);
+      Alert.alert('Event Joined', 'You\u2019re in! XP applied.');
+    }
   };
 
   const handleRefresh = async () => {
@@ -154,10 +179,10 @@ const CommunityScreen = () => {
     try {
       const eventSnap = await firebase.firestore().collection('events').orderBy('createdAt', 'desc').get();
       const eventData = eventSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setEvents(eventData.length ? eventData : SAMPLE_EVENTS);
+      setEvents(eventData);
       const postSnap = await firebase.firestore().collection('communityPosts').orderBy('createdAt', 'desc').get();
       const postData = postSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setPosts(postData.length ? postData : SAMPLE_POSTS);
+      setPosts(postData);
     } catch (e) {
       console.warn('Failed to refresh community', e);
     }
@@ -442,7 +467,7 @@ const CommunityScreen = () => {
               onPress={() => {
                 setShowOptionsModal(false);
                 if (optionsEvent) {
-                  navigation.navigate('EventChat', { event: optionsEvent.event });
+                  navigation.navigate('EventChat', { eventId: optionsEvent.event.id });
                 }
               }}
             >
