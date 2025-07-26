@@ -96,11 +96,14 @@ service cloud.firestore {
           (resource.data.userId != null ? resource.data.userId : request.resource.data.userId);
     }
 
-    // Game invites are readable by the sender or recipient and writable only by
-    // the sender for existing matches
+    // Game invites are readable by the sender or recipient. The sender or
+    // recipient may create or update their invites while admins retain full
+    // access.
     match /gameInvites/{inviteId} {
       allow read: if request.auth.uid in [resource.data.from, resource.data.to];
-      allow write: if request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true ||
+        request.auth.uid == request.resource.data.from ||
+        request.auth.uid == request.resource.data.to;
     }
 
     // Game sessions are restricted to the listed players
