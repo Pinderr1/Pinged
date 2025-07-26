@@ -3,12 +3,14 @@ import * as Haptics from 'expo-haptics';
 import firebase from '../firebase';
 import { useUser } from './UserContext';
 import { useNotification } from './NotificationContext';
+import { useSound } from './SoundContext';
 
 const ListenerContext = createContext();
 
 export const ListenerProvider = ({ children }) => {
   const { user } = useUser();
   const { showNotification } = useNotification();
+  const { play } = useSound();
 
   const [messageInfoMap, setMessageInfoMap] = useState({});
   const [incomingInvites, setIncomingInvites] = useState([]);
@@ -82,7 +84,7 @@ export const ListenerProvider = ({ children }) => {
       Haptics.notificationAsync(
         Haptics.NotificationFeedbackType.Success
       ).catch(() => {});
-      // TODO: play success sound here
+      play('match');
       showNotification('New game invite');
     }
     prevInvites.current = incomingInvites;

@@ -7,9 +7,6 @@ export const SoundProvider = ({ children }) => {
   const soundsRef = useRef({});
 
   const loadSound = async (key) => {
-    // TODO: load actual audio file for the given key, e.g.
-    // const { sound } = await Audio.Sound.createAsync(require(`../assets/${key}.mp3`));
-    // return sound;
     return null;
   };
 

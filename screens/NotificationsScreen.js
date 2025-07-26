@@ -23,6 +23,7 @@ import { HEADER_SPACING } from '../layout';
 import firebase from '../firebase';
 import { games } from '../games';
 import PropTypes from 'prop-types';
+import { useSound } from '../contexts/SoundContext';
 import useCardPressAnimation from '../hooks/useCardPressAnimation';
 import EmptyState from '../components/EmptyState';
 
@@ -56,6 +57,7 @@ const NotificationsScreen = ({ navigation }) => {
   const { user } = useUser();
   const { darkMode, theme } = useTheme();
   const { dismissNotification } = useNotification();
+  const { play } = useSound();
   const styles = getStyles(theme);
   const [loadingId, setLoadingId] = useState(null);
   const [invitesLoaded, setInvitesLoaded] = useState(false);
@@ -113,7 +115,7 @@ const NotificationsScreen = ({ navigation }) => {
       Haptics.notificationAsync(
         Haptics.NotificationFeedbackType.Success
       ).catch(() => {});
-      // TODO: play success sound here
+      play('match');
       if (animateSuccess) animateSuccess();
     } catch (e) {
       console.warn('Failed to accept invite', e);
