@@ -75,6 +75,7 @@ export const ChatProvider = ({ children }) => {
 
   // Matches from ListenerContext
   const userUnsubs = useRef({});
+  const presenceCache = useRef({});
   const { matches: listenerMatches } = useListeners();
 
   useEffect(() => {
@@ -110,7 +111,15 @@ export const ChatProvider = ({ children }) => {
 
     setLoading(false);
 
-    const userIds = data
+    const topFive = [...data]
+      .sort((a, b) => {
+        const aT = a.createdAt?.toDate?.().getTime?.() || 0;
+        const bT = b.createdAt?.toDate?.().getTime?.() || 0;
+        return bT - aT;
+      })
+      .slice(0, 5);
+
+    const userIds = topFive
       .map((m) =>
         Array.isArray(m.users) ? m.users.find((u) => u !== user.uid) : null
       )
@@ -131,25 +140,29 @@ export const ChatProvider = ({ children }) => {
           .firestore()
           .collection('users')
           .doc(uid)
-          .onSnapshot((doc) => {
-            const info = doc.data() || {};
-            setMatches((prev) =>
-              prev.map((m) =>
-                m.otherUserId === uid
-                  ? {
-                      ...m,
-                      displayName: info.displayName || 'User',
-                      age: info.age || 0,
-                      image: info.photoURL
-                        ? { uri: info.photoURL }
-                        : require('../assets/user1.jpg'),
-                      avatarOverlay: info.avatarOverlay || m.avatarOverlay || '',
-                      online: !!info.online,
-                    }
-                  : m
-              )
-            );
-          });
+          .onSnapshot(
+            { includeMetadataChanges: true },
+            (doc) => {
+              const info = doc.data() || {};
+              presenceCache.current[uid] = info;
+              setMatches((prev) =>
+                prev.map((m) =>
+                  m.otherUserId === uid
+                    ? {
+                        ...m,
+                        displayName: info.displayName || 'User',
+                        age: info.age || 0,
+                        image: info.photoURL
+                          ? { uri: info.photoURL }
+                          : require('../assets/user1.jpg'),
+                        avatarOverlay: info.avatarOverlay || m.avatarOverlay || '',
+                        online: !!info.online,
+                      }
+                    : m
+                )
+              );
+            }
+          );
       }
     });
   }, [listenerMatches, user?.uid]);
