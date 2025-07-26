@@ -185,6 +185,37 @@ const trackGameInvite = functions.firestore
     return null;
   });
 
+const cleanupFinishedSession = functions.firestore
+  .document('gameSessions/{sessionId}')
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() || {};
+    const after = change.after.data() || {};
+    const beforeOver = before.gameover;
+    const afterOver = after.gameover;
+
+    if (!beforeOver && afterOver) {
+      const sessionId = context.params.sessionId;
+      const inviteRef = admin.firestore().collection('gameInvites').doc(sessionId);
+      await Promise.all([
+        inviteRef
+          .update({
+            status: 'finished',
+            endedAt: admin.firestore.FieldValue.serverTimestamp(),
+          })
+          .catch((e) => console.error('Failed to update invite on cleanup', e)),
+        change.after.ref.set(
+          {
+            archived: true,
+            archivedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        ),
+      ]);
+    }
+
+    return null;
+  });
+
 const acceptInvite = functions.https.onCall(async (data, context) => {
   const inviteId = data?.inviteId;
   const uid = context.auth?.uid;
@@ -199,6 +230,9 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
   const db = admin.firestore();
   const inviteRef = db.collection('gameInvites').doc(inviteId);
   let matchId = null;
+  let fromUid = null;
+  let toUid = null;
+  let gameId = null;
 
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(inviteRef);
@@ -207,8 +241,9 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
     }
 
     const invite = snap.data() || {};
-    const fromUid = invite.from;
-    const toUid = invite.to;
+    fromUid = invite.from;
+    toUid = invite.to;
+    gameId = invite.gameId;
 
     if (toUid !== uid && fromUid !== uid) {
       throw new functions.https.HttpsError('permission-denied', 'Not an invite participant');
@@ -226,16 +261,16 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
     const bothAccepted = acceptedBy.includes(fromUid) && acceptedBy.includes(toUid);
     if (bothAccepted) {
       updates.status = 'ready';
-      if (!invite.gameSessionId) {
-        updates.gameSessionId = db.collection('gameSessions').doc().id;
-      }
+      updates.gameSessionId = inviteId;
 
       matchId = [fromUid, toUid].sort().join('_');
-      const matchRef = db.collection('matches').doc(matchId);
-      const matchSnap = await tx.get(matchRef);
-      if (!matchSnap.exists) {
-        tx.set(matchRef, {
-          users: [fromUid, toUid],
+
+      const sessionRef = db.collection('gameSessions').doc(inviteId);
+      const sessionSnap = await tx.get(sessionRef);
+      if (!sessionSnap.exists) {
+        tx.set(sessionRef, {
+          gameId,
+          players: [fromUid, toUid],
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       }
@@ -243,6 +278,23 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
 
     tx.update(inviteRef, updates);
   });
+
+  if (matchId) {
+    const matchRef = db.collection('matches').doc(matchId);
+    const matchSnap = await matchRef.get();
+    if (!matchSnap.exists) {
+      const [like1, like2] = await Promise.all([
+        db.collection('likes').doc(fromUid).collection('liked').doc(toUid).get(),
+        db.collection('likes').doc(toUid).collection('liked').doc(fromUid).get(),
+      ]);
+      if (like1.exists && like2.exists) {
+        await matchRef.set({
+          users: [fromUid, toUid],
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    }
+  }
 
   return { matchId };
 });
@@ -356,6 +408,7 @@ module.exports = {
   syncPresence,
   autoStartGame,
   trackGameInvite,
+  cleanupFinishedSession,
   autoStartLobby,
   onChatMessageCreated,
   acceptInvite,
