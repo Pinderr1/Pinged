@@ -92,10 +92,8 @@ const PlayScreen = ({ navigation }) => {
       return;
     }
     if (!requireCredits()) return;
-    const { id, title, category, description } = previewGame;
-    navigation.navigate('GameInvite', {
-      game: { id, title, category, description }
-    });
+    // Navigate to Matches screen to select an opponent for this game
+    navigation.navigate('Matches');
     // Game play is recorded in GameSessionScreen when the session starts
   };
 

@@ -273,7 +273,7 @@ const HomeScreen = ({ navigation }) => {
     } else if (playTarget === 'stranger') {
       matchWithStranger(game.id);
     } else {
-      navigation.navigate('GameInvite', { game: { id: game.id, title: game.title } });
+      navigation.navigate('Matches');
     }
   };
 
