@@ -1,10 +1,46 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import firebase from '../firebase';
 import { games } from '../games';
 import { useUser } from '../contexts/UserContext';
 import { useSound } from '../contexts/SoundContext';
 import { snapshotExists } from '../utils/firestore';
+
+function replayGame(Game, initial, moves = []) {
+  let G = JSON.parse(JSON.stringify(initial || Game.setup()));
+  let currentPlayer = '0';
+  let gameover = null;
+
+  for (const m of moves) {
+    const move = Game.moves[m.action];
+    if (!move) continue;
+    let nextPlayer = currentPlayer;
+    const ctx = {
+      currentPlayer,
+      events: {
+        endTurn: () => {
+          nextPlayer = currentPlayer === '0' ? '1' : '0';
+        },
+      },
+    };
+    const args = Array.isArray(m.args) ? m.args : [];
+    const res = move({ G, ctx }, ...args);
+    if (res === INVALID_MOVE) continue;
+    if (Game.turn?.moveLimit === 1 && nextPlayer === currentPlayer) {
+      nextPlayer = currentPlayer === '0' ? '1' : '0';
+    }
+    currentPlayer = nextPlayer;
+    if (Game.endIf) {
+      const over = Game.endIf({ G, ctx: { currentPlayer } });
+      if (over) {
+        gameover = over;
+        break;
+      }
+    }
+  }
+
+  return { G, currentPlayer, gameover };
+}
 
 export default function useGameSession(sessionId, gameId, opponentId) {
   const { user } = useUser();
@@ -31,6 +67,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
           players: [user.uid, opponentId],
           state: Game.setup(),
           currentPlayer: '0',
+          moves: [],
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
@@ -42,30 +79,33 @@ export default function useGameSession(sessionId, gameId, opponentId) {
     if (!session || !Game) return;
     const idx = session.players.indexOf(user.uid);
     if (idx === -1) return;
-    if (String(idx) !== session.currentPlayer) return;
-    if (session.gameover) return;
 
-    const G = JSON.parse(JSON.stringify(session.state));
-    let nextPlayer = session.currentPlayer;
+    const { G, currentPlayer, gameover } = replayGame(Game, session.state, session.moves);
+
+    if (String(idx) !== currentPlayer) return;
+    if (gameover) return;
+
+    const nextState = JSON.parse(JSON.stringify(G));
+    let nextPlayer = currentPlayer;
     const ctx = {
-      currentPlayer: session.currentPlayer,
+      currentPlayer,
       events: {
         endTurn: () => {
-          nextPlayer = session.currentPlayer === '0' ? '1' : '0';
+          nextPlayer = currentPlayer === '0' ? '1' : '0';
         },
       },
     };
 
     const move = Game.moves[moveName];
     if (!move) return;
-    const res = move({ G, ctx }, ...args);
+    const res = move({ G: nextState, ctx }, ...args);
     if (res === INVALID_MOVE) return;
 
-    if (Game.turn?.moveLimit === 1 && nextPlayer === session.currentPlayer) {
-      nextPlayer = session.currentPlayer === '0' ? '1' : '0';
+    if (Game.turn?.moveLimit === 1 && nextPlayer === currentPlayer) {
+      nextPlayer = currentPlayer === '0' ? '1' : '0';
     }
 
-    const gameover = Game.endIf ? Game.endIf({ G, ctx: { currentPlayer: nextPlayer } }) : undefined;
+    const over = Game.endIf ? Game.endIf({ G: nextState, ctx: { currentPlayer: nextPlayer } }) : undefined;
 
     try {
       await firebase
@@ -73,11 +113,10 @@ export default function useGameSession(sessionId, gameId, opponentId) {
         .collection('gameSessions')
         .doc(sessionId)
         .update({
-          state: G,
           currentPlayer: nextPlayer,
-          gameover: gameover || null,
+          gameover: over || null,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          moves: firebase.firestore.FieldValue.arrayUnion({ action: moveName, player: String(idx), at: firebase.firestore.FieldValue.serverTimestamp() }),
+          moves: firebase.firestore.FieldValue.arrayUnion({ action: moveName, player: String(idx), args, at: firebase.firestore.FieldValue.serverTimestamp() }),
         });
       play('game_move');
     } catch (e) {
@@ -92,9 +131,14 @@ export default function useGameSession(sessionId, gameId, opponentId) {
     }
   }
 
+  const computed = useMemo(() => {
+    if (!Game || !session) return null;
+    return replayGame(Game, session.state, session.moves);
+  }, [Game, session]);
+
   return {
-    G: session?.state,
-    ctx: { currentPlayer: session?.currentPlayer, gameover: session?.gameover },
+    G: computed?.G,
+    ctx: { currentPlayer: computed?.currentPlayer, gameover: computed?.gameover },
     moves,
     moveHistory: session?.moves || [],
     loading: !session,
