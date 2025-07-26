@@ -7,7 +7,6 @@ const ProfileScreen = lazy(() => import("../screens/ProfileScreen"));
 const EditProfileScreen = lazy(() => import("../screens/EditProfileScreen"));
 const ChatScreen = lazy(() => import("../screens/ChatScreen"));
 const NotificationsScreen = lazy(() => import("../screens/NotificationsScreen"));
-const GameInviteScreen = lazy(() => import("../screens/GameInviteScreen"));
 const GameSessionScreen = lazy(() => import("../screens/GameSessionScreen"));
 const CommunityScreen = lazy(() => import("../screens/CommunityScreen"));
 const PremiumScreen = lazy(() => import("../screens/PremiumScreen"));
@@ -36,7 +35,6 @@ export default function AppStack() {
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
-      <Stack.Screen name="GameInvite" component={GameInviteScreen} />
       <Stack.Screen
         name="GameSession"
         component={GameSessionScreen}
