@@ -142,32 +142,25 @@ const HomeScreen = ({ navigation }) => {
         return;
       }
 
-      const sessionsRef = firebase.firestore().collection('gameSessions');
-      const waiting = await sessionsRef
-        .where('gameId', '==', gameId)
-        .where('players', 'array-contains', null)
-        .where('status', '==', 'waiting')
-        .limit(1)
-        .get();
+      const joinRes = await firebase
+        .functions()
+        .httpsCallable('joinGameSession')({ gameId });
+      const { sessionId, opponentId } = joinRes.data || {};
 
-      if (!waiting.empty) {
-        const doc = waiting.docs[0];
-        const data = doc.data();
-        const firstPlayer = Array.isArray(data.players) ? data.players[0] : null;
-        await doc.ref.update({ players: [firstPlayer, user.uid], status: 'active' });
+      if (opponentId) {
         const res = await firebase
           .functions()
-          .httpsCallable('createMatch')({ opponentUid: firstPlayer });
+          .httpsCallable('createMatch')({ opponentUid: opponentId });
         const chatId = res.data?.matchId;
         const oppSnap = await firebase
           .firestore()
           .collection('users')
-          .doc(firstPlayer)
+          .doc(opponentId)
           .get();
         const opp = oppSnap.data() || {};
         const match = {
           id: chatId,
-          otherUserId: firstPlayer,
+          otherUserId: opponentId,
           displayName: opp.displayName || 'Player',
           image: opp.photoURL ? { uri: opp.photoURL } : require('../assets/user1.jpg'),
           avatarOverlay: opp.avatarOverlay || '',
@@ -189,12 +182,7 @@ const HomeScreen = ({ navigation }) => {
           chatId,
         });
       } else {
-        const ref = await sessionsRef.add({
-          gameId,
-          players: [user.uid, null],
-          status: 'waiting',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
+        const ref = firebase.firestore().collection('gameSessions').doc(sessionId);
         await updateDailyUsage();
         if (matchTimeout.current) clearTimeout(matchTimeout.current);
         let unsub = ref.onSnapshot(async (snap) => {
