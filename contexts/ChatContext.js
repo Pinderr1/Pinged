@@ -90,14 +90,19 @@ export const ChatProvider = ({ children }) => {
           ? m.users.find((u) => u !== user.uid)
           : null;
         const prevMatch = prev.find((p) => p.id === m.id) || {};
+        const cached = presenceCache.current[otherId] || {};
         return {
           id: m.id,
           otherUserId: otherId,
-          displayName: prevMatch.displayName || 'Match',
-          age: prevMatch.age || 0,
-          image: prevMatch.image || require('../assets/user1.jpg'),
-          avatarOverlay: prevMatch.avatarOverlay || '',
-          online: prevMatch.online || false,
+          displayName:
+            prevMatch.displayName || cached.displayName || 'Match',
+          age: prevMatch.age || cached.age || 0,
+          image:
+            prevMatch.image ||
+            (cached.photoURL ? { uri: cached.photoURL } : require('../assets/user1.jpg')),
+          avatarOverlay:
+            prevMatch.avatarOverlay || cached.avatarOverlay || '',
+          online: prevMatch.online || !!cached.online,
           messages: prevMatch.messages || [],
           matchedAt: m.createdAt
             ? m.createdAt.toDate?.().toISOString()
@@ -130,6 +135,7 @@ export const ChatProvider = ({ children }) => {
       if (!userIds.includes(uid)) {
         userUnsubs.current[uid]();
         delete userUnsubs.current[uid];
+        delete presenceCache.current[uid];
       }
     });
 
