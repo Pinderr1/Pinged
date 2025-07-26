@@ -47,6 +47,9 @@ import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
 import PropTypes from 'prop-types';
 import { FONT_FAMILY } from '../textStyles';
+import UserCard from '../components/UserCard';
+import SwipeControls from '../components/SwipeControls';
+import FilterPanel from '../components/FilterPanel';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -551,91 +554,55 @@ const SwipeScreen = () => {
 
   const gradientColors = theme.gradient;
 
+  const controlButtons = [
+    { icon: 'flame', color: '#fb923c', action: handleBoostPress },
+    {
+      icon: 'close',
+      color: '#f87171',
+      action: swipeLeft,
+      longAction: () =>
+        isPremiumUser
+          ? rewind()
+          : navigation.navigate('PremiumPaywall', { context: 'paywall' }),
+    },
+    { icon: 'game-controller', color: '#a78bfa', action: handleGameInvite },
+    {
+      icon: 'heart',
+      color: '#ff75b5',
+      action: swipeRight,
+      longAction: () =>
+        isPremiumUser
+          ? handleSuperLike()
+          : navigation.navigate('PremiumPaywall', { context: 'paywall' }),
+    },
+  ];
+
 
   return (
     <GradientBackground colors={gradientColors} style={{ flex: 1 }}>
       <ScreenContainer style={styles.container}>
         <Header />
-        {displayUser ? (
-          <Animated.View
-            {...panResponder.panHandlers}
-            style={[
-              styles.card,
-              {
-                transform: [
-                  { translateX: pan.x },
-                  { translateY: pan.y },
-                  {
-                    rotate: pan.x.interpolate({
-                      inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
-                      outputRange: ['-15deg', '0deg', '15deg'],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          >
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() =>
-                setImageIndex((i) => (i + 1) % displayUser.images.length)
-              }
-              style={{ flex: 1 }}
-            >
-            <Animated.View style={[styles.badge, styles.likeBadge, { opacity: likeOpacity }]}>
-              <Text style={[styles.badgeText, styles.likeText]}>LIKE</Text>
-            </Animated.View>
-            <Animated.View style={[styles.badge, styles.nopeBadge, { opacity: nopeOpacity }]}>
-              <Text style={[styles.badgeText, styles.nopeText]}>NOPE</Text>
-            </Animated.View>
-            <Animated.View style={[styles.badge, styles.superLikeBadge, { opacity: superLikeOpacity }]}>
-              <Text style={[styles.badgeText, styles.superLikeText]}>SUPER{"\n"}LIKE</Text>
-            </Animated.View>
-            <Image source={displayUser.images[imageIndex]} style={styles.image} />
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.6)']}
-              style={styles.imageOverlay}
-            />
-            <View style={styles.bottomInfo}>
-              <Text style={styles.distanceBadge}>Nearby</Text>
-              <View style={styles.nameRow}>
-                <Text style={styles.nameText}>
-                  {displayUser.displayName}, {displayUser.age}
-                </Text>
-                <Ionicons
-                  name="checkmark-circle"
-                  size={20}
-                  color={theme.accent}
-                  style={{ marginLeft: 6 }}
-                />
-                {isDisplayBoosted && (
-                  <View style={styles.boostBadge}>
-                    <Text style={styles.boostBadgeText}>🔥 Boosted</Text>
-                  </View>
-                )}
-              </View>
-              <TouchableOpacity
-                onPress={() => {
-                  Haptics.selectionAsync().catch(() => {});
-                  setShowDetails(true);
-                }}
-                style={styles.expandIcon}
-              >
-                <Ionicons name="chevron-up" size={24} color="#fff" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  Haptics.selectionAsync().catch(() => {});
-                  setShowProfile(true);
-                }}
-                style={styles.infoIcon}
-              >
-                <Ionicons name="information-circle" size={24} color="#fff" />
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-          </Animated.View>
-        ) : null}
+        <UserCard
+          user={displayUser}
+          panHandlers={panResponder.panHandlers}
+          pan={pan}
+          likeOpacity={likeOpacity}
+          nopeOpacity={nopeOpacity}
+          superLikeOpacity={superLikeOpacity}
+          imageIndex={imageIndex}
+          onImagePress={() =>
+            setImageIndex((i) => (i + 1) % (displayUser?.images?.length || 1))
+          }
+          onShowDetails={() => {
+            Haptics.selectionAsync().catch(() => {});
+            setShowDetails(true);
+          }}
+          onShowProfile={() => {
+            Haptics.selectionAsync().catch(() => {});
+            setShowProfile(true);
+          }}
+          isBoosted={isDisplayBoosted}
+        />
         {showSuperLikeAnim ? (
           <View style={styles.superLikeOverlay} pointerEvents="none">
             <LottieView
@@ -646,99 +613,21 @@ const SwipeScreen = () => {
             />
           </View>
         ) : null}
-        {!displayUser &&
-          (loadingUsers ? (
-            <SkeletonUserCard />
-          ) : (
-            <View style={styles.noMoreWrapper}>
-              <EmptyState
-                text="No more swipes"
-                animation={require('../assets/hearts.json')}
-              />
-              <GradientButton
-                text="Boost"
-                width={180}
-                onPress={handleBoostPress}
-                style={{ marginTop: 20 }}
-              />
-              <TouchableOpacity
-                onPress={() => {
-                  Haptics.selectionAsync().catch(() => {});
-                  navigation.navigate('Settings');
-                }}
-                style={{ marginTop: 12 }}
-              >
-                <Text style={styles.changeFiltersText}>Change Filters</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+        <FilterPanel
+          loading={loadingUsers}
+          onBoostPress={handleBoostPress}
+          onChangeFilters={() => {
+            Haptics.selectionAsync().catch(() => {});
+            navigation.navigate('Settings');
+          }}
+          show={!displayUser}
+        />
 
-        <View style={styles.buttonRow}>
-          {[
-            {
-              icon: 'flame',
-              color: '#fb923c',
-              action: handleBoostPress,
-            },
-            {
-              icon: "close",
-              color: "#f87171",
-              action: swipeLeft,
-              longAction: rewind,
-            },
-            {
-              icon: "game-controller",
-              color: "#a78bfa",
-              action: handleGameInvite,
-            },
-            {
-              icon: "heart",
-              color: "#ff75b5",
-              action: swipeRight,
-              longAction: handleSuperLike,
-            },
-          ].map((btn, i) => (
-            <Animated.View
-              key={btn.icon}
-              style={{
-                transform: [{ scale: scaleRefs[i] }],
-                opacity: actionLoading ? 0.6 : 1,
-              }}
-            >
-              <TouchableOpacity
-                onPressIn={() =>
-                  Animated.spring(scaleRefs[i], {
-                    toValue: 0.9,
-                    useNativeDriver: true,
-                  }).start()
-                }
-                onPressOut={() =>
-                  Animated.spring(scaleRefs[i], {
-                    toValue: 1,
-                    friction: 3,
-                    useNativeDriver: true,
-                  }).start()
-                }
-                onPress={btn.action}
-                onLongPress={() =>
-                  btn.longAction && isPremiumUser
-                    ? btn.longAction()
-                    : btn.longAction &&
-                      navigation.navigate('PremiumPaywall', { context: 'paywall' })
-                }
-                delayLongPress={300}
-                style={[styles.circleButton, { backgroundColor: btn.color }]}
-                disabled={actionLoading}
-              >
-                {btn.icon === 'game-controller' ? (
-                  <MaterialCommunityIcons name="gamepad-variant" size={28} color="#fff" />
-                ) : (
-                  <Ionicons name={btn.icon} size={28} color="#fff" />
-                )}
-              </TouchableOpacity>
-            </Animated.View>
-          ))}
-        </View>
+        <SwipeControls
+          buttons={controlButtons}
+          scaleRefs={scaleRefs}
+          actionLoading={actionLoading}
+        />
         {actionLoading && (
           <View style={styles.actionLoader} pointerEvents="none">
             <Loader size="small" />
