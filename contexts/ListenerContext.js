@@ -16,8 +16,6 @@ export const ListenerProvider = ({ children }) => {
   const [sessions, setSessions] = useState([]);
   const [matches, setMatches] = useState([]);
 
-  const messageUnsubs = useRef({});
-  const currentMatchIds = useRef({});
   const prevInvites = useRef([]);
   const prevMatches = useRef([]);
   const prevInfoMap = useRef({});
@@ -43,65 +41,35 @@ export const ListenerProvider = ({ children }) => {
 
       setMatches(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
 
-      snap.docChanges().forEach((change) => {
-        const id = change.doc.id;
+      const infoMap = {};
+      snap.docs.forEach((doc) => {
+        const id = doc.id;
+        const data = doc.data() || {};
+        const info = {
+          matchId: id,
+          lastMessage: data.lastMessage || '',
+          unreadCount: data.unreadCounts?.[user.uid] || 0,
+        };
 
-        if (change.type === 'added') {
-          if (!currentMatchIds.current[id]) {
-            currentMatchIds.current[id] = true;
-
-            if (!prevInfoMap.current[id]) {
-              prevInfoMap.current[id] = { lastMessage: '', unreadCount: 0 };
-            }
-
-            messageUnsubs.current[id] = firebase
-              .firestore()
-              .collection('matches')
-              .doc(id)
-              .onSnapshot((doc) => {
-                const data = doc.data() || {};
-                const info = {
-                  lastMessage: data.lastMessage || '',
-                  unreadCount: data.unreadCounts?.[user.uid] || 0,
-                };
-
-                const prevInfo = prevInfoMap.current[id];
-                if (
-                  prevInfo &&
-                  info.unreadCount > prevInfo.unreadCount &&
-                  data.lastSenderId &&
-                  data.lastSenderId !== user.uid
-                ) {
-                  showNotification('New Message');
-                }
-
-                prevInfoMap.current[id] = info;
-                setMessageInfoMap((prev) => ({
-                  ...prev,
-                  [id]: { matchId: id, ...info },
-                }));
-              });
-          }
-        } else if (change.type === 'removed') {
-          if (messageUnsubs.current[id]) {
-            messageUnsubs.current[id]();
-            delete messageUnsubs.current[id];
-          }
-          delete currentMatchIds.current[id];
-          delete prevInfoMap.current[id];
-          setMessageInfoMap((prev) => {
-            const { [id]: _removed, ...rest } = prev;
-            return rest;
-          });
+        const prevInfo = prevInfoMap.current[id];
+        if (
+          prevInfo &&
+          info.unreadCount > prevInfo.unreadCount &&
+          data.lastSenderId &&
+          data.lastSenderId !== user.uid
+        ) {
+          showNotification('New Message');
         }
+
+        infoMap[id] = info;
       });
+
+      prevInfoMap.current = infoMap;
+      setMessageInfoMap(infoMap);
     });
 
     return () => {
       unsubMatches();
-      Object.values(messageUnsubs.current).forEach((u) => u && u());
-      messageUnsubs.current = {};
-      currentMatchIds.current = {};
       prevMatches.current = [];
       prevInfoMap.current = {};
       setMatches([]);

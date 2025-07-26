@@ -14,6 +14,7 @@ export const chatActions = {};
 
 const STORAGE_PREFIX = 'chatMatches_';
 const GAME_STATE_PREFIX = 'gameState_';
+const STORAGE_VERSION = 1;
 
 const getStorageKey = (uid) => `${STORAGE_PREFIX}${uid}`;
 const getGameStateKey = (matchId) => `${GAME_STATE_PREFIX}${matchId}`;
@@ -41,8 +42,12 @@ export const ChatProvider = ({ children }) => {
         if (data) {
           try {
             const parsed = JSON.parse(data);
-            if (Array.isArray(parsed)) {
-            const converted = parsed.map((m) => {
+            const list = Array.isArray(parsed)
+              ? parsed
+              : Array.isArray(parsed?.data)
+              ? parsed.data
+              : [];
+            const converted = list.map((m) => {
               const { name, ...rest } = m;
               return {
                 ...rest,
@@ -52,16 +57,13 @@ export const ChatProvider = ({ children }) => {
             if (isMounted) {
               setMatches(converted);
             }
-          } else {
+          } catch (e) {
+            console.warn('Failed to parse matches from storage', e);
             if (isMounted) setMatches([]);
           }
-        } catch (e) {
-          console.warn('Failed to parse matches from storage', e);
+        } else {
           if (isMounted) setMatches([]);
         }
-      } else {
-        if (isMounted) setMatches([]);
-      }
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -165,12 +167,13 @@ export const ChatProvider = ({ children }) => {
   useEffect(() => {
     if (!user?.uid) return;
     saveMatchesToStorageRef.current = debounce((data) => {
-      AsyncStorage.setItem(getStorageKey(user.uid), JSON.stringify(data)).catch(
-        (err) => {
-          console.warn('Failed to save matches to storage', err);
-        }
-      );
-    }, 2000);
+      AsyncStorage.setItem(
+        getStorageKey(user.uid),
+        JSON.stringify({ v: STORAGE_VERSION, data })
+      ).catch((err) => {
+        console.warn('Failed to save matches to storage', err);
+      });
+    }, 10000);
   }, [user?.uid]);
 
   useEffect(() => {
@@ -289,22 +292,29 @@ export const ChatProvider = ({ children }) => {
   const getSavedGameState = async (matchId) => {
     try {
       const val = await AsyncStorage.getItem(getGameStateKey(matchId));
-      return val ? JSON.parse(val) : null;
+      if (!val) return null;
+      const parsed = JSON.parse(val);
+      return parsed?.data ?? parsed;
     } catch (e) {
       console.warn('Failed to load game state', e);
       return null;
     }
   };
 
-  const saveGameState = async (matchId, state) => {
-    try {
-      await AsyncStorage.setItem(
-        getGameStateKey(matchId),
-        JSON.stringify(state)
-      );
-    } catch (e) {
-      console.warn('Failed to save game state', e);
+  const gameStateSavers = useRef({});
+
+  const saveGameState = (matchId, state) => {
+    if (!gameStateSavers.current[matchId]) {
+      gameStateSavers.current[matchId] = debounce((data) => {
+        AsyncStorage.setItem(
+          getGameStateKey(matchId),
+          JSON.stringify({ v: STORAGE_VERSION, data })
+        ).catch((e) => {
+          console.warn('Failed to save game state', e);
+        });
+      }, 10000);
     }
+    gameStateSavers.current[matchId](state);
   };
 
   const clearGameState = async (matchId) => {
