@@ -11,7 +11,6 @@ export async function registerForPushNotificationsAsync() {
 
     if (Constants.appOwnership === 'expo' && Platform.OS === 'android') {
       return null;
-      return null;
     }
 
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
