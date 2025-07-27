@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
-  Image,
   Animated,
   PanResponder,
   TouchableOpacity,
@@ -14,11 +13,10 @@ import Toast from 'react-native-toast-message';
 import GradientBackground from '../components/GradientBackground';
 import ScreenContainer from '../components/ScreenContainer';
 import GradientButton from '../components/GradientButton';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Easing } from 'react-native';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
-import { HEADER_SPACING, SPACING } from '../layout';
+import { SPACING } from '../layout';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
@@ -26,26 +24,22 @@ import { useMatchmaking } from '../contexts/MatchmakingContext';
 import GamePickerModal from '../components/GamePickerModal';
 import BoostModal from '../components/BoostModal';
 import { allGames } from '../data/games';
-import { icebreakers } from '../data/prompts';
 import { useChats } from '../contexts/ChatContext';
 import firebase from '../firebase';
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { BlurView } from 'expo-blur';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
 import Loader from '../components/Loader';
 import { computePriority } from '../utils/priority';
 import { handleLike } from '../utils/matchUtils';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import * as Haptics from 'expo-haptics';
-import SkeletonUserCard from '../components/SkeletonUserCard';
-import EmptyState from '../components/EmptyState';
 import FullProfileModal from '../components/FullProfileModal';
 import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
-import PropTypes from 'prop-types';
 import { FONT_FAMILY } from '../textStyles';
 import UserCard from '../components/UserCard';
 import SwipeControls from '../components/SwipeControls';
@@ -761,92 +755,10 @@ const getStyles = (theme) =>
     justifyContent: 'flex-start',
     alignItems: 'stretch',
   },
-  card: {
-    position: 'absolute',
-    width: SCREEN_WIDTH * 0.9,
-    height: CARD_HEIGHT,
-    borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: '#fff',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    height: '40%',
-  },
-  bottomInfo: {
-    position: 'absolute',
-    bottom: BUTTON_ROW_BOTTOM + 80,
-    left: 0,
-    right: 0,
-    paddingHorizontal: SPACING.XL,
-    paddingVertical: SPACING.MD,
-  },
-  distanceBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: theme.accent,
-    color: '#fff',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginBottom: SPACING.XS,
-    fontSize: 12,
-    fontFamily: FONT_FAMILY.medium,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   nameText: {
     fontSize: 24,
     fontFamily: FONT_FAMILY.heading,
     color: '#fff',
-  },
-  expandIcon: {
-    position: 'absolute',
-    bottom: -30,
-    alignSelf: 'center',
-  },
-  infoIcon: {
-    position: 'absolute',
-    top: SPACING.MD,
-    right: SPACING.MD,
-  },
-  noMoreWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 40,
-  },
-  noMoreText: {
-    fontSize: 20,
-    fontFamily: FONT_FAMILY.bold,
-    color: '#999',
-    textAlign: 'center',
-  },
-  changeFiltersText: {
-    color: theme.accent,
-    textDecorationLine: 'underline',
-    fontSize: 16,
-    fontFamily: FONT_FAMILY.medium,
-  },
-  buttonRow: {
-    position: 'absolute',
-    bottom: BUTTON_ROW_BOTTOM,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    paddingHorizontal: SPACING.XL,
   },
   actionLoader: {
     position: 'absolute',
@@ -854,62 +766,6 @@ const getStyles = (theme) =>
     left: 0,
     right: 0,
     alignItems: 'center',
-  },
-  circleButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 2,
-  },
-  badge: {
-    position: 'absolute',
-    top: 40,
-    padding: 10,
-    borderWidth: 4,
-    borderRadius: 8,
-  },
-  likeBadge: {
-    left: 20,
-    borderColor: '#4ade80',
-    transform: [{ rotate: '-30deg' }],
-    backgroundColor: 'rgba(74, 222, 128, 0.2)',
-  },
-  nopeBadge: {
-    right: 20,
-    borderColor: '#f87171',
-    transform: [{ rotate: '30deg' }],
-    backgroundColor: 'rgba(248, 113, 113, 0.2)',
-  },
-  badgeText: {
-    fontSize: 32,
-    fontFamily: FONT_FAMILY.bold,
-    color: '#fff',
-  },
-  likeText: {
-    color: '#4ade80',
-  },
-  nopeText: {
-    color: '#f87171',
-  },
-  boostBadge: {
-    marginLeft: SPACING.SM,
-    backgroundColor: theme.accent,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  boostBadgeText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  superLikeBadge: {
-    top: CARD_HEIGHT / 2 - 20,
-    left: SCREEN_WIDTH / 2 - 80,
-    borderColor: '#60a5fa',
-    transform: [{ rotate: '0deg' }],
-    backgroundColor: 'rgba(96, 165, 250, 0.2)',
-  },
-  superLikeText: {
-    color: '#60a5fa',
   },
   superLikeOverlay: {
     position: 'absolute',
@@ -984,7 +840,5 @@ const getStyles = (theme) =>
   },
   debugText: { color: '#fff', fontSize: 12, fontFamily: FONT_FAMILY.regular },
 });
-
-SwipeScreen.propTypes = {};
 
 export default SwipeScreen;
