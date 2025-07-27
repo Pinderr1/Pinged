@@ -8,7 +8,7 @@ import { HEADER_SPACING } from '../layout';
 import useGameSession from '../hooks/useGameSession';
 import PropTypes from 'prop-types';
 
-function SpectatorSessionScreen({ route }) {
+function SpectatorGameSession({ route }) {
   const { theme } = useTheme();
   const styles = getSpectatorStyles(theme);
   const anim = useRef(new Animated.Value(0)).current;
@@ -94,7 +94,7 @@ const getSpectatorStyles = (theme) =>
       backgroundColor: '#0007',
     },
     logText: { color: '#fff', fontSize: 14, marginBottom: 2 },
-  });
+});
 
-\nSpectatorGameSession.propTypes = { route: PropTypes.object.isRequired };
+SpectatorGameSession.propTypes = { route: PropTypes.object.isRequired };
 export default SpectatorGameSession;
