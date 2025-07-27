@@ -28,6 +28,10 @@ cd pinged
 
 npm install
 
+    Install additional Expo modules
+
+npx expo install expo-image-manipulator
+
     Start the app
 
 npm run start
