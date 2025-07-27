@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-  Image,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
@@ -504,11 +503,6 @@ const getStyles = (theme) =>
       width: '100%',
       marginRight: 12,
       alignItems: 'center',
-    },
-    eventImage: {
-      width: 50,
-      height: 50,
-      borderRadius: 8,
     },
     eventTitle: {
       fontSize: 14,
