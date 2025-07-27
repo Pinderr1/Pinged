@@ -112,9 +112,18 @@ service cloud.firestore {
       allow write: if isSignedIn() && validGamePlayers(request.resource.data.players);
     }
 
-    // Realtime games restrict access to participating players
-    match /games/{sessionId} {
-      allow read, write: if request.auth.uid in resource.data.players;
+    // Public metadata about available games like trending status
+    // should be readable by all clients while writes remain
+    // restricted to administrators.
+    match /games/{gameId} {
+      allow read: if true;
+      allow write: if request.auth.token.admin == true;
+    }
+
+    // Application remote configuration is public read, admin write
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if request.auth.token.admin == true;
     }
 
     // Game stats follow the same player restriction
