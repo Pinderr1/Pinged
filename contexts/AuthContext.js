@@ -9,12 +9,10 @@ import { clearStoredOnboarding } from "../utils/onboarding";
 import { snapshotExists } from "../utils/firestore";
 import { isAllowedDomain } from "../utils/email";
 import { initPresence } from "../utils/presence";
-import { useOnboarding } from "./OnboardingContext";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const { markOnboarded, clearOnboarding } = useOnboarding();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const redirectUri = AuthSession.makeRedirectUri({ scheme: "pinged" });
@@ -113,7 +111,6 @@ export const AuthProvider = ({ children }) => {
     const unsub = firebase.auth().onAuthStateChanged(async (fbUser) => {
       if (fbUser?.uid !== currentUid) {
         if (!fbUser && currentUid) clearStoredOnboarding(currentUid);
-        clearOnboarding();
         currentUid = fbUser?.uid || null;
       }
 
@@ -131,7 +128,6 @@ export const AuthProvider = ({ children }) => {
           (snap) => {
             if (snapshotExists(snap)) {
               const data = snap.data();
-              if (data.onboardingComplete) markOnboarded();
               setUser({
                 uid: fbUser.uid,
                 email: fbUser.email,

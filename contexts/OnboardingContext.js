@@ -49,6 +49,12 @@ export const OnboardingProvider = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    if (user?.uid && user.onboardingComplete) {
+      markOnboarded();
+    }
+  }, [user?.uid, user?.onboardingComplete]);
+
   const clearOnboarding = async () => {
     if (!user) {
       setHasOnboarded(false);
