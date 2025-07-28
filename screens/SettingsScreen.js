@@ -131,6 +131,10 @@ const SettingsScreen = ({ navigation }) => {
             />
           )}
           <GradientButton text="Edit Profile" onPress={handleEditProfile} />
+          <GradientButton
+            text="Blocked Users"
+            onPress={() => navigation.navigate('BlockedUsers')}
+          />
         </View>
 
         <View style={local.sectionCard}>
