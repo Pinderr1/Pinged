@@ -302,23 +302,30 @@ const SwipeScreen = () => {
         return;
       }
 
-      const success = await handleLike({
-        currentUser,
-        targetUser: displayUser,
-        firestore: firebase.firestore(),
-        navigation,
-        likesUsed,
-        isPremiumUser,
-        setLikesUsed,
-        showNotification,
-        addMatch,
-        setMatchedUser,
-        setMatchLine,
-        setMatchGame,
-        play,
-        setShowFireworks,
-      });
-      if (!success) {
+      try {
+        const { success } = await handleLike({
+          currentUser,
+          targetUser: displayUser,
+          firestore: firebase.firestore(),
+          navigation,
+          likesUsed,
+          isPremiumUser,
+          setLikesUsed,
+          showNotification,
+          addMatch,
+          setMatchedUser,
+          setMatchLine,
+          setMatchGame,
+          play,
+          setShowFireworks,
+        });
+
+        if (!success) {
+          throw new Error('Like failed');
+        }
+      } catch (e) {
+        console.warn('Failed to like user', e);
+        Toast.show({ type: 'error', text1: 'Failed to like user' });
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
           useNativeDriver: false,
@@ -369,24 +376,28 @@ const SwipeScreen = () => {
     }
 
     const targetId = displayUser.id;
-    setShowSuperLikeAnim(true);
-    Toast.show({ type: 'success', text1: '🌟 Superliked!' });
-    handleSwipe('right');
-
     setActionLoading(true);
     try {
       if (requireCredits()) {
-        await sendGameInvite(targetId, '1');
+        const inviteId = await sendGameInvite(targetId, '1');
+        if (!inviteId) {
+          throw new Error('Invite failed');
+        }
         recordGamePlayed();
-        Toast.show({ type: 'success', text1: 'Invite sent!' });
       }
+
+      setActionLoading(false);
+      setShowSuperLikeAnim(true);
+      Toast.show({ type: 'success', text1: '🌟 Superliked!' });
+      await handleSwipe('right');
+      Toast.show({ type: 'success', text1: 'Invite sent!' });
+      setTimeout(() => setShowSuperLikeAnim(false), 1500);
     } catch (e) {
       console.warn('Failed to send invite', e);
+      Toast.show({ type: 'error', text1: 'Failed to super like' });
     } finally {
       setActionLoading(false);
     }
-
-    setTimeout(() => setShowSuperLikeAnim(false), 1500);
   };
 
   const handleGamePickSelect = async (game) => {
@@ -564,10 +575,18 @@ const SwipeScreen = () => {
       icon: 'heart',
       color: '#ff75b5',
       action: swipeRight,
-      longAction: () =>
-        isPremiumUser
-          ? handleSuperLike()
-          : navigation.navigate('PremiumPaywall', { context: 'paywall' }),
+      longAction: async () => {
+        if (isPremiumUser) {
+          try {
+            await handleSuperLike();
+          } catch (e) {
+            console.warn('Super like failed', e);
+            Toast.show({ type: 'error', text1: 'Failed to super like' });
+          }
+        } else {
+          navigation.navigate('PremiumPaywall', { context: 'paywall' });
+        }
+      },
     },
   ];
 

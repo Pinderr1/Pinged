@@ -21,15 +21,12 @@ export async function handleLike({
   setShowFireworks = () => {},
   MAX_LIKES = 100,
 }) {
-  if (!targetUser) return false;
+  if (!targetUser) return { success: false, matchId: null };
 
   if (likesUsed >= MAX_LIKES && !isPremiumUser) {
     navigation.navigate('PremiumPaywall', { context: 'paywall' });
-    return false;
+    return { success: false, matchId: null };
   }
-
-  setLikesUsed((prev) => prev + 1);
-  showNotification(`You liked ${targetUser.displayName}`);
 
   if (currentUser?.uid && targetUser.id) {
     try {
@@ -47,9 +44,14 @@ export async function handleLike({
           targetUid: targetUser.id,
         });
 
-      if (res?.data?.matchId) {
+      const matchId = res?.data?.matchId || null;
+
+      setLikesUsed((prev) => prev + 1);
+      showNotification(`You liked ${targetUser.displayName}`);
+
+      if (matchId) {
         addMatch({
-          id: res.data.matchId,
+          id: matchId,
           displayName: targetUser.displayName,
           age: targetUser.age,
           image: targetUser.images[0],
@@ -74,13 +76,16 @@ export async function handleLike({
         showNotification("It's a match!");
         setShowFireworks(true);
         setTimeout(() => setShowFireworks(false), 2000);
-        return true;
+      } else {
+        Toast.show({ type: 'success', text1: 'Like sent!' });
       }
+
+      return { success: true, matchId };
     } catch (e) {
       console.error('Failed to process like', e);
-      return false;
+      throw e;
     }
   }
 
-  return true;
+  return { success: false, matchId: null };
 }
