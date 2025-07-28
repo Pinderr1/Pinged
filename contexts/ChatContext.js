@@ -75,6 +75,7 @@ export const ChatProvider = ({ children }) => {
 
   // Matches from ListenerContext
   const userUnsubs = useRef({});
+  const unsubList = useRef([]);
   const presenceCache = useRef({});
   const { matches: listenerMatches } = useListeners();
 
@@ -133,7 +134,10 @@ export const ChatProvider = ({ children }) => {
     // Cleanup listeners for removed users
     Object.keys(userUnsubs.current).forEach((uid) => {
       if (!userIds.includes(uid)) {
-        userUnsubs.current[uid]();
+        const fn = userUnsubs.current[uid];
+        fn && fn();
+        const idx = unsubList.current.indexOf(fn);
+        if (idx !== -1) unsubList.current.splice(idx, 1);
         delete userUnsubs.current[uid];
         delete presenceCache.current[uid];
       }
@@ -142,7 +146,7 @@ export const ChatProvider = ({ children }) => {
     // Subscribe to each user's profile for presence
     userIds.forEach((uid) => {
       if (!userUnsubs.current[uid]) {
-        userUnsubs.current[uid] = firebase
+        const unsub = firebase
           .firestore()
           .collection('users')
           .doc(uid)
@@ -169,13 +173,16 @@ export const ChatProvider = ({ children }) => {
               );
             }
           );
+        userUnsubs.current[uid] = unsub;
+        unsubList.current.push(unsub);
       }
     });
   }, [listenerMatches, user?.uid]);
 
   useEffect(() => {
     return () => {
-      Object.values(userUnsubs.current).forEach((fn) => fn && fn());
+      unsubList.current.forEach((fn) => fn && fn());
+      unsubList.current = [];
       userUnsubs.current = {};
     };
   }, [user?.uid]);
