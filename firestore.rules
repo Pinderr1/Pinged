@@ -155,6 +155,7 @@ service cloud.firestore {
 
     match /likes/{uid}/likedBy/{otherUid} {
       allow read: if request.auth.token.admin == true || request.auth.uid == uid;
+      allow delete: if request.auth.uid == otherUid;
     }
 
     // Cloud Functions may mirror likes here

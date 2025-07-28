@@ -15,4 +15,11 @@ const onLikeCreate = functions.firestore
     return null;
   });
 
-module.exports = { onLikeCreate };
+const onLikeDelete = functions.firestore
+  .document('likes/{uid}/liked/{targetUid}')
+  .onDelete(async (_, context) => {
+    const { uid, targetUid } = context.params;
+    await admin.firestore().doc(`likes/${targetUid}/likedBy/${uid}`).delete();
+  });
+
+module.exports = { onLikeCreate, onLikeDelete };
