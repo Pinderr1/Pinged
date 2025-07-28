@@ -12,6 +12,7 @@ const CommunityScreen = lazy(() => import("../screens/CommunityScreen"));
 const PremiumScreen = lazy(() => import("../screens/PremiumScreen"));
 const PremiumPaywallScreen = lazy(() => import("../screens/PremiumPaywallScreen"));
 const StatsScreen = lazy(() => import("../screens/StatsScreen"));
+const BlockedUsersScreen = lazy(() => import("../screens/BlockedUsersScreen"));
 const PlayScreen = lazy(() => import("../screens/PlayScreen"));
 const SwipeScreen = lazy(() => import("../screens/SwipeScreen"));
 const LikedYouScreen = lazy(() => import("../screens/LikedYouScreen"));
@@ -44,6 +45,7 @@ export default function AppStack() {
       <Stack.Screen name="Premium" component={PremiumScreen} />
       <Stack.Screen name="PremiumPaywall" component={PremiumPaywallScreen} />
       <Stack.Screen name="Stats" component={StatsScreen} />
+      <Stack.Screen name="BlockedUsers" component={BlockedUsersScreen} />
       <Stack.Screen name="LikedYou" component={LikedYouScreen} />
       <Stack.Screen name="Play" component={PlayScreen} />
       <Stack.Screen
