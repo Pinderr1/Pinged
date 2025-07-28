@@ -49,6 +49,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const CARD_HEIGHT = SCREEN_HEIGHT;
 const MAX_LIKES = 100;
+const PAGE_SIZE = 20;
 const BUTTON_ROW_BOTTOM = SCREEN_HEIGHT * 0.05;
 
 const computeMatchPercent = (a, b) => {
@@ -123,6 +124,10 @@ const SwipeScreen = () => {
   const [showBoostModal, setShowBoostModal] = useState(false);
   const [debugInfo, setDebugInfo] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [lastDoc, setLastDoc] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const fetchUsersRef = useRef(null);
 
   const pan = useRef(new Animated.ValueXY()).current;
   // 4 main buttons shown in the toolbar
@@ -176,24 +181,22 @@ const SwipeScreen = () => {
 
   useEffect(() => {
     let mounted = true;
-    const fetchUsers = async () => {
+    const fetchUsers = async (loadMore = false) => {
       if (!currentUser?.uid) {
         if (mounted) setLoadingUsers(false);
         return;
       }
-      if (mounted) setLoadingUsers(true);
+      if (mounted) {
+        if (loadMore) setLoadingMore(true);
+        else setLoadingUsers(true);
+      }
+      if (!loadMore) {
+        setLastDoc(null);
+        setHasMore(true);
+      }
       try {
         let userQuery = firebase.firestore().collection('users');
-
         const blockedIds = Array.isArray(blocked) ? blocked : [];
-        if (blockedIds.length) {
-          const slice = blockedIds.slice(0, 10);
-          userQuery = userQuery.where(
-            firebase.firestore.FieldPath.documentId(),
-            'not-in',
-            slice,
-          );
-        }
 
         if (filterLocation) {
           userQuery = userQuery.where('location', '==', filterLocation);
@@ -215,7 +218,12 @@ const SwipeScreen = () => {
           userQuery = userQuery.where('isVerified', '==', true);
         }
 
-        const snap = await userQuery.limit(50).get();
+        userQuery = userQuery.orderBy('priorityScore', 'desc');
+        if (loadMore && lastDoc) {
+          userQuery = userQuery.startAfter(lastDoc);
+        }
+
+        const snap = await userQuery.limit(PAGE_SIZE).get();
         let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         const debug = { queryCount: data.length };
 
@@ -253,16 +261,22 @@ const SwipeScreen = () => {
 
         debug.finalCount = formatted.length;
 
-
         if (mounted) {
-          setUsers(formatted);
+          if (!loadMore) setCurrentIndex(0);
+          setUsers((prev) => (loadMore ? [...prev, ...formatted] : formatted));
+          setLastDoc(snap.docs[snap.docs.length - 1] || null);
+          setHasMore(snap.docs.length === PAGE_SIZE);
           setDebugInfo(debug);
         }
       } catch (e) {
         console.error('Failed to load users', e);
       }
-      if (mounted) setLoadingUsers(false);
+      if (mounted) {
+        if (loadMore) setLoadingMore(false);
+        else setLoadingUsers(false);
+      }
     };
+    fetchUsersRef.current = fetchUsers;
     fetchUsers();
     return () => {
       mounted = false;
@@ -443,6 +457,11 @@ const SwipeScreen = () => {
     }).start(() => handleSwipe('right'));
   };
 
+  const loadMoreUsers = () => {
+    if (loadingMore || !hasMore) return;
+    fetchUsersRef.current?.(true);
+  };
+
 
   const panResponder = useRef(
     PanResponder.create({
@@ -616,6 +635,17 @@ const SwipeScreen = () => {
           }}
           show={!displayUser}
         />
+        {!displayUser && hasMore ? (
+          <TouchableOpacity
+            onPress={loadMoreUsers}
+            style={styles.loadMoreButton}
+            disabled={loadingMore}
+          >
+            <Text style={styles.loadMoreText}>
+              {loadingMore ? 'Loading...' : 'Load more'}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
 
         <SwipeControls
           buttons={controlButtons}
@@ -829,6 +859,11 @@ const getStyles = (theme) =>
   },
   undoText: { color: '#fff', marginRight: 12 },
   undoButton: { color: theme.accent, fontWeight: 'bold' },
+  loadMoreButton: {
+    marginTop: 20,
+    alignSelf: 'center',
+  },
+  loadMoreText: { color: theme.accent, fontSize: 16 },
   debugOverlay: {
     position: 'absolute',
     bottom: 20,
