@@ -7,10 +7,21 @@ import PropTypes from 'prop-types';
 import GameContainer from './GameContainer';
 import { useUser } from '../contexts/UserContext';
 
-export default function SyncedGame({ sessionId, gameId, opponent, onGameEnd }) {
+export default function SyncedGame({
+  sessionId,
+  gameId,
+  opponent,
+  onGameEnd,
+  allowSpectate = false,
+}) {
   const { user } = useUser();
   const { Board, meta } = games[gameId] || {};
-  const { G, ctx, moves, loading } = useGameSession(sessionId, gameId, opponent?.id);
+  const { G, ctx, moves, loading } = useGameSession(
+    sessionId,
+    gameId,
+    opponent?.id,
+    allowSpectate
+  );
 
   if (!Board) return null;
   if (loading || !G) {
@@ -41,4 +52,5 @@ SyncedGame.propTypes = {
   gameId: PropTypes.string.isRequired,
   opponent: PropTypes.object,
   onGameEnd: PropTypes.func.isRequired,
+  allowSpectate: PropTypes.bool,
 };
