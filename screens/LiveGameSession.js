@@ -22,7 +22,6 @@ import SyncedGame from '../components/SyncedGame';
 import GameOverModal from '../components/GameOverModal';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { snapshotExists } from '../utils/firestore';
-import { createMatchIfMissing } from '../utils/matches';
 import Toast from 'react-native-toast-message';
 import Loader from '../components/Loader';
 import { useSound } from '../contexts/SoundContext';
@@ -124,7 +123,16 @@ const LiveGameSession = ({ route, navigation }) => {
         setCountdown(null);
         recordGamePlayed();
         if (opponent?.id && user?.uid) {
-          await createMatchIfMissing(user.uid, opponent.id);
+          const matchId = [user.uid, opponent.id].sort().join('_');
+          const snap = await firebase
+            .firestore()
+            .collection('matches')
+            .doc(matchId)
+            .get();
+          if (!snapshotExists(snap)) {
+            console.warn('Match doc missing for session', matchId);
+            Toast.show({ type: 'error', text1: 'Match not found' });
+          }
         }
       } catch (e) {
         console.warn('Failed to start game', e);
