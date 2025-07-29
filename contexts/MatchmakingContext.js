@@ -18,6 +18,28 @@ export const MatchmakingProvider = ({ children }) => {
     if (!user?.uid || !to || !gameId) return null;
     show();
     try {
+      const inviteRef = firebase.firestore().collection('gameInvites');
+      const statuses = ['pending', 'ready', 'active'];
+
+      const q1 = inviteRef
+        .where('from', '==', user.uid)
+        .where('to', '==', to)
+        .where('gameId', '==', gameId)
+        .where('status', 'in', statuses)
+        .limit(1);
+      const q2 = inviteRef
+        .where('from', '==', to)
+        .where('to', '==', user.uid)
+        .where('gameId', '==', gameId)
+        .where('status', 'in', statuses)
+        .limit(1);
+
+      const [s1, s2] = await Promise.all([q1.get(), q2.get()]);
+      const existing = !s1.empty ? s1.docs[0] : !s2.empty ? s2.docs[0] : null;
+      if (existing) {
+        return existing.id;
+      }
+
       const payload = {
         from: user.uid,
         to,
@@ -27,10 +49,7 @@ export const MatchmakingProvider = ({ children }) => {
         acceptedBy: [user.uid],
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
-      const ref = await firebase
-        .firestore()
-        .collection('gameInvites')
-        .add(payload);
+      const ref = await inviteRef.add(payload);
       return ref.id;
     } catch (e) {
       console.warn('Failed to send game invite', e);

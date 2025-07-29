@@ -47,7 +47,34 @@ const onGameInviteCreated = functions.firestore
   .document('gameInvites/{inviteId}')
   .onCreate(async (snap, context) => {
     const data = snap.data();
-    if (!data || !data.to) return null;
+    if (!data || !data.to || !data.from || !data.gameId) return null;
+
+    const db = admin.firestore();
+    const inviteRef = db.collection('gameInvites');
+    const statuses = ['pending', 'ready', 'active'];
+
+    const q1 = inviteRef
+      .where('from', '==', data.from)
+      .where('to', '==', data.to)
+      .where('gameId', '==', data.gameId)
+      .where('status', 'in', statuses)
+      .limit(2);
+    const q2 = inviteRef
+      .where('from', '==', data.to)
+      .where('to', '==', data.from)
+      .where('gameId', '==', data.gameId)
+      .where('status', 'in', statuses)
+      .limit(2);
+
+    const [s1, s2] = await Promise.all([q1.get(), q2.get()]);
+    const docs = [...s1.docs, ...s2.docs];
+    const existing = docs.find((d) => d.id !== snap.id);
+    if (existing) {
+      // Duplicate invite exists; remove the new one
+      await snap.ref.delete();
+      return null;
+    }
+
     try {
       await pushToUser(
         data.to,

@@ -9,6 +9,16 @@
       ]
     },
     {
+      "collectionGroup": "gameInvites",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "from", "order": "ASCENDING"},
+        {"fieldPath": "to", "order": "ASCENDING"},
+        {"fieldPath": "gameId", "order": "ASCENDING"},
+        {"fieldPath": "status", "order": "ASCENDING"}
+      ]
+    },
+    {
       "collectionGroup": "gameSessions",
       "queryScope": "COLLECTION",
       "fields": [
