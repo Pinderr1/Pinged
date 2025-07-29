@@ -20,7 +20,7 @@ const joinGameSession = functions.https.onCall(async (data, context) => {
       const waiting = await tx.get(
         sessions
           .where('gameId', '==', gameId)
-          .where('players', 'array-contains', null)
+          .where('players.1', '==', null)
           .where('status', '==', 'waiting')
           .limit(1)
       );
