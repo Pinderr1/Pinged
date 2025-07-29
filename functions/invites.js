@@ -260,10 +260,27 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
 
     const bothAccepted = acceptedBy.includes(fromUid) && acceptedBy.includes(toUid);
     if (bothAccepted) {
+      matchId = [fromUid, toUid].sort().join('_');
+      const matchRef = db.collection('matches').doc(matchId);
+      const matchSnap = await tx.get(matchRef);
+      if (!matchSnap.exists) {
+        const [like1, like2] = await Promise.all([
+          tx.get(db.collection('likes').doc(fromUid).collection('liked').doc(toUid)),
+          tx.get(db.collection('likes').doc(toUid).collection('liked').doc(fromUid)),
+        ]);
+
+        if (like1.exists && like2.exists) {
+          tx.set(matchRef, {
+            users: [fromUid, toUid],
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        } else {
+          throw new functions.https.HttpsError('failed-precondition', 'Users have not matched');
+        }
+      }
+
       updates.status = 'ready';
       updates.gameSessionId = inviteId;
-
-      matchId = [fromUid, toUid].sort().join('_');
 
       const sessionRef = db.collection('gameSessions').doc(inviteId);
       const sessionSnap = await tx.get(sessionRef);
@@ -278,23 +295,6 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
 
     tx.update(inviteRef, updates);
   });
-
-  if (matchId) {
-    const matchRef = db.collection('matches').doc(matchId);
-    const matchSnap = await matchRef.get();
-    if (!matchSnap.exists) {
-      const [like1, like2] = await Promise.all([
-        db.collection('likes').doc(fromUid).collection('liked').doc(toUid).get(),
-        db.collection('likes').doc(toUid).collection('liked').doc(fromUid).get(),
-      ]);
-      if (like1.exists && like2.exists) {
-        await matchRef.set({
-          users: [fromUid, toUid],
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-      }
-    }
-  }
 
   return { matchId };
 });
