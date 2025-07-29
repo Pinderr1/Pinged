@@ -46,6 +46,25 @@ export const MatchmakingProvider = ({ children }) => {
     try {
       show();
       await firebase.functions().httpsCallable('acceptInvite')({ inviteId: id });
+      const snap = await firebase
+        .firestore()
+        .collection('gameInvites')
+        .doc(id)
+        .get();
+      if (snapshotExists(snap)) {
+        const data = snap.data();
+        const opponentId = data.from === user.uid ? data.to : data.from;
+        const matchId = [user.uid, opponentId].sort().join('_');
+        const matchSnap = await firebase
+          .firestore()
+          .collection('matches')
+          .doc(matchId)
+          .get();
+        if (!matchSnap.exists) {
+          console.warn('Match doc missing for invite', id);
+          Toast.show({ type: 'error', text1: 'Match not found' });
+        }
+      }
     } catch (e) {
       console.warn('Failed to accept game invite', e);
       Toast.show({ type: 'error', text1: 'Failed to accept invite' });
