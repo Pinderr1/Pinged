@@ -3,6 +3,30 @@ import * as Haptics from 'expo-haptics';
 import firebase from '../firebase';
 import { icebreakers } from '../data/prompts';
 import { allGames } from '../data/games';
+import { snapshotExists } from './firestore';
+
+export async function validateMatch(uid, otherUid) {
+  if (!uid || !otherUid) return false;
+  try {
+    const sorted = [uid, otherUid].sort();
+    const matchId = sorted.join('_');
+    const snap = await firebase
+      .firestore()
+      .collection('matches')
+      .doc(matchId)
+      .get();
+    const data = snap.data() || {};
+    return (
+      snapshotExists(snap) &&
+      Array.isArray(data.users) &&
+      data.users.includes(uid) &&
+      data.users.includes(otherUid)
+    );
+  } catch (e) {
+    console.warn('Failed to validate match', e);
+  }
+  return false;
+}
 
 export async function handleLike({
   currentUser,

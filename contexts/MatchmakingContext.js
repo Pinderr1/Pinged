@@ -3,6 +3,7 @@ import firebase, { firestore } from '../firebase';
 import { useUser } from './UserContext';
 import { useListeners } from './ListenerContext';
 import { snapshotExists } from '../utils/firestore';
+import { validateMatch } from '../utils/matchUtils';
 import Toast from 'react-native-toast-message';
 import { useLoading } from './LoadingContext';
 
@@ -18,6 +19,11 @@ export const MatchmakingProvider = ({ children }) => {
     if (!user?.uid || !to || !gameId) return null;
     show();
     try {
+      const valid = await validateMatch(user.uid, to);
+      if (!valid) {
+        Toast.show({ type: 'error', text1: 'Match not found' });
+        return null;
+      }
       const payload = {
         from: user.uid,
         to,
