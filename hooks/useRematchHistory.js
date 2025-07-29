@@ -15,13 +15,18 @@ export default function useRematchHistory(matches) {
     let active = true;
     const load = async () => {
       try {
+        const opponentIds = matches.map((m) => m.otherUserId).filter(Boolean);
         const snap = await firebase
           .firestore()
           .collection('gameStats')
-          .where('players', 'array-contains', user.uid)
+          .where('players', 'array-contains-any', opponentIds.concat(user.uid))
           .get();
         if (!active) return;
-        const stats = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const stats = snap.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter(
+            (g) => Array.isArray(g.players) && g.players.includes(user.uid)
+          );
         const map = {};
         matches.forEach((m) => {
           const other = m.otherUserId;
