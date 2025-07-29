@@ -3,6 +3,7 @@ import { View, Text, Image, ScrollView, Animated, StyleSheet } from 'react-nativ
 import GradientBackground from '../components/GradientBackground';
 import Header from '../components/Header';
 import ScreenContainer from '../components/ScreenContainer';
+import SyncedGame from '../components/SyncedGame';
 import { useTheme } from '../contexts/ThemeContext';
 import { HEADER_SPACING } from '../layout';
 import useGameSession from '../hooks/useGameSession';
@@ -14,7 +15,12 @@ function SpectatorGameSession({ route }) {
   const anim = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef();
   const { sessionId, game, players = [] } = route.params || {};
-  const { moveHistory, ctx, loading } = useGameSession(sessionId, game?.id, '');
+  const { moveHistory, ctx, loading } = useGameSession(
+    sessionId,
+    game?.id,
+    '',
+    true
+  );
 
   useEffect(() => {
     Animated.loop(
@@ -47,6 +53,17 @@ function SpectatorGameSession({ route }) {
             </View>
           ))}
         </View>
+        {!loading && (
+          <View style={{ flex: 1, alignItems: 'center', marginBottom: 12 }}>
+            <SyncedGame
+              sessionId={sessionId}
+              gameId={game?.id}
+              opponent={players[1]}
+              onGameEnd={() => {}}
+              allowSpectate
+            />
+          </View>
+        )}
         <View style={styles.logBox}>
           <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled">
             {moveHistory.map((m, idx) => (

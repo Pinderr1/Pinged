@@ -27,7 +27,6 @@ import Toast from 'react-native-toast-message';
 import Loader from '../components/Loader';
 import { useSound } from '../contexts/SoundContext';
 import EmptyState from '../components/EmptyState';
-import useGameSession from '../hooks/useGameSession';
 import { logGameStats } from '../utils/gameStats';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import useDebouncedCallback from '../hooks/useDebouncedCallback';

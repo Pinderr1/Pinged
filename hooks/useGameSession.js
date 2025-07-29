@@ -42,7 +42,12 @@ function replayGame(Game, initial, moves = []) {
   return { G, currentPlayer, gameover };
 }
 
-export default function useGameSession(sessionId, gameId, opponentId) {
+export default function useGameSession(
+  sessionId,
+  gameId,
+  opponentId,
+  allowSpectate = false
+) {
   const { user } = useUser();
   const { play } = useSound();
   const gameEntry = games[gameId];
@@ -57,10 +62,10 @@ export default function useGameSession(sessionId, gameId, opponentId) {
     const unsub = ref.onSnapshot(async (snap) => {
       if (snapshotExists(snap)) {
         const data = snap.data();
-        if (data.players?.includes(user.uid)) {
+        if (allowSpectate || data.players?.includes(user.uid)) {
           setSession(data);
         }
-      } else if (!initialized) {
+      } else if (!initialized && !allowSpectate) {
         initialized = true;
         await ref.set({
           gameId,
@@ -73,7 +78,7 @@ export default function useGameSession(sessionId, gameId, opponentId) {
       }
     });
     return unsub;
-  }, [Game, sessionId, user?.uid, opponentId, gameId]);
+  }, [Game, sessionId, user?.uid, opponentId, gameId, allowSpectate]);
 
   const sendMove = useCallback(async (moveName, ...args) => {
     if (!session || !Game) return;
