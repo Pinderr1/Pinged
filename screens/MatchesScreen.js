@@ -14,10 +14,7 @@ import Card from '../components/Card';
 import AvatarRing from '../components/AvatarRing';
 import { useTheme } from '../contexts/ThemeContext';
 import { useChats } from '../contexts/ChatContext';
-import { useMatchmaking } from '../contexts/MatchmakingContext';
-import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import useRematchHistory from '../hooks/useRematchHistory';
-import Toast from 'react-native-toast-message';
 import PropTypes from 'prop-types';
 import { HEADER_SPACING } from '../layout';
 import EmptyState from '../components/EmptyState';
@@ -28,8 +25,6 @@ const SKELETON_CHAT_COUNT = 5;
 const MatchesScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
   const { matches, loading, refreshMatches } = useChats();
-  const { sendGameInvite } = useMatchmaking();
-  const requireCredits = useRequireGameCredits();
   const history = useRematchHistory(matches);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -46,16 +41,6 @@ const MatchesScreen = ({ navigation }) => {
     await refreshMatches();
   };
 
-  const handlePlayAgain = async (match, gameId) => {
-    if (!gameId || !match?.otherUserId) return;
-    if (!requireCredits()) return;
-    try {
-      await sendGameInvite(match.otherUserId, gameId);
-      Toast.show({ type: 'success', text1: 'Invite sent!' });
-    } catch (e) {
-      console.warn('Failed to send rematch invite', e);
-    }
-  };
 
   const skeletonColor = darkMode ? '#333333' : '#e0e0e0';
 
@@ -198,12 +183,6 @@ const MatchesScreen = ({ navigation }) => {
             </Text>
           )}
         </View>
-        <TouchableOpacity
-          onPress={() => handlePlayAgain(item, hist.gameId)}
-          style={[styles.playBtn, { backgroundColor: theme.accent }]}
-        >
-          <Text style={styles.playText}>Play Again</Text>
-        </TouchableOpacity>
       </Card>
     );
   };
@@ -364,17 +343,6 @@ const styles = StyleSheet.create({
   chatPreview: {
     fontSize: 12,
     marginTop: 2,
-  },
-  playBtn: {
-    backgroundColor: '#ff4081',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-  },
-  playText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
   },
   skeletonText: {
     height: 10,
