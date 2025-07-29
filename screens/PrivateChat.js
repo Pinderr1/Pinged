@@ -38,6 +38,8 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useChats } from '../contexts/ChatContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useUser } from '../contexts/UserContext';
+import { useMatchmaking } from '../contexts/MatchmakingContext';
+import GamePickerModal from '../components/GamePickerModal';
 import VoiceMessageBubble from '../components/VoiceMessageBubble';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
 import Toast from 'react-native-toast-message';
@@ -84,6 +86,7 @@ function PrivateChat({ user, initialGameId }) {
   const { user: currentUser, addGameXP } = useUser();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const requireCredits = useRequireGameCredits();
+  const { sendGameInvite } = useMatchmaking();
   const {
     setActiveGame,
     getActiveGame,
@@ -114,6 +117,8 @@ function PrivateChat({ user, initialGameId }) {
   const prevGameIdRef = useRef(null);
   const [showGameModal, setShowGameModal] = useState(false);
   const [showGameMenu, setShowGameMenu] = useState(false);
+  const [showInvitePicker, setShowInvitePicker] = useState(false);
+  const [inviting, setInviting] = useState(false);
   const [text, setText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const inputRef = useRef(null);
@@ -478,6 +483,33 @@ function PrivateChat({ user, initialGameId }) {
     setShowGameModal(false);
   };
 
+  const handleInviteSelect = async (game) => {
+    setShowInvitePicker(false);
+    if (!game || inviting) return;
+    if (!requireCredits()) return;
+    setInviting(true);
+    try {
+      const inviteId = await sendGameInvite(user.id, game.id);
+      recordGamePlayed();
+      Toast.show({ type: 'success', text1: 'Invite sent!' });
+      navigation.navigate('GameSession', {
+        game,
+        opponent: {
+          id: user.id,
+          displayName: user.displayName,
+          photo: user.image,
+        },
+        inviteId,
+        status: 'waiting',
+      });
+    } catch (e) {
+      console.warn('Failed to send invite', e);
+      Toast.show({ type: 'error', text1: 'Failed to send invite' });
+    } finally {
+      setInviting(false);
+    }
+  };
+
   const renderMessage = ({ item }) => {
     if (item.sender === 'system') {
       return (
@@ -752,6 +784,14 @@ function PrivateChat({ user, initialGameId }) {
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          style={privateStyles.challengeButton}
+          onPress={() => setShowInvitePicker(true)}
+          accessibilityLabel="Challenge"
+          disabled={inviting}
+        >
+          <Ionicons name="game-controller" size={18} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity
           style={privateStyles.playButton}
           onPress={handlePlayPress}
           accessibilityLabel={playButtonText}
@@ -836,6 +876,11 @@ function PrivateChat({ user, initialGameId }) {
             bottom={menuBottom}
             onCancel={handleCancelGame}
             onChange={handleChangeGame}
+          />
+          <GamePickerModal
+            visible={showInvitePicker}
+            onSelect={handleInviteSelect}
+            onClose={() => setShowInvitePicker(false)}
           />
         </ScreenContainer>
       </SafeKeyboardView>
@@ -948,6 +993,13 @@ const getPrivateStyles = (theme) =>
   },
   menuButton: {
     backgroundColor: theme.primary,
+    padding: 6,
+    borderRadius: 16,
+    alignSelf: 'center',
+    marginLeft: 4,
+  },
+  challengeButton: {
+    backgroundColor: theme.accent,
     padding: 6,
     borderRadius: 16,
     alignSelf: 'center',
