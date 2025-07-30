@@ -53,7 +53,7 @@ const AnimatedButton = ({ onPress, text, loading, disabled, style }) => {
 };
 
 const NotificationsScreen = ({ navigation }) => {
-  const { incomingInvites, acceptGameInvite, cancelGameInvite } = useMatchmaking();
+  const { incomingInvites, acceptGameInvite, cancelInvite } = useMatchmaking();
   const { user } = useUser();
   const { darkMode, theme } = useTheme();
   const { dismissNotification } = useNotification();
@@ -126,7 +126,7 @@ const NotificationsScreen = ({ navigation }) => {
 
   const handleDecline = async (invite) => {
     setLoadingId(invite.id + '_decline');
-    cancelGameInvite(invite.id);
+    cancelInvite(invite.id);
     setLoadingId(null);
     Vibration.vibrate(40);
     dismissNotification(invite.id);

@@ -79,29 +79,6 @@ export const MatchmakingProvider = ({ children }) => {
     }
   };
 
-  const cancelGameInvite = async (id) => {
-    if (!user?.uid || !id) return;
-
-    try {
-      const ref = firebase.firestore().collection('gameInvites').doc(id);
-      const snap = await ref.get();
-
-      if (!snapshotExists(snap)) return;
-
-      const data = snap.data();
-      if (data.from !== user.uid && data.to !== user.uid) return;
-
-      try {
-        await ref.update({ status: 'cancelled' });
-      } catch (e) {
-        console.warn('Failed to cancel game invite', e);
-        Toast.show({ type: 'error', text1: 'Failed to cancel invite' });
-      }
-    } catch (e) {
-      console.warn('Failed to load game invite', e);
-      Toast.show({ type: 'error', text1: 'Failed to cancel invite' });
-    }
-  };
 
   const cancelInvite = async (id) => {
     if (!user?.uid || !id) return;
@@ -116,6 +93,7 @@ export const MatchmakingProvider = ({ children }) => {
       if (data.from !== user.uid && data.to !== user.uid) return;
 
       try {
+        await ref.update({ status: 'cancelled' });
         await ref.delete();
       } catch (e) {
         console.warn('Failed to cancel invite', e);
@@ -134,7 +112,6 @@ export const MatchmakingProvider = ({ children }) => {
         outgoingInvites,
         sendGameInvite,
         acceptGameInvite,
-        cancelGameInvite,
         cancelInvite,
       }}
     >
