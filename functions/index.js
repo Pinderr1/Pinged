@@ -11,7 +11,6 @@ const notifications = require('./notifications');
 const invites = require('./invites');
 const match = require('./src/match.js');
 const blocks = require('./blocks');
-const matches = require('./matches');
 const stats = require('./stats');
 const likes = require('./likes');
 const gameSessions = require('./gameSessions');
@@ -25,7 +24,6 @@ module.exports = {
   })(),
   ...invites,
   ...match,
-  ...matches,
   ...blocks,
   ...stats,
   ...likes,

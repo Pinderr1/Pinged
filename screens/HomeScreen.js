@@ -149,7 +149,10 @@ const HomeScreen = ({ navigation }) => {
       if (opponentId) {
         const res = await firebase
           .functions()
-          .httpsCallable('createMatch')({ opponentUid: opponentId });
+          .httpsCallable('createMatchIfMutualLike')({
+            uid: user.uid,
+            targetUid: opponentId,
+          });
         const chatId = res.data?.matchId;
         const oppSnap = await firebase
           .firestore()
@@ -198,7 +201,10 @@ const HomeScreen = ({ navigation }) => {
             const opp = oppSnap2.data() || {};
             const res2 = await firebase
               .functions()
-              .httpsCallable('createMatch')({ opponentUid: d.players[1] });
+              .httpsCallable('createMatchIfMutualLike')({
+                uid: user.uid,
+                targetUid: d.players[1],
+              });
             const chatId = res2.data?.matchId;
             const match = {
               id: chatId,
