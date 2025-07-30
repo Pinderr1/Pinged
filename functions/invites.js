@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const { pushToUser } = require('./notifications');
+const { createMatchIfMutualLike } = require('./src/match.js');
 
 // Helper to ensure match history exists
 async function ensureMatchHistory(users, extra = {}) {
@@ -261,24 +262,6 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
     const bothAccepted = acceptedBy.includes(fromUid) && acceptedBy.includes(toUid);
     if (bothAccepted) {
       matchId = [fromUid, toUid].sort().join('_');
-      const matchRef = db.collection('matches').doc(matchId);
-      const matchSnap = await tx.get(matchRef);
-      if (!matchSnap.exists) {
-        const [like1, like2] = await Promise.all([
-          tx.get(db.collection('likes').doc(fromUid).collection('liked').doc(toUid)),
-          tx.get(db.collection('likes').doc(toUid).collection('liked').doc(fromUid)),
-        ]);
-
-        if (like1.exists && like2.exists) {
-          tx.set(matchRef, {
-            users: [fromUid, toUid],
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
-        } else {
-          throw new functions.https.HttpsError('failed-precondition', 'Users have not matched');
-        }
-      }
-
       updates.status = 'ready';
       updates.gameSessionId = inviteId;
 
@@ -295,6 +278,15 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
 
     tx.update(inviteRef, updates);
   });
+
+  if (matchId) {
+    const otherUid = uid === fromUid ? toUid : fromUid;
+    const res = await createMatchIfMutualLike(
+      { uid, targetUid: otherUid },
+      { auth: context.auth },
+    );
+    matchId = res?.matchId || null;
+  }
 
   return { matchId };
 });
