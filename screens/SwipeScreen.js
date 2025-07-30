@@ -19,11 +19,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { SPACING } from '../layout';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
-import { useGameLimit } from '../contexts/GameLimitContext';
-import { useMatchmaking } from '../contexts/MatchmakingContext';
-import GamePickerModal from '../components/GamePickerModal';
 import BoostModal from '../components/BoostModal';
-import { allGames } from '../data/games';
 import { useChats } from '../contexts/ChatContext';
 import firebase from '../firebase';
 import { useNavigation } from '@react-navigation/native';
@@ -34,7 +30,6 @@ import { imageSource } from '../utils/avatar';
 import Loader from '../components/Loader';
 import { computePriority } from '../utils/priority';
 import { handleLike } from '../utils/matchUtils';
-import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import * as Haptics from 'expo-haptics';
 import FullProfileModal from '../components/FullProfileModal';
 import useVoicePlayback from '../hooks/useVoicePlayback';
@@ -94,10 +89,7 @@ const SwipeScreen = () => {
   const { user: currentUser, updateUser, blocked } = useUser();
   const { play } = useSound();
   const { addMatch } = useChats();
-  const { gamesLeft, recordGamePlayed } = useGameLimit();
-  const { sendGameInvite, cancelInvite } = useMatchmaking();
   const isPremiumUser = !!currentUser?.isPremium;
-  const requireCredits = useRequireGameCredits();
   const {
     location: filterLocation,
     ageRange,
@@ -112,15 +104,11 @@ const SwipeScreen = () => {
   const [showFireworks, setShowFireworks] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [history, setHistory] = useState([]);
-  const [showSuperLikeAnim, setShowSuperLikeAnim] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [matchLine, setMatchLine] = useState('');
   const [matchGame, setMatchGame] = useState(null);
   const [loadingUsers, setLoadingUsers] = useState(true);
-  const [showGamePicker, setShowGamePicker] = useState(false);
-  const [pendingInviteId, setPendingInviteId] = useState(null);
-  const [showUndoPrompt, setShowUndoPrompt] = useState(false);
   const [showBoostModal, setShowBoostModal] = useState(false);
   const [debugInfo, setDebugInfo] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -373,80 +361,8 @@ const SwipeScreen = () => {
     pan.setValue({ x: 0, y: 0 });
   };
 
-  const handleSwipeChallenge = () => {
-    if (!displayUser) return;
-    if (!isPremiumUser) {
-      navigation.navigate('PremiumPaywall', { context: 'paywall' });
-      return;
-    }
-    setShowGamePicker(true);
-  };
 
-  const handleSuperLike = async () => {
-    if (!displayUser || actionLoading) return;
-    if (!isPremiumUser) {
-      navigation.navigate('PremiumPaywall', { context: 'paywall' });
-      return;
-    }
 
-    const targetId = displayUser.id;
-    setActionLoading(true);
-    try {
-      if (requireCredits()) {
-        const inviteId = await sendGameInvite(targetId, '1');
-        if (!inviteId) {
-          throw new Error('Invite failed');
-        }
-        recordGamePlayed();
-      }
-
-      setActionLoading(false);
-      setShowSuperLikeAnim(true);
-      Toast.show({ type: 'success', text1: '🌟 Superliked!' });
-      await handleSwipe('right');
-      Toast.show({ type: 'success', text1: 'Invite sent!' });
-      setTimeout(() => setShowSuperLikeAnim(false), 1500);
-    } catch (e) {
-      console.warn('Failed to send invite', e);
-      Toast.show({ type: 'error', text1: 'Failed to super like' });
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleGamePickSelect = async (game) => {
-    setShowGamePicker(false);
-    if (!displayUser || !game || actionLoading) return;
-    if (!requireCredits()) return;
-    setActionLoading(true);
-    try {
-      const inviteId = await sendGameInvite(displayUser.id, game.id);
-      recordGamePlayed();
-      setPendingInviteId(inviteId);
-      setShowSuperLikeAnim(true);
-      Toast.show({ type: 'success', text1: 'Invite sent!' });
-      setShowUndoPrompt(true);
-      setTimeout(() => setShowSuperLikeAnim(false), 1500);
-      setTimeout(() => setShowUndoPrompt(false), 4000);
-    } catch (e) {
-      console.warn('Failed to send invite', e);
-      Toast.show({ type: 'error', text1: 'Failed to send invite' });
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const undoInvite = async () => {
-    if (!pendingInviteId) return;
-    try {
-      await cancelInvite(pendingInviteId);
-      Toast.show({ type: 'success', text1: 'Invite cancelled' });
-    } catch (e) {
-      console.warn('Failed to cancel invite', e);
-    }
-    setShowUndoPrompt(false);
-    setPendingInviteId(null);
-  };
 
   const swipeLeft = () => {
     if (!displayUser) return;
@@ -520,37 +436,6 @@ const SwipeScreen = () => {
     })
   ).current;
 
-  const handleGameInvite = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    if (!displayUser || actionLoading) return;
-    if (!requireCredits()) return;
-    setActionLoading(true);
-    try {
-      const inviteId = await sendGameInvite(displayUser.id, '1');
-      Toast.show({ type: 'success', text1: 'Invite sent!' });
-      recordGamePlayed();
-
-      const gameTitle = allGames.find((g) => g.id === '1')?.title || 'Game';
-      const toLobby = () =>
-        navigation.replace('GameSession', {
-          game: { id: '1', title: gameTitle },
-          opponent: {
-            id: displayUser.id,
-            displayName: displayUser.displayName,
-            photo: displayUser.images[0],
-          },
-          inviteId,
-          status: 'waiting',
-        });
-
-      toLobby();
-    } catch (e) {
-      console.warn('Failed to send game invite', e);
-      Toast.show({ type: 'error', text1: 'Failed to send invite' });
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const activateBoost = async () => {
     if (!currentUser?.uid) return;
@@ -589,23 +474,10 @@ const SwipeScreen = () => {
           ? rewind()
           : navigation.navigate('PremiumPaywall', { context: 'paywall' }),
     },
-    { icon: 'game-controller', color: '#a78bfa', action: handleGameInvite },
     {
       icon: 'heart',
       color: '#ff75b5',
       action: swipeRight,
-      longAction: async () => {
-        if (isPremiumUser) {
-          try {
-            await handleSuperLike();
-          } catch (e) {
-            console.warn('Super like failed', e);
-            Toast.show({ type: 'error', text1: 'Failed to super like' });
-          }
-        } else {
-          navigation.navigate('PremiumPaywall', { context: 'paywall' });
-        }
-      },
     },
   ];
 
@@ -635,16 +507,6 @@ const SwipeScreen = () => {
           }}
           isBoosted={isDisplayBoosted}
         />
-        {showSuperLikeAnim ? (
-          <View style={styles.superLikeOverlay} pointerEvents="none">
-            <LottieView
-              source={require('../assets/hearts.json')}
-              autoPlay
-              loop={false}
-              style={{ width: 200, height: 200 }}
-            />
-          </View>
-        ) : null}
         <FilterPanel
           loading={loadingUsers}
           onBoostPress={handleBoostPress}
@@ -761,11 +623,6 @@ const SwipeScreen = () => {
             </BlurView>
           </Modal>
         )}
-        <GamePickerModal
-          visible={showGamePicker}
-          onSelect={handleGamePickSelect}
-          onClose={() => setShowGamePicker(false)}
-        />
         <FullProfileModal
           visible={showProfile}
           onClose={() => setShowProfile(false)}
@@ -778,14 +635,6 @@ const SwipeScreen = () => {
           onUpgrade={() => navigation.navigate('PremiumPaywall', { context: 'upgrade' })}
           onClose={() => setShowBoostModal(false)}
         />
-        {showUndoPrompt && isPremiumUser ? (
-          <View style={styles.undoBanner}>
-            <Text style={styles.undoText}>Invite sent</Text>
-            <TouchableOpacity onPress={undoInvite}>
-              <Text style={styles.undoButton}>Undo</Text>
-            </TouchableOpacity>
-          </View>
-        ) : null}
         {debugInfo ? (
           <View style={styles.debugOverlay}>
             <Text style={styles.debugText}>{JSON.stringify(debugInfo)}</Text>
@@ -814,15 +663,6 @@ const getStyles = (theme) =>
     bottom: BUTTON_ROW_BOTTOM + 70,
     left: 0,
     right: 0,
-    alignItems: 'center',
-  },
-  superLikeOverlay: {
-    position: 'absolute',
-    top: CARD_HEIGHT / 2 - 100,
-    left: SCREEN_WIDTH / 2 - 100,
-    width: 200,
-    height: 200,
-    justifyContent: 'center',
     alignItems: 'center',
   },
   detailsOverlay: {
@@ -865,19 +705,6 @@ const getStyles = (theme) =>
     textAlign: 'center',
     paddingHorizontal: 20,
   },
-  undoBanner: {
-    position: 'absolute',
-    bottom: BUTTON_ROW_BOTTOM + 80,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0009',
-    paddingVertical: 6,
-  },
-  undoText: { color: '#fff', marginRight: 12 },
-  undoButton: { color: theme.accent, fontWeight: 'bold' },
   loadMoreButton: {
     marginTop: 20,
     alignSelf: 'center',

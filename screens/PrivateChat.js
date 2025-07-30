@@ -23,6 +23,7 @@ import Loader from '../components/Loader';
 import ScreenContainer from '../components/ScreenContainer';
 import GameContainer from '../components/GameContainer';
 import GameMenu from '../components/GameMenu';
+import GradientButton from '../components/GradientButton';
 import ChatContainer from '../components/ChatContainer';
 import LottieView from 'lottie-react-native';
 import { BlurView } from 'expo-blur';
@@ -510,6 +511,20 @@ function PrivateChat({ user, initialGameId }) {
     }
   };
 
+  const handlePlayGame = async () => {
+    const opponentId = user.otherUserId || user.id;
+    const defaultGameId = gameList[0]?.id;
+    if (!defaultGameId) return;
+    if (!requireCredits()) return;
+    try {
+      await sendGameInvite(opponentId, defaultGameId);
+      Toast.show({ type: 'success', text1: 'Invite sent!' });
+    } catch (e) {
+      console.warn('Failed to send game invite', e);
+      Toast.show({ type: 'error', text1: 'Failed to send invite' });
+    }
+  };
+
   const renderMessage = ({ item }) => {
     if (item.sender === 'system') {
       return (
@@ -856,6 +871,12 @@ function PrivateChat({ user, initialGameId }) {
       </Modal>
       <SafeKeyboardView offset={insets.top + 80} style={{ flex: 1, paddingTop: HEADER_SPACING }}>
         <ScreenContainer scroll contentContainerStyle={{ paddingBottom: 120 }}>
+          <GradientButton
+            text="Play Game"
+            width={160}
+            onPress={handlePlayGame}
+            style={{ alignSelf: 'center' }}
+          />
           <View style={[privateStyles.gameWrapper, { height: gameVisible ? BOARD_HEIGHT : 0 }]}>
             {gameSection}
           </View>
