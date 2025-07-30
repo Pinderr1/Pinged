@@ -59,7 +59,13 @@ service cloud.firestore {
     match /matches/{matchId} {
       allow read: if request.auth.token.admin == true ||
         (isSignedIn() && request.auth.uid in resource.data.users);
-      allow create: if isNotBlocked(request.resource.data.users[0], request.resource.data.users[1]);
+      allow create: if isSignedIn() &&
+        let other = request.resource.data.users[0] == request.auth.uid
+          ? request.resource.data.users[1]
+          : request.resource.data.users[0];
+        request.resource.data.users hasAll([request.auth.uid, other]) &&
+        exists(/databases/$(database)/documents/likes/$(request.auth.uid)/liked/$(other)) &&
+        exists(/databases/$(database)/documents/likes/$(other)/liked/$(request.auth.uid));
       allow delete: if request.auth.token.admin == true;
       allow update: if request.auth.token.admin == true || (
         isSignedIn() &&
