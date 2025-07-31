@@ -8,8 +8,6 @@ import EmptyState from './EmptyState';
 import Loader from './Loader';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
-import { useUser } from '../contexts/UserContext';
-import { useTheme } from '../contexts/ThemeContext';
 import * as chatApi from '../utils/chatApi';
 
 const REACTIONS = ['❤️', '🔥', '😂'];
@@ -37,9 +35,7 @@ const FadeInView = ({ children, style }) => {
   return <Animated.View style={[style, { opacity: fade }]}>{children}</Animated.View>;
 };
 
-export default function ChatMessagesList({ matchId, user }) {
-  const { user: currentUser, blocked } = useUser();
-  const { darkMode, theme } = useTheme();
+export default function ChatMessagesList({ matchId, user, currentUser, theme, darkMode }) {
   const styles = getStyles(theme);
 
   const [messages, setMessages] = useState([]);
@@ -309,6 +305,9 @@ export default function ChatMessagesList({ matchId, user }) {
 ChatMessagesList.propTypes = {
   matchId: PropTypes.string.isRequired,
   user: PropTypes.object.isRequired,
+  currentUser: PropTypes.object.isRequired,
+  theme: PropTypes.object.isRequired,
+  darkMode: PropTypes.bool,
 };
 
 const getStyles = (theme) =>

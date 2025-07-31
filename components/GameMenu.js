@@ -1,15 +1,14 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
-import { useTheme } from '../contexts/ThemeContext';
 
 export default function GameMenu({
   visible,
   bottom = 0,
   onCancel,
   onChange,
+  theme,
 }) {
-  const { theme } = useTheme();
   const styles = getStyles(theme);
   if (!visible) return null;
   return (
@@ -29,6 +28,7 @@ GameMenu.propTypes = {
   bottom: PropTypes.number,
   onCancel: PropTypes.func.isRequired,
   onChange: PropTypes.func.isRequired,
+  theme: PropTypes.object.isRequired,
 };
 
 const getStyles = (theme) =>
