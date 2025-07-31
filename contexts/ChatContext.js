@@ -24,6 +24,7 @@ export const ChatProvider = ({ children }) => {
   const { play } = useSound();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
+  const lastMessageRef = useRef(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -213,6 +214,13 @@ export const ChatProvider = ({ children }) => {
 
   const sendMessage = async ({ matchId, text = '', meta = {} }) => {
     if (!matchId || !user?.uid) return;
+    const now = Date.now();
+    if (now - lastMessageRef.current < 1000) {
+      Toast.show({ type: 'error', text1: 'You are sending messages too quickly' });
+      return;
+    }
+    lastMessageRef.current = now;
+
     const trimmed = removeEmojis(text).trim();
     if (!trimmed && !meta.voice) return;
 
