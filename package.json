@@ -44,7 +44,8 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-svg": "15.11.2",
     "react-native-toast-message": "^2.3.0",
-    "expo-image-manipulator": "~11.7.0"
+    "expo-image-manipulator": "~11.7.0",
+    "libsodium-wrappers": "^0.7.11"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

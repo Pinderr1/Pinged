@@ -1,4 +1,5 @@
 import firebase from '../firebase';
+import { decryptText, initEncryption } from './encryption';
 
 export interface MSG {
   id: string;
@@ -17,6 +18,7 @@ export async function getMessages(
   startAfter?: firebase.firestore.DocumentSnapshot | null,
   limit = 30,
 ): Promise<{ messages: MSG[]; lastDoc: firebase.firestore.DocumentSnapshot | null }> {
+  await initEncryption();
   let query = firebase
     .firestore()
     .collection('matches')
@@ -30,7 +32,13 @@ export async function getMessages(
 
   const snap = await query.limit(limit).get();
 
-  const messages = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+  const messages = snap.docs.map((d) => {
+    const data = d.data() as any;
+    if (!data.text && data.ciphertext && data.nonce) {
+      data.text = decryptText(data.ciphertext, data.nonce);
+    }
+    return { id: d.id, ...data };
+  });
   const lastDoc = snap.docs[snap.docs.length - 1] || null;
   return { messages, lastDoc }; // descending order
 }

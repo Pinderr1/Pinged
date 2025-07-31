@@ -9,23 +9,34 @@ import Loader from './Loader';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
 import * as chatApi from '../utils/chatApi';
+import { decryptText, initEncryption } from '../utils/encryption';
 
 const REACTIONS = ['❤️', '🔥', '😂'];
 
-const formatMessage = (val, id, currentUid) => ({
-  id,
-  text: val.text,
-  readBy: val.readBy || [],
-  reactions: val.reactions || {},
-  sender: val.senderId === currentUid ? 'you' : val.senderId || 'them',
-  voice: !!val.voice,
-  url: val.url,
-  duration: val.duration,
-  time: val.timestamp
-    ? val.timestamp.toDate().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-    : '',
-  timestamp: val.timestamp,
-});
+const formatMessage = (val, id, currentUid) => {
+  let text = val.text;
+  if (!text && val.ciphertext && val.nonce) {
+    try {
+      text = decryptText(val.ciphertext, val.nonce);
+    } catch (e) {
+      text = '';
+    }
+  }
+  return {
+    id,
+    text,
+    readBy: val.readBy || [],
+    reactions: val.reactions || {},
+    sender: val.senderId === currentUid ? 'you' : val.senderId || 'them',
+    voice: !!val.voice,
+    url: val.url,
+    duration: val.duration,
+    time: val.timestamp
+      ? val.timestamp.toDate().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      : '',
+    timestamp: val.timestamp,
+  };
+};
 
 const FadeInView = ({ children, style }) => {
   const fade = useRef(new Animated.Value(0)).current;
@@ -54,6 +65,10 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
   useEffect(() => {
     setFirstLine(icebreakers[Math.floor(Math.random() * icebreakers.length)] || '');
     setFirstGame(gameList[Math.floor(Math.random() * gameList.length)] || null);
+  }, []);
+
+  useEffect(() => {
+    initEncryption().catch(() => {});
   }, []);
 
   useEffect(() => {

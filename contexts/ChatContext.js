@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useSound } from './SoundContext';
 import { useListeners } from './ListenerContext';
 import debounce from '../utils/debounce';
+import { initEncryption, encryptText } from '../utils/encryption';
 
 const ChatContext = createContext();
 // Runtime actions for contexts that mount before ChatProvider
@@ -72,6 +73,13 @@ export const ChatProvider = ({ children }) => {
     return () => {
       isMounted = false;
     };
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    initEncryption().catch((e) => {
+      console.warn('Encryption init failed', e);
+    });
   }, [user?.uid]);
 
   // Matches from ListenerContext
@@ -153,11 +161,17 @@ export const ChatProvider = ({ children }) => {
     const { group, system, ...extras } = meta || {};
 
     try {
+      await initEncryption();
       const payload = {
-        text: trimmed,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         ...extras,
       };
+
+      if (trimmed) {
+        const enc = encryptText(trimmed);
+        payload.ciphertext = enc.ciphertext;
+        payload.nonce = enc.nonce;
+      }
 
       if (group) {
         await firebase
