@@ -12,7 +12,12 @@ export const NotificationProvider = ({ children }) => {
     const id = Date.now().toString();
     const notification =
       typeof payload === 'string' ? { id, title: payload } : { id, ...payload };
-    setQueue((prev) => [...prev, notification]);
+    setQueue((prev) => {
+      const duplicate = prev.some(
+        (n) => n.title === notification.title && n.body === notification.body,
+      );
+      return duplicate ? prev : [...prev, notification];
+    });
   };
 
   const removeNotification = (id) => {
