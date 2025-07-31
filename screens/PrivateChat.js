@@ -84,7 +84,7 @@ const FadeInView = ({ children, style }) => {
  *******************************/
 function PrivateChat({ user, initialGameId }) {
   const navigation = useNavigation();
-  const { user: currentUser, addGameXP } = useUser();
+  const { user: currentUser, addGameXP, blocked } = useUser();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const requireCredits = useRequireGameCredits();
   const { sendGameInvite } = useMatchmaking();
@@ -130,6 +130,9 @@ function PrivateChat({ user, initialGameId }) {
 
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
+  const isBlocked = Array.isArray(blocked) &&
+    blocked.includes(user.otherUserId || user.id);
+  const canPlay = gamesLeft > 0 && !isBlocked;
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingEarlier, setLoadingEarlier] = useState(false);
@@ -487,7 +490,7 @@ function PrivateChat({ user, initialGameId }) {
   const handleInviteSelect = async (game) => {
     setShowInvitePicker(false);
     if (!game || inviting) return;
-    if (!requireCredits()) return;
+    if (!canPlay || !requireCredits()) return;
     setInviting(true);
     try {
       const inviteId = await sendGameInvite(user.id, game.id);
@@ -515,7 +518,7 @@ function PrivateChat({ user, initialGameId }) {
     const opponentId = user.otherUserId || user.id;
     const defaultGameId = gameList[0]?.id;
     if (!defaultGameId) return;
-    if (!requireCredits()) return;
+    if (!canPlay || !requireCredits()) return;
     try {
       await sendGameInvite(opponentId, defaultGameId);
       Toast.show({ type: 'success', text1: 'Invite sent!' });
@@ -799,17 +802,21 @@ function PrivateChat({ user, initialGameId }) {
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={privateStyles.challengeButton}
+          style={[
+            privateStyles.challengeButton,
+            !canPlay && { opacity: 0.6 },
+          ]}
           onPress={() => setShowInvitePicker(true)}
           accessibilityLabel="Challenge"
-          disabled={inviting}
+          disabled={inviting || !canPlay}
         >
           <Ionicons name="game-controller" size={18} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity
-          style={privateStyles.playButton}
+          style={[privateStyles.playButton, !canPlay && { opacity: 0.6 }]}
           onPress={handlePlayPress}
           accessibilityLabel={playButtonText}
+          disabled={!canPlay}
         >
           <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>
             {playButtonText}
@@ -876,6 +883,7 @@ function PrivateChat({ user, initialGameId }) {
             width={160}
             onPress={handlePlayGame}
             style={{ alignSelf: 'center' }}
+            disabled={!canPlay}
           />
           <View style={[privateStyles.gameWrapper, { height: gameVisible ? BOARD_HEIGHT : 0 }]}>
             {gameSection}
