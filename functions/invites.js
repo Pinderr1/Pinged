@@ -44,6 +44,18 @@ async function ensureMatchHistory(users, extra = {}) {
   return ref;
 }
 
+// Remove match history document for a pair of users
+async function deleteMatchHistory(users) {
+  if (!Array.isArray(users) || users.length < 2) return null;
+  const id = [...users].sort().join('_');
+  try {
+    await admin.firestore().collection('matchHistory').doc(id).delete();
+  } catch (e) {
+    console.error('Failed to delete match history', e);
+  }
+  return null;
+}
+
 const onGameInviteCreated = functions.firestore
   .document('gameInvites/{inviteId}')
   .onCreate(async (snap, context) => {
@@ -195,6 +207,29 @@ const cleanupFinishedSession = functions.firestore
       ]);
     }
 
+    return null;
+  });
+
+const onInviteDeleted = functions.firestore
+  .document('gameInvites/{inviteId}')
+  .onDelete(async (snap, context) => {
+    const data = snap.data() || {};
+    const { from, to } = data;
+    if (from && to) {
+      await deleteMatchHistory([from, to]);
+    }
+    return null;
+  });
+
+const onMatchDeleted = functions.firestore
+  .document('matches/{matchId}')
+  .onDelete(async (snap, context) => {
+    const matchId = context.params.matchId;
+    try {
+      await admin.firestore().collection('matchHistory').doc(matchId).delete();
+    } catch (e) {
+      console.error('Failed to delete match history on match delete', e);
+    }
     return null;
   });
 
@@ -355,6 +390,8 @@ module.exports = {
   autoStartGame,
   trackGameInvite,
   cleanupFinishedSession,
+  onInviteDeleted,
+  onMatchDeleted,
   onChatMessageCreated,
   acceptInvite,
 };

@@ -18,6 +18,15 @@ async function deleteRelatedInvites(uid, targetUid) {
   await Promise.all(tasks);
 }
 
+async function deleteMatchHistory(uid, targetUid) {
+  const id = [uid, targetUid].sort().join('_');
+  try {
+    await admin.firestore().collection('matchHistory').doc(id).delete();
+  } catch (e) {
+    console.error('Failed to delete match history', e);
+  }
+}
+
 
 async function deleteMatches(uid, targetUid) {
   const db = admin.firestore();
@@ -64,6 +73,7 @@ const blockUser = functions.https.onCall(async (data, context) => {
       deleteMatches(uid, targetUid),
       deleteRelatedInvites(uid, targetUid),
       deleteLikes(uid, targetUid),
+      deleteMatchHistory(uid, targetUid),
     ]);
     return { success: true };
   } catch (e) {
