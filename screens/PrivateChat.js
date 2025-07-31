@@ -10,17 +10,19 @@ import ChatMessagesList from '../components/ChatMessagesList';
 import ChatInputBar from '../components/ChatInputBar';
 import GameBar from '../components/GameBar';
 import { useChats } from '../contexts/ChatContext';
+import { useMatchmaking } from '../contexts/MatchmakingContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { HEADER_SPACING } from '../layout';
 
 export default function PrivateChat({ user, initialGameId }) {
-  const { blocked } = useUser();
+  const { user: currentUser, blocked } = useUser();
   const { gamesLeft } = useGameLimit();
-  const { setActiveGame, getActiveGame } = useChats();
+  const { setActiveGame, getActiveGame, sendMessage } = useChats();
+  const { sendGameInvite } = useMatchmaking();
   const insets = useSafeAreaInsets();
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const styles = getStyles(theme);
 
   useEffect(() => {
@@ -40,8 +42,22 @@ export default function PrivateChat({ user, initialGameId }) {
         <ScreenContainer scroll contentContainerStyle={{ paddingBottom: 120 }}>
           <GameBar matchId={user.id} user={user} />
           <ChatContainer style={styles.chatWrapper}>
-            <ChatMessagesList matchId={user.id} user={user} />
-            <ChatInputBar matchId={user.id} canPlay={canPlay} onPlayPress={() => {}} />
+          <ChatMessagesList
+            matchId={user.id}
+            user={user}
+            currentUser={currentUser}
+            theme={theme}
+            darkMode={darkMode}
+          />
+          <ChatInputBar
+            matchId={user.id}
+            canPlay={canPlay}
+            onPlayPress={() => {}}
+            currentUser={currentUser}
+            theme={theme}
+            sendMessage={sendMessage}
+            sendGameInvite={sendGameInvite}
+          />
           </ChatContainer>
         </ScreenContainer>
       </SafeKeyboardView>

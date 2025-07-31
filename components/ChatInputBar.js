@@ -3,21 +3,22 @@ import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-nativ
 import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
 import firebase from '../firebase';
-import { useTheme } from '../contexts/ThemeContext';
-import { useUser } from '../contexts/UserContext';
-import { useChats } from '../contexts/ChatContext';
-import { useMatchmaking } from '../contexts/MatchmakingContext';
 import VoiceRecorderBar from './VoiceRecorderBar';
 import { uploadVoiceAsync } from '../utils/upload';
 import Toast from 'react-native-toast-message';
 import useDebouncedCallback from '../hooks/useDebouncedCallback';
 import { gameList } from '../games';
 
-export default function ChatInputBar({ matchId, canPlay, onPlayPress, onShowInvite }) {
-  const { user } = useUser();
-  const { sendMessage } = useChats();
-  const { sendGameInvite } = useMatchmaking();
-  const { theme } = useTheme();
+export default function ChatInputBar({
+  matchId,
+  canPlay,
+  onPlayPress,
+  onShowInvite,
+  currentUser,
+  theme,
+  sendMessage,
+  sendGameInvite,
+}) {
   const styles = getStyles(theme);
   const [text, setText] = useState('');
   const [inviting, setInviting] = useState(false);
@@ -25,8 +26,12 @@ export default function ChatInputBar({ matchId, canPlay, onPlayPress, onShowInvi
   const typingTimeout = useRef(null);
 
   const updateTyping = (state) => {
-    if (!matchId || !user?.uid) return;
-    firebase.firestore().collection('matches').doc(matchId).set({ typing: { [user.uid]: state } }, { merge: true });
+    if (!matchId || !currentUser?.uid) return;
+    firebase
+      .firestore()
+      .collection('matches')
+      .doc(matchId)
+      .set({ typing: { [currentUser.uid]: state } }, { merge: true });
   };
 
   const handleTextChange = (val) => {
@@ -48,7 +53,7 @@ export default function ChatInputBar({ matchId, canPlay, onPlayPress, onShowInvi
 
   const handleVoiceSend = async (res) => {
     try {
-      const url = await uploadVoiceAsync(res.uri, user.uid);
+      const url = await uploadVoiceAsync(res.uri, currentUser.uid);
       await sendMessage({ matchId, text: '', meta: { voice: true, url, duration: res.duration } });
     } catch (e) {
       console.warn('Failed to send voice message', e);
@@ -74,7 +79,7 @@ export default function ChatInputBar({ matchId, canPlay, onPlayPress, onShowInvi
 
   return (
     <View style={styles.bar}>
-      <VoiceRecorderBar onFinish={handleVoiceSend} />
+      <VoiceRecorderBar onFinish={handleVoiceSend} color={theme.text} />
       <TextInput
         ref={inputRef}
         placeholder="Type a message..."
@@ -115,6 +120,10 @@ ChatInputBar.propTypes = {
   canPlay: PropTypes.bool,
   onPlayPress: PropTypes.func.isRequired,
   onShowInvite: PropTypes.func,
+  currentUser: PropTypes.object.isRequired,
+  theme: PropTypes.object.isRequired,
+  sendMessage: PropTypes.func.isRequired,
+  sendGameInvite: PropTypes.func.isRequired,
 };
 
 const getStyles = (theme) =>

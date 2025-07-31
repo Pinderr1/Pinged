@@ -216,6 +216,7 @@ export default function GameBar({ matchId, user }) {
         bottom={INPUT_BAR_HEIGHT + 10}
         onCancel={handleCancelGame}
         onChange={handleChangeGame}
+        theme={theme}
       />
       <GamePickerModal visible={showGameModal} onSelect={handleGameSelect} onClose={() => setShowGameModal(false)} />
       {gameResult && (
