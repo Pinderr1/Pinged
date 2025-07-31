@@ -113,6 +113,22 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `icon` (string) – Ionicons icon name
 - `premium` (boolean) – if true, badge is exclusive to Premium members
 
+## Events (`events/{eventId}`)
+- `title` (string)
+- `time` (string)
+- `description` (string)
+- `category` (string)
+- `hostId` (string)
+- `ticketed` (boolean)
+- `participantCount` (number)
+- `createdAt` (timestamp)
+
+### Subcollections
+- **participants** – individual participant records
+  - `userId` (string)
+  - `joinedAt` (timestamp)
+- **messages** – group chat for the event
+
 ## Chats
 Chat conversations occur inside match documents under the `messages` subcollection (see **Matches** above). Each event also has a chat stored at `events/{eventId}/messages` following the same message shape.
 

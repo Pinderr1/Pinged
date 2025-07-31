@@ -148,6 +148,19 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && request.auth.uid == request.resource.data.hostId;
       allow update, delete: if isSignedIn() && request.auth.uid == resource.data.hostId;
+
+      // Track participants in a subcollection
+      match /participants/{uid} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && request.auth.uid == uid;
+        allow delete: if isSignedIn() && request.auth.uid == uid;
+      }
+
+      // Event chat messages follow the same pattern as match messages
+      match /messages/{messageId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+      }
     }
 
     // Per-user notifications are private to that user
