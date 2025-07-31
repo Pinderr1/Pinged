@@ -35,6 +35,8 @@ import FullProfileModal from '../components/FullProfileModal';
 import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
+import { useLikeLimit } from '../contexts/LikeLimitContext';
+import { useLikeLimit } from '../contexts/LikeLimitContext';
 import { FONT_FAMILY } from '../textStyles';
 import UserCard from '../components/UserCard';
 import SwipeControls from '../components/SwipeControls';
@@ -43,7 +45,6 @@ import FilterPanel from '../components/FilterPanel';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const CARD_HEIGHT = SCREEN_HEIGHT;
-const MAX_LIKES = 100;
 const PAGE_SIZE = 20;
 const BUTTON_ROW_BOTTOM = SCREEN_HEIGHT * 0.05;
 
@@ -90,6 +91,7 @@ const SwipeScreen = () => {
   const { play } = useSound();
   const { addMatch } = useChats();
   const isPremiumUser = !!currentUser?.isPremium;
+  const { likesLeft, recordLikeSent } = useLikeLimit();
   const {
     location: filterLocation,
     ageRange,
@@ -99,7 +101,6 @@ const SwipeScreen = () => {
   } = useFilters();
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [likesUsed, setLikesUsed] = useState(0);
   const [matchedUser, setMatchedUser] = useState(null);
   const [showFireworks, setShowFireworks] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
@@ -294,7 +295,7 @@ const SwipeScreen = () => {
     play(direction === 'left' ? 'swipe_left' : 'swipe_right');
 
     if (direction === 'right') {
-      if (likesUsed >= MAX_LIKES && !isPremiumUser) {
+      if (likesLeft <= 0 && !isPremiumUser) {
         navigation.navigate('PremiumPaywall', { context: 'paywall' });
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
@@ -310,9 +311,7 @@ const SwipeScreen = () => {
           targetUser: displayUser,
           firestore: firebase.firestore(),
           navigation,
-          likesUsed,
           isPremiumUser,
-          setLikesUsed,
           showNotification,
           addMatch,
           setMatchedUser,
@@ -325,6 +324,7 @@ const SwipeScreen = () => {
         if (!success) {
           throw new Error('Like failed');
         }
+        recordLikeSent();
       } catch (e) {
         console.warn('Failed to like user', e);
         Toast.show({ type: 'error', text1: 'Failed to like user' });
