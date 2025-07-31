@@ -36,6 +36,8 @@ npx expo install expo-image-manipulator
 
 npm run start
 
+Push notifications require running the app in a development build (Expo Go no longer includes remote notification support).
+
 Other scripts:
 
 npm run android     # Launch on Android emulator

@@ -5,8 +5,16 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const envPath = path.resolve(__dirname, '.env');
+let content = null;
 if (fs.existsSync(envPath)) {
-  const content = fs.readFileSync(envPath, 'utf8');
+  content = fs.readFileSync(envPath, 'utf8');
+} else {
+  const examplePath = path.resolve(__dirname, '.env.example');
+  if (fs.existsSync(examplePath)) {
+    content = fs.readFileSync(examplePath, 'utf8');
+  }
+}
+if (content) {
   for (const line of content.split(/\r?\n/)) {
     const m = line.match(/^\s*([^#][^=]*)=(.*)$/);
     if (m) {

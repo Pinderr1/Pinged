@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from './UserContext';
+import chatActions from './chatActions';
 import firebase from '../firebase';
 import Toast from 'react-native-toast-message';
 import * as Haptics from 'expo-haptics';
@@ -9,8 +10,7 @@ import { useListeners } from './ListenerContext';
 import debounce from '../utils/debounce';
 
 const ChatContext = createContext();
-// Expose runtime actions for contexts that mount before ChatProvider
-export const chatActions = {};
+// Runtime actions for contexts that mount before ChatProvider
 
 const STORAGE_PREFIX = 'chatMatches_';
 const GAME_STATE_PREFIX = 'gameState_';

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Audio } from 'expo-av';
+import { Audio } from 'expo-audio';
 
 export default function useVoicePlayback(url) {
   const soundRef = useRef(null);

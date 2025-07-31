@@ -22,7 +22,11 @@ export const TrendingProvider = ({ children }) => {
           });
           setTrendingMap(map);
         },
-        (e) => console.warn('Failed to load trending games', e)
+        (e) => {
+          if (e?.code !== 'permission-denied') {
+            console.warn('Failed to load trending games', e);
+          }
+        }
       );
     return unsub;
   }, []);

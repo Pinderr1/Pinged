@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Audio } from 'expo-av';
+import { Audio } from 'expo-audio';
 
 export default function useVoiceRecorder() {
   const recording = useRef(null);

@@ -25,7 +25,9 @@ export default function useRemoteConfig() {
         });
       },
       (err) => {
-        console.warn('Failed to load remote config', err);
+        if (err?.code !== 'permission-denied') {
+          console.warn('Failed to load remote config', err);
+        }
         setConfig((prev) => ({ ...prev, loading: false, error: err }));
       }
     );
