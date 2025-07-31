@@ -47,19 +47,14 @@ export async function handleLike({
 }) {
   if (!targetUser) return { success: false, matchId: null };
 
-  if (likesUsed >= MAX_LIKES && !isPremiumUser) {
-    navigation.navigate('PremiumPaywall', { context: 'paywall' });
-    return { success: false, matchId: null };
-  }
-
   if (currentUser?.uid && targetUser.id) {
     try {
-      await firestore
-        .collection('likes')
-        .doc(currentUser.uid)
-        .collection('liked')
-        .doc(targetUser.id)
-        .set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      await firebase
+        .functions()
+        .httpsCallable('sendLike')({
+          uid: currentUser.uid,
+          targetUid: targetUser.id,
+        });
 
       const res = await firebase
         .functions()
@@ -106,6 +101,10 @@ export async function handleLike({
 
       return { success: true, matchId };
     } catch (e) {
+      if (!isPremiumUser && e?.message?.includes('Daily like limit')) {
+        navigation.navigate('PremiumPaywall', { context: 'paywall' });
+        return { success: false, matchId: null };
+      }
       console.error('Failed to process like', e);
       throw e;
     }
