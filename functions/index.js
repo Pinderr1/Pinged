@@ -14,6 +14,7 @@ const blocks = require('./blocks');
 const stats = require('./stats');
 const likes = require('./likes');
 const gameSessions = require('./gameSessions');
+const events = require('./events');
 
 // Re-export all handlers for Firebase deployment
 module.exports = {
@@ -28,4 +29,5 @@ module.exports = {
   ...stats,
   ...likes,
   ...gameSessions,
+  ...events,
 };
