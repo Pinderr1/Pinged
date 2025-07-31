@@ -25,6 +25,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import PropTypes from 'prop-types';
 import { useUser } from '../contexts/UserContext';
+import { useEventLimit } from '../contexts/EventLimitContext';
 import firebase from '../firebase';
 import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 import * as Haptics from 'expo-haptics';
@@ -40,6 +41,7 @@ const CommunityScreen = () => {
   const local = getStyles(theme, skeletonColor);
   const navigation = useNavigation();
   const { user, redeemEventTicket } = useUser();
+  const { eventsLeft, recordEventCreated } = useEventLimit();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [lastEventDoc, setLastEventDoc] = useState(null);
@@ -437,6 +439,10 @@ const CommunityScreen = () => {
             <GradientButton
               text="Submit Event"
               onPress={async () => {
+                if (eventsLeft <= 0) {
+                  Alert.alert('Limit Reached', 'You have reached your daily event limit.');
+                  return;
+                }
                 try {
                   await firebase.firestore().collection('events').add({
                     title: newTitle,
@@ -446,6 +452,7 @@ const CommunityScreen = () => {
                     hostId: user?.uid || null,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                   });
+                  recordEventCreated();
                   setShowHostModal(false);
                   setNewTitle('');
                   setNewTime('');
