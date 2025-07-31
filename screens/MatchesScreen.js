@@ -13,7 +13,7 @@ import ScreenContainer from '../components/ScreenContainer';
 import Card from '../components/Card';
 import AvatarRing from '../components/AvatarRing';
 import { useTheme } from '../contexts/ThemeContext';
-import { useChats } from '../contexts/ChatContext';
+import { useMatches } from '../contexts/MatchesContext';
 import useRematchHistory from '../hooks/useRematchHistory';
 import PropTypes from 'prop-types';
 import { HEADER_SPACING } from '../layout';
@@ -24,7 +24,7 @@ const SKELETON_CHAT_COUNT = 5;
 
 const MatchesScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
-  const { matches, loading, refreshMatches, loadMoreMatches, hasMoreMatches } = useChats();
+  const { matches, loading, refreshMatches, loadMoreMatches, hasMoreMatches } = useMatches();
   const history = useRematchHistory(matches);
   const [refreshing, setRefreshing] = useState(false);
 

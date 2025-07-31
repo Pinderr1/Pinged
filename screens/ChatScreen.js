@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import EmptyState from '../components/EmptyState';
 import SafeKeyboardView from '../components/SafeKeyboardView';
 import { HEADER_SPACING } from '../layout';
-import { useChats } from '../contexts/ChatContext';
+import { useMatches } from '../contexts/MatchesContext';
 
 import PrivateChat from './PrivateChat';
 
@@ -13,7 +13,7 @@ export { default as PrivateChat } from './PrivateChat';
 
 export default function ChatScreen({ route }) {
   const { user: paramUser, gameId, chatId } = route.params || {};
-  const { matches, addMatch } = useChats();
+  const { matches, addMatch } = useMatches();
 
 
   let match = matches.find(

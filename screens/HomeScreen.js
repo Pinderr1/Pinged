@@ -27,7 +27,7 @@ import PremiumBanner from '../components/PremiumBanner';
 import ActiveGamesPreview from '../components/ActiveGamesPreview';
 import MatchesPreview from '../components/MatchesPreview';
 import { FONT_FAMILY } from '../textStyles';
-import { useChats } from '../contexts/ChatContext';
+import { useMatches } from '../contexts/MatchesContext';
 import firebase from '../firebase';
 import Toast from 'react-native-toast-message';
 
@@ -46,7 +46,7 @@ const HomeScreen = ({ navigation }) => {
   const { user, loginBonus } = useUser();
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft } = useGameLimit();
-  const { addMatch } = useChats();
+  const { addMatch } = useMatches();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
   const [showBonus, setShowBonus] = useState(false);

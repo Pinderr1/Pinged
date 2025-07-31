@@ -7,7 +7,9 @@ import { UserProvider } from './UserContext';
 import { ListenerProvider } from './ListenerContext';
 import { GameLimitProvider } from './GameLimitContext';
 import { EventLimitProvider } from './EventLimitContext';
-import { ChatProvider } from './ChatContext';
+import { MatchesProvider } from './MatchesContext';
+import { PresenceProvider } from './PresenceContext';
+import { GameProvider } from './GameContext';
 import { MatchmakingProvider } from './MatchmakingContext';
 import { GameSessionProvider } from './GameSessionContext';
 import { TrendingProvider } from './TrendingContext';
@@ -27,15 +29,19 @@ const Providers = ({ children }) => (
                     <GameLimitProvider>
                       <EventLimitProvider>
                         <FilterProvider>
-                          <ChatProvider>
-                            <MatchmakingProvider>
-                              <TrendingProvider>
-                                <GameSessionProvider>
-                                  {children}
-                                </GameSessionProvider>
-                              </TrendingProvider>
-                            </MatchmakingProvider>
-                          </ChatProvider>
+                          <MatchesProvider>
+                            <PresenceProvider>
+                              <GameProvider>
+                                <MatchmakingProvider>
+                                  <TrendingProvider>
+                                    <GameSessionProvider>
+                                      {children}
+                                    </GameSessionProvider>
+                                  </TrendingProvider>
+                                </MatchmakingProvider>
+                              </GameProvider>
+                            </PresenceProvider>
+                          </MatchesProvider>
                         </FilterProvider>
                       </EventLimitProvider>
                     </GameLimitProvider>

@@ -2,13 +2,13 @@ import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
-import { useChats } from '../contexts/ChatContext';
+import { useMatches } from '../contexts/MatchesContext';
 import AvatarRing from './AvatarRing';
 import GradientButton from './GradientButton';
 
 export default function MatchesPreview({ navigation }) {
   const { theme } = useTheme();
-  const { matches } = useChats();
+  const { matches } = useMatches();
   const styles = getStyles(theme);
 
   const list = matches.slice(0, 5);

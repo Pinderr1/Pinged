@@ -20,7 +20,7 @@ import { SPACING } from '../layout';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
 import BoostModal from '../components/BoostModal';
-import { useChats } from '../contexts/ChatContext';
+import { useMatches } from '../contexts/MatchesContext';
 import firebase from '../firebase';
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
@@ -88,7 +88,7 @@ const SwipeScreen = () => {
   const { showNotification } = useNotification();
   const { user: currentUser, updateUser, blocked } = useUser();
   const { play } = useSound();
-  const { addMatch } = useChats();
+  const { addMatch } = useMatches();
   const isPremiumUser = !!currentUser?.isPremium;
   const {
     location: filterLocation,

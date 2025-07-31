@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
 import { useGameSessions } from '../contexts/GameSessionContext';
-import { useChats } from '../contexts/ChatContext';
+import { useMatches } from '../contexts/MatchesContext';
 import { useUser } from '../contexts/UserContext';
 import { games } from '../games';
 import firebase from '../firebase';
@@ -18,7 +18,7 @@ import PropTypes from 'prop-types';
 const ActiveGamesScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const { sessions } = useGameSessions();
-  const { matches } = useChats();
+  const { matches } = useMatches();
   const { user } = useUser();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);

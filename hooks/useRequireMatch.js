@@ -2,13 +2,13 @@ import { useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../contexts/UserContext';
-import { useChats } from '../contexts/ChatContext';
+import { useMatches } from '../contexts/MatchesContext';
 import { validateMatch } from '../utils/matchUtils';
 
 export default function useRequireMatch() {
   const navigation = useNavigation();
   const { user } = useUser();
-  const { matches } = useChats();
+  const { matches } = useMatches();
 
   const requireMatch = useCallback(
     async (otherId, opts = {}) => {

@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useGameSessions } from '../contexts/GameSessionContext';
-import { useChats } from '../contexts/ChatContext';
+import { useMatches } from '../contexts/MatchesContext';
 import { useUser } from '../contexts/UserContext';
 import { games } from '../games';
 import Card from './Card';
@@ -12,7 +12,7 @@ import GradientButton from './GradientButton';
 export default function ActiveGamesPreview({ navigation }) {
   const { theme } = useTheme();
   const { sessions } = useGameSessions();
-  const { matches } = useChats();
+  const { matches } = useMatches();
   const { user } = useUser();
   const styles = getStyles(theme);
 
