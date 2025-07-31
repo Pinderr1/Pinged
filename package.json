@@ -45,6 +45,7 @@
     "react-native-svg": "15.11.2",
     "react-native-toast-message": "^2.3.0",
     "expo-image-manipulator": "~11.7.0"
+    ,"zustand": "^4.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
