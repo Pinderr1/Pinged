@@ -14,16 +14,21 @@ export interface MSG {
 
 export async function getMessages(
   matchId: string,
-  limit = 30
+  startAfter?: firebase.firestore.DocumentSnapshot | null,
+  limit = 30,
 ): Promise<{ messages: MSG[]; lastDoc: firebase.firestore.DocumentSnapshot | null }> {
-  const snap = await firebase
+  let query = firebase
     .firestore()
     .collection('matches')
     .doc(matchId)
     .collection('messages')
-    .orderBy('timestamp', 'desc')
-    .limit(limit)
-    .get();
+    .orderBy('timestamp', 'desc');
+
+  if (startAfter) {
+    query = query.startAfter(startAfter);
+  }
+
+  const snap = await query.limit(limit).get();
 
   const messages = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
   const lastDoc = snap.docs[snap.docs.length - 1] || null;

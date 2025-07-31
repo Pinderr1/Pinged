@@ -131,18 +131,10 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
     if (loadingEarlier || !oldestDoc) return;
     setLoadingEarlier(true);
     try {
-      const snap = await firebase
-        .firestore()
-        .collection('matches')
-        .doc(matchId)
-        .collection('messages')
-        .orderBy('timestamp', 'desc')
-        .startAfter(oldestDoc)
-        .limit(30)
-        .get();
-      const data = snap.docs.map((d) => formatMessage(d.data(), d.id, currentUser.uid));
+      const { messages: fetched, lastDoc } = await chatApi.getMessages(matchId, oldestDoc);
+      const data = fetched.map((d) => formatMessage(d, d.id, currentUser.uid));
       if (data.length > 0) {
-        setOldestDoc(snap.docs[snap.docs.length - 1]);
+        setOldestDoc(lastDoc);
         setMessages((prev) => [...prev, ...data]);
         setHasEarlier(data.length === 30);
       } else {
