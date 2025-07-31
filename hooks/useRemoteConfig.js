@@ -6,6 +6,7 @@ export default function useRemoteConfig() {
   const [config, setConfig] = useState({
     minVersion: null,
     maxFreeGames: null,
+    maxDailyEvents: null,
     alertMessage: null,
     loading: true,
     error: null,
@@ -19,6 +20,7 @@ export default function useRemoteConfig() {
         setConfig({
           minVersion: data?.minVersion ?? null,
           maxFreeGames: data?.maxFreeGames ?? null,
+          maxDailyEvents: data?.maxDailyEvents ?? null,
           alertMessage: data?.alertMessage ?? null,
           loading: false,
           error: null,
