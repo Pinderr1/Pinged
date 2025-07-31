@@ -64,29 +64,6 @@ const onGameInviteCreated = functions.firestore
 
 const onNewInvite = onGameInviteCreated;
 
-const resetFreeGameUsage = functions.pubsub
-  .schedule('0 0 * * *')
-  .timeZone('UTC')
-  .onRun(async () => {
-    const snap = await admin
-      .firestore()
-      .collection('users')
-      .where('dailyPlayCount', '>', 0)
-      .get();
-
-    const tasks = [];
-    snap.forEach((doc) => {
-      tasks.push(
-        doc.ref.update({ dailyPlayCount: 0, lastGamePlayedAt: null })
-      );
-    });
-
-    await Promise.all(tasks);
-    functions.logger.info(
-      `Reset dailyPlayCount for ${tasks.length} users`
-    );
-    return null;
-  });
 
 const onMatchCreated = functions.firestore
   .document('matches/{matchId}')
@@ -358,7 +335,6 @@ const onChatMessageCreated = functions.firestore
 module.exports = {
   onGameInviteCreated,
   onNewInvite,
-  resetFreeGameUsage,
   onMatchCreated,
   syncPresence,
   autoStartGame,
