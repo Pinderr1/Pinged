@@ -112,18 +112,10 @@ const CommunityScreen = () => {
 
   const joinEvent = async (id) => {
     try {
-      const ref = firebase
-        .firestore()
-        .collection('events')
-        .doc(id)
-        .collection('attendees')
-        .doc(user.uid);
-      await ref.set(
-        { joinedAt: firebase.firestore.FieldValue.serverTimestamp() },
-        { merge: true }
-      );
+      await firebase.functions().httpsCallable('joinEvent')({ eventId: id });
     } catch (e) {
       console.warn('Failed to join event', e);
+      throw e;
     }
     if (joinedEvents.length === 0) {
       setFirstJoin(true);
