@@ -25,10 +25,16 @@ async function createMatchIfMutualLikeInternal(data, context, tx) {
       return { matchId };
     }
 
-    const [like1, like2] = await Promise.all([
+    const [like1, like2, block1, block2] = await Promise.all([
       transaction.get(db.collection('likes').doc(uid).collection('liked').doc(targetUid)),
       transaction.get(db.collection('likes').doc(targetUid).collection('liked').doc(uid)),
+      transaction.get(db.collection('blocks').doc(uid).collection('blocked').doc(targetUid)),
+      transaction.get(db.collection('blocks').doc(targetUid).collection('blocked').doc(uid)),
     ]);
+
+    if (block1.exists || block2.exists) {
+      return { matchId: null };
+    }
 
     if (like1.exists && like2.exists) {
       transaction.set(matchRef, {
