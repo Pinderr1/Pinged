@@ -101,6 +101,7 @@ const syncPresence = functions.database
     if (!status) return null;
     const uid = context.params.uid;
     const userRef = admin.firestore().collection('users').doc(uid);
+    const presenceRef = admin.firestore().collection('presence').doc(uid);
     const updates = {
       online: status.state === 'online',
     };
@@ -113,9 +114,69 @@ const syncPresence = functions.database
 
     try {
       await userRef.set(updates, { merge: true });
+      await presenceRef.set(updates, { merge: true });
+
+      const matchSnap = await admin
+        .firestore()
+        .collection('matches')
+        .where('users', 'array-contains', uid)
+        .get();
+
+      const tasks = [];
+      matchSnap.forEach((doc) => {
+        tasks.push(
+          doc.ref.set(
+            { [`presence.${uid}.online`]: updates.online },
+            { merge: true }
+          )
+        );
+      });
+      await Promise.all(tasks);
     } catch (e) {
       console.error('Failed to sync presence', e);
     }
+    return null;
+  });
+
+const onUserProfileUpdate = functions.firestore
+  .document('users/{uid}')
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() || {};
+    const after = change.after.data() || {};
+    const uid = context.params.uid;
+    const updates = {};
+
+    if (before.photoURL !== after.photoURL) {
+      updates.photoURL = after.photoURL || '';
+    }
+
+    if (before.avatarOverlay !== after.avatarOverlay) {
+      updates.avatarOverlay = after.avatarOverlay || '';
+    }
+
+    if (!Object.keys(updates).length) return null;
+
+    const presenceRef = admin.firestore().collection('presence').doc(uid);
+
+    try {
+      await presenceRef.set(updates, { merge: true });
+
+      const matchSnap = await admin
+        .firestore()
+        .collection('matches')
+        .where('users', 'array-contains', uid)
+        .get();
+
+      const tasks = [];
+      matchSnap.forEach((doc) => {
+        tasks.push(doc.ref.set({ [`presence.${uid}`]: updates }, { merge: true }));
+      });
+
+      await Promise.all(tasks);
+    } catch (e) {
+      console.error('Failed to propagate profile update', e);
+    }
+
     return null;
   });
 
@@ -387,6 +448,7 @@ module.exports = {
   onNewInvite,
   onMatchCreated,
   syncPresence,
+  onUserProfileUpdate,
   autoStartGame,
   trackGameInvite,
   cleanupFinishedSession,
