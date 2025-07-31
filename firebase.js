@@ -1,10 +1,16 @@
-// firebase.js (Firebase v8 compat)
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
-import 'firebase/compat/storage';
-import 'firebase/compat/functions';
-import 'firebase/compat/database';
+// firebase.js (Firebase modular API)
+import { initializeApp, getApps } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import {
+  getFirestore,
+  serverTimestamp,
+  arrayUnion,
+  deleteField,
+  increment,
+} from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+import { getFunctions } from 'firebase/functions';
+import { getDatabase } from 'firebase/database';
 
 // Validate required environment variables at runtime
 const requiredEnv = [
@@ -43,20 +49,36 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
-const auth = firebase.auth();
+const auth = getAuth(app);
 let firestore;
 try {
-  firestore = firebase.firestore();
+  firestore = getFirestore(app);
 } catch (e) {
   console.error('Firestore init error', e);
 }
-const storage = firebase.storage();
-const functions = firebase.functions();
-const realtimeDB = firebase.database();
+const storage = getStorage(app);
+const functions = getFunctions(app);
+const realtimeDB = getDatabase(app);
+
+const FieldValue = {
+  serverTimestamp,
+  arrayUnion,
+  delete: deleteField,
+  increment,
+};
+
+const firebase = {
+  apps: [app],
+  initializeApp: () => app,
+};
+
+firebase.auth = () => auth;
+firebase.firestore = Object.assign(() => firestore, { FieldValue });
+firebase.storage = () => storage;
+firebase.functions = () => functions;
+firebase.database = () => realtimeDB;
 
 export { auth, firestore, storage, functions, realtimeDB };
 export default firebase;
