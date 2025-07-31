@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useRef, useEffect } from 'react';
-import { Audio } from 'expo-av';
+import { Audio } from 'expo-audio';
 
 const SoundContext = createContext();
 

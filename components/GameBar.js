@@ -16,7 +16,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
 import Toast from 'react-native-toast-message';
 import * as Haptics from 'expo-haptics';
-import { Audio } from 'expo-av';
+import { Audio } from 'expo-audio';
 
 const BOARD_HEIGHT = Dimensions.get('window').height / 2;
 

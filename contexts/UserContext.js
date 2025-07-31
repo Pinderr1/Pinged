@@ -12,7 +12,7 @@ import firebase from "../firebase";
 import { useAuth } from "./AuthContext";
 import { computeBadges } from "../utils/badges";
 import { computeUnlocks } from "../utils/unlocks";
-import { chatActions } from "./ChatContext";
+import chatActions from "./chatActions";
 
 const UserContext = createContext();
 

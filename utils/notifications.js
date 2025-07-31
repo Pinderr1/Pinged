@@ -9,7 +9,8 @@ export async function registerForPushNotificationsAsync() {
       return null;
     }
 
-    if (Constants.appOwnership === 'expo' && Platform.OS === 'android') {
+    if (Constants.appOwnership === 'expo') {
+      console.warn('Push notifications require a development build');
       return null;
     }
 
