@@ -33,6 +33,7 @@ import { FONT_FAMILY } from '../textStyles';
 
 
 const FILTERS = ['All', 'Tonight', 'Flirty', 'Tournaments'];
+const EVENTS_PAGE_SIZE = 10;
 
 const CommunityScreen = () => {
   const { darkMode, theme } = useTheme();
@@ -41,6 +42,7 @@ const CommunityScreen = () => {
   const navigation = useNavigation();
   const { user, redeemEventTicket } = useUser();
   const [events, setEvents] = useState([]);
+  const [lastEvent, setLastEvent] = useState(null);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [joinedEvents, setJoinedEvents] = useState([]);
   const [activeFilter, setActiveFilter] = useState('All');
@@ -72,16 +74,39 @@ const CommunityScreen = () => {
     }
   }, [firstJoin, badgeAnim]);
 
+  const fetchEvents = async (next = false) => {
+    setLoadingEvents(true);
+    let q = firebase.firestore()
+      .collection('events')
+      .orderBy('createdAt', 'desc')
+      .limit(EVENTS_PAGE_SIZE);
+    if (next && lastEvent) {
+      q = q.startAfter(lastEvent);
+    }
+    const snap = await q.get();
+    const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    setLastEvent(snap.docs[snap.docs.length - 1] || null);
+    setEvents((prev) => (next ? [...prev, ...data] : data));
+    setLoadingEvents(false);
+    setRefreshing(false);
+  };
+
   useEffect(() => {
-    const q = firebase.firestore().collection('events').orderBy('createdAt', 'desc');
+    fetchEvents();
+  }, []);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const q = firebase
+      .firestore()
+      .collectionGroup('participants')
+      .where('userId', '==', user.uid);
     const unsub = q.onSnapshot((snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setEvents(data);
-      setLoadingEvents(false);
-      setRefreshing(false);
+      const ids = snap.docs.map((d) => d.ref.parent.parent.id);
+      setJoinedEvents(ids);
     });
     return unsub;
-  }, []);
+  }, [user?.uid]);
 
   useEffect(() => {
     const q = firebase.firestore().collection('communityPosts').orderBy('createdAt', 'desc');
@@ -94,21 +119,25 @@ const CommunityScreen = () => {
     return unsub;
   }, []);
 
-  const filteredEvents = activeFilter === 'All'
-    ? events
-    : events.filter((e) => e.category === activeFilter);
-  const displayEvents = filteredEvents.slice(0, 4);
+  const filteredEvents =
+    activeFilter === 'All'
+      ? events
+      : events.filter((e) => e.category === activeFilter);
+  const displayEvents = filteredEvents;
 
   const joinEvent = async (id) => {
     try {
-      const ref = firebase.firestore().collection('events').doc(id);
+      const eventRef = firebase.firestore().collection('events').doc(id);
+      const partRef = eventRef.collection('participants').doc(user.uid);
       await firebase.firestore().runTransaction(async (tx) => {
-        const snap = await tx.get(ref);
-        const data = snap.data() || {};
-        const participants = data.participants || [];
-        if (!participants.includes(user.uid)) {
-          tx.update(ref, {
-            participants: firebase.firestore.FieldValue.arrayUnion(user.uid),
+        const snap = await tx.get(partRef);
+        if (!snap.exists) {
+          tx.set(partRef, {
+            userId: user.uid,
+            joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          tx.update(eventRef, {
+            participantCount: firebase.firestore.FieldValue.increment(1),
           });
         }
       });
@@ -136,14 +165,14 @@ const CommunityScreen = () => {
 
   const leaveEvent = async (id) => {
     try {
-      const ref = firebase.firestore().collection('events').doc(id);
+      const eventRef = firebase.firestore().collection('events').doc(id);
+      const partRef = eventRef.collection('participants').doc(user.uid);
       await firebase.firestore().runTransaction(async (tx) => {
-        const snap = await tx.get(ref);
-        const data = snap.data() || {};
-        const participants = data.participants || [];
-        if (participants.includes(user.uid)) {
-          tx.update(ref, {
-            participants: firebase.firestore.FieldValue.arrayRemove(user.uid),
+        const snap = await tx.get(partRef);
+        if (snap.exists) {
+          tx.delete(partRef);
+          tx.update(eventRef, {
+            participantCount: firebase.firestore.FieldValue.increment(-1),
           });
         }
       });
@@ -185,9 +214,7 @@ const CommunityScreen = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      const eventSnap = await firebase.firestore().collection('events').orderBy('createdAt', 'desc').get();
-      const eventData = eventSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setEvents(eventData);
+      await fetchEvents();
       const postSnap = await firebase.firestore().collection('communityPosts').orderBy('createdAt', 'desc').get();
       const postData = postSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setPosts(postData);
@@ -282,17 +309,25 @@ const CommunityScreen = () => {
         {/* Events */}
         {loadingEvents ? (
           <View style={local.flyerList}>
-            {[...Array(4)].map((_, idx) => renderEventSkeleton(idx))}
+            {[...Array(EVENTS_PAGE_SIZE)].map((_, idx) => renderEventSkeleton(idx))}
           </View>
         ) : filteredEvents.length === 0 ? (
           <EmptyState
             text="No events found."
             image={require('../assets/logo.png')}
           />
-        ) : (
+          ) : (
           <View style={local.flyerList}>
             {displayEvents.map((event) => renderEventCard(event))}
           </View>
+        )}
+        {lastEvent && !loadingEvents && (
+          <GradientButton
+            text="Load More"
+            onPress={() => fetchEvents(true)}
+            width={120}
+            style={{ alignSelf: 'center', marginBottom: 16 }}
+          />
         )}
 
         {/* Posts */}
@@ -400,6 +435,7 @@ const CommunityScreen = () => {
                     description: newDesc,
                     category: 'Tonight',
                     hostId: user?.uid || null,
+                    participantCount: 0,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                   });
                   setShowHostModal(false);
