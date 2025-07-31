@@ -74,9 +74,6 @@ export const ChatProvider = ({ children }) => {
   }, [user?.uid]);
 
   // Matches from ListenerContext
-  const userUnsubs = useRef({});
-  const unsubList = useRef([]);
-  const presenceCache = useRef({});
   const { matches: listenerMatches, loadMoreMatches, hasMoreMatches } = useListeners();
 
   useEffect(() => {
@@ -91,19 +88,17 @@ export const ChatProvider = ({ children }) => {
           ? m.users.find((u) => u !== user.uid)
           : null;
         const prevMatch = prev.find((p) => p.id === m.id) || {};
-        const cached = presenceCache.current[otherId] || {};
+        const presence = (m.presence && otherId && m.presence[otherId]) || {};
         return {
           id: m.id,
           otherUserId: otherId,
-          displayName:
-            prevMatch.displayName || cached.displayName || 'Match',
-          age: prevMatch.age || cached.age || 0,
+          displayName: prevMatch.displayName || 'Match',
+          age: prevMatch.age || 0,
           image:
             prevMatch.image ||
-            (cached.photoURL ? { uri: cached.photoURL } : require('../assets/user1.jpg')),
-          avatarOverlay:
-            prevMatch.avatarOverlay || cached.avatarOverlay || '',
-          online: prevMatch.online || !!cached.online,
+            (presence.photoURL ? { uri: presence.photoURL } : require('../assets/user1.jpg')),
+          avatarOverlay: prevMatch.avatarOverlay || presence.avatarOverlay || '',
+          online: prevMatch.online || !!presence.online,
           messages: prevMatch.messages || [],
           matchedAt: m.createdAt
             ? m.createdAt.toDate?.().toISOString()
@@ -116,76 +111,7 @@ export const ChatProvider = ({ children }) => {
     });
 
     setLoading(false);
-
-    const topFive = [...data]
-      .sort((a, b) => {
-        const aT = a.createdAt?.toDate?.().getTime?.() || 0;
-        const bT = b.createdAt?.toDate?.().getTime?.() || 0;
-        return bT - aT;
-      })
-      .slice(0, 5);
-
-    const userIds = topFive
-      .map((m) =>
-        Array.isArray(m.users) ? m.users.find((u) => u !== user.uid) : null
-      )
-      .filter(Boolean);
-
-    // Cleanup listeners for removed users
-    Object.keys(userUnsubs.current).forEach((uid) => {
-      if (!userIds.includes(uid)) {
-        const fn = userUnsubs.current[uid];
-        fn && fn();
-        const idx = unsubList.current.indexOf(fn);
-        if (idx !== -1) unsubList.current.splice(idx, 1);
-        delete userUnsubs.current[uid];
-        delete presenceCache.current[uid];
-      }
-    });
-
-    // Subscribe to each user's profile for presence
-    userIds.forEach((uid) => {
-      if (!userUnsubs.current[uid]) {
-        const unsub = firebase
-          .firestore()
-          .collection('users')
-          .doc(uid)
-          .onSnapshot(
-            { includeMetadataChanges: true },
-            (doc) => {
-              const info = doc.data() || {};
-              presenceCache.current[uid] = info;
-              setMatches((prev) =>
-                prev.map((m) =>
-                  m.otherUserId === uid
-                    ? {
-                        ...m,
-                        displayName: info.displayName || 'User',
-                        age: info.age || 0,
-                        image: info.photoURL
-                          ? { uri: info.photoURL }
-                          : require('../assets/user1.jpg'),
-                        avatarOverlay: info.avatarOverlay || m.avatarOverlay || '',
-                        online: !!info.online,
-                      }
-                    : m
-                )
-              );
-            }
-          );
-        userUnsubs.current[uid] = unsub;
-        unsubList.current.push(unsub);
-      }
-    });
   }, [listenerMatches, user?.uid]);
-
-  useEffect(() => {
-    return () => {
-      unsubList.current.forEach((fn) => fn && fn());
-      unsubList.current = [];
-      userUnsubs.current = {};
-    };
-  }, [user?.uid]);
 
 
   const saveMatchesToStorageRef = useRef(null);
@@ -386,14 +312,17 @@ export const ChatProvider = ({ children }) => {
             ? m.users.find((u) => u !== user.uid)
             : null;
           const prevMatch = prev.find((p) => p.id === m.id) || {};
+          const presence = (m.presence && otherId && m.presence[otherId]) || {};
           return {
             id: m.id,
             otherUserId: otherId,
             displayName: prevMatch.displayName || 'Match',
             age: prevMatch.age || 0,
-            image: prevMatch.image || require('../assets/user1.jpg'),
-            avatarOverlay: prevMatch.avatarOverlay || '',
-            online: prevMatch.online || false,
+            image:
+              prevMatch.image ||
+              (presence.photoURL ? { uri: presence.photoURL } : require('../assets/user1.jpg')),
+            avatarOverlay: prevMatch.avatarOverlay || presence.avatarOverlay || '',
+            online: prevMatch.online || !!presence.online,
             messages: prevMatch.messages || [],
             matchedAt: m.createdAt
               ? m.createdAt.toDate?.().toISOString()
