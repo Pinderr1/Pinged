@@ -289,6 +289,21 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
     tx.update(inviteRef, updates);
   });
 
+  if (!matchId && fromUid && toUid) {
+    const potentialId = [fromUid, toUid].sort().join('_');
+    const matchRef = db.collection('matches').doc(potentialId);
+    const matchSnap = await matchRef.get();
+    if (matchSnap.exists) {
+      matchId = potentialId;
+    } else {
+      const res = await createMatchIfMutualLikeInternal(
+        { uid: fromUid, targetUid: toUid },
+        { auth: context.auth },
+      );
+      matchId = res?.matchId || null;
+    }
+  }
+
 
   return { matchId };
 });
