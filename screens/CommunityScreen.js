@@ -101,17 +101,16 @@ const CommunityScreen = () => {
 
   const joinEvent = async (id) => {
     try {
-      const ref = firebase.firestore().collection('events').doc(id);
-      await firebase.firestore().runTransaction(async (tx) => {
-        const snap = await tx.get(ref);
-        const data = snap.data() || {};
-        const participants = data.participants || [];
-        if (!participants.includes(user.uid)) {
-          tx.update(ref, {
-            participants: firebase.firestore.FieldValue.arrayUnion(user.uid),
-          });
-        }
-      });
+      const ref = firebase
+        .firestore()
+        .collection('events')
+        .doc(id)
+        .collection('attendees')
+        .doc(user.uid);
+      await ref.set(
+        { joinedAt: firebase.firestore.FieldValue.serverTimestamp() },
+        { merge: true }
+      );
     } catch (e) {
       console.warn('Failed to join event', e);
     }
@@ -136,17 +135,13 @@ const CommunityScreen = () => {
 
   const leaveEvent = async (id) => {
     try {
-      const ref = firebase.firestore().collection('events').doc(id);
-      await firebase.firestore().runTransaction(async (tx) => {
-        const snap = await tx.get(ref);
-        const data = snap.data() || {};
-        const participants = data.participants || [];
-        if (participants.includes(user.uid)) {
-          tx.update(ref, {
-            participants: firebase.firestore.FieldValue.arrayRemove(user.uid),
-          });
-        }
-      });
+      const ref = firebase
+        .firestore()
+        .collection('events')
+        .doc(id)
+        .collection('attendees')
+        .doc(user.uid);
+      await ref.delete();
     } catch (e) {
       console.warn('Failed to leave event', e);
     }
