@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
-const createMatchIfMutualLike = functions.https.onCall(async (data, context) => {
+async function createMatchIfMutualLikeInternal(data, context, tx) {
   const { uid, targetUid } = data || {};
 
   if (!context.auth) {
@@ -18,33 +18,42 @@ const createMatchIfMutualLike = functions.https.onCall(async (data, context) => 
   const sorted = [uid, targetUid].sort();
   const matchId = sorted.join('_');
 
+  const run = async (transaction) => {
+    const matchRef = db.collection('matches').doc(matchId);
+    const matchSnap = await transaction.get(matchRef);
+    if (matchSnap.exists) {
+      return { matchId };
+    }
+
+    const [like1, like2] = await Promise.all([
+      transaction.get(db.collection('likes').doc(uid).collection('liked').doc(targetUid)),
+      transaction.get(db.collection('likes').doc(targetUid).collection('liked').doc(uid)),
+    ]);
+
+    if (like1.exists && like2.exists) {
+      transaction.set(matchRef, {
+        users: sorted,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return { matchId };
+    }
+
+    return { matchId: null };
+  };
+
   try {
-    return await db.runTransaction(async (tx) => {
-      const matchRef = db.collection('matches').doc(matchId);
-      const matchSnap = await tx.get(matchRef);
-      if (matchSnap.exists) {
-        return { matchId };
-      }
-
-      const [like1, like2] = await Promise.all([
-        tx.get(db.collection('likes').doc(uid).collection('liked').doc(targetUid)),
-        tx.get(db.collection('likes').doc(targetUid).collection('liked').doc(uid)),
-      ]);
-
-      if (like1.exists && like2.exists) {
-        tx.set(matchRef, {
-          users: sorted,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        return { matchId };
-      }
-
-      return { matchId: null };
-    });
+    if (tx) {
+      return await run(tx);
+    }
+    return await db.runTransaction(run);
   } catch (e) {
     console.error('Failed to create match', e);
     throw new functions.https.HttpsError('internal', 'Failed to create match');
   }
-});
+}
 
-module.exports = { createMatchIfMutualLike };
+const createMatchIfMutualLike = functions.https.onCall((data, context) =>
+  createMatchIfMutualLikeInternal(data, context),
+);
+
+module.exports = { createMatchIfMutualLike, createMatchIfMutualLikeInternal };

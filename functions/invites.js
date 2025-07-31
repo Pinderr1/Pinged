@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const { pushToUser } = require('./notifications');
-const { createMatchIfMutualLike } = require('./src/match.js');
+const { createMatchIfMutualLikeInternal } = require('./src/match.js');
 
 // Helper to ensure match history exists
 async function ensureMatchHistory(users, extra = {}) {
@@ -278,19 +278,17 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       }
+      const res = await createMatchIfMutualLikeInternal(
+        { uid: fromUid, targetUid: toUid },
+        { auth: context.auth },
+        tx,
+      );
+      matchId = res?.matchId || null;
     }
 
     tx.update(inviteRef, updates);
   });
 
-  if (matchId) {
-    const otherUid = uid === fromUid ? toUid : fromUid;
-    const res = await createMatchIfMutualLike(
-      { uid, targetUid: otherUid },
-      { auth: context.auth },
-    );
-    matchId = res?.matchId || null;
-  }
 
   return { matchId };
 });
