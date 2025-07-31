@@ -5,6 +5,8 @@ import { useUser } from './UserContext';
 import { useNotification } from './NotificationContext';
 import { useSound } from './SoundContext';
 
+const MATCH_PAGE_SIZE = 20;
+
 const ListenerContext = createContext();
 
 export const ListenerProvider = ({ children }) => {
@@ -17,6 +19,8 @@ export const ListenerProvider = ({ children }) => {
   const [outgoingInvites, setOutgoingInvites] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [matches, setMatches] = useState([]);
+  const [lastMatchDoc, setLastMatchDoc] = useState(null);
+  const [hasMoreMatches, setHasMoreMatches] = useState(true);
 
   const prevInvites = useRef([]);
   const prevMatches = useRef([]);
@@ -28,7 +32,9 @@ export const ListenerProvider = ({ children }) => {
     const matchQ = firebase
       .firestore()
       .collection('matches')
-      .where('users', 'array-contains', user.uid);
+      .where('users', 'array-contains', user.uid)
+      .orderBy('createdAt', 'desc')
+      .limit(MATCH_PAGE_SIZE);
 
     const unsubMatches = matchQ.onSnapshot((snap) => {
       const ids = snap.docs.map((d) => d.id);
@@ -42,6 +48,8 @@ export const ListenerProvider = ({ children }) => {
       prevMatches.current = ids;
 
       setMatches(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      setLastMatchDoc(snap.docs[snap.docs.length - 1] || null);
+      setHasMoreMatches(snap.docs.length === MATCH_PAGE_SIZE);
 
       const infoMap = {};
       snap.docs.forEach((doc) => {
@@ -129,6 +137,26 @@ export const ListenerProvider = ({ children }) => {
 
   const getMatchInfo = (matchId) => messageInfoMap[matchId] || { lastMessage: '', unreadCount: 0 };
 
+  const loadMoreMatches = async () => {
+    if (!user?.uid || !hasMoreMatches || !lastMatchDoc) return;
+    try {
+      const snap = await firebase
+        .firestore()
+        .collection('matches')
+        .where('users', 'array-contains', user.uid)
+        .orderBy('createdAt', 'desc')
+        .startAfter(lastMatchDoc)
+        .limit(MATCH_PAGE_SIZE)
+        .get();
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setMatches((prev) => [...prev, ...data]);
+      setLastMatchDoc(snap.docs[snap.docs.length - 1] || lastMatchDoc);
+      setHasMoreMatches(snap.docs.length === MATCH_PAGE_SIZE);
+    } catch (e) {
+      console.warn('Failed to load more matches', e);
+    }
+  };
+
   return (
     <ListenerContext.Provider
       value={{
@@ -137,6 +165,8 @@ export const ListenerProvider = ({ children }) => {
         outgoingInvites,
         sessions,
         matches,
+        loadMoreMatches,
+        hasMoreMatches,
       }}
     >
       {children}

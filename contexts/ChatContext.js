@@ -77,7 +77,7 @@ export const ChatProvider = ({ children }) => {
   const userUnsubs = useRef({});
   const unsubList = useRef([]);
   const presenceCache = useRef({});
-  const { matches: listenerMatches } = useListeners();
+  const { matches: listenerMatches, loadMoreMatches, hasMoreMatches } = useListeners();
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -434,6 +434,8 @@ export const ChatProvider = ({ children }) => {
         acceptGameInvite,
         getPendingInvite,
         refreshMatches,
+        loadMoreMatches,
+        hasMoreMatches,
       }}
     >
       {children}

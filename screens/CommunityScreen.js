@@ -31,7 +31,7 @@ import * as Haptics from 'expo-haptics';
 import EmptyState from '../components/EmptyState';
 import { FONT_FAMILY } from '../textStyles';
 
-
+const EVENT_PAGE_SIZE = 10;
 const FILTERS = ['All', 'Tonight', 'Flirty', 'Tournaments'];
 
 const CommunityScreen = () => {
@@ -42,6 +42,9 @@ const CommunityScreen = () => {
   const { user, redeemEventTicket } = useUser();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const [lastEventDoc, setLastEventDoc] = useState(null);
+  const [hasMoreEvents, setHasMoreEvents] = useState(true);
+  const loadingMoreEvents = useRef(false);
   const [joinedEvents, setJoinedEvents] = useState([]);
   const [activeFilter, setActiveFilter] = useState('All');
   const [showHostModal, setShowHostModal] = useState(false);
@@ -73,10 +76,16 @@ const CommunityScreen = () => {
   }, [firstJoin, badgeAnim]);
 
   useEffect(() => {
-    const q = firebase.firestore().collection('events').orderBy('createdAt', 'desc');
+    const q = firebase
+      .firestore()
+      .collection('events')
+      .orderBy('createdAt', 'desc')
+      .limit(EVENT_PAGE_SIZE);
     const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setEvents(data);
+      setLastEventDoc(snap.docs[snap.docs.length - 1] || null);
+      setHasMoreEvents(snap.docs.length === EVENT_PAGE_SIZE);
       setLoadingEvents(false);
       setRefreshing(false);
     });
@@ -94,10 +103,10 @@ const CommunityScreen = () => {
     return unsub;
   }, []);
 
-  const filteredEvents = activeFilter === 'All'
-    ? events
-    : events.filter((e) => e.category === activeFilter);
-  const displayEvents = filteredEvents.slice(0, 4);
+  const filteredEvents =
+    activeFilter === 'All'
+      ? events
+      : events.filter((e) => e.category === activeFilter);
 
   const joinEvent = async (id) => {
     try {
@@ -185,9 +194,16 @@ const CommunityScreen = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      const eventSnap = await firebase.firestore().collection('events').orderBy('createdAt', 'desc').get();
+      const eventSnap = await firebase
+        .firestore()
+        .collection('events')
+        .orderBy('createdAt', 'desc')
+        .limit(EVENT_PAGE_SIZE)
+        .get();
       const eventData = eventSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setEvents(eventData);
+      setLastEventDoc(eventSnap.docs[eventSnap.docs.length - 1] || null);
+      setHasMoreEvents(eventSnap.docs.length === EVENT_PAGE_SIZE);
       const postSnap = await firebase.firestore().collection('communityPosts').orderBy('createdAt', 'desc').get();
       const postData = postSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setPosts(postData);
@@ -197,6 +213,37 @@ const CommunityScreen = () => {
     setLoadingEvents(false);
     setLoadingPosts(false);
     setRefreshing(false);
+  };
+
+  const loadMoreEvents = async () => {
+    if (loadingMoreEvents.current || !hasMoreEvents || !lastEventDoc) return;
+    loadingMoreEvents.current = true;
+    try {
+      const snap = await firebase
+        .firestore()
+        .collection('events')
+        .orderBy('createdAt', 'desc')
+        .startAfter(lastEventDoc)
+        .limit(EVENT_PAGE_SIZE)
+        .get();
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setEvents((prev) => [...prev, ...data]);
+      setLastEventDoc(snap.docs[snap.docs.length - 1] || lastEventDoc);
+      setHasMoreEvents(snap.docs.length === EVENT_PAGE_SIZE);
+    } catch (e) {
+      console.warn('Failed to load more events', e);
+    }
+    loadingMoreEvents.current = false;
+  };
+
+  const handleScroll = ({ nativeEvent }) => {
+    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+    if (
+      layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - 100
+    ) {
+      loadMoreEvents();
+    }
   };
 
   const renderEventCard = (event) => {
@@ -244,6 +291,8 @@ const CommunityScreen = () => {
       <SafeKeyboardView style={{ flex: 1 }}>
         <ScreenContainer
           scroll
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
           contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 150 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
         >
@@ -291,7 +340,7 @@ const CommunityScreen = () => {
           />
         ) : (
           <View style={local.flyerList}>
-            {displayEvents.map((event) => renderEventCard(event))}
+            {filteredEvents.map((event) => renderEventCard(event))}
           </View>
         )}
 

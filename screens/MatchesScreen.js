@@ -24,7 +24,7 @@ const SKELETON_CHAT_COUNT = 5;
 
 const MatchesScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
-  const { matches, loading, refreshMatches } = useChats();
+  const { matches, loading, refreshMatches, loadMoreMatches, hasMoreMatches } = useChats();
   const history = useRematchHistory(matches);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -259,6 +259,10 @@ const MatchesScreen = ({ navigation }) => {
                 }
                 contentContainerStyle={{ paddingBottom: 120 }}
                 showsVerticalScrollIndicator={false}
+                onEndReached={() => {
+                  if (hasMoreMatches) loadMoreMatches();
+                }}
+                onEndReachedThreshold={0.5}
               />
               {historyMatches.length > 0 && (
                 <>
