@@ -410,9 +410,7 @@ const SwipeScreen = () => {
           return;
         }
 
-        if (gesture.dy < -120 && Math.abs(gesture.dx) < 80) {
-          handleSwipeChallenge();
-        } else if (gesture.dx > 120) {
+        if (gesture.dx > 120) {
           Animated.timing(pan, {
             toValue: { x: SCREEN_WIDTH, y: 0 },
             duration: 250,
