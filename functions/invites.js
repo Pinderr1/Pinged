@@ -71,16 +71,20 @@ const resetFreeGameUsage = functions.pubsub
     const snap = await admin
       .firestore()
       .collection('users')
-      .where('freeGamesToday', '>', 0)
+      .where('dailyPlayCount', '>', 0)
       .get();
 
     const tasks = [];
     snap.forEach((doc) => {
-      tasks.push(doc.ref.update({ freeGamesToday: 0, freeGameUsed: false }));
+      tasks.push(
+        doc.ref.update({ dailyPlayCount: 0, lastGamePlayedAt: null })
+      );
     });
 
     await Promise.all(tasks);
-    functions.logger.info(`Reset freeGamesToday for ${tasks.length} users`);
+    functions.logger.info(
+      `Reset dailyPlayCount for ${tasks.length} users`
+    );
     return null;
   });
 
