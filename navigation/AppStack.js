@@ -1,7 +1,8 @@
 // navigation/AppStack.js
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useState, useEffect } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Loader from "../components/Loader";
+import useRequireMatch from "../hooks/useRequireMatch";
 const MainTabs = lazy(() => import("./MainTabs"));
 const ProfileScreen = lazy(() => import("../screens/ProfileScreen"));
 const EditProfileScreen = lazy(() => import("../screens/EditProfileScreen"));
@@ -21,6 +22,39 @@ const AdminReviewScreen = lazy(() => import("../screens/AdminReviewScreen"));
 
 const Stack = createNativeStackNavigator();
 
+function GuardedChatScreen(props) {
+  const requireMatch = useRequireMatch();
+  const { route } = props;
+  const [checked, setChecked] = useState(false);
+  useEffect(() => {
+    const uid = route.params?.user?.id || route.params?.chatId;
+    if (!uid) {
+      setChecked(true);
+      return;
+    }
+    requireMatch(uid).then(setChecked);
+  }, [route.params]);
+  if (!checked) return <Loader />;
+  return <ChatScreen {...props} />;
+}
+
+function GuardedGameSessionScreen(props) {
+  const requireMatch = useRequireMatch();
+  const { route } = props;
+  const [checked, setChecked] = useState(false);
+  useEffect(() => {
+    const opponent = route.params?.opponent?.id || route.params?.opponentId;
+    const type = route.params?.sessionType || (route.params?.botId ? 'bot' : 'live');
+    if (!opponent || type !== 'live') {
+      setChecked(true);
+      return;
+    }
+    requireMatch(opponent).then(setChecked);
+  }, [route.params]);
+  if (!checked) return <Loader />;
+  return <GameSessionScreen {...props} />;
+}
+
 export default function AppStack() {
   return (
     <Suspense fallback={<Loader /> }>
@@ -34,11 +68,11 @@ export default function AppStack() {
       <Stack.Screen name="Main" component={MainTabs} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-      <Stack.Screen name="Chat" component={ChatScreen} />
+      <Stack.Screen name="Chat" component={GuardedChatScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen
         name="GameSession"
-        component={GameSessionScreen}
+        component={GuardedGameSessionScreen}
         options={{ animation: "fade_from_bottom" }}
       />
       <Stack.Screen name="Community" component={CommunityScreen} />
