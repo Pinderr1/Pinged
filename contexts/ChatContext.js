@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useSound } from './SoundContext';
 import { useListeners } from './ListenerContext';
 import debounce from '../utils/debounce';
+import { getEncryptionKey, encryptText } from '../utils/encryption';
 
 const ChatContext = createContext();
 // Runtime actions for contexts that mount before ChatProvider
@@ -77,7 +78,18 @@ export const ChatProvider = ({ children }) => {
   const userUnsubs = useRef({});
   const unsubList = useRef([]);
   const presenceCache = useRef({});
+  const encryptionKeyRef = useRef(null);
   const { matches: listenerMatches, loadMoreMatches, hasMoreMatches } = useListeners();
+
+  useEffect(() => {
+    if (!user?.uid) {
+      encryptionKeyRef.current = null;
+      return;
+    }
+    getEncryptionKey(user.uid).then((k) => {
+      encryptionKeyRef.current = k;
+    });
+  }, [user?.uid]);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -219,8 +231,12 @@ export const ChatProvider = ({ children }) => {
     const { group, system, ...extras } = meta || {};
 
     try {
+      if (!encryptionKeyRef.current) {
+        encryptionKeyRef.current = await getEncryptionKey(user.uid);
+      }
+      const encrypted = await encryptText(trimmed, encryptionKeyRef.current);
       const payload = {
-        text: trimmed,
+        text: encrypted,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         ...extras,
       };

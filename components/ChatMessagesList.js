@@ -9,6 +9,7 @@ import Loader from './Loader';
 import { games, gameList } from '../games';
 import { icebreakers } from '../data/prompts';
 import * as chatApi from '../utils/chatApi';
+import { getEncryptionKey, decryptText } from '../utils/encryption';
 
 const REACTIONS = ['❤️', '🔥', '😂'];
 
@@ -48,6 +49,7 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
   const [reactionTarget, setReactionTarget] = useState(null);
   const [firstLine, setFirstLine] = useState('');
   const [firstGame, setFirstGame] = useState(null);
+  const [encKey, setEncKey] = useState(null);
 
   const showPlaceholders = loading && messages.length === 0;
 
@@ -55,6 +57,11 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
     setFirstLine(icebreakers[Math.floor(Math.random() * icebreakers.length)] || '');
     setFirstGame(gameList[Math.floor(Math.random() * gameList.length)] || null);
   }, []);
+
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+    getEncryptionKey(currentUser.uid).then(setEncKey);
+  }, [currentUser?.uid]);
 
   useEffect(() => {
     if (!matchId || !currentUser?.uid) return;
@@ -80,7 +87,7 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
     const loadInitial = async () => {
       setLoading(true);
       try {
-        const { messages: fetched, lastDoc } = await chatApi.getMessages(matchId);
+        const { messages: fetched, lastDoc } = await chatApi.getMessages(matchId, 30, encKey);
         const mapped = fetched.map((m) => formatMessage(m, m.id, currentUser.uid));
         if (!isMounted) return;
         setMessages(mapped);
@@ -100,8 +107,11 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
         .orderBy('timestamp', 'desc')
         .limit(1)
         .onSnapshot((snap) => {
-          snap.docChanges().forEach((change) => {
+          snap.docChanges().forEach(async (change) => {
             const val = change.doc.data();
+            if (val.text && encKey) {
+              val.text = await decryptText(val.text, encKey);
+            }
             const msg = formatMessage(val, change.doc.id, currentUser.uid);
             if (change.type === 'added') {
               setMessages((prev) => {
@@ -125,7 +135,7 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
       isMounted = false;
       if (unsub) unsub();
     };
-  }, [matchId, currentUser?.uid]);
+  }, [matchId, currentUser?.uid, encKey]);
 
   const loadEarlier = async () => {
     if (loadingEarlier || !oldestDoc) return;
@@ -140,7 +150,15 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
         .startAfter(oldestDoc)
         .limit(30)
         .get();
-      const data = snap.docs.map((d) => formatMessage(d.data(), d.id, currentUser.uid));
+      const data = await Promise.all(
+        snap.docs.map(async (d) => {
+          const val = d.data();
+          if (val.text && encKey) {
+            val.text = await decryptText(val.text, encKey);
+          }
+          return formatMessage(val, d.id, currentUser.uid);
+        })
+      );
       if (data.length > 0) {
         setOldestDoc(snap.docs[snap.docs.length - 1]);
         setMessages((prev) => [...prev, ...data]);
