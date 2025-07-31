@@ -17,6 +17,18 @@ export const MatchmakingProvider = ({ children }) => {
 
   const sendGameInvite = async (to, gameId) => {
     if (!user?.uid || !to || !gameId) return null;
+
+    const existing = [...incomingInvites, ...outgoingInvites].find(
+      (i) =>
+        ((i.from === user.uid && i.to === to) ||
+          (i.from === to && i.to === user.uid)) &&
+        !['finished', 'cancelled', 'declined'].includes(i.status),
+    );
+    if (existing) {
+      Toast.show({ type: 'info', text1: 'Invite already pending' });
+      return existing.id;
+    }
+
     show();
     try {
       const valid = await validateMatch(user.uid, to);
