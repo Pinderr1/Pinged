@@ -291,45 +291,6 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
   return { matchId };
 });
 
-const autoStartLobby = functions.firestore
-  .document('gameLobbies/{lobbyId}')
-  .onUpdate(async (change, context) => {
-    const before = change.before.data() || {};
-    const after = change.after.data() || {};
-
-    if (after.status === 'active') return null;
-
-    const players = after.players;
-    if (!Array.isArray(players) || players.length < 2) return null;
-
-    const beforeReady = before.ready || {};
-    const afterReady = after.ready || {};
-
-    const allReady = players.every((uid) => afterReady[uid]);
-    const previouslyReady = players.every((uid) => beforeReady[uid]);
-
-    if (!allReady || previouslyReady) return null;
-
-    const lobbyId = context.params.lobbyId;
-    const updates = {
-      status: 'active',
-      startedAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-
-    const tasks = [change.after.ref.update(updates)];
-
-    tasks.push(
-      ...players.map((uid) =>
-        pushToUser(uid, 'Game Starting', 'Your game is starting!', {
-          type: 'game',
-          lobbyId,
-        }).catch((e) => console.error('Failed to push to user', e)),
-      ),
-    );
-
-    await Promise.all(tasks);
-    return null;
-  });
 
 const onChatMessageCreated = functions.firestore
   .document('matches/{matchId}/messages/{messageId}')
@@ -401,7 +362,6 @@ module.exports = {
   autoStartGame,
   trackGameInvite,
   cleanupFinishedSession,
-  autoStartLobby,
   onChatMessageCreated,
   acceptInvite,
 };
