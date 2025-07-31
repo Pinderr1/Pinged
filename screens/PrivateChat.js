@@ -40,6 +40,7 @@ import { useChats } from '../contexts/ChatContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { useUser } from '../contexts/UserContext';
 import { useMatchmaking } from '../contexts/MatchmakingContext';
+import { validateMatch } from '../utils/matchUtils';
 import GamePickerModal from '../components/GamePickerModal';
 import VoiceMessageBubble from '../components/VoiceMessageBubble';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
@@ -84,7 +85,7 @@ const FadeInView = ({ children, style }) => {
  *******************************/
 function PrivateChat({ user, initialGameId }) {
   const navigation = useNavigation();
-  const { user: currentUser, addGameXP } = useUser();
+  const { user: currentUser, addGameXP, blocked } = useUser();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const requireCredits = useRequireGameCredits();
   const { sendGameInvite } = useMatchmaking();
@@ -127,6 +128,7 @@ function PrivateChat({ user, initialGameId }) {
   const [otherUserId, setOtherUserId] = useState(null);
   const { startRecording, stopRecording, isRecording } = useVoiceRecorder();
   const [showGame, setShowGame] = useState(true);
+  const [matchValid, setMatchValid] = useState(false);
 
   const activeGameId = getActiveGame(user.id);
   const pendingInvite = getPendingInvite(user.id);
@@ -146,6 +148,9 @@ function PrivateChat({ user, initialGameId }) {
   const loseSound = useRef(null);
   const drawSound = useRef(null);
   const showPlaceholders = loading && messages.length === 0;
+  const opponentId = otherUserId || user.otherUserId || user.id;
+  const isBlocked = Array.isArray(blocked) && blocked.includes(opponentId);
+  const canPlay = matchValid && !isBlocked && gamesLeft > 0;
 
   useEffect(() => {
     if (initialGameId && !activeGameId) {
@@ -267,6 +272,16 @@ function PrivateChat({ user, initialGameId }) {
       updateTyping(false);
     };
   }, []);
+
+  useEffect(() => {
+    const check = async () => {
+      const opponent = otherUserId || user.otherUserId || user.id;
+      if (!currentUser?.uid || !opponent) return;
+      const valid = await validateMatch(currentUser.uid, opponent);
+      setMatchValid(valid);
+    };
+    check();
+  }, [currentUser?.uid, otherUserId, user.otherUserId, user.id]);
 
   useEffect(() => {
     if (!user?.id || !currentUser?.uid) return;
@@ -488,6 +503,10 @@ function PrivateChat({ user, initialGameId }) {
     setShowInvitePicker(false);
     if (!game || inviting) return;
     if (!requireCredits()) return;
+    if (!matchValid) {
+      Toast.show({ type: 'error', text1: 'Match not found' });
+      return;
+    }
     setInviting(true);
     try {
       const inviteId = await sendGameInvite(user.id, game.id);
@@ -516,6 +535,10 @@ function PrivateChat({ user, initialGameId }) {
     const defaultGameId = gameList[0]?.id;
     if (!defaultGameId) return;
     if (!requireCredits()) return;
+    if (!matchValid) {
+      Toast.show({ type: 'error', text1: 'Match not found' });
+      return;
+    }
     try {
       await sendGameInvite(opponentId, defaultGameId);
       Toast.show({ type: 'success', text1: 'Invite sent!' });
@@ -798,23 +821,27 @@ function PrivateChat({ user, initialGameId }) {
         >
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={privateStyles.challengeButton}
-          onPress={() => setShowInvitePicker(true)}
-          accessibilityLabel="Challenge"
-          disabled={inviting}
-        >
-          <Ionicons name="game-controller" size={18} color="#fff" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={privateStyles.playButton}
-          onPress={handlePlayPress}
-          accessibilityLabel={playButtonText}
-        >
-          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>
-            {playButtonText}
-          </Text>
-        </TouchableOpacity>
+        {canPlay && !activeGameId && (
+          <TouchableOpacity
+            style={privateStyles.challengeButton}
+            onPress={() => setShowInvitePicker(true)}
+            accessibilityLabel="Challenge"
+            disabled={inviting}
+          >
+            <Ionicons name="game-controller" size={18} color="#fff" />
+          </TouchableOpacity>
+        )}
+        {canPlay && (
+          <TouchableOpacity
+            style={privateStyles.playButton}
+            onPress={handlePlayPress}
+            accessibilityLabel={playButtonText}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>
+              {playButtonText}
+            </Text>
+          </TouchableOpacity>
+        )}
         {activeGameId && (
           <TouchableOpacity
             style={privateStyles.menuButton}
@@ -871,12 +898,14 @@ function PrivateChat({ user, initialGameId }) {
       </Modal>
       <SafeKeyboardView offset={insets.top + 80} style={{ flex: 1, paddingTop: HEADER_SPACING }}>
         <ScreenContainer scroll contentContainerStyle={{ paddingBottom: 120 }}>
-          <GradientButton
-            text="Play Game"
-            width={160}
-            onPress={handlePlayGame}
-            style={{ alignSelf: 'center' }}
-          />
+          {canPlay && !activeGameId && (
+            <GradientButton
+              text="Play Game"
+              width={160}
+              onPress={() => setShowInvitePicker(true)}
+              style={{ alignSelf: 'center' }}
+            />
+          )}
           <View style={[privateStyles.gameWrapper, { height: gameVisible ? BOARD_HEIGHT : 0 }]}>
             {gameSection}
           </View>
