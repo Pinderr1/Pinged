@@ -33,9 +33,7 @@ export async function handleLike({
   targetUser,
   firestore,
   navigation,
-  likesUsed = 0,
   isPremiumUser = false,
-  setLikesUsed = () => {},
   showNotification = () => {},
   addMatch = () => {},
   setMatchedUser = () => {},
@@ -43,7 +41,6 @@ export async function handleLike({
   setMatchGame = () => {},
   play = () => {},
   setShowFireworks = () => {},
-  MAX_LIKES = 100,
 }) {
   if (!targetUser) return { success: false, matchId: null };
 
@@ -65,7 +62,6 @@ export async function handleLike({
 
       const matchId = res?.data?.matchId || null;
 
-      setLikesUsed((prev) => prev + 1);
       showNotification(`You liked ${targetUser.displayName}`);
 
       if (matchId) {

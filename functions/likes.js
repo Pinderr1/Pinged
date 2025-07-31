@@ -1,7 +1,18 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
-const DAILY_LIMIT = 100;
+const DEFAULT_LIMIT = 100;
+
+async function getDailyLimit() {
+  try {
+    const snap = await admin.firestore().collection('config').doc('app').get();
+    const val = snap.get('maxDailyLikes');
+    return Number.isFinite(val) ? val : DEFAULT_LIMIT;
+  } catch (e) {
+    console.warn('Failed to load maxDailyLikes', e);
+    return DEFAULT_LIMIT;
+  }
+}
 
 const onLikeCreate = functions.firestore
   .document('likes/{uid}/liked/{targetUid}')
@@ -39,6 +50,7 @@ const sendLike = functions.https.onCall(async (data, context) => {
   }
 
   const db = admin.firestore();
+  const DAILY_LIMIT = await getDailyLimit();
 
   const [block1, block2, userSnap] = await Promise.all([
     db.doc(`blocks/${uid}/blocked/${targetUid}`).get(),
