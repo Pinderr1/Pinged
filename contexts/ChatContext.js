@@ -17,6 +17,22 @@ const STORAGE_PREFIX = 'chatMatches_';
 const GAME_STATE_PREFIX = 'gameState_';
 const STORAGE_VERSION = 1;
 
+const getStateRef = (matchId) =>
+  firebase
+    .firestore()
+    .collection('matches')
+    .doc(matchId)
+    .collection('state')
+    .doc('current');
+
+const updateMatchState = async (matchId, data) => {
+  try {
+    await getStateRef(matchId).set(data, { merge: true });
+  } catch (e) {
+    console.warn('Failed to update match state', e);
+  }
+};
+
 const getStorageKey = (uid) => `${STORAGE_PREFIX}${uid}`;
 const getGameStateKey = (matchId) => `${GAME_STATE_PREFIX}${matchId}`;
 
@@ -26,6 +42,7 @@ export const ChatProvider = ({ children }) => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const lastMessageRef = useRef(0);
+  const matchStateListeners = useRef({});
 
   useEffect(() => {
     let isMounted = true;
@@ -90,6 +107,33 @@ export const ChatProvider = ({ children }) => {
 
     const data = listenerMatches;
 
+    // Attach listeners for match state documents
+    const activeListeners = matchStateListeners.current;
+    data.forEach((m) => {
+      if (!activeListeners[m.id]) {
+        activeListeners[m.id] = getStateRef(m.id).onSnapshot((snap) => {
+          const state = snap.data() || {};
+          setMatches((prev) =>
+            prev.map((p) =>
+              p.id === m.id
+                ? {
+                    ...p,
+                    activeGameId: state.activeGameId ?? null,
+                    pendingInvite: state.pendingInvite ?? null,
+                  }
+                : p,
+            ),
+          );
+        });
+      }
+    });
+    Object.keys(activeListeners).forEach((id) => {
+      if (!data.find((m) => m.id === id)) {
+        activeListeners[id]();
+        delete activeListeners[id];
+      }
+    });
+
     setMatches((prev) => {
       const others = prev.filter((m) => !data.find((d) => d.id === m.id));
       const converted = data.map((m) => {
@@ -120,6 +164,11 @@ export const ChatProvider = ({ children }) => {
     });
 
     setLoading(false);
+    return () => {
+      const active = matchStateListeners.current;
+      Object.keys(active).forEach((id) => active[id]());
+      matchStateListeners.current = {};
+    };
   }, [listenerMatches, user?.uid]);
 
 
@@ -213,6 +262,7 @@ export const ChatProvider = ({ children }) => {
           : m
       )
     );
+    updateMatchState(matchId, { activeGameId: gameId, pendingInvite: null });
   };
 
   // Start a local game against the other user. This only updates the local
@@ -225,6 +275,7 @@ export const ChatProvider = ({ children }) => {
           : m
       )
     );
+    updateMatchState(matchId, { pendingInvite: { gameId, from } });
   };
 
   const clearGameInvite = (matchId) => {
@@ -235,6 +286,7 @@ export const ChatProvider = ({ children }) => {
           : m
       )
     );
+    updateMatchState(matchId, { pendingInvite: null });
   };
 
   const acceptGameInvite = (matchId) => {
@@ -251,6 +303,10 @@ export const ChatProvider = ({ children }) => {
             : m
         )
       );
+      updateMatchState(matchId, {
+        activeGameId: invite.gameId,
+        pendingInvite: null,
+      });
     }
   };
 
