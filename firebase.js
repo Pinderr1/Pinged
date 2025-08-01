@@ -6,7 +6,6 @@ import {
   serverTimestamp,
   arrayUnion,
   deleteField,
-  increment,
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
@@ -66,7 +65,6 @@ const FieldValue = {
   serverTimestamp,
   arrayUnion,
   delete: deleteField,
-  increment,
 };
 
 const firebase = {
