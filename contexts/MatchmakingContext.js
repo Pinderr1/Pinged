@@ -119,13 +119,7 @@ export const MatchmakingProvider = ({ children }) => {
 
   return (
     <MatchmakingContext.Provider
-      value={{
-        incomingInvites,
-        outgoingInvites,
-        sendGameInvite,
-        acceptGameInvite,
-        cancelInvite,
-      }}
+      value={{ sendGameInvite, acceptGameInvite, cancelInvite }}
     >
       {children}
     </MatchmakingContext.Provider>
