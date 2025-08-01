@@ -80,6 +80,10 @@ const HomeScreen = ({ navigation }) => {
         clearTimeout(matchTimeout.current);
         matchTimeout.current = null;
       }
+      if (matchTimeout.unsub) {
+        matchTimeout.unsub();
+        matchTimeout.unsub = null;
+      }
     };
   }, []);
 
@@ -185,12 +189,15 @@ const HomeScreen = ({ navigation }) => {
         const ref = firebase.firestore().collection('gameSessions').doc(sessionId);
         await updateDailyUsage();
         if (matchTimeout.current) clearTimeout(matchTimeout.current);
-        let unsub = ref.onSnapshot(async (snap) => {
+        const unsub = ref.onSnapshot(async (snap) => {
           const d = snap.data();
           if (Array.isArray(d.players) && d.players[1] && d.status === 'active') {
             clearTimeout(matchTimeout.current);
             matchTimeout.current = null;
-            unsub();
+            if (matchTimeout.unsub) {
+              matchTimeout.unsub();
+              matchTimeout.unsub = null;
+            }
             const oppSnap2 = await firebase
               .firestore()
               .collection('users')
@@ -228,8 +235,12 @@ const HomeScreen = ({ navigation }) => {
             });
           }
         });
+        matchTimeout.unsub = unsub;
         matchTimeout.current = setTimeout(async () => {
-          unsub();
+          if (matchTimeout.unsub) {
+            matchTimeout.unsub();
+            matchTimeout.unsub = null;
+          }
           try {
             await ref.delete();
           } catch (_) {}
