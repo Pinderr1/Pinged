@@ -46,16 +46,9 @@ export async function handleLike({
 
   if (currentUser?.uid && targetUser.id) {
     try {
-      await firebase
-        .functions()
-        .httpsCallable('sendLike')({
-          uid: currentUser.uid,
-          targetUid: targetUser.id,
-        });
-
       const res = await firebase
         .functions()
-        .httpsCallable('createMatchIfMutualLike')({
+        .httpsCallable('likeAndMaybeMatch')({
           uid: currentUser.uid,
           targetUid: targetUser.id,
         });
