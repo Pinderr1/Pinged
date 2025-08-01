@@ -436,15 +436,15 @@ const CommunityScreen = () => {
                   return;
                 }
                 try {
-                  await firebase.firestore().collection('events').add({
-                    title: newTitle,
-                    time: newTime,
-                    description: newDesc,
-                    category: 'Tonight',
-                    hostId: user?.uid || null,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                  });
-                  recordEventCreated();
+                  await firebase
+                    .functions()
+                    .httpsCallable('createEvent')({
+                      title: newTitle,
+                      time: newTime,
+                      description: newDesc,
+                      category: 'Tonight',
+                    });
+                  recordEventCreated(true);
                   setShowHostModal(false);
                   setNewTitle('');
                   setNewTime('');
