@@ -163,7 +163,6 @@ export const ChatProvider = ({ children }) => {
     try {
       await initEncryption();
       const payload = {
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         ...extras,
       };
 
@@ -185,17 +184,15 @@ export const ChatProvider = ({ children }) => {
             reactions: [],
             pinned: false,
             ...payload,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
           });
       } else {
         await firebase
-          .firestore()
-          .collection('matches')
-          .doc(matchId)
-          .collection('messages')
-          .add({
-            senderId: system ? 'system' : user.uid,
-            reactions: {},
-            ...payload,
+          .functions()
+          .httpsCallable('sendChatMessage')({
+            matchId,
+            system,
+            message: payload,
           });
       }
 
