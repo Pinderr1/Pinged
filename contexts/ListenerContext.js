@@ -160,13 +160,14 @@ export const ListenerProvider = ({ children }) => {
   return (
     <ListenerContext.Provider
       value={{
-        getMatchInfo,
+        matches,
+        sessions,
         incomingInvites,
         outgoingInvites,
-        sessions,
-        matches,
+        messageInfoMap,
         loadMoreMatches,
         hasMoreMatches,
+        getMatchInfo,
       }}
     >
       {children}
