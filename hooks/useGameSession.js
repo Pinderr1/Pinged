@@ -82,52 +82,17 @@ export default function useGameSession(
 
   const sendMove = useCallback(async (moveName, ...args) => {
     if (!session || !Game) return;
-    const idx = session.players.indexOf(user.uid);
-    if (idx === -1) return;
-
-    const { G, currentPlayer, gameover } = replayGame(Game, session.state, session.moves);
-
-    if (String(idx) !== currentPlayer) return;
-    if (gameover) return;
-
-    const nextState = JSON.parse(JSON.stringify(G));
-    let nextPlayer = currentPlayer;
-    const ctx = {
-      currentPlayer,
-      events: {
-        endTurn: () => {
-          nextPlayer = currentPlayer === '0' ? '1' : '0';
-        },
-      },
-    };
-
-    const move = Game.moves[moveName];
-    if (!move) return;
-    const res = move({ G: nextState, ctx }, ...args);
-    if (res === INVALID_MOVE) return;
-
-    if (Game.turn?.moveLimit === 1 && nextPlayer === currentPlayer) {
-      nextPlayer = currentPlayer === '0' ? '1' : '0';
-    }
-
-    const over = Game.endIf ? Game.endIf({ G: nextState, ctx: { currentPlayer: nextPlayer } }) : undefined;
-
     try {
-      await firebase
-        .firestore()
-        .collection('gameSessions')
-        .doc(sessionId)
-        .update({
-          currentPlayer: nextPlayer,
-          gameover: over || null,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          moves: firebase.firestore.FieldValue.arrayUnion({ action: moveName, player: String(idx), args, at: firebase.firestore.FieldValue.serverTimestamp() }),
-        });
+      await firebase.functions().httpsCallable('makeMove')({
+        sessionId,
+        move: moveName,
+        args,
+      });
       play('game_move');
     } catch (e) {
-      console.warn('Failed to update game session', e);
+      console.warn('Failed to send move', e);
     }
-  }, [session, Game, sessionId, user?.uid]);
+  }, [session, Game, sessionId]);
 
   const moves = {};
   if (Game) {
