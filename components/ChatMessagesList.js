@@ -81,8 +81,8 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
         setOtherUserId(other);
       }
       const other = data?.users?.find((u) => u !== currentUser.uid) || otherUserId;
-      if (other && data?.typing) {
-        setIsTyping(!!data.typing[other]);
+      if (other && data?.typingIndicator) {
+        setIsTyping(!!data.typingIndicator[other]);
       }
     });
     return unsub;
