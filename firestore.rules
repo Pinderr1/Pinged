@@ -105,12 +105,14 @@ service cloud.firestore {
     // Game invites are readable by the sender or recipient. Creation is
     // restricted to the sender while updates may only be performed by the
     // original participants. Both operations are denied if either user has
-    // blocked the other.
+    // blocked the other. In addition, invites can only be created between
+    // users who are already matched.
     match /gameInvites/{inviteId} {
       allow read: if request.auth.uid in [resource.data.from, resource.data.to];
       allow create: if request.auth.token.admin == true || (
         request.auth.uid == request.resource.data.from &&
-        isNotBlocked(request.resource.data.from, request.resource.data.to)
+        isNotBlocked(request.resource.data.from, request.resource.data.to) &&
+        areMatched(request.resource.data.from, request.resource.data.to)
       );
       allow update: if request.auth.token.admin == true || (
         request.auth.uid in [resource.data.from, resource.data.to] &&
