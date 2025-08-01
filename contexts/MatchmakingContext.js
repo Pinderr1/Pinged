@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useRef } from 'react';
 import firebase, { firestore } from '../firebase';
 import { useUser } from './UserContext';
 import { useListeners } from './ListenerContext';
@@ -13,10 +13,18 @@ export const MatchmakingProvider = ({ children }) => {
   const { user } = useUser();
   const { show, hide } = useLoading();
   const { incomingInvites, outgoingInvites } = useListeners();
+  const lastInviteRef = useRef(0);
 
 
   const sendGameInvite = async (to, gameId) => {
     if (!user?.uid || !to || !gameId) return null;
+
+    const now = Date.now();
+    if (now - lastInviteRef.current < 10000) {
+      Toast.show({ type: 'error', text1: 'You are sending invites too quickly' });
+      return null;
+    }
+    lastInviteRef.current = now;
 
     const existing = [...incomingInvites, ...outgoingInvites].find(
       (i) =>
