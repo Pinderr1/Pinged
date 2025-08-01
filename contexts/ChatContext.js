@@ -209,6 +209,10 @@ export const ChatProvider = ({ children }) => {
   };
 
   const setActiveGame = (matchId, gameId) => {
+    firebase
+      .functions()
+      .httpsCallable('updateMatchState')({ matchId, activeGameId: gameId, pendingInvite: null })
+      .catch((e) => console.warn('updateMatchState failed', e));
     setMatches((prev) =>
       prev.map((m) =>
         m.id === matchId
@@ -221,6 +225,10 @@ export const ChatProvider = ({ children }) => {
   // Start a local game against the other user. This only updates the local
   // matches state and does not create an online invite.
   const startLocalGame = (matchId, gameId, from = 'you') => {
+    firebase
+      .functions()
+      .httpsCallable('updateMatchState')({ matchId, pendingInvite: { gameId, from } })
+      .catch((e) => console.warn('updateMatchState failed', e));
     setMatches((prev) =>
       prev.map((m) =>
         m.id === matchId
@@ -231,6 +239,10 @@ export const ChatProvider = ({ children }) => {
   };
 
   const clearGameInvite = (matchId) => {
+    firebase
+      .functions()
+      .httpsCallable('updateMatchState')({ matchId, pendingInvite: null })
+      .catch((e) => console.warn('updateMatchState failed', e));
     setMatches((prev) =>
       prev.map((m) =>
         m.id === matchId
@@ -243,6 +255,10 @@ export const ChatProvider = ({ children }) => {
   const acceptGameInvite = (matchId) => {
     const invite = matches.find((m) => m.id === matchId)?.pendingInvite;
     if (invite) {
+      firebase
+        .functions()
+        .httpsCallable('updateMatchState')({ matchId, activeGameId: invite.gameId, pendingInvite: null })
+        .catch((e) => console.warn('updateMatchState failed', e));
       setMatches((prev) =>
         prev.map((m) =>
           m.id === matchId
