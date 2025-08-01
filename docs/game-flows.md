@@ -4,7 +4,7 @@ Pinged supports two ways to play mini-games with other users:
 
 ## Local Games
 
-Local games happen entirely on the current device. When you start a local game from the chat screen the selected match record is updated with a `pendingInvite` object and, once accepted, an `activeGameId`. No Firestore `gameInvites` document is created.
+Local games happen entirely on the current device. When you start a local game from the chat screen a document under `matches/{matchId}/state` is updated with a `pendingInvite` object and, once accepted, an `activeGameId`. No Firestore `gameInvites` document is created.
 
 Use local games for quick, in-person play when both players share the same device.
 
