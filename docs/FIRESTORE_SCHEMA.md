@@ -75,7 +75,7 @@ This document outlines the final Firestore structure used by the Pinged applicat
 ## Matches (`matches/{matchId}`)
 - `users` (array of string) – exactly two user ids
 - `createdAt` (timestamp)
-- `typing` (map) – per-user typing status
+- `typingIndicator` (map) – per-user typing status
 - `messageCounts` (map) – per-user sent message totals
 - `chatCounts` (map) – count of replies sent by each user
 - `replyTotals` (map) – cumulative reply time in milliseconds per user

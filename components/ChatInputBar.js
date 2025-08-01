@@ -31,7 +31,7 @@ export default function ChatInputBar({
       .firestore()
       .collection('matches')
       .doc(matchId)
-      .set({ typing: { [currentUser.uid]: state } }, { merge: true });
+      .set({ typingIndicator: { [currentUser.uid]: state } }, { merge: true });
   };
 
   const handleTextChange = (val) => {
