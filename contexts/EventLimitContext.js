@@ -30,7 +30,7 @@ export const EventLimitProvider = ({ children }) => {
     }
   }, [isPremium, user?.dailyEventCount, user?.lastEventCreatedAt, maxDailyEvents]);
 
-  const recordEventCreated = async () => {
+  const recordEventCreated = async (localOnly = false) => {
     if (isPremium || !user?.uid) return;
 
     const last =
@@ -43,6 +43,7 @@ export const EventLimitProvider = ({ children }) => {
     }
     const dailyLimit = maxDailyEvents ?? DEFAULT_LIMIT;
     setEventsLeft(Math.max(dailyLimit - count, 0));
+    if (localOnly) return;
     try {
       await firebase
         .firestore()
