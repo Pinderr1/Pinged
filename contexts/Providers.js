@@ -17,39 +17,39 @@ import { FilterProvider } from './FilterContext';
 import { LoadingProvider } from './LoadingContext';
 
 const Providers = ({ children }) => (
-  <AuthProvider>
-      <OnboardingProvider>
-        <UserProvider>
-          <ThemeProvider>
-            <LoadingProvider>
-              <SoundProvider>
-                <NotificationProvider>
-                  <ListenerProvider>
-                    <GameLimitProvider>
-                      <EventLimitProvider>
-                        <LikeLimitProvider>
-                          <FilterProvider>
-                            <ChatProvider>
-                              <MatchmakingProvider>
+  <ThemeProvider>
+    <AuthProvider>
+      <NotificationProvider>
+        <LoadingProvider>
+          <OnboardingProvider>
+            <UserProvider>
+              <ListenerProvider>
+                <GameLimitProvider>
+                  <EventLimitProvider>
+                    <LikeLimitProvider>
+                      <SoundProvider>
+                        <FilterProvider>
+                          <ChatProvider>
+                            <MatchmakingProvider>
+                              <GameSessionProvider>
                                 <TrendingProvider>
-                                  <GameSessionProvider>
-                                    {children}
-                                  </GameSessionProvider>
+                                  {children}
                                 </TrendingProvider>
-                              </MatchmakingProvider>
-                            </ChatProvider>
-                          </FilterProvider>
-                        </LikeLimitProvider>
-                      </EventLimitProvider>
-                    </GameLimitProvider>
-                  </ListenerProvider>
-                </NotificationProvider>
-              </SoundProvider>
-            </LoadingProvider>
-          </ThemeProvider>
-        </UserProvider>
-      </OnboardingProvider>
+                              </GameSessionProvider>
+                            </MatchmakingProvider>
+                          </ChatProvider>
+                        </FilterProvider>
+                      </SoundProvider>
+                    </LikeLimitProvider>
+                  </EventLimitProvider>
+                </GameLimitProvider>
+              </ListenerProvider>
+            </UserProvider>
+          </OnboardingProvider>
+        </LoadingProvider>
+      </NotificationProvider>
     </AuthProvider>
+  </ThemeProvider>
 );
 
 export default Providers;
