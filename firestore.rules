@@ -84,6 +84,14 @@ service cloud.firestore {
         allow update, delete: if request.auth.token.admin == true;
       }
 
+      // State document stores active game and pending invites
+      match /state/{docId} {
+        allow read: if request.auth.token.admin == true || (
+          isSignedIn() &&
+          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users);
+        allow write: if request.auth.token.admin == true;
+      }
+
       // All other subcollections under a match follow the admin-only write pattern
       match /{document=**} {
         allow read: if request.auth.token.admin == true || (
