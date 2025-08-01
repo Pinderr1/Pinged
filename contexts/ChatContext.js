@@ -171,6 +171,16 @@ export const ChatProvider = ({ children }) => {
     };
   }, [listenerMatches, user?.uid]);
 
+  // Ensure any remaining match state listeners are cleaned up when the provider
+  // unmounts. This runs only once on mount and cleanup on unmount.
+  useEffect(() => {
+    return () => {
+      const active = matchStateListeners.current;
+      Object.keys(active).forEach((id) => active[id]());
+      matchStateListeners.current = {};
+    };
+  }, []);
+
 
   const saveMatchesToStorageRef = useRef(null);
 
