@@ -30,7 +30,7 @@ import { logGameStats } from '../utils/gameStats';
 import useRequireGameCredits from '../hooks/useRequireGameCredits';
 import useDebouncedCallback from '../hooks/useDebouncedCallback';
 import PlayerInfoBar from '../components/PlayerInfoBar';
-import useUserProfile from '../hooks/useUserProfile';
+import useUserPresence from '../hooks/useUserPresence';
 import PropTypes from 'prop-types';
 import { computeBadges } from '../utils/badges';
 
@@ -56,7 +56,7 @@ const LiveGameSession = ({ route, navigation }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const overlayOpacity = useRef(new Animated.Value(1)).current;
   const [showFallback, setShowFallback] = useState(false);
-  const opponentProfile = useUserProfile(opponent?.id);
+  const opponentPresence = useUserPresence(opponent?.id);
 
   const userBadges = computeBadges({
     xp: user?.xp,
@@ -65,10 +65,10 @@ const LiveGameSession = ({ route, navigation }) => {
     isPremium: user?.isPremium,
   });
   const oppBadges = computeBadges({
-    xp: opponentProfile?.xp,
-    streak: opponentProfile?.streak,
-    badges: opponentProfile?.badges || [],
-    isPremium: opponentProfile?.isPremium,
+    xp: opponentPresence?.xp,
+    streak: opponentPresence?.streak,
+    badges: opponentPresence?.badges || [],
+    isPremium: opponentPresence?.isPremium,
   });
 
   useEffect(() => {
@@ -225,9 +225,9 @@ const LiveGameSession = ({ route, navigation }) => {
         />
         <PlayerInfoBar
           name={opponent.displayName}
-          xp={opponentProfile?.xp || 0}
+          xp={opponentPresence?.xp || 0}
           badges={oppBadges}
-          isPremium={opponentProfile?.isPremium}
+          isPremium={opponentPresence?.isPremium}
         />
       </View>
 
@@ -237,7 +237,11 @@ const LiveGameSession = ({ route, navigation }) => {
             <SyncedGame
               sessionId={inviteId}
               gameId={game.id}
-              opponent={{ id: opponent.id, photo: opponent.photo, online: true }}
+              opponent={{
+                id: opponent.id,
+                photo: opponent.photo,
+                online: !!opponentPresence?.online,
+              }}
               onGameEnd={handleGameEnd}
             />
           </View>
