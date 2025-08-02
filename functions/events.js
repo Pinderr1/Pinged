@@ -19,35 +19,40 @@ const joinEvent = functions.https.onCall(async (data, context) => {
 
   try {
     return await db.runTransaction(async (tx) => {
-      const [eventSnap, attendeeSnap, userSnap] = await Promise.all([
-        tx.get(eventRef),
-        tx.get(attendeeRef),
-        tx.get(userRef),
-      ]);
-
+      const eventSnap = await tx.get(eventRef);
       if (!eventSnap.exists) {
         throw new functions.https.HttpsError('not-found', 'Event does not exist');
       }
+
+      const attendeeSnap = await tx.get(attendeeRef);
       if (attendeeSnap.exists) {
         throw new functions.https.HttpsError('already-exists', 'Already joined');
       }
 
+      const userSnap = await tx.get(userRef);
+
       const eventData = eventSnap.data() || {};
       const userData = userSnap.data() || {};
 
-      if (eventData.ticketed && !userData.isPremium && !(userData.eventTickets || []).includes(eventId)) {
+      const hasTicket = Array.isArray(userData.eventTickets) && userData.eventTickets.includes(eventId);
+      if (eventData.ticketed && !userData.isPremium && !hasTicket) {
         throw new functions.https.HttpsError('failed-precondition', 'Ticket required');
       }
 
       const capacity = Number(eventData.capacity) || null;
-      if (capacity) {
-        const attendeesSnap = await tx.get(eventRef.collection('attendees'));
-        if (attendeesSnap.size >= capacity) {
-          throw new functions.https.HttpsError('failed-precondition', 'Event is full');
-        }
+      const attendeeCount = Number(eventData.attendeeCount) || 0;
+      if (capacity && attendeeCount >= capacity) {
+        throw new functions.https.HttpsError('failed-precondition', 'Event is full');
       }
 
-      tx.set(attendeeRef, { joinedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      tx.set(
+        attendeeRef,
+        { joinedAt: admin.firestore.FieldValue.serverTimestamp() },
+        { merge: true },
+      );
+      tx.update(eventRef, {
+        attendeeCount: admin.firestore.FieldValue.increment(1),
+      });
 
       return { success: true };
     });
