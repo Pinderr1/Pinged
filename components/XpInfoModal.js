@@ -11,7 +11,7 @@ export default function XpInfoModal({ visible, onClose }) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const openLearnMore = () => {
-    WebBrowser.openBrowserAsync('https://example.com/xp');
+    WebBrowser.openBrowserAsync(process.env.EXPO_PUBLIC_XP_URL);
   };
 
   return (
