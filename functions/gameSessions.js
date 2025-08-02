@@ -7,10 +7,14 @@ function replayGame(Game, initial, moves = []) {
   let G = JSON.parse(JSON.stringify(initial || Game.setup()));
   let currentPlayer = '0';
   let gameover = null;
+  let invalid = false;
 
   for (const m of moves) {
     const move = Game.moves[m.action];
-    if (!move) continue;
+    if (!move) {
+      invalid = true;
+      break;
+    }
     let nextPlayer = currentPlayer;
     const ctx = {
       currentPlayer,
@@ -22,7 +26,10 @@ function replayGame(Game, initial, moves = []) {
     };
     const args = Array.isArray(m.args) ? m.args : [];
     const res = move({ G, ctx }, ...args);
-    if (res === INVALID_MOVE) continue;
+    if (res === INVALID_MOVE) {
+      invalid = true;
+      break;
+    }
     if (Game.turn?.moveLimit === 1 && nextPlayer === currentPlayer) {
       nextPlayer = currentPlayer === '0' ? '1' : '0';
     }
@@ -36,7 +43,7 @@ function replayGame(Game, initial, moves = []) {
     }
   }
 
-  return { G, currentPlayer, gameover };
+  return { G, currentPlayer, gameover, invalid };
 }
 
 const joinGameSession = functions.https.onCall(async (data, context) => {
@@ -109,62 +116,65 @@ const makeMove = functions.https.onCall(async (data, context) => {
   const ref = db.collection('gameSessions').doc(sessionId);
 
   try {
+    let error = null;
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
       if (!snap.exists) {
-        throw new functions.https.HttpsError('not-found', 'Session not found');
+        error = { code: 'not-found', message: 'Session not found' };
+        return;
       }
 
       const sess = snap.data() || {};
       const Game = games[sess.gameId];
       if (!Game) {
-        throw new functions.https.HttpsError('failed-precondition', 'Unsupported game');
+        error = { code: 'failed-precondition', message: 'Unsupported game' };
+        return;
       }
 
       const players = sess.players || [];
       const idx = players.indexOf(uid);
-      if (idx === -1) {
-        throw new functions.https.HttpsError('permission-denied', 'Not a participant');
-      }
-
-      const { G, currentPlayer, gameover } = replayGame(Game, sess.state, sess.moves);
-
-      if (String(idx) !== currentPlayer) {
-        throw new functions.https.HttpsError('failed-precondition', 'Not your turn');
-      }
-      if (gameover) {
-        throw new functions.https.HttpsError('failed-precondition', 'Game already finished');
-      }
-
-      const nextState = JSON.parse(JSON.stringify(G));
-      let nextPlayer = currentPlayer;
-      const ctx = {
-        currentPlayer,
-        events: {
-          endTurn: () => {
-            nextPlayer = currentPlayer === '0' ? '1' : '0';
-          },
-        },
+      const logInfraction = (reason, playerId = uid) => {
+        tx.update(ref, {
+          infractions: admin.firestore.FieldValue.arrayUnion({
+            player: playerId,
+            reason,
+            move: moveName,
+            args,
+            at: admin.firestore.FieldValue.serverTimestamp(),
+          }),
+        });
       };
 
-      const move = Game.moves[moveName];
-      if (!move) {
-        throw new functions.https.HttpsError('invalid-argument', 'Invalid move');
-      }
-      const res = move({ G: nextState, ctx }, ...args);
-      if (res === INVALID_MOVE) {
-        throw new functions.https.HttpsError('failed-precondition', 'Invalid move');
+      if (idx === -1) {
+        logInfraction('not-participant');
+        error = { code: 'permission-denied', message: 'Not a participant' };
+        return;
       }
 
-      if (Game.turn?.moveLimit === 1 && nextPlayer === currentPlayer) {
-        nextPlayer = currentPlayer === '0' ? '1' : '0';
+      const state = replayGame(Game, sess.state, sess.moves);
+      if (state.gameover) {
+        error = { code: 'failed-precondition', message: 'Game already finished' };
+        return;
+      }
+      if (String(idx) !== state.currentPlayer) {
+        logInfraction('not-your-turn');
+        error = { code: 'failed-precondition', message: 'Not your turn' };
+        return;
       }
 
-      const over = Game.endIf ? Game.endIf({ G: nextState, ctx: { currentPlayer: nextPlayer } }) : undefined;
+      const attempted = replayGame(Game, sess.state, [
+        ...sess.moves,
+        { action: moveName, args },
+      ]);
+      if (attempted.invalid) {
+        logInfraction('invalid-move');
+        error = { code: 'failed-precondition', message: 'Invalid move' };
+        return;
+      }
 
       tx.update(ref, {
-        currentPlayer: nextPlayer,
-        gameover: over || null,
+        currentPlayer: attempted.currentPlayer,
+        gameover: attempted.gameover || null,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         moves: admin.firestore.FieldValue.arrayUnion({
           action: moveName,
@@ -174,6 +184,10 @@ const makeMove = functions.https.onCall(async (data, context) => {
         }),
       });
     });
+
+    if (error) {
+      throw new functions.https.HttpsError(error.code, error.message);
+    }
 
     return { success: true };
   } catch (e) {
