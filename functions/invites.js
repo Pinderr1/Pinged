@@ -59,14 +59,23 @@ async function deleteMatchHistory(users) {
 const onGameInviteCreated = functions.firestore
   .document('gameInvites/{inviteId}')
   .onCreate(async (snap, context) => {
-    const data = snap.data();
-    if (!data || !data.to) return null;
+    const data = snap.data() || {};
+    const { from, to, gameId, fromName } = data;
+    if (!from || !to) return null;
+
+    const matchId = [from, to].sort().join('_');
+    const matchSnap = await admin.firestore().collection('matches').doc(matchId).get();
+    if (!matchSnap.exists) {
+      await snap.ref.delete();
+      return null;
+    }
+
     try {
       await pushToUser(
-        data.to,
+        to,
         'Game Invite',
-        `${data.fromName || 'Someone'} invited you to play`,
-        { type: 'invite', inviteId: snap.id, gameId: data.gameId },
+        `${fromName || 'Someone'} invited you to play`,
+        { type: 'invite', inviteId: snap.id, gameId },
       );
     } catch (e) {
       console.error('Failed to send invite notification', e);
