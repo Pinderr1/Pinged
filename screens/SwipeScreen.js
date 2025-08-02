@@ -31,6 +31,7 @@ import Loader from '../components/Loader';
 import { computePriority } from '../utils/priority';
 import { handleLike } from '../utils/matchUtils';
 import * as Haptics from 'expo-haptics';
+import * as Network from 'expo-network';
 import FullProfileModal from '../components/FullProfileModal';
 import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
@@ -80,6 +81,22 @@ const computeMatchPercent = (a, b) => {
   if (total === 0) return 0;
   return Math.round((score / total) * 100);
 };
+
+const likeRetryQueue = [];
+
+async function processLikeQueue() {
+  const state = await Network.getNetworkStateAsync();
+  if (!state.isConnected) return;
+  while (likeRetryQueue.length) {
+    const task = likeRetryQueue[0];
+    try {
+      await task();
+      likeRetryQueue.shift();
+    } catch (e) {
+      break;
+    }
+  }
+}
 
 
 const SwipeScreen = () => {
@@ -166,6 +183,19 @@ const SwipeScreen = () => {
   useEffect(() => {
     setCurrentIndex(0);
     setHistory([]);
+  }, []);
+
+  useEffect(() => {
+    let subscription;
+    Network.addNetworkStateListenerAsync((state) => {
+      if (state.isConnected) {
+        processLikeQueue();
+      }
+    }).then((s) => (subscription = s));
+    processLikeQueue();
+    return () => {
+      subscription && subscription.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -288,11 +318,22 @@ const SwipeScreen = () => {
 
   const handleSwipe = async (direction) => {
     if (!displayUser || actionLoading) return;
+    const targetUser = displayUser;
     setActionLoading(true);
 
     // Provide light haptic feedback on every swipe
     Haptics.selectionAsync().catch(() => {});
     play(direction === 'left' ? 'swipe_left' : 'swipe_right');
+
+    const prevIndex = currentIndex;
+    const prevHistory = history;
+
+    const applyOptimistic = () => {
+      setHistory((h) => [...h, currentIndex]);
+      pan.setValue({ x: 0, y: 0 });
+      setImageIndex(0);
+      setCurrentIndex((i) => i + 1);
+    };
 
     if (direction === 'right') {
       if (likesLeft <= 0 && !isPremiumUser) {
@@ -305,46 +346,77 @@ const SwipeScreen = () => {
         return;
       }
 
-      try {
-        const { success } = await handleLike({
-          currentUser,
-          targetUser: displayUser,
-          firestore: firebase.firestore(),
-          navigation,
-          isPremiumUser,
-          showNotification,
-          addMatch,
-          setMatchedUser,
-          setMatchLine,
-          setMatchGame,
-          play,
-          setShowFireworks,
-        });
+      applyOptimistic();
 
-        if (!success) {
-          throw new Error('Like failed');
-        }
-        recordLikeSent();
+      try {
+        const likeOp = async () => {
+          const { success } = await handleLike({
+            currentUser,
+            targetUser,
+            firestore: firebase.firestore(),
+            navigation,
+            isPremiumUser,
+            showNotification,
+            addMatch,
+            setMatchedUser,
+            setMatchLine,
+            setMatchGame,
+            play,
+            setShowFireworks,
+          });
+          if (!success) {
+            throw new Error('Like failed');
+          }
+          recordLikeSent();
+        };
+        await likeOp();
+        await processLikeQueue();
       } catch (e) {
-        console.warn('Failed to like user', e);
-        Toast.show({ type: 'error', text1: 'Failed to like user' });
-        Animated.spring(pan, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: false,
-        }).start();
+        const state = await Network.getNetworkStateAsync();
+        if (!state.isConnected) {
+          likeRetryQueue.push(async () => {
+            const { success } = await handleLike({
+              currentUser,
+              targetUser,
+              firestore: firebase.firestore(),
+              navigation,
+              isPremiumUser,
+              showNotification,
+              addMatch,
+              setMatchedUser,
+              setMatchLine,
+              setMatchGame,
+              play,
+              setShowFireworks,
+            });
+            if (success) recordLikeSent();
+          });
+          Toast.show({
+            type: 'info',
+            text1: 'Offline. Like queued.',
+          });
+        } else {
+          console.warn('Failed to like user', e);
+          Toast.show({ type: 'error', text1: 'Failed to like user' });
+          setHistory(prevHistory);
+          setCurrentIndex(prevIndex);
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            useNativeDriver: false,
+          }).start();
+        }
         setActionLoading(false);
         return;
       }
+      setActionLoading(false);
+      return;
     } else if (direction !== 'left') {
       Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
       setActionLoading(false);
       return;
     }
 
-    setHistory((h) => [...h, currentIndex]);
-    pan.setValue({ x: 0, y: 0 });
-    setImageIndex(0);
-    setCurrentIndex((i) => i + 1);
+    applyOptimistic();
     setActionLoading(false);
   };
 
