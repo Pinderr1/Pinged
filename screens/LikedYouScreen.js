@@ -22,7 +22,7 @@ const LikedYouScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (user && !user.isPremium) {
-      navigation.replace('Premium', { context: 'paywall' });
+      navigation.replace('PremiumPaywall');
     }
   }, [user?.isPremium]);
 
