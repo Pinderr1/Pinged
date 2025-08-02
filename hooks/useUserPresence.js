@@ -6,14 +6,11 @@ export default function useUserPresence(uid) {
 
   useEffect(() => {
     if (!uid) return undefined;
-    const unsub = firebase
-      .firestore()
-      .collection('presence')
-      .doc(uid)
-      .onSnapshot((doc) => {
-        setPresence(doc.data() || null);
-      });
-    return unsub;
+    const ref = firebase.database().ref(`/status/${uid}`);
+    const handle = ref.on('value', (snap) => {
+      setPresence(snap.val() || null);
+    });
+    return () => ref.off('value', handle);
   }, [uid]);
 
   return presence;

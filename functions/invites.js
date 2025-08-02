@@ -101,7 +101,6 @@ const syncPresence = functions.database
     if (!status) return null;
     const uid = context.params.uid;
     const userRef = admin.firestore().collection('users').doc(uid);
-    const presenceRef = admin.firestore().collection('presence').doc(uid);
     const updates = {
       online: status.state === 'online',
     };
@@ -114,24 +113,6 @@ const syncPresence = functions.database
 
     try {
       await userRef.set(updates, { merge: true });
-      await presenceRef.set(updates, { merge: true });
-
-      const matchSnap = await admin
-        .firestore()
-        .collection('matches')
-        .where('users', 'array-contains', uid)
-        .get();
-
-      const tasks = [];
-      matchSnap.forEach((doc) => {
-        tasks.push(
-          doc.ref.set(
-            { [`presence.${uid}.online`]: updates.online },
-            { merge: true }
-          )
-        );
-      });
-      await Promise.all(tasks);
     } catch (e) {
       console.error('Failed to sync presence', e);
     }
@@ -145,34 +126,28 @@ const onUserProfileUpdate = functions.firestore
     const after = change.after.data() || {};
     const uid = context.params.uid;
     const updates = {};
+    const fields = ['photoURL', 'avatarOverlay', 'xp', 'streak', 'badges', 'isPremium'];
+    const defaults = {
+      photoURL: '',
+      avatarOverlay: '',
+      xp: 0,
+      streak: 0,
+      badges: [],
+      isPremium: false,
+    };
 
-    if (before.photoURL !== after.photoURL) {
-      updates.photoURL = after.photoURL || '';
-    }
-
-    if (before.avatarOverlay !== after.avatarOverlay) {
-      updates.avatarOverlay = after.avatarOverlay || '';
-    }
+    fields.forEach((field) => {
+      if (before[field] !== after[field]) {
+        updates[field] = after[field] ?? defaults[field];
+      }
+    });
 
     if (!Object.keys(updates).length) return null;
 
-    const presenceRef = admin.firestore().collection('presence').doc(uid);
+    const statusRef = admin.database().ref(`/status/${uid}`);
 
     try {
-      await presenceRef.set(updates, { merge: true });
-
-      const matchSnap = await admin
-        .firestore()
-        .collection('matches')
-        .where('users', 'array-contains', uid)
-        .get();
-
-      const tasks = [];
-      matchSnap.forEach((doc) => {
-        tasks.push(doc.ref.set({ [`presence.${uid}`]: updates }, { merge: true }));
-      });
-
-      await Promise.all(tasks);
+      await statusRef.update(updates);
     } catch (e) {
       console.error('Failed to propagate profile update', e);
     }
