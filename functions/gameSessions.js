@@ -3,6 +3,19 @@ const admin = require('firebase-admin');
 const { INVALID_MOVE } = require('boardgame.io/core');
 const games = require('./games');
 
+const DEFAULT_LIMIT = 1;
+
+async function getDailyLimit() {
+  try {
+    const snap = await admin.firestore().collection('config').doc('app').get();
+    const val = snap.get('maxFreeGames');
+    return Number.isFinite(val) ? val : DEFAULT_LIMIT;
+  } catch (e) {
+    console.warn('Failed to load maxFreeGames', e);
+    return DEFAULT_LIMIT;
+  }
+}
+
 function replayGame(Game, initial, moves = []) {
   let G = JSON.parse(JSON.stringify(initial || Game.setup()));
   let currentPlayer = '0';
@@ -185,5 +198,46 @@ const makeMove = functions.https.onCall(async (data, context) => {
   }
 });
 
-module.exports = { joinGameSession, makeMove };
+const recordGamePlayed = functions.https.onCall(async (_, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  const db = admin.firestore();
+  const limit = await getDailyLimit();
+
+  return await db.runTransaction(async (tx) => {
+    const ref = db.collection('users').doc(uid);
+    const snap = await tx.get(ref);
+    const isPremium = !!snap.get('isPremium');
+    if (isPremium) {
+      tx.update(ref, {
+        lastGamePlayedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return { remaining: Infinity };
+    }
+    const last = snap.get('lastGamePlayedAt')?.toDate?.() ||
+      (snap.get('lastGamePlayedAt') ? new Date(snap.get('lastGamePlayedAt')) : null);
+    let count = snap.get('dailyPlayCount') || 0;
+    const today = new Date();
+    if (!last || last.toDateString() !== today.toDateString()) {
+      count = 0;
+    }
+    if (count >= limit) {
+      throw new functions.https.HttpsError(
+        'resource-exhausted',
+        'Daily game limit reached'
+      );
+    }
+    count += 1;
+    tx.update(ref, {
+      dailyPlayCount: count,
+      lastGamePlayedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return { remaining: Math.max(limit - count, 0) };
+  });
+});
+
+module.exports = { joinGameSession, makeMove, recordGamePlayed };
 

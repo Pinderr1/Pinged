@@ -31,7 +31,7 @@ export async function validateMatch(uid, otherUid) {
 export async function handleLike({
   currentUser,
   targetUser,
-  firestore,
+  sendLike,
   navigation,
   isPremiumUser = false,
   showNotification = () => {},
@@ -46,14 +46,8 @@ export async function handleLike({
 
   if (currentUser?.uid && targetUser.id) {
     try {
-      const res = await firebase
-        .functions()
-        .httpsCallable('likeAndMaybeMatch')({
-          uid: currentUser.uid,
-          targetUid: targetUser.id,
-        });
-
-      const matchId = res?.data?.matchId || null;
+      const res = await sendLike(targetUser.id);
+      const matchId = res?.matchId || null;
 
       showNotification(`You liked ${targetUser.displayName}`);
 

@@ -38,7 +38,9 @@ service cloud.firestore {
             request.resource.data.badges.hasAny(["premium", "premiumMember"]) : false) &&
         !("roles" in request.resource.data) &&
         !("xp" in request.resource.data) &&
-        !("streak" in request.resource.data);
+        !("streak" in request.resource.data) &&
+        !("dailyPlayCount" in request.resource.data) &&
+        !("lastGamePlayedAt" in request.resource.data);
 
       // Updates cannot modify server controlled fields like xp or streak
       allow update: if isSignedIn() && request.auth.uid == uid &&
@@ -47,7 +49,9 @@ service cloud.firestore {
             request.resource.data.badges.hasAny(["premium", "premiumMember"]) : false) &&
         !("roles" in request.resource.data) &&
         !("xp" in request.resource.data) &&
-        !("streak" in request.resource.data);
+        !("streak" in request.resource.data) &&
+        !("dailyPlayCount" in request.resource.data) &&
+        !("lastGamePlayedAt" in request.resource.data);
 
       allow delete: if isSignedIn() && request.auth.uid == uid;
 
