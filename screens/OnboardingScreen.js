@@ -275,7 +275,7 @@ const validateField = () => {
       updateUser(profile);
       markOnboarded();
       Toast.show({ type: 'success', text1: 'Profile saved!' });
-      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+      navigation.popToTop();
     } catch (e) {
       console.error('Save error:', e);
       Toast.show({ type: 'error', text1: 'Failed to save profile' });
