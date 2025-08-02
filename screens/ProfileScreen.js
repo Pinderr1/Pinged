@@ -166,10 +166,7 @@ const ProfileScreen = ({ navigation, route }) => {
       updateUser(clean);
       setAvatar(photoURL);
       Toast.show({ type: 'success', text1: 'Profile updated!' });
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
+      navigation.goBack();
     } catch (e) {
       console.warn('Failed to update profile', e);
       Toast.show({ type: 'error', text1: 'Update failed' });
