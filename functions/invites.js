@@ -278,6 +278,50 @@ const onMatchDeleted = functions.firestore
     return null;
   });
 
+const INVITE_GAP_MS = 30 * 1000;
+
+const sendInvite = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  const toUid = data?.to;
+  const gameId = data?.gameId;
+
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+  if (!toUid || !gameId) {
+    throw new functions.https.HttpsError('invalid-argument', 'to and gameId are required');
+  }
+  if (toUid === uid) {
+    throw new functions.https.HttpsError('invalid-argument', 'Cannot invite yourself');
+  }
+
+  const db = admin.firestore();
+  const metaRef = db.collection('inviteMeta').doc(uid);
+  const metaSnap = await metaRef.get();
+  const last = metaSnap.get('lastInviteAt');
+  if (last && Date.now() - last.toMillis() < INVITE_GAP_MS) {
+    throw new functions.https.HttpsError('resource-exhausted', 'Invites sent too frequently');
+  }
+
+  const payload = {
+    from: uid,
+    to: toUid,
+    gameId,
+    fromName: data?.fromName || null,
+    status: 'pending',
+    acceptedBy: [uid],
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+
+  const ref = await db.collection('gameInvites').add(payload);
+  await metaRef.set(
+    { lastInviteAt: admin.firestore.FieldValue.serverTimestamp() },
+    { merge: true },
+  );
+
+  return { inviteId: ref.id };
+});
+
 const acceptInvite = functions.https.onCall(async (data, context) => {
   const inviteId = data?.inviteId;
   const uid = context.auth?.uid;
@@ -439,5 +483,6 @@ module.exports = {
   onInviteDeleted,
   onMatchDeleted,
   onChatMessageCreated,
+  sendInvite,
   acceptInvite,
 };
