@@ -36,7 +36,6 @@ import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
 import { useLikeLimit } from '../contexts/LikeLimitContext';
-import { useLikeLimit } from '../contexts/LikeLimitContext';
 import { FONT_FAMILY } from '../textStyles';
 import UserCard from '../components/UserCard';
 import SwipeControls from '../components/SwipeControls';
@@ -91,7 +90,7 @@ const SwipeScreen = () => {
   const { play } = useSound();
   const { addMatch } = useChats();
   const isPremiumUser = !!currentUser?.isPremium;
-  const { likesLeft, recordLikeSent } = useLikeLimit();
+  const { likesLeft, sendLike } = useLikeLimit();
   const {
     location: filterLocation,
     ageRange,
@@ -309,7 +308,7 @@ const SwipeScreen = () => {
         const { success } = await handleLike({
           currentUser,
           targetUser: displayUser,
-          firestore: firebase.firestore(),
+          sendLike,
           navigation,
           isPremiumUser,
           showNotification,
@@ -324,7 +323,6 @@ const SwipeScreen = () => {
         if (!success) {
           throw new Error('Like failed');
         }
-        recordLikeSent();
       } catch (e) {
         console.warn('Failed to like user', e);
         Toast.show({ type: 'error', text1: 'Failed to like user' });

@@ -14,33 +14,35 @@ export const LikeLimitProvider = ({ children }) => {
   const [likesLeft, setLikesLeft] = useState(isPremium ? Infinity : limit);
 
   useEffect(() => {
-    const dailyLimit = maxDailyLikes ?? DEFAULT_LIMIT;
     if (isPremium || !user?.uid) {
       setLikesLeft(Infinity);
-      return;
+    } else {
+      setLikesLeft(limit);
     }
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    firebase
-      .firestore()
-      .collection('likes')
-      .doc(user?.uid || 'missing')
-      .collection('liked')
-      .where('createdAt', '>=', firebase.firestore.Timestamp.fromDate(start))
-      .get()
-      .then((snap) => {
-        setLikesLeft(Math.max(dailyLimit - snap.size, 0));
-      })
-      .catch(() => setLikesLeft(dailyLimit));
-  }, [isPremium, user?.uid, maxDailyLikes]);
+  }, [isPremium, user?.uid, limit]);
 
-  const recordLikeSent = () => {
-    if (isPremium) return;
-    setLikesLeft((prev) => (prev === Infinity ? Infinity : Math.max(prev - 1, 0)));
+  const sendLike = async (targetUid) => {
+    if (!targetUid) return { success: false, matchId: null };
+    try {
+      const res = await firebase
+        .functions()
+        .httpsCallable('likeAndMaybeMatch')({ targetUid });
+      if (!isPremium) {
+        setLikesLeft((prev) =>
+          prev === Infinity ? Infinity : Math.max(prev - 1, 0)
+        );
+      }
+      return { success: true, matchId: res?.data?.matchId || null };
+    } catch (e) {
+      if (!isPremium && e?.message?.includes('Daily like limit')) {
+        setLikesLeft(0);
+      }
+      throw e;
+    }
   };
 
   return (
-    <LikeLimitContext.Provider value={{ likesLeft, recordLikeSent }}>
+    <LikeLimitContext.Provider value={{ likesLeft, sendLike }}>
       {children}
     </LikeLimitContext.Provider>
   );

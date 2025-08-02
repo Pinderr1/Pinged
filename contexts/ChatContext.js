@@ -41,7 +41,6 @@ export const ChatProvider = ({ children }) => {
   const { play } = useSound();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
-  const lastMessageRef = useRef(0);
   const matchStateListeners = useRef({});
 
   useEffect(() => {
@@ -207,12 +206,6 @@ export const ChatProvider = ({ children }) => {
 
   const sendMessage = async ({ matchId, text = '', meta = {} }) => {
     if (!matchId || !user?.uid) return;
-    const now = Date.now();
-    if (now - lastMessageRef.current < 1000) {
-      Toast.show({ type: 'error', text1: 'You are sending messages too quickly' });
-      return;
-    }
-    lastMessageRef.current = now;
 
     const trimmed = removeEmojis(text).trim();
     if (!trimmed && !meta.voice) return;
@@ -259,6 +252,13 @@ export const ChatProvider = ({ children }) => {
       play('message');
       Toast.show({ type: 'success', text1: 'Message sent' });
     } catch (e) {
+      if (e?.message?.includes('Too many messages')) {
+        Toast.show({
+          type: 'error',
+          text1: 'You are sending messages too quickly',
+        });
+        return;
+      }
       console.warn('Failed to send message', e);
       Toast.show({ type: 'error', text1: 'Failed to send message' });
     }
