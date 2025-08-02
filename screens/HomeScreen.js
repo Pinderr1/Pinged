@@ -151,7 +151,7 @@ const HomeScreen = ({ navigation }) => {
       if (opponentId) {
         const res = await firebase
           .functions()
-          .httpsCallable('createMatchIfMutualLike')({
+          .httpsCallable('sendLike')({
             uid: user.uid,
             targetUid: opponentId,
           });
@@ -206,7 +206,7 @@ const HomeScreen = ({ navigation }) => {
             const opp = oppSnap2.data() || {};
             const res2 = await firebase
               .functions()
-              .httpsCallable('createMatchIfMutualLike')({
+              .httpsCallable('sendLike')({
                 uid: user.uid,
                 targetUid: d.players[1],
               });

@@ -58,8 +58,4 @@ async function createMatchIfMutualLikeInternal(data, context, tx) {
   }
 }
 
-const createMatchIfMutualLike = functions.https.onCall((data, context) =>
-  createMatchIfMutualLikeInternal(data, context),
-);
-
-module.exports = { createMatchIfMutualLike, createMatchIfMutualLikeInternal };
+module.exports = { createMatchIfMutualLikeInternal };

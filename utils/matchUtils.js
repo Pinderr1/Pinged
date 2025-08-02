@@ -48,7 +48,7 @@ export async function handleLike({
     try {
       const res = await firebase
         .functions()
-        .httpsCallable('likeAndMaybeMatch')({
+        .httpsCallable('sendLike')({
           uid: currentUser.uid,
           targetUid: targetUser.id,
         });
