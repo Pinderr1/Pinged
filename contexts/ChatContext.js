@@ -95,7 +95,7 @@ export const ChatProvider = ({ children }) => {
 
   useEffect(() => {
     if (!user?.uid) return;
-    initEncryption().catch((e) => {
+    initEncryption(user.uid).catch((e) => {
       console.warn('Encryption init failed', e);
     });
   }, [user?.uid]);
@@ -266,15 +266,25 @@ export const ChatProvider = ({ children }) => {
     const { group, system, ...extras } = meta || {};
 
     try {
-      await initEncryption();
+      await initEncryption(user.uid);
       const payload = {
         ...extras,
       };
 
       if (trimmed) {
-        const enc = encryptText(trimmed);
-        payload.ciphertext = enc.ciphertext;
-        payload.nonce = enc.nonce;
+        if (!group) {
+          const match = matches.find((m) => m.id === matchId);
+          const otherId = match?.otherUserId;
+          if (otherId) {
+            const enc = await encryptText(trimmed, otherId);
+            payload.ciphertext = enc.ciphertext;
+            payload.nonce = enc.nonce;
+          } else {
+            payload.text = trimmed;
+          }
+        } else {
+          payload.text = trimmed;
+        }
       }
 
       if (group) {

@@ -13,11 +13,11 @@ import { decryptText, initEncryption } from '../utils/encryption';
 
 const REACTIONS = ['❤️', '🔥', '😂'];
 
-const formatMessage = (val, id, currentUid) => {
+const formatMessage = async (val, id, currentUid) => {
   let text = val.text;
-  if (!text && val.ciphertext && val.nonce) {
+  if (!text && val.ciphertext && val.nonce && val.senderId) {
     try {
-      text = decryptText(val.ciphertext, val.nonce);
+      text = await decryptText(val.ciphertext, val.nonce, val.senderId);
     } catch (e) {
       text = '';
     }
@@ -68,8 +68,9 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
   }, []);
 
   useEffect(() => {
-    initEncryption().catch(() => {});
-  }, []);
+    if (!currentUser?.uid) return;
+    initEncryption(currentUser.uid).catch(() => {});
+  }, [currentUser?.uid]);
 
   useEffect(() => {
     if (!matchId || !currentUser?.uid) return;
@@ -95,8 +96,10 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
     const loadInitial = async () => {
       setLoading(true);
       try {
-        const { messages: fetched, lastDoc } = await chatApi.getMessages(matchId);
-        const mapped = fetched.map((m) => formatMessage(m, m.id, currentUser.uid));
+        const { messages: fetched, lastDoc } = await chatApi.getMessages(matchId, currentUser.uid);
+        const mapped = await Promise.all(
+          fetched.map((m) => formatMessage(m, m.id, currentUser.uid)),
+        );
         if (!isMounted) return;
         setMessages(mapped);
         setHasEarlier(fetched.length === 30);
@@ -115,9 +118,9 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
         .orderBy('timestamp', 'desc')
         .limit(1)
         .onSnapshot((snap) => {
-          snap.docChanges().forEach((change) => {
+          snap.docChanges().forEach(async (change) => {
             const val = change.doc.data();
-            const msg = formatMessage(val, change.doc.id, currentUser.uid);
+            const msg = await formatMessage(val, change.doc.id, currentUser.uid);
             if (change.type === 'added') {
               setMessages((prev) => {
                 if (prev.find((m) => m.id === msg.id)) return prev;
@@ -126,7 +129,10 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
             } else if (change.type === 'modified') {
               setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
             }
-            if (val.senderId !== currentUser.uid && !(val.readBy || []).includes(currentUser.uid)) {
+            if (
+              val.senderId !== currentUser.uid &&
+              !(val.readBy || []).includes(currentUser.uid)
+            ) {
               change.doc.ref.update({
                 readBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
               });
@@ -146,8 +152,14 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
     if (loadingEarlier || !oldestDoc) return;
     setLoadingEarlier(true);
     try {
-      const { messages: fetched, lastDoc } = await chatApi.getMessages(matchId, oldestDoc);
-      const data = fetched.map((d) => formatMessage(d, d.id, currentUser.uid));
+      const { messages: fetched, lastDoc } = await chatApi.getMessages(
+        matchId,
+        currentUser.uid,
+        oldestDoc,
+      );
+      const data = await Promise.all(
+        fetched.map((d) => formatMessage(d, d.id, currentUser.uid)),
+      );
       if (data.length > 0) {
         setOldestDoc(lastDoc);
         setMessages((prev) => [...prev, ...data]);
