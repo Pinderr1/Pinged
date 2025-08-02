@@ -141,6 +141,13 @@ service cloud.firestore {
           (resource.data.userId != null ? resource.data.userId : request.resource.data.userId);
     }
 
+    // Invites may only be updated or deleted by the sender or receiver
+    match /invites/{inviteId} {
+      allow update, delete: if isSignedIn() &&
+        request.auth.uid in [resource.data.sender, resource.data.receiver];
+      allow create: if false;
+    }
+
     // Game invites are readable by the sender or recipient. Creation is
     // restricted to the sender while updates may only be performed by the
     // original participants. Both operations are denied if either user has
