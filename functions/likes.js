@@ -1,6 +1,5 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const { createMatchIfMutualLikeInternal } = require('./src/match.js');
 
 const DEFAULT_LIMIT = 100;
 
@@ -36,57 +35,6 @@ const onLikeDelete = functions.firestore
     await admin.firestore().doc(`likes/${targetUid}/likedBy/${uid}`).delete();
   });
 
-const sendLike = functions.https.onCall(async (data, context) => {
-  const uid = context.auth?.uid;
-  const targetUid = data?.targetUid;
-
-  if (!uid) {
-    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
-  }
-  if (!targetUid) {
-    throw new functions.https.HttpsError('invalid-argument', 'targetUid is required');
-  }
-  if (uid === targetUid) {
-    throw new functions.https.HttpsError('invalid-argument', 'Cannot like yourself');
-  }
-
-  const db = admin.firestore();
-  const DAILY_LIMIT = await getDailyLimit();
-
-  const [block1, block2, userSnap] = await Promise.all([
-    db.doc(`blocks/${uid}/blocked/${targetUid}`).get(),
-    db.doc(`blocks/${targetUid}/blocked/${uid}`).get(),
-    db.collection('users').doc(uid).get(),
-  ]);
-
-  if (block1.exists || block2.exists) {
-    throw new functions.https.HttpsError('failed-precondition', 'Users are blocked');
-  }
-
-  const isPremium = !!userSnap.get('isPremium');
-  if (!isPremium) {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const sent = await db
-      .collection('likes')
-      .doc(uid)
-      .collection('liked')
-      .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(start))
-      .get();
-    if (sent.size >= DAILY_LIMIT) {
-      throw new functions.https.HttpsError('resource-exhausted', 'Daily like limit reached');
-    }
-  }
-
-  const likeRef = db.collection('likes').doc(uid).collection('liked').doc(targetUid);
-  const existing = await likeRef.get();
-  if (!existing.exists) {
-    await likeRef.set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
-  }
-
-  return { success: true };
-});
-
 const likeAndMaybeMatch = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
   const targetUid = data?.targetUid;
@@ -103,71 +51,95 @@ const likeAndMaybeMatch = functions.https.onCall(async (data, context) => {
 
   const db = admin.firestore();
   const DAILY_LIMIT = await getDailyLimit();
-
-  const [block1, block2, userSnap] = await Promise.all([
-    db.doc(`blocks/${uid}/blocked/${targetUid}`).get(),
-    db.doc(`blocks/${targetUid}/blocked/${uid}`).get(),
-    db.collection('users').doc(uid).get(),
-  ]);
-
-  if (block1.exists || block2.exists) {
-    throw new functions.https.HttpsError('failed-precondition', 'Users are blocked');
-  }
-
-  const isPremium = !!userSnap.get('isPremium');
-  if (!isPremium) {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const sent = await db
-      .collection('likes')
-      .doc(uid)
-      .collection('liked')
-      .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(start))
-      .get();
-    if (sent.size >= DAILY_LIMIT) {
-      throw new functions.https.HttpsError('resource-exhausted', 'Daily like limit reached');
-    }
-  }
-
   const sorted = [uid, targetUid].sort();
   const matchId = sorted.join('_');
 
-  const res = await db.runTransaction(async (tx) => {
-    const likeRef = db.collection('likes').doc(uid).collection('liked').doc(targetUid);
-    const otherLikeRef = db.collection('likes').doc(targetUid).collection('liked').doc(uid);
-    const matchRef = db.collection('matches').doc(matchId);
-    const [likeSnap, otherLikeSnap, matchSnap, blockSnap1, blockSnap2] = await Promise.all([
-      tx.get(likeRef),
-      tx.get(otherLikeRef),
-      tx.get(matchRef),
-      tx.get(db.collection('blocks').doc(uid).collection('blocked').doc(targetUid)),
-      tx.get(db.collection('blocks').doc(targetUid).collection('blocked').doc(uid)),
-    ]);
+  try {
+    const res = await db.runTransaction(async (tx) => {
+      const likeRef = db.collection('likes').doc(uid).collection('liked').doc(targetUid);
+      const otherLikeRef = db.collection('likes').doc(targetUid).collection('liked').doc(uid);
+      const matchRef = db.collection('matches').doc(matchId);
+      const blockRef1 = db.collection('blocks').doc(uid).collection('blocked').doc(targetUid);
+      const blockRef2 = db
+        .collection('blocks')
+        .doc(targetUid)
+        .collection('blocked')
+        .doc(uid);
+      const userRef = db.collection('users').doc(uid);
 
-    if (matchSnap.exists) {
-      return { matchId };
-    }
+      const [
+        likeSnap,
+        otherLikeSnap,
+        matchSnap,
+        blockSnap1,
+        blockSnap2,
+        userSnap,
+      ] = await Promise.all([
+        tx.get(likeRef),
+        tx.get(otherLikeRef),
+        tx.get(matchRef),
+        tx.get(blockRef1),
+        tx.get(blockRef2),
+        tx.get(userRef),
+      ]);
 
-    if (blockSnap1.exists || blockSnap2.exists) {
+      if (blockSnap1.exists || blockSnap2.exists) {
+        throw new functions.https.HttpsError('failed-precondition', 'Users are blocked');
+      }
+
+      const userData = userSnap.data() || {};
+      const isPremium = !!userData.isPremium;
+      if (!isPremium && !likeSnap.exists) {
+        const now = admin.firestore.Timestamp.now();
+        const last = userData.lastLikeSentAt;
+        let dailyCount = 0;
+        if (last && now.toDate().toDateString() === last.toDate().toDateString()) {
+          dailyCount = userData.dailyLikeCount || 0;
+        }
+        if (dailyCount >= DAILY_LIMIT) {
+          throw new functions.https.HttpsError(
+            'resource-exhausted',
+            'Daily like limit reached',
+          );
+        }
+        dailyCount += 1;
+        tx.set(
+          userRef,
+          {
+            dailyLikeCount: dailyCount,
+            lastLikeSentAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+      }
+
+      if (matchSnap.exists) {
+        return { matchId };
+      }
+
+      if (!likeSnap.exists) {
+        tx.set(likeRef, { createdAt: admin.firestore.FieldValue.serverTimestamp() });
+      }
+
+      if (otherLikeSnap.exists) {
+        tx.set(matchRef, {
+          users: sorted,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return { matchId };
+      }
+
       return { matchId: null };
+    });
+
+    return { matchId: res.matchId };
+  } catch (e) {
+    if (e instanceof functions.https.HttpsError) {
+      throw e;
     }
-
-    if (!likeSnap.exists) {
-      tx.set(likeRef, { createdAt: admin.firestore.FieldValue.serverTimestamp() });
-    }
-
-    if (otherLikeSnap.exists) {
-      tx.set(matchRef, {
-        users: sorted,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-      return { matchId };
-    }
-
-    return { matchId: null };
-  });
-
-  return { matchId: res.matchId };
+    console.error('Failed to process like', e);
+    throw new functions.https.HttpsError('internal', 'Failed to process like');
+  }
 });
 
-module.exports = { onLikeCreate, onLikeDelete, sendLike, likeAndMaybeMatch };
+module.exports = { onLikeCreate, onLikeDelete, likeAndMaybeMatch };
