@@ -91,7 +91,7 @@ const CommunityScreen = () => {
       setLoadingEvents(false);
       setRefreshing(false);
     });
-    return unsub;
+    return () => unsub();
   }, []);
 
   useEffect(() => {
@@ -102,7 +102,7 @@ const CommunityScreen = () => {
       setLoadingPosts(false);
       setRefreshing(false);
     });
-    return unsub;
+    return () => unsub();
   }, []);
 
   const filteredEvents =

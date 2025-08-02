@@ -28,7 +28,7 @@ export const TrendingProvider = ({ children }) => {
           }
         }
       );
-    return unsub;
+    return () => unsub();
   }, []);
 
   return (

@@ -35,7 +35,7 @@ export default function useRemoteConfig() {
         setConfig((prev) => ({ ...prev, loading: false, error: err }));
       }
     );
-    return unsub;
+    return () => unsub();
   }, []);
 
   return config;

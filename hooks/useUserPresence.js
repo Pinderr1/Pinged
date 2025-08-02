@@ -13,7 +13,7 @@ export default function useUserPresence(uid) {
       .onSnapshot((doc) => {
         setPresence(doc.data() || null);
       });
-    return unsub;
+    return () => unsub();
   }, [uid]);
 
   return presence;

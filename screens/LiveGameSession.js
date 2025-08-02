@@ -72,7 +72,7 @@ const LiveGameSession = ({ route, navigation }) => {
   });
 
   useEffect(() => {
-    if (!inviteId || !user?.uid) return;
+    if (!inviteId || !user?.uid) return undefined;
     const ref = firebase.firestore().collection('gameInvites').doc(inviteId);
     const unsub = ref.onSnapshot((snap) => {
       if (snapshotExists(snap)) {
@@ -82,7 +82,7 @@ const LiveGameSession = ({ route, navigation }) => {
         }
       }
     });
-    return unsub;
+    return () => unsub();
   }, [inviteId, user?.uid]);
 
   useEffect(() => {

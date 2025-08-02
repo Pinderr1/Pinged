@@ -119,7 +119,7 @@ const ProfileScreen = ({ navigation, route }) => {
         },
         (e) => console.warn('Failed to load games', e)
       );
-    return unsub;
+    return () => unsub();
   }, []);
 
   const handleSave = async () => {

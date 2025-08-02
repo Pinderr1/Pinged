@@ -61,6 +61,6 @@ export default function usePushNotifications() {
           console.warn('Failed to register for push notifications', e);
         });
     });
-    return unsub;
+    return () => unsub();
   }, []);
 }

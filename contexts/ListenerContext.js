@@ -132,7 +132,7 @@ export const ListenerProvider = ({ children }) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setSessions(data);
     });
-    return unsub;
+    return () => unsub();
   }, [user?.uid]);
 
   const getMatchInfo = (matchId) => messageInfoMap[matchId] || { lastMessage: '', unreadCount: 0 };

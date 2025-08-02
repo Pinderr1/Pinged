@@ -15,7 +15,7 @@ export default function useUnreadNotifications() {
       .collection('notifications')
       .where('read', '==', false);
     const unsub = q.onSnapshot((snap) => setCount(snap.size));
-    return unsub;
+    return () => unsub();
   }, [user?.uid]);
 
   return count;

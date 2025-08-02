@@ -13,7 +13,7 @@ export default function useUserProfile(uid) {
       .onSnapshot((doc) => {
         setProfile(doc.data() || null);
       });
-    return unsub;
+    return () => unsub();
   }, [uid]);
 
   return profile;

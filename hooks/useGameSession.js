@@ -77,7 +77,7 @@ export default function useGameSession(
         });
       }
     });
-    return unsub;
+    return () => unsub();
   }, [Game, sessionId, user?.uid, opponentId, gameId, allowSpectate]);
 
   const sendMove = useCallback(async (moveName, ...args) => {

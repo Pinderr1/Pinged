@@ -81,7 +81,7 @@ const NotificationsScreen = ({ navigation }) => {
       setNotifications(data);
       setNotesLoaded(true);
     });
-    return unsub;
+    return () => unsub();
   }, [user?.uid]);
 
   useEffect(() => {

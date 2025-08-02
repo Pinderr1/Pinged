@@ -85,7 +85,7 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
         setIsTyping(!!data.typingIndicator[other]);
       }
     });
-    return unsub;
+    return () => unsub();
   }, [matchId, currentUser?.uid, otherUserId]);
 
   useEffect(() => {
