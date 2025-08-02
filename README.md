@@ -62,7 +62,7 @@ Features
 
     Push notifications with Expo
 
-    Realtime presence tracking
+    Realtime presence tracking via Realtime Database
 
     Game invites and automated match start
 
@@ -75,10 +75,6 @@ Features
     Deployment script for full backend/frontend push
 
 Testing
-
-Test presence sync logic:
-
-node tests/syncPresence.test.js
 
 To run rule tests (if applicable), install:
 

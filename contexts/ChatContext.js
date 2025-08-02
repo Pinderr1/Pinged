@@ -43,6 +43,7 @@ export const ChatProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const lastMessageRef = useRef(0);
   const matchStateListeners = useRef({});
+  const presenceListeners = useRef({});
 
   useEffect(() => {
     let isMounted = true;
@@ -108,10 +109,10 @@ export const ChatProvider = ({ children }) => {
     const data = listenerMatches;
 
     // Attach listeners for match state documents
-    const activeListeners = matchStateListeners.current;
+    const activeState = matchStateListeners.current;
     data.forEach((m) => {
-      if (!activeListeners[m.id]) {
-        activeListeners[m.id] = getStateRef(m.id).onSnapshot((snap) => {
+      if (!activeState[m.id]) {
+        activeState[m.id] = getStateRef(m.id).onSnapshot((snap) => {
           const state = snap.data() || {};
           setMatches((prev) =>
             prev.map((p) =>
@@ -127,10 +128,48 @@ export const ChatProvider = ({ children }) => {
         });
       }
     });
-    Object.keys(activeListeners).forEach((id) => {
+    Object.keys(activeState).forEach((id) => {
       if (!data.find((m) => m.id === id)) {
-        activeListeners[id]();
-        delete activeListeners[id];
+        activeState[id]();
+        delete activeState[id];
+      }
+    });
+
+    // Attach presence listeners for other users
+    const activePresence = presenceListeners.current;
+    const userIds = [];
+    data.forEach((m) => {
+      const otherId = Array.isArray(m.users)
+        ? m.users.find((u) => u !== user.uid)
+        : null;
+      if (!otherId) return;
+      userIds.push(otherId);
+      if (!activePresence[otherId]) {
+        const ref = firebase.database().ref(`/status/${otherId}`);
+        const handler = ref.on('value', (snap) => {
+          const val = snap.val() || {};
+          setMatches((prev) =>
+            prev.map((p) =>
+              p.otherUserId === otherId
+                ? {
+                    ...p,
+                    online: val.state === 'online',
+                    image:
+                      p.image ||
+                      (val.photoURL ? { uri: val.photoURL } : p.image || require('../assets/user1.jpg')),
+                    avatarOverlay: val.avatarOverlay || p.avatarOverlay || '',
+                  }
+                : p,
+            ),
+          );
+        });
+        activePresence[otherId] = { ref, handler };
+      }
+    });
+    Object.keys(activePresence).forEach((id) => {
+      if (!userIds.includes(id)) {
+        activePresence[id].ref.off('value', activePresence[id].handler);
+        delete activePresence[id];
       }
     });
 
@@ -141,17 +180,14 @@ export const ChatProvider = ({ children }) => {
           ? m.users.find((u) => u !== user.uid)
           : null;
         const prevMatch = prev.find((p) => p.id === m.id) || {};
-        const presence = (m.presence && otherId && m.presence[otherId]) || {};
         return {
           id: m.id,
           otherUserId: otherId,
           displayName: prevMatch.displayName || 'Match',
           age: prevMatch.age || 0,
-          image:
-            prevMatch.image ||
-            (presence.photoURL ? { uri: presence.photoURL } : require('../assets/user1.jpg')),
-          avatarOverlay: prevMatch.avatarOverlay || presence.avatarOverlay || '',
-          online: prevMatch.online || !!presence.online,
+          image: prevMatch.image || require('../assets/user1.jpg'),
+          avatarOverlay: prevMatch.avatarOverlay || '',
+          online: prevMatch.online || false,
           messages: prevMatch.messages || [],
           matchedAt: m.createdAt
             ? m.createdAt.toDate?.().toISOString()
@@ -168,6 +204,11 @@ export const ChatProvider = ({ children }) => {
       const active = matchStateListeners.current;
       Object.keys(active).forEach((id) => active[id]());
       matchStateListeners.current = {};
+      const pres = presenceListeners.current;
+      Object.keys(pres).forEach((id) =>
+        pres[id].ref.off('value', pres[id].handler),
+      );
+      presenceListeners.current = {};
     };
   }, [listenerMatches, user?.uid]);
 
@@ -178,6 +219,11 @@ export const ChatProvider = ({ children }) => {
       const active = matchStateListeners.current;
       Object.keys(active).forEach((id) => active[id]());
       matchStateListeners.current = {};
+      const pres = presenceListeners.current;
+      Object.keys(pres).forEach((id) =>
+        pres[id].ref.off('value', pres[id].handler),
+      );
+      presenceListeners.current = {};
     };
   }, []);
 
@@ -397,17 +443,14 @@ export const ChatProvider = ({ children }) => {
             ? m.users.find((u) => u !== user.uid)
             : null;
           const prevMatch = prev.find((p) => p.id === m.id) || {};
-          const presence = (m.presence && otherId && m.presence[otherId]) || {};
           return {
             id: m.id,
             otherUserId: otherId,
             displayName: prevMatch.displayName || 'Match',
             age: prevMatch.age || 0,
-            image:
-              prevMatch.image ||
-              (presence.photoURL ? { uri: presence.photoURL } : require('../assets/user1.jpg')),
-            avatarOverlay: prevMatch.avatarOverlay || presence.avatarOverlay || '',
-            online: prevMatch.online || !!presence.online,
+            image: prevMatch.image || require('../assets/user1.jpg'),
+            avatarOverlay: prevMatch.avatarOverlay || '',
+            online: prevMatch.online || false,
             messages: prevMatch.messages || [],
             matchedAt: m.createdAt
               ? m.createdAt.toDate?.().toISOString()
