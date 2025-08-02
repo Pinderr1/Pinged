@@ -1,9 +1,14 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from 'react';
 import { View } from 'react-native';
 import Loader from '../components/Loader';
 import { lightTheme, darkTheme } from '../theme';
 import { useUser } from './UserContext';
+import {
+  useAppStore,
+  selectDarkMode,
+  selectToggleTheme,
+  selectHydrated,
+} from '../state/appStore';
 
 export const colorThemes = [
   {
@@ -36,38 +41,23 @@ export const colorThemes = [
   },
 ];
 
-const ThemeContext = createContext();
-const STORAGE_KEY = 'darkMode';
-
 export const ThemeProvider = ({ children }) => {
-  const [loaded, setLoaded] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const loaded = useAppStore(selectHydrated);
+  if (!loaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Loader />
+      </View>
+    );
+  }
+  return <>{children}</>;
+};
+
+export const useTheme = () => {
+  const darkMode = useAppStore(selectDarkMode);
+  const toggleTheme = useAppStore(selectToggleTheme);
+  const loaded = useAppStore(selectHydrated);
   const { user } = useUser();
-
-  useEffect(() => {
-    let isMounted = true;
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((val) => {
-        if (isMounted) setDarkMode(val === 'true');
-      })
-      .finally(() => {
-        if (isMounted) setLoaded(true);
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const toggleTheme = async () => {
-    const next = !darkMode;
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, next.toString());
-    } catch (e) {
-      console.warn('Failed to persist dark mode', e);
-    }
-    setDarkMode(next);
-  };
-
   const baseTheme = darkMode ? darkTheme : lightTheme;
   const selected =
     colorThemes.find((c) => c.id === user?.colorTheme) || colorThemes[0];
@@ -78,20 +68,7 @@ export const ThemeProvider = ({ children }) => {
     gradientEnd: selected.gradientEnd,
     gradient: [selected.gradientStart, selected.gradientEnd],
   };
-
-  return (
-    <ThemeContext.Provider value={{ darkMode, toggleTheme, theme, loaded }}>
-      {loaded ? (
-        children
-      ) : (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Loader />
-        </View>
-      )}
-    </ThemeContext.Provider>
-  );
+  return { darkMode, toggleTheme, theme, loaded };
 };
-
-export const useTheme = () => useContext(ThemeContext);
 
 export const COLOR_THEMES = colorThemes;
