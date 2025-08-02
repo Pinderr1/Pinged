@@ -25,6 +25,8 @@ export const ListenerProvider = ({ children }) => {
   const prevInvites = useRef([]);
   const prevMatches = useRef([]);
   const prevInfoMap = useRef({});
+  const matchPageUnsubs = useRef([]);
+  const loadingMoreMatchesRef = useRef(false);
 
   // Subscribe to match metadata for current user
   useEffect(() => {
@@ -80,6 +82,8 @@ export const ListenerProvider = ({ children }) => {
 
     return () => {
       unsubMatches();
+      matchPageUnsubs.current.forEach((u) => u());
+      matchPageUnsubs.current = [];
       prevMatches.current = [];
       prevInfoMap.current = {};
       setMatches([]);
@@ -137,24 +141,46 @@ export const ListenerProvider = ({ children }) => {
 
   const getMatchInfo = (matchId) => messageInfoMap[matchId] || { lastMessage: '', unreadCount: 0 };
 
-  const loadMoreMatches = async () => {
-    if (!user?.uid || !hasMoreMatches || !lastMatchDoc) return;
-    try {
-      const snap = await firebase
-        .firestore()
-        .collection('matches')
-        .where('users', 'array-contains', user.uid)
-        .orderBy('createdAt', 'desc')
-        .startAfter(lastMatchDoc)
-        .limit(MATCH_PAGE_SIZE)
-        .get();
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setMatches((prev) => [...prev, ...data]);
-      setLastMatchDoc(snap.docs[snap.docs.length - 1] || lastMatchDoc);
-      setHasMoreMatches(snap.docs.length === MATCH_PAGE_SIZE);
-    } catch (e) {
-      console.warn('Failed to load more matches', e);
-    }
+  const loadMoreMatches = () => {
+    if (
+      !user?.uid ||
+      !hasMoreMatches ||
+      !lastMatchDoc ||
+      loadingMoreMatchesRef.current
+    )
+      return;
+
+    loadingMoreMatchesRef.current = true;
+
+    const q = firebase
+      .firestore()
+      .collection('matches')
+      .where('users', 'array-contains', user.uid)
+      .orderBy('createdAt', 'desc')
+      .startAfter(lastMatchDoc)
+      .limit(MATCH_PAGE_SIZE);
+
+    const unsub = q.onSnapshot(
+      (snap) => {
+        const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setMatches((prev) => {
+          const map = new Map(prev.map((m) => [m.id, m]));
+          data.forEach((m) => {
+            const existing = map.get(m.id) || {};
+            map.set(m.id, { ...existing, ...m });
+          });
+          return Array.from(map.values());
+        });
+        setLastMatchDoc(snap.docs[snap.docs.length - 1] || lastMatchDoc);
+        setHasMoreMatches(snap.docs.length === MATCH_PAGE_SIZE);
+        loadingMoreMatchesRef.current = false;
+      },
+      () => {
+        loadingMoreMatchesRef.current = false;
+      },
+    );
+
+    matchPageUnsubs.current.push(unsub);
   };
 
   return (

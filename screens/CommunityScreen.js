@@ -12,7 +12,8 @@ import {
   Dimensions,
   Animated,
   Easing,
-  RefreshControl
+  RefreshControl,
+  FlatList,
 } from 'react-native';
 import GradientButton from '../components/GradientButton';
 import Card, { CARD_STYLE } from '../components/Card';
@@ -47,6 +48,7 @@ const CommunityScreen = () => {
   const [lastEventDoc, setLastEventDoc] = useState(null);
   const [hasMoreEvents, setHasMoreEvents] = useState(true);
   const loadingMoreEvents = useRef(false);
+  const eventPageUnsubs = useRef([]);
   const [joinedEvents, setJoinedEvents] = useState([]);
   const [activeFilter, setActiveFilter] = useState('All');
   const [showHostModal, setShowHostModal] = useState(false);
@@ -91,7 +93,11 @@ const CommunityScreen = () => {
       setLoadingEvents(false);
       setRefreshing(false);
     });
-    return unsub;
+    eventPageUnsubs.current = [unsub];
+    return () => {
+      eventPageUnsubs.current.forEach((u) => u());
+      eventPageUnsubs.current = [];
+    };
   }, []);
 
   useEffect(() => {
@@ -204,35 +210,35 @@ const CommunityScreen = () => {
     setRefreshing(false);
   };
 
-  const loadMoreEvents = async () => {
+  const loadMoreEvents = () => {
     if (loadingMoreEvents.current || !hasMoreEvents || !lastEventDoc) return;
     loadingMoreEvents.current = true;
-    try {
-      const snap = await firebase
-        .firestore()
-        .collection('events')
-        .orderBy('createdAt', 'desc')
-        .startAfter(lastEventDoc)
-        .limit(EVENT_PAGE_SIZE)
-        .get();
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setEvents((prev) => [...prev, ...data]);
-      setLastEventDoc(snap.docs[snap.docs.length - 1] || lastEventDoc);
-      setHasMoreEvents(snap.docs.length === EVENT_PAGE_SIZE);
-    } catch (e) {
-      console.warn('Failed to load more events', e);
-    }
-    loadingMoreEvents.current = false;
-  };
-
-  const handleScroll = ({ nativeEvent }) => {
-    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-    if (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - 100
-    ) {
-      loadMoreEvents();
-    }
+    const q = firebase
+      .firestore()
+      .collection('events')
+      .orderBy('createdAt', 'desc')
+      .startAfter(lastEventDoc)
+      .limit(EVENT_PAGE_SIZE);
+    const unsub = q.onSnapshot(
+      (snap) => {
+        const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setEvents((prev) => {
+          const map = new Map(prev.map((e) => [e.id, e]));
+          data.forEach((e) => {
+            const existing = map.get(e.id) || {};
+            map.set(e.id, { ...existing, ...e });
+          });
+          return Array.from(map.values());
+        });
+        setLastEventDoc(snap.docs[snap.docs.length - 1] || lastEventDoc);
+        setHasMoreEvents(snap.docs.length === EVENT_PAGE_SIZE);
+        loadingMoreEvents.current = false;
+      },
+      () => {
+        loadingMoreEvents.current = false;
+      },
+    );
+    eventPageUnsubs.current.push(unsub);
   };
 
   const renderEventCard = (event) => {
@@ -278,95 +284,103 @@ const CommunityScreen = () => {
     <View style={{ flex: 1, backgroundColor: darkMode ? '#333' : '#fce4ec' }}>
       <Header />
       <SafeKeyboardView style={{ flex: 1 }}>
-        <ScreenContainer
-          scroll
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 150 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-        >
-        <Text style={local.header}>🎉 Community Board</Text>
+        <ScreenContainer style={{ flex: 1 }}>
+          <FlatList
+            data={loadingEvents ? [] : filteredEvents}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => renderEventCard(item)}
+            ListHeaderComponent={
+              <>
+                <Text style={local.header}>🎉 Community Board</Text>
 
-        {/* Filters */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          style={{ paddingHorizontal: 16, marginBottom: 16 }}
-        >
-          {FILTERS.map((f, i) => (
-            <TouchableOpacity
-              key={i}
-              onPress={() => setActiveFilter(f)}
-              style={[
-                local.filterBtn,
-                {
-                  backgroundColor: f === activeFilter ? theme.accent : '#ccc'
-                }
-              ]}
-            >
-              <Text style={{ color: '#fff', fontSize: 13 }}>{f}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+                {/* Filters */}
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  style={{ paddingHorizontal: 16, marginBottom: 16 }}
+                >
+                  {FILTERS.map((f, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      onPress={() => setActiveFilter(f)}
+                      style={[
+                        local.filterBtn,
+                        {
+                          backgroundColor: f === activeFilter ? theme.accent : '#ccc'
+                        }
+                      ]}
+                    >
+                      <Text style={{ color: '#fff', fontSize: 13 }}>{f}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
 
-        {/* Featured */}
-        <Card style={[local.banner, { backgroundColor: darkMode ? '#333' : '#fff' }]}>
-          <Image source={eventImageSource(require('../assets/user2.jpg'))} style={local.bannerImage} />
-          <Text style={local.bannerTitle}>🔥 Featured</Text>
-          <Text style={local.bannerText}>Truth or Dare Night — Friday @ 9PM</Text>
-        </Card>
+                {/* Featured */}
+                <Card style={[local.banner, { backgroundColor: darkMode ? '#333' : '#fff' }]}>
+                  <Image source={eventImageSource(require('../assets/user2.jpg'))} style={local.bannerImage} />
+                  <Text style={local.bannerTitle}>🔥 Featured</Text>
+                  <Text style={local.bannerText}>Truth or Dare Night — Friday @ 9PM</Text>
+                </Card>
 
-        {/* Events */}
-        {loadingEvents ? (
-          <View style={local.flyerList}>
-            {[...Array(4)].map((_, idx) => renderEventSkeleton(idx))}
-          </View>
-        ) : filteredEvents.length === 0 ? (
-          <EmptyState
-            text="No events found."
-            image={require('../assets/logo.png')}
+                {/* Events Skeleton or Empty */}
+                {loadingEvents ? (
+                  <View style={local.flyerList}>
+                    {[...Array(4)].map((_, idx) => renderEventSkeleton(idx))}
+                  </View>
+                ) : filteredEvents.length === 0 ? (
+                  <EmptyState
+                    text="No events found."
+                    image={require('../assets/logo.png')}
+                  />
+                ) : null}
+              </>
+            }
+            ListFooterComponent={
+              <>
+                {/* Posts */}
+                {loadingPosts ? (
+                  [...Array(3)].map((_, idx) => renderPostSkeleton(idx))
+                ) : posts.length === 0 ? (
+                  <EmptyState
+                    text="No posts yet."
+                    image={require('../assets/logo.png')}
+                  />
+                ) : (
+                  posts.map((p) => (
+                    <Card key={p.id} style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
+                      <Text style={local.postTitle}>{p.title}</Text>
+                      <Text style={local.postTime}>{p.time}</Text>
+                      <Text style={local.postDesc}>{p.description}</Text>
+                    </Card>
+                  ))
+                )}
+
+                {/* First Join Badge */}
+                {firstJoin && (
+                  <Animated.View
+                    style={[
+                      local.badgePopup,
+                      { opacity: badgeAnim, transform: [{ scale: badgeAnim }] },
+                    ]}
+                  >
+                    <Text style={local.badgeEmoji}>🏅</Text>
+                    <Text style={local.badgeTitle}>New Badge Unlocked!</Text>
+                    <Text style={local.badgeText}>
+                      You earned the “Social Butterfly” badge.
+                    </Text>
+                  </Animated.View>
+                )}
+              </>
+            }
+            contentContainerStyle={{ paddingTop: HEADER_SPACING, paddingBottom: 150 }}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+            onEndReached={() => {
+              if (hasMoreEvents) loadMoreEvents();
+            }}
+            onEndReachedThreshold={0.5}
           />
-        ) : (
-          <View style={local.flyerList}>
-            {filteredEvents.map((event) => renderEventCard(event))}
-          </View>
-        )}
-
-        {/* Posts */}
-        {loadingPosts ? (
-          [...Array(3)].map((_, idx) => renderPostSkeleton(idx))
-        ) : posts.length === 0 ? (
-          <EmptyState
-            text="No posts yet."
-            image={require('../assets/logo.png')}
-          />
-        ) : (
-          posts.map((p) => (
-            <Card key={p.id} style={[local.postCard, { backgroundColor: darkMode ? '#444' : '#fff' }]}>
-              <Text style={local.postTitle}>{p.title}</Text>
-              <Text style={local.postTime}>{p.time}</Text>
-              <Text style={local.postDesc}>{p.description}</Text>
-            </Card>
-          ))
-        )}
-
-        {/* First Join Badge */}
-        {firstJoin && (
-          <Animated.View
-            style={[
-              local.badgePopup,
-              { opacity: badgeAnim, transform: [{ scale: badgeAnim }] },
-            ]}
-          >
-            <Text style={local.badgeEmoji}>🏅</Text>
-            <Text style={local.badgeTitle}>New Badge Unlocked!</Text>
-            <Text style={local.badgeText}>
-              You earned the “Social Butterfly” badge.
-            </Text>
-          </Animated.View>
-        )}
-      </ScreenContainer>
+        </ScreenContainer>
       </SafeKeyboardView>
 
       {/* Floating actions */}
