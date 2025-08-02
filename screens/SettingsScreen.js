@@ -343,7 +343,7 @@ const SettingsScreen = ({ navigation }) => {
           <GradientButton
             text="Manage Payment Method"
             onPress={() =>
-              WebBrowser.openBrowserAsync('https://example.com/payments')
+              WebBrowser.openBrowserAsync(process.env.EXPO_PUBLIC_PAYMENTS_URL)
             }
           />
           <GradientButton
@@ -357,7 +357,7 @@ const SettingsScreen = ({ navigation }) => {
           <GradientButton
             text="Restore Purchases"
             onPress={() =>
-              WebBrowser.openBrowserAsync('https://example.com/restore')
+              WebBrowser.openBrowserAsync(process.env.EXPO_PUBLIC_RESTORE_URL)
             }
           />
         </View>
@@ -367,33 +367,33 @@ const SettingsScreen = ({ navigation }) => {
           <GradientButton
             text="Contact Us"
             onPress={() =>
-              WebBrowser.openBrowserAsync('https://example.com/contact')
+              WebBrowser.openBrowserAsync(process.env.EXPO_PUBLIC_CONTACT_URL)
             }
           />
           <GradientButton
             text="Help & Support"
             onPress={() =>
-              WebBrowser.openBrowserAsync('https://example.com/help')
+              WebBrowser.openBrowserAsync(process.env.EXPO_PUBLIC_HELP_URL)
             }
           />
           <GradientButton
             text="Community Guidelines"
             onPress={() =>
-              WebBrowser.openBrowserAsync('https://example.com/guidelines')
+              WebBrowser.openBrowserAsync(process.env.EXPO_PUBLIC_GUIDELINES_URL)
             }
           />
           <GradientButton
             text="Privacy Policy"
             onPress={() =>
               WebBrowser.openBrowserAsync(
-                'https://example.com/privacy-policy.html'
+                process.env.EXPO_PUBLIC_PRIVACY_POLICY_URL
               )
             }
           />
           <GradientButton
             text="Terms of Service"
             onPress={() =>
-              WebBrowser.openBrowserAsync('https://example.com/terms.html')
+              WebBrowser.openBrowserAsync(process.env.EXPO_PUBLIC_TERMS_URL)
             }
           />
         </View>
