@@ -1,18 +1,12 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React from 'react';
+import { useAppStore, selectLoadingVisible, selectLoadingActions } from '../state/appStore';
 
-const LoadingContext = createContext();
+export const LoadingProvider = ({ children }) => <>{children}</>;
 
-export const LoadingProvider = ({ children }) => {
-  const [visible, setVisible] = useState(false);
-  const show = useCallback(() => setVisible(true), []);
-  const hide = useCallback(() => setVisible(false), []);
-
-  return (
-    <LoadingContext.Provider value={{ visible, show, hide }}>
-      {children}
-    </LoadingContext.Provider>
-  );
+export const useLoading = () => {
+  const visible = useAppStore(selectLoadingVisible);
+  const { show, hide } = useAppStore(selectLoadingActions);
+  return { visible, show, hide };
 };
 
-export const useLoading = () => useContext(LoadingContext);
-export { LoadingContext };
+export default LoadingProvider;
