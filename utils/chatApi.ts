@@ -15,10 +15,11 @@ export interface MSG {
 
 export async function getMessages(
   matchId: string,
+  currentUid: string,
   startAfter?: firebase.firestore.DocumentSnapshot | null,
   limit = 30,
 ): Promise<{ messages: MSG[]; lastDoc: firebase.firestore.DocumentSnapshot | null }> {
-  await initEncryption();
+  await initEncryption(currentUid);
   let query = firebase
     .firestore()
     .collection('matches')
@@ -32,13 +33,15 @@ export async function getMessages(
 
   const snap = await query.limit(limit).get();
 
-  const messages = snap.docs.map((d) => {
-    const data = d.data() as any;
-    if (!data.text && data.ciphertext && data.nonce) {
-      data.text = decryptText(data.ciphertext, data.nonce);
-    }
-    return { id: d.id, ...data };
-  });
+  const messages = await Promise.all(
+    snap.docs.map(async (d) => {
+      const data = d.data() as any;
+      if (!data.text && data.ciphertext && data.nonce && data.senderId) {
+        data.text = await decryptText(data.ciphertext, data.nonce, data.senderId);
+      }
+      return { id: d.id, ...data };
+    }),
+  );
   const lastDoc = snap.docs[snap.docs.length - 1] || null;
   return { messages, lastDoc }; // descending order
 }
