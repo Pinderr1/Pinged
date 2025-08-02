@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import firebase from '../firebase';
 import { games } from '../games';
@@ -40,6 +40,32 @@ function replayGame(Game, initial, moves = []) {
   }
 
   return { G, currentPlayer, gameover };
+}
+
+function applyMove(Game, state, moveData) {
+  const move = Game.moves[moveData.action];
+  if (!move || state.gameover) return state;
+  let nextPlayer = state.currentPlayer;
+  const ctx = {
+    currentPlayer: state.currentPlayer,
+    events: {
+      endTurn: () => {
+        nextPlayer = state.currentPlayer === '0' ? '1' : '0';
+      },
+    },
+  };
+  const args = Array.isArray(moveData.args) ? moveData.args : [];
+  const res = move({ G: state.G, ctx }, ...args);
+  if (res === INVALID_MOVE) return state;
+  if (Game.turn?.moveLimit === 1 && nextPlayer === state.currentPlayer) {
+    nextPlayer = state.currentPlayer === '0' ? '1' : '0';
+  }
+  let gameover = state.gameover;
+  if (Game.endIf) {
+    const over = Game.endIf({ G: state.G, ctx: { currentPlayer: nextPlayer } });
+    if (over) gameover = over;
+  }
+  return { G: state.G, currentPlayer: nextPlayer, gameover };
 }
 
 export default function useGameSession(
@@ -101,10 +127,28 @@ export default function useGameSession(
     }
   }
 
+  const cacheRef = useRef(null);
   const computed = useMemo(() => {
     if (!Game || !session) return null;
-    return replayGame(Game, session.state, session.moves);
-  }, [Game, session]);
+    const moveCount = session.moves?.length || 0;
+    const baseState = session.state;
+    const prev = cacheRef.current;
+    if (!prev || prev.baseState !== baseState || moveCount < prev.moveCount) {
+      const fresh = replayGame(Game, baseState, session.moves);
+      const res = { ...fresh, moveCount, baseState };
+      cacheRef.current = res;
+      return res;
+    }
+    if (moveCount === prev.moveCount) return prev;
+    let state = { G: prev.G, currentPlayer: prev.currentPlayer, gameover: prev.gameover };
+    for (const m of session.moves.slice(prev.moveCount)) {
+      state = applyMove(Game, state, m);
+      if (state.gameover) break;
+    }
+    const res = { ...state, moveCount, baseState };
+    cacheRef.current = res;
+    return res;
+  }, [Game, session?.state, session?.moves?.length]);
 
   return {
     G: computed?.G,
