@@ -98,6 +98,7 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `gameover` (map|null)
 - `createdAt` (timestamp)
 - `updatedAt` (timestamp)
+ - `turnExpiresAt` (timestamp) – when the current player's timer ends
 
 ## Game Stats (`gameStats/{statId}`)
 - `gameId` (string)

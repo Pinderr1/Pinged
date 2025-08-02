@@ -3,6 +3,9 @@ const admin = require('firebase-admin');
 const { INVALID_MOVE } = require('boardgame.io/core');
 const games = require('./games');
 
+// Duration allowed for each move in milliseconds (24h)
+const TURN_DURATION_MS = 24 * 60 * 60 * 1000;
+
 function replayGame(Game, initial, moves = []) {
   let G = JSON.parse(JSON.stringify(initial || Game.setup()));
   let currentPlayer = '0';
@@ -74,15 +77,18 @@ const joinGameSession = functions.https.onCall(async (data, context) => {
         const doc = waiting.docs[0];
         const data = doc.data() || {};
         const firstPlayer = Array.isArray(data.players) ? data.players[0] : null;
+        const expireAt = admin.firestore.Timestamp.fromMillis(Date.now() + TURN_DURATION_MS);
         tx.update(doc.ref, {
           players: [firstPlayer, uid],
           status: 'active',
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          turnExpiresAt: expireAt,
         });
         return { sessionId: doc.id, opponentId: firstPlayer };
       }
 
       const newRef = sessions.doc();
+      const expireAt = admin.firestore.Timestamp.fromMillis(Date.now() + TURN_DURATION_MS);
       tx.set(newRef, {
         gameId,
         players: [uid, null],
@@ -90,6 +96,7 @@ const joinGameSession = functions.https.onCall(async (data, context) => {
         moves: [],
         currentPlayer: '0',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        turnExpiresAt: expireAt,
       });
       return { sessionId: newRef.id, opponentId: null };
     });
@@ -172,10 +179,13 @@ const makeMove = functions.https.onCall(async (data, context) => {
         return;
       }
 
+      const expireAt = admin.firestore.Timestamp.fromMillis(Date.now() + TURN_DURATION_MS);
+
       tx.update(ref, {
         currentPlayer: attempted.currentPlayer,
         gameover: attempted.gameover || null,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        turnExpiresAt: expireAt,
         moves: admin.firestore.FieldValue.arrayUnion({
           action: moveName,
           player: String(idx),
@@ -199,5 +209,37 @@ const makeMove = functions.https.onCall(async (data, context) => {
   }
 });
 
-module.exports = { joinGameSession, makeMove };
+const checkExpiredSessions = functions.pubsub.schedule('every 5 minutes').onRun(async () => {
+  const db = admin.firestore();
+  const now = admin.firestore.Timestamp.now();
+  const snap = await db
+    .collection('gameSessions')
+    .where('turnExpiresAt', '<', now)
+    .limit(100)
+    .get();
+
+  const batch = db.batch();
+  snap.docs.forEach((doc) => {
+    const data = doc.data() || {};
+    if (data.gameover) return;
+    const players = data.players || [];
+    const current = data.currentPlayer;
+    const winnerIdx = current === '0' ? 1 : 0;
+    const winner = players[winnerIdx] || null;
+    const outcome = winner ? { winner, reason: 'timeout' } : { draw: true, reason: 'timeout' };
+    batch.update(doc.ref, {
+      gameover: outcome,
+      status: winner ? 'forfeit' : 'draw',
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  });
+
+  if (!snap.empty) {
+    await batch.commit();
+  }
+
+  return null;
+});
+
+module.exports = { joinGameSession, makeMove, checkExpiredSessions };
 
