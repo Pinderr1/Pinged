@@ -109,7 +109,7 @@ const makeMove = functions.https.onCall(async (data, context) => {
   const ref = db.collection('gameSessions').doc(sessionId);
 
   try {
-    await db.runTransaction(async (tx) => {
+    const res = await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
       if (!snap.exists) {
         throw new functions.https.HttpsError('not-found', 'Session not found');
@@ -125,6 +125,21 @@ const makeMove = functions.https.onCall(async (data, context) => {
       const idx = players.indexOf(uid);
       if (idx === -1) {
         throw new functions.https.HttpsError('permission-denied', 'Not a participant');
+      }
+
+      const otherUid = players[idx === 0 ? 1 : 0];
+      if (otherUid) {
+        const [block1, block2] = await Promise.all([
+          tx.get(db.doc(`blocks/${uid}/blocked/${otherUid}`)),
+          tx.get(db.doc(`blocks/${otherUid}/blocked/${uid}`)),
+        ]);
+        if (block1.exists || block2.exists) {
+          tx.update(ref, {
+            status: 'closed',
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          return { blocked: true };
+        }
       }
 
       const { G, currentPlayer, gameover } = replayGame(Game, sess.state, sess.moves);
@@ -151,8 +166,8 @@ const makeMove = functions.https.onCall(async (data, context) => {
       if (!move) {
         throw new functions.https.HttpsError('invalid-argument', 'Invalid move');
       }
-      const res = move({ G: nextState, ctx }, ...args);
-      if (res === INVALID_MOVE) {
+      const moveRes = move({ G: nextState, ctx }, ...args);
+      if (moveRes === INVALID_MOVE) {
         throw new functions.https.HttpsError('failed-precondition', 'Invalid move');
       }
 
@@ -173,7 +188,13 @@ const makeMove = functions.https.onCall(async (data, context) => {
           at: admin.firestore.FieldValue.serverTimestamp(),
         }),
       });
+
+      return { blocked: false };
     });
+
+    if (res.blocked) {
+      throw new functions.https.HttpsError('failed-precondition', 'Users are blocked');
+    }
 
     return { success: true };
   } catch (e) {

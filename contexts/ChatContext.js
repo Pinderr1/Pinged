@@ -219,6 +219,29 @@ export const ChatProvider = ({ children }) => {
 
     const { group, system, ...extras } = meta || {};
 
+    if (!group) {
+      const match = matches.find((m) => m.id === matchId);
+      const otherId = match?.otherUserId;
+      if (otherId) {
+        try {
+          const db = firebase.firestore();
+          const [block1, block2] = await Promise.all([
+            db.doc(`blocks/${user.uid}/blocked/${otherId}`).get(),
+            db.doc(`blocks/${otherId}/blocked/${user.uid}`).get(),
+          ]);
+          if (block1.exists || block2.exists) {
+            removeMatchesWithUser(otherId);
+            Toast.show({ type: 'error', text1: 'You cannot message this user' });
+            return;
+          }
+        } catch (e) {
+          console.warn('Block check failed', e);
+          Toast.show({ type: 'error', text1: 'Failed to send message' });
+          return;
+        }
+      }
+    }
+
     try {
       await initEncryption();
       const payload = {
