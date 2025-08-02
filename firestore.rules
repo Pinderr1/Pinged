@@ -195,6 +195,11 @@ service cloud.firestore {
       allow write: if request.auth.token.admin == true;
     }
 
+    match /limits/{uid} {
+      allow read: if request.auth.token.admin == true || request.auth.uid == uid;
+      allow write: if request.auth.token.admin == true;
+    }
+
     match /emails/{uid} {
       allow read, write: if request.auth.uid == uid;
     }

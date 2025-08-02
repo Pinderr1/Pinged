@@ -64,25 +64,41 @@ const sendLike = functions.https.onCall(async (data, context) => {
   }
 
   const isPremium = !!userSnap.get('isPremium');
-  if (!isPremium) {
+  const likeRef = db.collection('likes').doc(uid).collection('liked').doc(targetUid);
+  const limitRef = db.collection('limits').doc(uid);
+
+  await db.runTransaction(async (tx) => {
+    const [likeSnap, limitSnap] = await Promise.all([
+      tx.get(likeRef),
+      tx.get(limitRef),
+    ]);
+
+    let count = 0;
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-    const sent = await db
-      .collection('likes')
-      .doc(uid)
-      .collection('liked')
-      .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(start))
-      .get();
-    if (sent.size >= DAILY_LIMIT) {
+    if (limitSnap.exists) {
+      const updated = limitSnap.get('dailyLikesUpdatedAt');
+      if (updated?.toDate?.() >= start) {
+        count = limitSnap.get('dailyLikes') || 0;
+      }
+    }
+
+    if (!isPremium && count >= DAILY_LIMIT) {
       throw new functions.https.HttpsError('resource-exhausted', 'Daily like limit reached');
     }
-  }
 
-  const likeRef = db.collection('likes').doc(uid).collection('liked').doc(targetUid);
-  const existing = await likeRef.get();
-  if (!existing.exists) {
-    await likeRef.set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
-  }
+    if (!likeSnap.exists) {
+      tx.set(likeRef, { createdAt: admin.firestore.FieldValue.serverTimestamp() });
+      tx.set(
+        limitRef,
+        {
+          dailyLikes: count + 1,
+          dailyLikesUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
+  });
 
   return { success: true };
 });
@@ -115,20 +131,6 @@ const likeAndMaybeMatch = functions.https.onCall(async (data, context) => {
   }
 
   const isPremium = !!userSnap.get('isPremium');
-  if (!isPremium) {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const sent = await db
-      .collection('likes')
-      .doc(uid)
-      .collection('liked')
-      .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(start))
-      .get();
-    if (sent.size >= DAILY_LIMIT) {
-      throw new functions.https.HttpsError('resource-exhausted', 'Daily like limit reached');
-    }
-  }
-
   const sorted = [uid, targetUid].sort();
   const matchId = sorted.join('_');
 
@@ -136,12 +138,21 @@ const likeAndMaybeMatch = functions.https.onCall(async (data, context) => {
     const likeRef = db.collection('likes').doc(uid).collection('liked').doc(targetUid);
     const otherLikeRef = db.collection('likes').doc(targetUid).collection('liked').doc(uid);
     const matchRef = db.collection('matches').doc(matchId);
-    const [likeSnap, otherLikeSnap, matchSnap, blockSnap1, blockSnap2] = await Promise.all([
+    const limitRef = db.collection('limits').doc(uid);
+    const [
+      likeSnap,
+      otherLikeSnap,
+      matchSnap,
+      blockSnap1,
+      blockSnap2,
+      limitSnap,
+    ] = await Promise.all([
       tx.get(likeRef),
       tx.get(otherLikeRef),
       tx.get(matchRef),
       tx.get(db.collection('blocks').doc(uid).collection('blocked').doc(targetUid)),
       tx.get(db.collection('blocks').doc(targetUid).collection('blocked').doc(uid)),
+      tx.get(limitRef),
     ]);
 
     if (matchSnap.exists) {
@@ -152,8 +163,30 @@ const likeAndMaybeMatch = functions.https.onCall(async (data, context) => {
       return { matchId: null };
     }
 
+    let count = 0;
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    if (limitSnap.exists) {
+      const updated = limitSnap.get('dailyLikesUpdatedAt');
+      if (updated?.toDate?.() >= start) {
+        count = limitSnap.get('dailyLikes') || 0;
+      }
+    }
+
+    if (!isPremium && !likeSnap.exists && count >= DAILY_LIMIT) {
+      throw new functions.https.HttpsError('resource-exhausted', 'Daily like limit reached');
+    }
+
     if (!likeSnap.exists) {
       tx.set(likeRef, { createdAt: admin.firestore.FieldValue.serverTimestamp() });
+      tx.set(
+        limitRef,
+        {
+          dailyLikes: count + 1,
+          dailyLikesUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
     }
 
     if (otherLikeSnap.exists) {

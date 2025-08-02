@@ -19,17 +19,18 @@ export const LikeLimitProvider = ({ children }) => {
       setLikesLeft(Infinity);
       return;
     }
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
     firebase
       .firestore()
-      .collection('likes')
+      .collection('limits')
       .doc(user?.uid || 'missing')
-      .collection('liked')
-      .where('createdAt', '>=', firebase.firestore.Timestamp.fromDate(start))
       .get()
       .then((snap) => {
-        setLikesLeft(Math.max(dailyLimit - snap.size, 0));
+        const updated = snap.get('dailyLikesUpdatedAt');
+        const count = snap.get('dailyLikes') || 0;
+        const start = new Date();
+        start.setHours(0, 0, 0, 0);
+        const used = updated?.toDate?.() >= start ? count : 0;
+        setLikesLeft(Math.max(dailyLimit - used, 0));
       })
       .catch(() => setLikesLeft(dailyLimit));
   }, [isPremium, user?.uid, maxDailyLikes]);
