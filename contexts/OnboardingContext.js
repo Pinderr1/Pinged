@@ -17,6 +17,8 @@ export const OnboardingProvider = ({ children }) => {
 
   useEffect(() => {
     let isMounted = true;
+    let unsubscribe = () => {};
+
     if (!user) {
       if (isMounted) {
         setHasOnboarded(false);
@@ -26,6 +28,7 @@ export const OnboardingProvider = ({ children }) => {
         isMounted = false;
       };
     }
+
     const key = `hasOnboarded_${user.uid}`;
     AsyncStorage.getItem(key)
       .then((val) => {
@@ -34,8 +37,24 @@ export const OnboardingProvider = ({ children }) => {
       .finally(() => {
         if (isMounted) setLoaded(true);
       });
+
+    unsubscribe = firebase
+      .firestore()
+      .collection("users")
+      .doc(user.uid)
+      .onSnapshot(
+        (snap) => {
+          const data = snap.data() || {};
+          if (isMounted) setHasOnboarded(!!data.onboardingComplete);
+        },
+        (err) => {
+          console.warn("Failed to subscribe onboarding status", err);
+        }
+      );
+
     return () => {
       isMounted = false;
+      unsubscribe();
     };
   }, [user]);
 
