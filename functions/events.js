@@ -34,8 +34,16 @@ const joinEvent = functions.https.onCall(async (data, context) => {
 
       const eventData = eventSnap.data() || {};
       const userData = userSnap.data() || {};
+      const isPremiumUser = !!userData.isPremium;
 
-      if (eventData.ticketed && !userData.isPremium && !(userData.eventTickets || []).includes(eventId)) {
+      if (eventData.premiumOnly && !isPremiumUser) {
+        throw new functions.https.HttpsError(
+          'failed-precondition',
+          'Premium membership required',
+        );
+      }
+
+      if (eventData.ticketed && !isPremiumUser && !(userData.eventTickets || []).includes(eventId)) {
         throw new functions.https.HttpsError('failed-precondition', 'Ticket required');
       }
 
