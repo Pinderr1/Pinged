@@ -6,6 +6,8 @@ import PropTypes from 'prop-types';
 
 const FavoriteStar = ({ isFavorite, onPress }) => (
   <TouchableOpacity
+    accessible={true}
+    accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
     onPress={() => {
       Haptics.selectionAsync().catch(() => {});
       onPress();

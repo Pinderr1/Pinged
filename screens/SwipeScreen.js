@@ -462,7 +462,7 @@ const SwipeScreen = () => {
   const gradientColors = theme.gradient;
 
   const controlButtons = [
-    { icon: 'flame', color: '#fb923c', action: handleBoostPress },
+    { icon: 'flame', color: '#fb923c', action: handleBoostPress, label: 'Activate boost' },
     {
       icon: 'close',
       color: '#f87171',
@@ -471,11 +471,13 @@ const SwipeScreen = () => {
         isPremiumUser
           ? rewind()
           : navigation.navigate('PremiumPaywall', { context: 'paywall' }),
+      label: 'Reject profile',
     },
     {
       icon: 'heart',
       color: '#ff75b5',
       action: swipeRight,
+      label: 'Like profile',
     },
   ];
 
@@ -519,6 +521,8 @@ const SwipeScreen = () => {
             onPress={loadMoreUsers}
             style={styles.loadMoreButton}
             disabled={loadingMore}
+            accessible={true}
+            accessibilityLabel="Load more profiles"
           >
             <Text style={styles.loadMoreText}>
               {loadingMore ? 'Loading...' : 'Load more'}
@@ -551,6 +555,8 @@ const SwipeScreen = () => {
                         <TouchableOpacity
                           onPress={playIntro}
                           style={styles.playIntro}
+                          accessible={true}
+                          accessibilityLabel={playingIntro ? 'Pause intro clip' : 'Play intro clip'}
                         >
                           <Ionicons
                             name={playingIntro ? 'pause' : 'play'}
@@ -595,6 +601,8 @@ const SwipeScreen = () => {
                       <TouchableOpacity
                         onPress={playMatchIntro}
                         style={styles.playIntro}
+                        accessible={true}
+                        accessibilityLabel={playingMatchIntro ? 'Pause intro clip' : 'Play intro clip'}
                       >
                         <Ionicons
                           name={playingMatchIntro ? 'pause' : 'play'}
