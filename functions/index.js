@@ -9,7 +9,6 @@ admin.initializeApp();
 const payments = require('./payments');
 const notifications = require('./notifications');
 const invites = require('./invites');
-const match = require('./src/match.js');
 const blocks = require('./blocks');
 const stats = require('./stats');
 const likes = require('./likes');
@@ -25,7 +24,6 @@ module.exports = {
     return rest;
   })(),
   ...invites,
-  ...match,
   ...blocks,
   ...stats,
   ...likes,
