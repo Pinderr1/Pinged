@@ -40,14 +40,46 @@ service cloud.firestore {
         !("xp" in request.resource.data) &&
         !("streak" in request.resource.data);
 
-      // Updates cannot modify server controlled fields like xp or streak
-      allow update: if isSignedIn() && request.auth.uid == uid &&
-        !("isPremium" in request.resource.data) &&
-        !("badges" in request.resource.data ?
-            request.resource.data.badges.hasAny(["premium", "premiumMember"]) : false) &&
-        !("roles" in request.resource.data) &&
-        !("xp" in request.resource.data) &&
-        !("streak" in request.resource.data);
+      // Updates are restricted to a predefined set of user-editable fields
+      allow update: if request.auth.uid == uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName',
+          'photoURL',
+          'avatarOverlay',
+          'age',
+          'gender',
+          'genderPref',
+          'location',
+          'favoriteGames',
+          'bio',
+          'mood',
+          'themePreset',
+          'colorTheme',
+          'promptResponses',
+          'personalityTags',
+          'badgePrefs',
+          'badgePreferences',
+          'jobTitle',
+          'company',
+          'school',
+          'livingIn',
+          'showDistance',
+          'showAge',
+          'showSocialMedia',
+          'isInternational',
+          'socialLinks',
+          'onboardingComplete',
+          'pushToken',
+          'introClipUrl',
+          'profilePrompts',
+          'visibility',
+          'discoveryEnabled',
+          'messagePermission',
+          'seeAgeRange',
+          'seeGender',
+          'seeLocation',
+          'seeVerifiedOnly'
+        ]);
 
       allow delete: if isSignedIn() && request.auth.uid == uid;
 
