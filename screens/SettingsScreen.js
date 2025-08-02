@@ -77,6 +77,14 @@ const SettingsScreen = ({ navigation }) => {
   };
   const handleGoPremium = () => navigation.navigate('Premium', { context: 'paywall' });
 
+  const handleViewLikedYou = () => {
+    if (isPremium) {
+      navigation.navigate('LikedYou');
+    } else {
+      navigation.navigate('PremiumPaywall');
+    }
+  };
+
   const saveUserSetting = async (updates) => {
     if (!user?.uid) return;
     updateUser(updates);
@@ -124,12 +132,10 @@ const SettingsScreen = ({ navigation }) => {
               icon={<Text style={{ fontSize: 16 }}>💎</Text>}
             />
           )}
-          {isPremium && (
-            <GradientButton
-              text="People Who Liked You"
-              onPress={() => navigation.navigate('LikedYou')}
-            />
-          )}
+          <GradientButton
+            text="People Who Liked You"
+            onPress={handleViewLikedYou}
+          />
           <GradientButton text="Edit Profile" onPress={handleEditProfile} />
           <GradientButton
             text="Blocked Users"
@@ -250,6 +256,10 @@ const SettingsScreen = ({ navigation }) => {
 
           <RNPickerSelect
             onValueChange={(val) => {
+              if (val === 'incognito' && !isPremium) {
+                navigation.navigate('PremiumPaywall');
+                return;
+              }
               setVisibility(val);
               saveUserSetting({ visibility: val });
             }}
@@ -257,14 +267,10 @@ const SettingsScreen = ({ navigation }) => {
             placeholder={{ label: 'Visibility', value: null }}
             useNativeAndroidPickerStyle={false}
             style={{ inputIOS: styles.input, inputAndroid: styles.input }}
-            items={
-              isPremium
-                ? [
-                    { label: 'Standard', value: 'standard' },
-                    { label: 'Incognito', value: 'incognito' },
-                  ]
-                : [{ label: 'Standard', value: 'standard' }]
-            }
+            items={[
+              { label: 'Standard', value: 'standard' },
+              { label: 'Incognito', value: 'incognito' },
+            ]}
           />
 
           <RNPickerSelect
