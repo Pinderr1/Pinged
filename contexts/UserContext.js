@@ -163,8 +163,12 @@ export const UserProvider = ({ children }) => {
         .firestore()
         .collection("users")
         .doc(user.uid)
-        .update({
-          eventTickets: firebase.firestore.FieldValue.arrayUnion(eventId),
+        .collection("tickets")
+        .doc(eventId)
+        .set({
+          eventId,
+          used: false,
+          redeemedAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
     } catch (e) {
       console.warn("Failed to redeem event ticket", e);

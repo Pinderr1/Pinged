@@ -40,7 +40,7 @@ const CommunityScreen = () => {
   const skeletonColor = darkMode ? '#555' : '#ddd';
   const local = getStyles(theme, skeletonColor);
   const navigation = useNavigation();
-  const { user, redeemEventTicket } = useUser();
+  const { user, redeemEventTicket, updateUser } = useUser();
   const { eventsLeft, recordEventCreated } = useEventLimit();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
@@ -117,6 +117,11 @@ const CommunityScreen = () => {
       console.warn('Failed to join event', e);
       throw e;
     }
+    if ((user.eventTickets || []).includes(id)) {
+      updateUser({
+        eventTickets: (user.eventTickets || []).filter((e) => e !== id),
+      });
+    }
     if (joinedEvents.length === 0) {
       setFirstJoin(true);
       if (user?.uid && !(user.badges || []).includes('socialButterfly')) {
@@ -153,14 +158,23 @@ const CommunityScreen = () => {
 
   const handleJoin = (event) => {
     const isJoined = joinedEvents.includes(event.id);
-    if (!isJoined && event.ticketed && !user?.isPremium && !(user.eventTickets || []).includes(event.id)) {
+    if (
+      !isJoined &&
+      event.ticketed &&
+      !user?.isPremium &&
+      !(user.eventTickets || []).includes(event.id)
+    ) {
       Alert.alert('Ticket Required', 'Redeem a ticket or upgrade to Premium.', [
         {
           text: 'Use Ticket',
-          onPress: () => {
-            redeemEventTicket(event.id);
-            joinEvent(event.id);
-            Alert.alert('Event Joined', 'You\u2019re in! XP applied.');
+          onPress: async () => {
+            try {
+              await redeemEventTicket(event.id);
+              await joinEvent(event.id);
+              Alert.alert('Event Joined', 'You\u2019re in! XP applied.');
+            } catch (e) {
+              console.warn('Ticket redemption failed', e);
+            }
           },
         },
         {
