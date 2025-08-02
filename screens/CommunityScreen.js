@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -19,10 +19,11 @@ import Card, { CARD_STYLE } from '../components/Card';
 import EventFlyer from '../components/EventFlyer';
 import ScreenContainer from '../components/ScreenContainer';
 import SafeKeyboardView from '../components/SafeKeyboardView';
+import getStyles from '../styles';
 import { eventImageSource } from '../utils/avatar';
 import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import PropTypes from 'prop-types';
 import { useUser } from '../contexts/UserContext';
 import { useEventLimit } from '../contexts/EventLimitContext';
@@ -33,6 +34,7 @@ import EmptyState from '../components/EmptyState';
 import { FONT_FAMILY } from '../textStyles';
 
 const EVENT_PAGE_SIZE = 10;
+const POST_PAGE_SIZE = 10;
 const FILTERS = ['All', 'Tonight', 'Flirty', 'Tournaments'];
 
 const CommunityScreen = () => {
@@ -44,8 +46,8 @@ const CommunityScreen = () => {
   const { eventsLeft, recordEventCreated } = useEventLimit();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
-  const [lastEventDoc, setLastEventDoc] = useState(null);
   const [hasMoreEvents, setHasMoreEvents] = useState(true);
+  const eventsLimit = useRef(EVENT_PAGE_SIZE);
   const loadingMoreEvents = useRef(false);
   const [joinedEvents, setJoinedEvents] = useState([]);
   const [activeFilter, setActiveFilter] = useState('All');
@@ -58,12 +60,17 @@ const CommunityScreen = () => {
   const [newDesc, setNewDesc] = useState('');
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const postsLimit = useRef(POST_PAGE_SIZE);
+  const loadingMorePosts = useRef(false);
   const [postTitle, setPostTitle] = useState('');
   const [postDesc, setPostDesc] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [optionsEvent, setOptionsEvent] = useState(null);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [showFabMenu, setShowFabMenu] = useState(false);
+
+  const listeners = useRef([]);
 
   useEffect(() => {
     if (firstJoin) {
@@ -77,33 +84,52 @@ const CommunityScreen = () => {
     }
   }, [firstJoin, badgeAnim]);
 
-  useEffect(() => {
+  const subscribeEvents = useCallback(() => {
+    if (listeners.current[0]) listeners.current[0]();
+    setLoadingEvents(true);
     const q = firebase
       .firestore()
       .collection('events')
       .orderBy('createdAt', 'desc')
-      .limit(EVENT_PAGE_SIZE);
-    const unsub = q.onSnapshot((snap) => {
+      .limit(eventsLimit.current);
+    listeners.current[0] = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setEvents(data);
-      setLastEventDoc(snap.docs[snap.docs.length - 1] || null);
-      setHasMoreEvents(snap.docs.length === EVENT_PAGE_SIZE);
+      setHasMoreEvents(snap.docs.length === eventsLimit.current);
       setLoadingEvents(false);
       setRefreshing(false);
     });
-    return unsub;
   }, []);
 
-  useEffect(() => {
-    const q = firebase.firestore().collection('communityPosts').orderBy('createdAt', 'desc');
-    const unsub = q.onSnapshot((snap) => {
+  const subscribePosts = useCallback(() => {
+    if (listeners.current[1]) listeners.current[1]();
+    setLoadingPosts(true);
+    const q = firebase
+      .firestore()
+      .collection('communityPosts')
+      .orderBy('createdAt', 'desc')
+      .limit(postsLimit.current);
+    listeners.current[1] = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setPosts(data);
+      setHasMorePosts(snap.docs.length === postsLimit.current);
       setLoadingPosts(false);
       setRefreshing(false);
     });
-    return unsub;
   }, []);
+
+  const unsubscribeAll = useCallback(() => {
+    listeners.current.forEach((u) => u && u());
+    listeners.current = [];
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      subscribeEvents();
+      subscribePosts();
+      return unsubscribeAll;
+    }, [subscribeEvents, subscribePosts, unsubscribeAll])
+  );
 
   const filteredEvents =
     activeFilter === 'All'
@@ -180,49 +206,30 @@ const CommunityScreen = () => {
     }
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = () => {
     setRefreshing(true);
-    try {
-      const eventSnap = await firebase
-        .firestore()
-        .collection('events')
-        .orderBy('createdAt', 'desc')
-        .limit(EVENT_PAGE_SIZE)
-        .get();
-      const eventData = eventSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setEvents(eventData);
-      setLastEventDoc(eventSnap.docs[eventSnap.docs.length - 1] || null);
-      setHasMoreEvents(eventSnap.docs.length === EVENT_PAGE_SIZE);
-      const postSnap = await firebase.firestore().collection('communityPosts').orderBy('createdAt', 'desc').get();
-      const postData = postSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setPosts(postData);
-    } catch (e) {
-      console.warn('Failed to refresh community', e);
-    }
-    setLoadingEvents(false);
-    setLoadingPosts(false);
-    setRefreshing(false);
+    eventsLimit.current = EVENT_PAGE_SIZE;
+    postsLimit.current = POST_PAGE_SIZE;
+    setHasMoreEvents(true);
+    setHasMorePosts(true);
+    subscribeEvents();
+    subscribePosts();
   };
 
-  const loadMoreEvents = async () => {
-    if (loadingMoreEvents.current || !hasMoreEvents || !lastEventDoc) return;
+  const loadMoreEvents = () => {
+    if (loadingMoreEvents.current || !hasMoreEvents) return;
     loadingMoreEvents.current = true;
-    try {
-      const snap = await firebase
-        .firestore()
-        .collection('events')
-        .orderBy('createdAt', 'desc')
-        .startAfter(lastEventDoc)
-        .limit(EVENT_PAGE_SIZE)
-        .get();
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setEvents((prev) => [...prev, ...data]);
-      setLastEventDoc(snap.docs[snap.docs.length - 1] || lastEventDoc);
-      setHasMoreEvents(snap.docs.length === EVENT_PAGE_SIZE);
-    } catch (e) {
-      console.warn('Failed to load more events', e);
-    }
+    eventsLimit.current += EVENT_PAGE_SIZE;
+    subscribeEvents();
     loadingMoreEvents.current = false;
+  };
+
+  const loadMorePosts = () => {
+    if (loadingMorePosts.current || !hasMorePosts) return;
+    loadingMorePosts.current = true;
+    postsLimit.current += POST_PAGE_SIZE;
+    subscribePosts();
+    loadingMorePosts.current = false;
   };
 
   const handleScroll = ({ nativeEvent }) => {
@@ -232,6 +239,7 @@ const CommunityScreen = () => {
       contentSize.height - 100
     ) {
       loadMoreEvents();
+      loadMorePosts();
     }
   };
 
