@@ -156,6 +156,10 @@ const HomeScreen = ({ navigation }) => {
             targetUid: opponentId,
           });
         const chatId = res.data?.matchId;
+        if (!chatId) {
+          Toast.show({ type: 'error', text1: 'Unable to create match' });
+          return;
+        }
         const oppSnap = await firebase
           .firestore()
           .collection('users')
@@ -211,6 +215,10 @@ const HomeScreen = ({ navigation }) => {
                 targetUid: d.players[1],
               });
             const chatId = res2.data?.matchId;
+            if (!chatId) {
+              Toast.show({ type: 'error', text1: 'Unable to create match' });
+              return;
+            }
             const match = {
               id: chatId,
               otherUserId: d.players[1],
