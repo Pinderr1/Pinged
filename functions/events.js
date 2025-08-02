@@ -1,6 +1,9 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
+const MAX_JOINS_PER_MINUTE = 5;
+const SPAM_BLOCK_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
 const joinEvent = functions.https.onCall(async (data, context) => {
   const eventId = data?.eventId;
   const uid = context.auth?.uid;
@@ -16,8 +19,47 @@ const joinEvent = functions.https.onCall(async (data, context) => {
   const eventRef = db.collection('events').doc(eventId);
   const attendeeRef = eventRef.collection('attendees').doc(uid);
   const userRef = db.collection('users').doc(uid);
+  const attemptRef = db.collection('joinAttempts').doc(uid);
+
+  const now = admin.firestore.Timestamp.now();
+  let blocked = false;
 
   try {
+    await db.runTransaction(async (tx) => {
+      const attemptSnap = await tx.get(attemptRef);
+      const attemptData = attemptSnap.data() || {};
+      const blockedUntil = attemptData.blockedUntil;
+      if (blockedUntil && blockedUntil.toMillis() > now.toMillis()) {
+        blocked = true;
+        return;
+      }
+      let count = attemptData.count || 0;
+      const lastAttempt = attemptData.lastAttempt;
+      if (lastAttempt && now.toMillis() - lastAttempt.toMillis() < 60 * 1000) {
+        count += 1;
+      } else {
+        count = 1;
+      }
+
+      const updates = { lastAttempt: now, count };
+      if (count > MAX_JOINS_PER_MINUTE) {
+        updates.blockedUntil = admin.firestore.Timestamp.fromMillis(
+          now.toMillis() + SPAM_BLOCK_DURATION_MS,
+        );
+        blocked = true;
+      } else {
+        updates.blockedUntil = admin.firestore.FieldValue.delete();
+      }
+      tx.set(attemptRef, updates, { merge: true });
+    });
+
+    if (blocked) {
+      throw new functions.https.HttpsError(
+        'resource-exhausted',
+        'Too many join attempts, please try again later',
+      );
+    }
+
     return await db.runTransaction(async (tx) => {
       const eventSnap = await tx.get(eventRef);
       if (!eventSnap.exists) {
