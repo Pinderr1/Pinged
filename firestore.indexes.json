@@ -32,6 +32,17 @@
         {"fieldPath": "category", "order": "ASCENDING"},
         {"fieldPath": "createdAt", "order": "DESCENDING"}
       ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "location", "order": "ASCENDING"},
+        {"fieldPath": "ageGroup", "order": "ASCENDING"},
+        {"fieldPath": "gender", "order": "ASCENDING"},
+        {"fieldPath": "verified", "order": "ASCENDING"},
+        {"fieldPath": "priorityScore", "order": "DESCENDING"}
+      ]
     }
   ],
   "fieldOverrides": []
