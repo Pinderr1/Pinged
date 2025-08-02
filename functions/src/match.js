@@ -41,6 +41,15 @@ async function createMatchIfMutualLikeInternal(data, context, tx) {
         users: sorted,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
+      // Store precomputed match references on user documents
+      const userRefA = db.collection('users').doc(uid);
+      const userRefB = db.collection('users').doc(targetUid);
+      transaction.update(userRefA, {
+        matchedUsers: admin.firestore.FieldValue.arrayUnion(targetUid),
+      });
+      transaction.update(userRefB, {
+        matchedUsers: admin.firestore.FieldValue.arrayUnion(uid),
+      });
       return { matchId };
     }
 

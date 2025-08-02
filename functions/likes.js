@@ -161,6 +161,14 @@ const likeAndMaybeMatch = functions.https.onCall(async (data, context) => {
         users: sorted,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
+      const userRefA = db.collection('users').doc(uid);
+      const userRefB = db.collection('users').doc(targetUid);
+      tx.update(userRefA, {
+        matchedUsers: admin.firestore.FieldValue.arrayUnion(targetUid),
+      });
+      tx.update(userRefB, {
+        matchedUsers: admin.firestore.FieldValue.arrayUnion(uid),
+      });
       return { matchId };
     }
 

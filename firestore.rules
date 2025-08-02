@@ -7,15 +7,14 @@ service cloud.firestore {
     }
 
     function isNotBlocked(a, b) {
-      return !(
-        exists(/databases/$(database)/documents/blocks/$(a)/blocked/$(b)) ||
-        exists(/databases/$(database)/documents/blocks/$(b)/blocked/$(a))
-      );
+      let data = get(/databases/$(database)/documents/users/$(a)).data;
+      return (data.blockedUsers == null || !(b in data.blockedUsers)) &&
+        (data.blockedBy == null || !(b in data.blockedBy));
     }
 
     function areMatched(a, b) {
-      let id = (a < b) ? a + '_' + b : b + '_' + a;
-      return exists(/databases/$(database)/documents/matches/$(id));
+      let data = get(/databases/$(database)/documents/users/$(a)).data;
+      return data.matchedUsers != null && b in data.matchedUsers;
     }
 
     function validGamePlayers(players) {
@@ -38,7 +37,10 @@ service cloud.firestore {
             request.resource.data.badges.hasAny(["premium", "premiumMember"]) : false) &&
         !("roles" in request.resource.data) &&
         !("xp" in request.resource.data) &&
-        !("streak" in request.resource.data);
+        !("streak" in request.resource.data) &&
+        !("matchedUsers" in request.resource.data) &&
+        !("blockedUsers" in request.resource.data) &&
+        !("blockedBy" in request.resource.data);
 
       // Updates cannot modify server controlled fields like xp or streak
       allow update: if isSignedIn() && request.auth.uid == uid &&
@@ -47,7 +49,10 @@ service cloud.firestore {
             request.resource.data.badges.hasAny(["premium", "premiumMember"]) : false) &&
         !("roles" in request.resource.data) &&
         !("xp" in request.resource.data) &&
-        !("streak" in request.resource.data);
+        !("streak" in request.resource.data) &&
+        !("matchedUsers" in request.resource.data) &&
+        !("blockedUsers" in request.resource.data) &&
+        !("blockedBy" in request.resource.data);
 
       allow delete: if isSignedIn() && request.auth.uid == uid;
 
@@ -59,13 +64,7 @@ service cloud.firestore {
     match /matches/{matchId} {
       allow read: if request.auth.token.admin == true ||
         (isSignedIn() && request.auth.uid in resource.data.users);
-      allow create: if isSignedIn() &&
-        let other = request.resource.data.users[0] == request.auth.uid
-          ? request.resource.data.users[1]
-          : request.resource.data.users[0];
-        request.resource.data.users hasAll([request.auth.uid, other]) &&
-        exists(/databases/$(database)/documents/likes/$(request.auth.uid)/liked/$(other)) &&
-        exists(/databases/$(database)/documents/likes/$(other)/liked/$(request.auth.uid));
+      allow create: if request.auth.token.admin == true;
       allow delete: if request.auth.token.admin == true;
       allow update: if request.auth.token.admin == true || (
         isSignedIn() &&
