@@ -36,7 +36,6 @@ import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
 import { useLikeLimit } from '../contexts/LikeLimitContext';
-import { useLikeLimit } from '../contexts/LikeLimitContext';
 import { FONT_FAMILY } from '../textStyles';
 import UserCard from '../components/UserCard';
 import SwipeControls from '../components/SwipeControls';
