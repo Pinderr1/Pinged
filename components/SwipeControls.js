@@ -34,6 +34,8 @@ export default function SwipeControls({ buttons, scaleRefs, actionLoading }) {
             delayLongPress={300}
             style={[styles.circleButton, { backgroundColor: btn.color }]}
             disabled={actionLoading}
+            accessible={true}
+            accessibilityLabel={btn.label}
           >
             {btn.icon === 'game-controller' ? (
               <MaterialCommunityIcons name="gamepad-variant" size={28} color="#fff" />
@@ -48,7 +50,15 @@ export default function SwipeControls({ buttons, scaleRefs, actionLoading }) {
 }
 
 SwipeControls.propTypes = {
-  buttons: PropTypes.arrayOf(PropTypes.object).isRequired,
+  buttons: PropTypes.arrayOf(
+    PropTypes.shape({
+      icon: PropTypes.string.isRequired,
+      color: PropTypes.string.isRequired,
+      action: PropTypes.func.isRequired,
+      longAction: PropTypes.func,
+      label: PropTypes.string.isRequired,
+    })
+  ).isRequired,
   scaleRefs: PropTypes.arrayOf(PropTypes.object).isRequired,
   actionLoading: PropTypes.bool,
 };

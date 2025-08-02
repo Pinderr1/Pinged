@@ -20,6 +20,7 @@ export interface GradientButtonProps {
   disabled?: boolean;
   onPressIn?: () => void;
   onPressOut?: () => void;
+  accessibilityLabel?: string;
 }
 export default function GradientButton({
   text,
@@ -31,6 +32,7 @@ export default function GradientButton({
   disabled,
   onPressIn,
   onPressOut,
+  accessibilityLabel,
 }: GradientButtonProps) {
   const { theme } = useTheme();
   const scale = useRef(new Animated.Value(1)).current;
@@ -75,6 +77,8 @@ export default function GradientButton({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled}
+        accessible={true}
+        accessibilityLabel={accessibilityLabel || text}
       >
         <AnimatedLinearGradient
           colors={theme.gradient}

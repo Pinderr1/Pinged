@@ -11,6 +11,8 @@ export default function FilterTabs({ filter, setFilter }) {
       {['All', 'Free', 'Premium', 'Favorites'].map((label) => (
         <TouchableOpacity
           key={label}
+          accessible={true}
+          accessibilityLabel={`Filter by ${label}`}
           onPress={() => {
             Haptics.selectionAsync().catch(() => {});
             setFilter(label);

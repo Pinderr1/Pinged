@@ -18,7 +18,12 @@ export default function FilterPanel({ loading, onBoostPress, onChangeFilters, sh
     <View style={styles.noMoreWrapper}>
       <EmptyState text="No more swipes" animation={require('../assets/hearts.json')} />
       <GradientButton text="Boost" width={180} onPress={onBoostPress} style={{ marginTop: 20 }} />
-      <TouchableOpacity onPress={onChangeFilters} style={{ marginTop: 12 }}>
+      <TouchableOpacity
+        onPress={onChangeFilters}
+        style={{ marginTop: 12 }}
+        accessible={true}
+        accessibilityLabel="Change filters"
+      >
         <Text style={styles.changeFiltersText}>Change Filters</Text>
       </TouchableOpacity>
     </View>
