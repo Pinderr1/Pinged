@@ -15,6 +15,7 @@ const likes = require('./likes');
 const gameSessions = require('./gameSessions');
 const events = require('./events');
 const messages = require('./messages');
+const cleanup = require('./cleanup');
 
 // Re-export all handlers for Firebase deployment
 module.exports = {
@@ -30,4 +31,5 @@ module.exports = {
   ...gameSessions,
   ...events,
   ...messages,
+  ...cleanup,
 };
