@@ -6,7 +6,8 @@ import { useUser } from '../contexts/UserContext';
 import { useSound } from '../contexts/SoundContext';
 import { snapshotExists } from '../utils/firestore';
 
-function replayGame(Game, initial, moves = []) {
+// Exported for unit tests
+export function replayGame(Game, initial, moves = []) {
   let G = JSON.parse(JSON.stringify(initial || Game.setup()));
   let currentPlayer = '0';
   let gameover = null;
