@@ -323,9 +323,12 @@ const validateField = () => {
 
   const pickImage = async () => {
     Haptics.selectionAsync().catch(() => {});
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Toast.show({ type: 'error', text1: 'Permission denied' });
+      Toast.show({
+        type: 'error',
+        text1: 'Enable photo access in settings',
+      });
       return;
     }
 

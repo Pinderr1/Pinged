@@ -59,9 +59,12 @@ const ProfileScreen = ({ navigation, route }) => {
   const [saving, setSaving] = useState(false);
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Toast.show({ type: 'error', text1: 'Permission denied' });
+      Toast.show({
+        type: 'error',
+        text1: 'Enable photo access in settings',
+      });
       return;
     }
 

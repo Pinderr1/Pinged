@@ -5,7 +5,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   Text,
+  Alert,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import { useUser } from "./contexts/UserContext";
@@ -52,6 +54,28 @@ const AppInner = () => {
     error: configError,
     alertMessage,
   } = useRemoteConfig();
+
+  useEffect(() => {
+    const ensureMediaPermissions = async () => {
+      const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Photo Access",
+          "Pinged uses your photo library so you can upload and share photos. Please allow access on the next screen.",
+          [
+            {
+              text: "Continue",
+              onPress: async () => {
+                await ImagePicker.requestMediaLibraryPermissionsAsync();
+              },
+            },
+            { text: "Cancel", style: "cancel" },
+          ]
+        );
+      }
+    };
+    ensureMediaPermissions();
+  }, []);
 
   useEffect(() => {
     if (alertMessage) {
