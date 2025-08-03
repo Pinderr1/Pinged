@@ -29,19 +29,14 @@ export default function PremiumPaywallScreen({ navigation }) {
         const stripe = window.Stripe?.(
           process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
         );
-        if (stripe) {
-          const sessionId = url.split('session_id=')[1];
-          if (sessionId) {
-            await stripe.redirectToCheckout({ sessionId });
-          } else {
-            window.location.assign(url);
-          }
-        } else {
-          window.location.assign(url);
+        const sessionId = url.split('session_id=')[1];
+        if (stripe && sessionId) {
+          await stripe.redirectToCheckout({ sessionId });
+          return;
         }
-      } else {
-        await WebBrowser.openBrowserAsync(url);
       }
+
+      await WebBrowser.openBrowserAsync(url);
     } catch (e) {
       console.warn('Checkout failed', e);
       Toast.show({ type: 'error', text1: 'Checkout failed' });
