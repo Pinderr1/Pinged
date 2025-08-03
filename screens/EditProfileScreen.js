@@ -54,9 +54,12 @@ const EditProfileScreen = ({ navigation, route }) => {
   const [tiktok, setTiktok] = useState(user?.socialLinks?.tiktok || '');
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Toast.show({ type: 'error', text1: 'Permission denied' });
+      Toast.show({
+        type: 'error',
+        text1: 'Enable photo access in settings',
+      });
       return;
     }
 
