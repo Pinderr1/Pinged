@@ -14,7 +14,7 @@ export default function useRequireGameCredits() {
     (opts = {}) => {
       if (!isPremiumUser && gamesLeft <= 0) {
         const method = opts.replace ? 'replace' : 'navigate';
-        navigation[method]('Premium', { context: 'paywall' });
+        navigation[method]('PremiumPaywall', { context: 'game-limit' });
         return false;
       }
       return true;

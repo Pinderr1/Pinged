@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 
 const CARD_WIDTH = Dimensions.get('window').width * 0.42;
 
-const GameCardBase = ({ children, scale, onPress, onPressIn, onPressOut }) => (
+const GameCardBase = ({ children, scale, onPress, onPressIn, onPressOut, onHoverIn }) => (
   <Animated.View style={{ transform: [{ scale }] }}>
     <TouchableOpacity
       style={{
@@ -27,6 +27,7 @@ const GameCardBase = ({ children, scale, onPress, onPressIn, onPressOut }) => (
       }}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
+      onMouseEnter={onHoverIn}
       onPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         onPress?.();
@@ -43,6 +44,7 @@ GameCardBase.propTypes = {
   onPress: PropTypes.func,
   onPressIn: PropTypes.func,
   onPressOut: PropTypes.func,
+  onHoverIn: PropTypes.func,
 };
 
 export default GameCardBase;

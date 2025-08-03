@@ -96,7 +96,7 @@ const HomeScreen = ({ navigation }) => {
       setPlayTarget(target);
       setGamePickerVisible(true);
     } else {
-      navigation.navigate('Premium', { context: 'paywall' });
+      navigation.navigate('PremiumPaywall', { context: 'game-limit' });
     }
   };
 
@@ -139,7 +139,7 @@ const HomeScreen = ({ navigation }) => {
         last &&
         new Date(last).toDateString() === today.toDateString()
       ) {
-        navigation.navigate('Premium', { context: 'paywall' });
+        navigation.navigate('PremiumPaywall', { context: 'game-limit' });
         return;
       }
 
@@ -264,7 +264,7 @@ const HomeScreen = ({ navigation }) => {
     const isLocked = !isPremiumUser && game.premium;
     if (isLocked) {
       setGamePickerVisible(false);
-      navigation.navigate('Premium', { context: 'paywall' });
+      navigation.navigate('PremiumPaywall', { context: 'premium-feature' });
       return;
     }
     setGamePickerVisible(false);
@@ -364,15 +364,15 @@ const HomeScreen = ({ navigation }) => {
         <View style={local.swipeButtonContainer}>
           <GradientButton
             text="Swipe Now"
-            onPress={() => {
-              if (!isPremiumUser && gamesLeft <= 0) {
-                navigation.navigate('Premium', { context: 'paywall' });
-              } else {
-                navigation.navigate('Swipe');
-              }
-            }}
-          />
-        </View>
+          onPress={() => {
+            if (!isPremiumUser && gamesLeft <= 0) {
+                navigation.navigate('PremiumPaywall', { context: 'game-limit' });
+            } else {
+              navigation.navigate('Swipe');
+            }
+          }}
+        />
+      </View>
 
         <Modal visible={gamePickerVisible} transparent animationType="fade">
           <View style={local.modalBackdrop}>
