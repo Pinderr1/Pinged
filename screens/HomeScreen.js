@@ -43,8 +43,8 @@ const aiGameMap = allGames.reduce((acc, g) => {
 const CARD_SIZE = 140;
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
-  const { user, loginBonus } = useUser();
-  const isPremiumUser = !!user?.isPremium;
+  const { user, loginBonus, premium } = useUser();
+  const isPremiumUser = premium.isPremium;
   const { gamesLeft } = useGameLimit();
   const { addMatch } = useChats();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
@@ -92,7 +92,7 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate('Play');
       return;
     }
-    if (target === 'ai' || gamesLeft > 0 || isPremiumUser) {
+    if (target === 'ai' || premium.canInvite) {
       setPlayTarget(target);
       setGamePickerVisible(true);
     } else {
@@ -357,7 +357,7 @@ const HomeScreen = ({ navigation }) => {
           <GradientButton
             text="Swipe Now"
             onPress={() => {
-              if (!isPremiumUser && gamesLeft <= 0) {
+              if (!premium.canSwipe) {
                 navigation.navigate('Premium', { context: 'paywall' });
               } else {
                 navigation.navigate('Swipe');

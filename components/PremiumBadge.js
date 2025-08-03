@@ -1,30 +1,30 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const PremiumBadge = ({ premium, route, accent }) => {
   const { theme } = useTheme();
+  const navigation = useNavigation();
   if (route) return null;
-  const backgroundColor = premium
-    ? accent || theme.accent
-    : theme.textSecondary;
+  const backgroundColor = premium ? accent || theme.accent : theme.textSecondary;
+  const icon = premium ? 'star' : 'lock-closed';
   return (
-    <View
+    <TouchableOpacity
+      onPress={() => navigation.navigate('PremiumPaywall', { context: 'paywall' })}
       style={{
         position: 'absolute',
         top: 8,
         right: 8,
         backgroundColor,
-        paddingHorizontal: 6,
-        paddingVertical: 2,
+        padding: 4,
         borderRadius: 8,
       }}
     >
-      <Text style={{ color: '#fff', fontSize: 10 }}>
-        {premium ? 'Premium' : 'Coming Soon'}
-      </Text>
-    </View>
+      <Ionicons name={icon} size={12} color="#fff" />
+    </TouchableOpacity>
   );
 };
 

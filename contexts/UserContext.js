@@ -13,6 +13,7 @@ import { useAuth } from "./AuthContext";
 import { computeBadges } from "../utils/badges";
 import { computeUnlocks } from "../utils/unlocks";
 import chatActions from "./chatActions";
+import { fetchPremiumFlags, computePremium } from "../services/premium";
 
 const UserContext = createContext();
 
@@ -23,6 +24,28 @@ export const UserProvider = ({ children }) => {
   const [loginBonus, setLoginBonus] = useState(false);
   const [streakReward, setStreakReward] = useState(null);
   const [blocked, setBlocked] = useState([]);
+  const [premiumFlags, setPremiumFlags] = useState({});
+  const [premium, setPremium] = useState(computePremium(null, {}));
+
+  useEffect(() => {
+    let active = true;
+    if (authUser?.uid) {
+      fetchPremiumFlags()
+        .then((f) => {
+          if (active) setPremiumFlags(f);
+        })
+        .catch(() => {});
+    } else {
+      setPremiumFlags({});
+    }
+    return () => {
+      active = false;
+    };
+  }, [authUser?.uid]);
+
+  useEffect(() => {
+    setPremium(computePremium(user, premiumFlags));
+  }, [user, premiumFlags]);
 
   useEffect(() => {
     let unsubBlocks;
@@ -55,6 +78,15 @@ export const UserProvider = ({ children }) => {
 
   const updateUser = (updates) => {
     setUser((prev) => ({ ...prev, ...updates }));
+  };
+
+  const refreshPremium = async () => {
+    try {
+      const flags = await fetchPremiumFlags();
+      setPremiumFlags(flags);
+    } catch (e) {
+      console.warn('Failed to refresh premium flags', e);
+    }
   };
 
   const dismissStreakReward = () => setStreakReward(null);
@@ -226,6 +258,8 @@ export const UserProvider = ({ children }) => {
         streakReward,
         dismissStreakReward,
         loginBonus,
+        premium,
+        refreshPremium,
         loading,
       }}
     >

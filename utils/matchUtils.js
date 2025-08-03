@@ -101,3 +101,76 @@ export async function handleLike({
 
   return { success: false, matchId: null };
 }
+
+export async function handleSuperLike({
+  currentUser,
+  targetUser,
+  firestore,
+  navigation,
+  isPremiumUser = false,
+  showNotification = () => {},
+  addMatch = () => {},
+  setMatchedUser = () => {},
+  setMatchLine = () => {},
+  setMatchGame = () => {},
+  play = () => {},
+  setShowFireworks = () => {},
+}) {
+  if (!targetUser) return { success: false, matchId: null };
+
+  if (currentUser?.uid && targetUser.id) {
+    try {
+      const res = await firebase
+        .functions()
+        .httpsCallable('sendSuperLike')({
+          targetUid: targetUser.id,
+        });
+
+      const matchId = res?.data?.matchId || null;
+
+      showNotification(`You superliked ${targetUser.displayName}`);
+
+      if (matchId) {
+        addMatch({
+          id: matchId,
+          displayName: targetUser.displayName,
+          age: targetUser.age,
+          image: targetUser.images[0],
+          messages: [],
+          matchedAt: 'now',
+          activeGameId: null,
+          pendingInvite: null,
+        });
+
+        setMatchedUser(targetUser);
+        setMatchLine(
+          icebreakers[Math.floor(Math.random() * icebreakers.length)] || ''
+        );
+        setMatchGame(
+          allGames[Math.floor(Math.random() * allGames.length)] || null
+        );
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success
+        ).catch(() => {});
+        play('match');
+        Toast.show({ type: 'success', text1: "It's a match!" });
+        showNotification("It's a match!");
+        setShowFireworks(true);
+        setTimeout(() => setShowFireworks(false), 2000);
+      } else {
+        Toast.show({ type: 'success', text1: 'Superlike sent!' });
+      }
+
+      return { success: true, matchId };
+    } catch (e) {
+      if (!isPremiumUser && e?.message?.includes('superlike')) {
+        navigation.navigate('PremiumPaywall', { context: 'paywall' });
+        return { success: false, matchId: null };
+      }
+      console.error('Failed to process superlike', e);
+      throw e;
+    }
+  }
+
+  return { success: false, matchId: null };
+}

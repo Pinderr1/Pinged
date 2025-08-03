@@ -29,18 +29,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { imageSource } from '../utils/avatar';
 import Loader from '../components/Loader';
 import { computePriority } from '../utils/priority';
-import { handleLike } from '../utils/matchUtils';
+import { handleLike, handleSuperLike } from '../utils/matchUtils';
 import * as Haptics from 'expo-haptics';
 import FullProfileModal from '../components/FullProfileModal';
 import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
 import { useLikeLimit } from '../contexts/LikeLimitContext';
-import { useLikeLimit } from '../contexts/LikeLimitContext';
 import { FONT_FAMILY } from '../textStyles';
 import UserCard from '../components/UserCard';
 import SwipeControls from '../components/SwipeControls';
 import FilterPanel from '../components/FilterPanel';
+import { activateBoost as activateBoostService } from '../services/premium';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -87,10 +87,10 @@ const SwipeScreen = () => {
   const styles = getStyles(theme);
   const navigation = useNavigation();
   const { showNotification } = useNotification();
-  const { user: currentUser, updateUser, blocked } = useUser();
+  const { user: currentUser, updateUser, blocked, premium, refreshPremium } = useUser();
   const { play } = useSound();
   const { addMatch } = useChats();
-  const isPremiumUser = !!currentUser?.isPremium;
+  const isPremiumUser = premium.isPremium;
   const { likesLeft, recordLikeSent } = useLikeLimit();
   const {
     location: filterLocation,
@@ -295,7 +295,7 @@ const SwipeScreen = () => {
     play(direction === 'left' ? 'swipe_left' : 'swipe_right');
 
     if (direction === 'right') {
-      if (likesLeft <= 0 && !isPremiumUser) {
+      if (!premium.canSwipe) {
         navigation.navigate('PremiumPaywall', { context: 'paywall' });
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
@@ -325,6 +325,7 @@ const SwipeScreen = () => {
           throw new Error('Like failed');
         }
         recordLikeSent();
+        await refreshPremium();
       } catch (e) {
         console.warn('Failed to like user', e);
         Toast.show({ type: 'error', text1: 'Failed to like user' });
@@ -332,6 +333,42 @@ const SwipeScreen = () => {
           toValue: { x: 0, y: 0 },
           useNativeDriver: false,
         }).start();
+        setActionLoading(false);
+        return;
+      }
+    } else if (direction === 'super') {
+      if (!premium.canSuperlike) {
+        navigation.navigate('PremiumPaywall', { context: 'paywall' });
+        Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
+        setActionLoading(false);
+        return;
+      }
+
+      try {
+        const { success } = await handleSuperLike({
+          currentUser,
+          targetUser: displayUser,
+          firestore: firebase.firestore(),
+          navigation,
+          isPremiumUser,
+          showNotification,
+          addMatch,
+          setMatchedUser,
+          setMatchLine,
+          setMatchGame,
+          play,
+          setShowFireworks,
+        });
+
+        if (!success) {
+          throw new Error('Superlike failed');
+        }
+        recordLikeSent();
+        await refreshPremium();
+      } catch (e) {
+        console.warn('Failed to superlike user', e);
+        Toast.show({ type: 'error', text1: 'Failed to superlike user' });
+        Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
         setActionLoading(false);
         return;
       }
@@ -384,6 +421,16 @@ const SwipeScreen = () => {
     }).start(() => handleSwipe('right'));
   };
 
+  const swipeSuperLike = () => {
+    if (!displayUser) return;
+    Animated.timing(pan, {
+      toValue: { x: 0, y: -SCREEN_HEIGHT },
+      duration: 250,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start(() => handleSwipe('super'));
+  };
+
   const loadMoreUsers = () => {
     if (loadingMore || !hasMore) return;
     fetchUsersRef.current?.(true);
@@ -410,7 +457,14 @@ const SwipeScreen = () => {
           return;
         }
 
-        if (gesture.dx > 120) {
+        if (gesture.dy < -120) {
+          Animated.timing(pan, {
+            toValue: { x: 0, y: -SCREEN_HEIGHT },
+            duration: 250,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: false,
+          }).start(() => handleSwipe('super'));
+        } else if (gesture.dx > 120) {
           Animated.timing(pan, {
             toValue: { x: SCREEN_WIDTH, y: 0 },
             duration: 250,
@@ -437,12 +491,13 @@ const SwipeScreen = () => {
 
   const activateBoost = async () => {
     if (!currentUser?.uid) return;
-    const boostUntil = new Date(Date.now() + 30 * 60 * 1000);
-    const updates = { boostUntil };
-    if (!currentUser.boostTrialUsed) updates.boostTrialUsed = true;
-    updateUser(updates);
     try {
-      await firebase.firestore().collection('users').doc(currentUser.uid).update(updates);
+      const res = await activateBoostService();
+      const boostUntil = res?.boostUntil
+        ? new Date(res.boostUntil)
+        : new Date(Date.now() + 30 * 60 * 1000);
+      updateUser({ boostUntil, boostTrialUsed: true });
+      await refreshPremium();
       Toast.show({ type: 'success', text1: 'Boost activated!' });
     } catch (e) {
       console.warn('Failed to activate boost', e);
@@ -452,7 +507,7 @@ const SwipeScreen = () => {
   };
 
   const handleBoostPress = () => {
-    if (currentUser?.boostTrialUsed && !isPremiumUser) {
+    if (!premium.canBoost) {
       navigation.navigate('PremiumPaywall', { context: 'upgrade' });
     } else {
       setShowBoostModal(true);
@@ -463,6 +518,7 @@ const SwipeScreen = () => {
 
   const controlButtons = [
     { icon: 'flame', color: '#fb923c', action: handleBoostPress },
+    { icon: 'star', color: '#60a5fa', action: swipeSuperLike },
     {
       icon: 'close',
       color: '#f87171',

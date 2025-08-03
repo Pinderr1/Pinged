@@ -17,7 +17,10 @@ export default function PremiumBanner({ onClose, onPress }) {
       style={styles.container}
     >
       <View style={{ flex: 1 }}>
-        <Text style={styles.title}>Upgrade to Premium</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Ionicons name="star" size={20} color="#fff" style={{ marginRight: 6 }} />
+          <Text style={styles.title}>Upgrade to Premium</Text>
+        </View>
         <Text style={styles.subtitle}>Unlimited games & all features</Text>
         <GradientButton
           text="Go Premium"
