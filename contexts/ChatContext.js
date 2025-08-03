@@ -9,6 +9,7 @@ import { useSound } from './SoundContext';
 import { useListeners } from './ListenerContext';
 import debounce from '../utils/debounce';
 import { initEncryption, encryptText } from '../utils/encryption';
+import analytics from '../utils/analytics';
 
 const ChatContext = createContext();
 // Runtime actions for contexts that mount before ChatProvider
@@ -286,6 +287,7 @@ export const ChatProvider = ({ children }) => {
       )
     );
     updateMatchState(matchId, { pendingInvite: { gameId, from } });
+    analytics.logEvent('game_started').catch(() => {});
   };
 
   const clearGameInvite = (matchId) => {
@@ -366,6 +368,7 @@ export const ChatProvider = ({ children }) => {
   const addMatch = (match) =>
     setMatches((prev) => {
       if (prev.find((m) => m.id === match.id)) return prev;
+      analytics.logEvent('match_created').catch(() => {});
       return [...prev, match];
     });
 

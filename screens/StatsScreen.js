@@ -22,7 +22,7 @@ import XpInfoModal from '../components/XpInfoModal';
 const StatsScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
-  const { user } = useUser();
+  const { user, logUpgradeClick } = useUser();
   const isPremium = !!user?.isPremium;
 
 
@@ -208,7 +208,10 @@ const StatsScreen = ({ navigation }) => {
         {!isPremium && (
           <GradientButton
             text="Upgrade to Premium"
-            onPress={() => navigation.navigate('Premium', { context: 'paywall' })}
+            onPress={() => {
+              logUpgradeClick();
+              navigation.navigate('Premium', { context: 'paywall' });
+            }}
             style={styles.premiumButton}
           />
         )}

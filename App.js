@@ -15,7 +15,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import NotificationCenter from "./components/NotificationCenter";
 import LoadingOverlay from "./components/LoadingOverlay";
 import Toast from "react-native-toast-message";
-import * as Analytics from "./utils/analytics";
+import analytics from "./utils/analytics";
 import usePushNotifications from "./hooks/usePushNotifications";
 import useRemoteConfig from "./hooks/useRemoteConfig";
 import RootNavigator from "./navigation/RootNavigator";
@@ -67,7 +67,7 @@ const AppInner = () => {
 
   useEffect(() => {
     if (user?.uid) {
-      Analytics.setUserId(user.uid).catch(() => {});
+      analytics.setUserId(user.uid).catch(() => {});
     }
   }, [user?.uid]);
 

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
 import useRemoteConfig from '../hooks/useRemoteConfig';
 import firebase from '../firebase';
+import analytics from '../utils/analytics';
 
 const LikeLimitContext = createContext();
 const DEFAULT_LIMIT = 100;
@@ -35,12 +36,17 @@ export const LikeLimitProvider = ({ children }) => {
   }, [isPremium, user?.uid, maxDailyLikes]);
 
   const recordLikeSent = () => {
+    analytics.logEvent('swipe_right').catch(() => {});
     if (isPremium) return;
     setLikesLeft((prev) => (prev === Infinity ? Infinity : Math.max(prev - 1, 0)));
   };
 
+  const recordSwipeLeft = () => {
+    analytics.logEvent('swipe_left').catch(() => {});
+  };
+
   return (
-    <LikeLimitContext.Provider value={{ likesLeft, recordLikeSent }}>
+    <LikeLimitContext.Provider value={{ likesLeft, recordLikeSent, recordSwipeLeft }}>
       {children}
     </LikeLimitContext.Provider>
   );

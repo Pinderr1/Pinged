@@ -41,6 +41,7 @@ export async function handleLike({
   setMatchGame = () => {},
   play = () => {},
   setShowFireworks = () => {},
+  logUpgradeClick = () => {},
 }) {
   if (!targetUser) return { success: false, matchId: null };
 
@@ -91,6 +92,7 @@ export async function handleLike({
       return { success: true, matchId };
     } catch (e) {
       if (!isPremiumUser && e?.message?.includes('Daily like limit')) {
+        logUpgradeClick();
         navigation.navigate('PremiumPaywall', { context: 'paywall' });
         return { success: false, matchId: null };
       }

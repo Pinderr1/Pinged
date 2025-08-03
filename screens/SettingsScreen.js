@@ -29,7 +29,7 @@ import { textStyles } from '../textStyles';
 const SettingsScreen = ({ navigation }) => {
   const { darkMode, toggleTheme, theme } = useTheme();
   const styles = getStyles(theme);
-  const { user, updateUser } = useUser();
+  const { user, updateUser, logUpgradeClick } = useUser();
   const isPremium = !!user?.isPremium;
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showDiscovery, setShowDiscovery] = useState(false);
@@ -75,7 +75,10 @@ const SettingsScreen = ({ navigation }) => {
       console.warn('Failed to sign out', e);
     }
   };
-  const handleGoPremium = () => navigation.navigate('Premium', { context: 'paywall' });
+  const handleGoPremium = () => {
+    logUpgradeClick();
+    navigation.navigate('Premium', { context: 'paywall' });
+  };
 
   const saveUserSetting = async (updates) => {
     if (!user?.uid) return;

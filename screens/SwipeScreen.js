@@ -87,11 +87,11 @@ const SwipeScreen = () => {
   const styles = getStyles(theme);
   const navigation = useNavigation();
   const { showNotification } = useNotification();
-  const { user: currentUser, updateUser, blocked } = useUser();
+  const { user: currentUser, updateUser, blocked, logUpgradeClick } = useUser();
   const { play } = useSound();
   const { addMatch } = useChats();
   const isPremiumUser = !!currentUser?.isPremium;
-  const { likesLeft, recordLikeSent } = useLikeLimit();
+  const { likesLeft, recordLikeSent, recordSwipeLeft } = useLikeLimit();
   const {
     location: filterLocation,
     ageRange,
@@ -296,6 +296,7 @@ const SwipeScreen = () => {
 
     if (direction === 'right') {
       if (likesLeft <= 0 && !isPremiumUser) {
+        logUpgradeClick();
         navigation.navigate('PremiumPaywall', { context: 'paywall' });
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
@@ -319,6 +320,7 @@ const SwipeScreen = () => {
           setMatchGame,
           play,
           setShowFireworks,
+          logUpgradeClick,
         });
 
         if (!success) {
@@ -335,7 +337,9 @@ const SwipeScreen = () => {
         setActionLoading(false);
         return;
       }
-    } else if (direction !== 'left') {
+    } else if (direction === 'left') {
+      recordSwipeLeft();
+    } else {
       Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
       setActionLoading(false);
       return;
@@ -350,6 +354,7 @@ const SwipeScreen = () => {
 
   const rewind = () => {
     if (!isPremiumUser) {
+      logUpgradeClick();
       navigation.navigate('PremiumPaywall', { context: 'paywall' });
       return;
     }
@@ -453,6 +458,7 @@ const SwipeScreen = () => {
 
   const handleBoostPress = () => {
     if (currentUser?.boostTrialUsed && !isPremiumUser) {
+      logUpgradeClick();
       navigation.navigate('PremiumPaywall', { context: 'upgrade' });
     } else {
       setShowBoostModal(true);
@@ -470,7 +476,7 @@ const SwipeScreen = () => {
       longAction: () =>
         isPremiumUser
           ? rewind()
-          : navigation.navigate('PremiumPaywall', { context: 'paywall' }),
+          : (logUpgradeClick(), navigation.navigate('PremiumPaywall', { context: 'paywall' })),
     },
     {
       icon: 'heart',
@@ -630,7 +636,10 @@ const SwipeScreen = () => {
           visible={showBoostModal}
           trialUsed={!!currentUser?.boostTrialUsed}
           onActivate={activateBoost}
-          onUpgrade={() => navigation.navigate('PremiumPaywall', { context: 'upgrade' })}
+          onUpgrade={() => {
+            logUpgradeClick();
+            navigation.navigate('PremiumPaywall', { context: 'upgrade' });
+          }}
           onClose={() => setShowBoostModal(false)}
         />
         {debugInfo ? (

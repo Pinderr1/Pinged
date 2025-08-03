@@ -9,6 +9,7 @@ import { View } from "react-native";
 import Toast from "react-native-toast-message";
 import Loader from "../components/Loader";
 import firebase from "../firebase";
+import analytics from "../utils/analytics";
 import { useAuth } from "./AuthContext";
 import { computeBadges } from "../utils/badges";
 import { computeUnlocks } from "../utils/unlocks";
@@ -58,6 +59,14 @@ export const UserProvider = ({ children }) => {
   };
 
   const dismissStreakReward = () => setStreakReward(null);
+
+  const logUpgradeClick = () => {
+    analytics.logEvent('upgrade_clicked').catch(() => {});
+  };
+
+  const logEventJoin = () => {
+    analytics.logEvent('event_joined').catch(() => {});
+  };
 
   const addActivityXP = async (amount = 10, opts = {}) => {
     if (!user?.uid) return;
@@ -166,6 +175,7 @@ export const UserProvider = ({ children }) => {
         .update({
           eventTickets: firebase.firestore.FieldValue.arrayUnion(eventId),
         });
+      logEventJoin();
     } catch (e) {
       console.warn("Failed to redeem event ticket", e);
     }
@@ -221,6 +231,8 @@ export const UserProvider = ({ children }) => {
         addGameXP,
         addLoginXP,
         redeemEventTicket,
+        logUpgradeClick,
+        logEventJoin,
         blockUser: blockUserAccount,
         blocked,
         streakReward,

@@ -40,7 +40,7 @@ const CommunityScreen = () => {
   const skeletonColor = darkMode ? '#555' : '#ddd';
   const local = getStyles(theme, skeletonColor);
   const navigation = useNavigation();
-  const { user, redeemEventTicket } = useUser();
+  const { user, redeemEventTicket, logUpgradeClick, logEventJoin } = useUser();
   const { eventsLeft, recordEventCreated } = useEventLimit();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
@@ -165,7 +165,10 @@ const CommunityScreen = () => {
         },
         {
           text: 'Upgrade',
-          onPress: () => navigation.navigate('Premium', { context: 'paywall' }),
+          onPress: () => {
+            logUpgradeClick();
+            navigation.navigate('Premium', { context: 'paywall' });
+          },
         },
         { text: 'Cancel', style: 'cancel' },
       ]);
@@ -176,6 +179,7 @@ const CommunityScreen = () => {
       Alert.alert('RSVP Cancelled', 'You left the event.');
     } else {
       joinEvent(event.id);
+      logEventJoin();
       Alert.alert('Event Joined', 'You\u2019re in! XP applied.');
     }
   };

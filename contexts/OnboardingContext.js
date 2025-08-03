@@ -5,7 +5,7 @@ import Loader from "../components/Loader";
 import { useAuth } from "./AuthContext";
 import { clearStoredOnboarding } from "../utils/onboarding";
 import Toast from "react-native-toast-message";
-import * as Analytics from "../utils/analytics";
+import analytics from "../utils/analytics";
 import firebase from "../firebase";
 
 const OnboardingContext = createContext();
@@ -49,7 +49,7 @@ export const OnboardingProvider = ({ children }) => {
         .doc(user.uid)
         .update({ onboardingComplete: true });
       setHasOnboarded(true);
-      await Analytics.logEvent("onboarding_complete");
+      await analytics.logEvent("onboarding_complete");
     } catch (e) {
       console.warn("Failed to persist onboarding flag", e);
     }

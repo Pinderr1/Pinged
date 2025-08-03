@@ -43,7 +43,7 @@ const aiGameMap = allGames.reduce((acc, g) => {
 const CARD_SIZE = 140;
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
-  const { user, loginBonus } = useUser();
+  const { user, loginBonus, logUpgradeClick } = useUser();
   const isPremiumUser = !!user?.isPremium;
   const { gamesLeft } = useGameLimit();
   const { addMatch } = useChats();
@@ -96,6 +96,7 @@ const HomeScreen = ({ navigation }) => {
       setPlayTarget(target);
       setGamePickerVisible(true);
     } else {
+      logUpgradeClick();
       navigation.navigate('Premium', { context: 'paywall' });
     }
   };
@@ -139,6 +140,7 @@ const HomeScreen = ({ navigation }) => {
         last &&
         new Date(last).toDateString() === today.toDateString()
       ) {
+        logUpgradeClick();
         navigation.navigate('Premium', { context: 'paywall' });
         return;
       }
@@ -256,6 +258,7 @@ const HomeScreen = ({ navigation }) => {
     const isLocked = !isPremiumUser && game.premium;
     if (isLocked) {
       setGamePickerVisible(false);
+      logUpgradeClick();
       navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
@@ -322,7 +325,10 @@ const HomeScreen = ({ navigation }) => {
       {!isPremiumUser && showPremiumBanner && (
         <PremiumBanner
           onClose={() => setShowPremiumBanner(false)}
-          onPress={() => navigation.navigate('Premium', { context: 'paywall' })}
+          onPress={() => {
+            logUpgradeClick();
+            navigation.navigate('Premium', { context: 'paywall' });
+          }}
         />
       )}
 
@@ -358,6 +364,7 @@ const HomeScreen = ({ navigation }) => {
             text="Swipe Now"
             onPress={() => {
               if (!isPremiumUser && gamesLeft <= 0) {
+                logUpgradeClick();
                 navigation.navigate('Premium', { context: 'paywall' });
               } else {
                 navigation.navigate('Swipe');

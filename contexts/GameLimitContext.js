@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
 import useRemoteConfig from '../hooks/useRemoteConfig';
 import firebase from '../firebase';
+import analytics from '../utils/analytics';
 
 const GameLimitContext = createContext();
 const DEFAULT_LIMIT = 1;
@@ -30,6 +31,7 @@ export const GameLimitProvider = ({ children }) => {
   }, [isPremium, user?.dailyPlayCount, user?.lastGamePlayedAt, maxFreeGames]);
 
   const recordGamePlayed = async () => {
+    analytics.logEvent('game_started').catch(() => {});
     if (isPremium || !user?.uid) return;
 
     const last = user.lastGamePlayedAt?.toDate?.() ||

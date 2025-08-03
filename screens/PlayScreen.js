@@ -43,7 +43,7 @@ const getAllCategories = () => {
 const PlayScreen = ({ navigation }) => {
   const { darkMode, theme } = useTheme();
   const styles = getGlobalStyles(theme);
-  const { user } = useUser();
+  const { user, logUpgradeClick } = useUser();
   const { gamesLeft } = useGameLimit();
   const isPremiumUser = !!user?.isPremium;
   const requireCredits = useRequireGameCredits();
@@ -88,6 +88,7 @@ const PlayScreen = ({ navigation }) => {
     if (!previewGame) return;
     setPreviewGame(null);
     if (previewGame.premium && !isPremiumUser) {
+      logUpgradeClick();
       navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
@@ -101,6 +102,7 @@ const PlayScreen = ({ navigation }) => {
     if (!previewGame) return;
     setPreviewGame(null);
     if (previewGame.premium && !isPremiumUser) {
+      logUpgradeClick();
       navigation.navigate('Premium', { context: 'paywall' });
       return;
     }
