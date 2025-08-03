@@ -8,5 +8,3 @@ if (contents.includes('handleSwipeChallenge')) {
   throw new Error('SwipeScreen still references handleSwipeChallenge');
 }
 
-console.log('SwipeScreen check passed');
-

@@ -1,12 +1,13 @@
 // navigation/RootNavigator.js
 import React, { useEffect, useState, lazy, Suspense } from 'react';
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useUser } from '../contexts/UserContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import Constants from 'expo-constants';
 import firebase from '../firebase';
 import { isVersionLess } from '../utils/version';
+import logger from '../utils/logger';
 
 const SplashScreen = lazy(() => import('../screens/SplashScreen'));
 const AuthStack = lazy(() => import('./AuthStack'));
@@ -30,12 +31,13 @@ export default function RootNavigator() {
 
   useEffect(() => {
     let isMounted = true;
-    firebase
-      .firestore()
-      .collection('config')
-      .doc('app')
-      .get()
-      .then((doc) => {
+    const loadConfig = async () => {
+      try {
+        const doc = await firebase
+          .firestore()
+          .collection('config')
+          .doc('app')
+          .get();
         if (!isMounted) return;
         const minVersion = doc.data()?.minVersion;
         if (
@@ -44,8 +46,12 @@ export default function RootNavigator() {
         ) {
           setRequiresUpdate(true);
         }
-      })
-      .catch((e) => console.warn('Failed to fetch app config', e));
+      } catch (e) {
+        logger.error('Failed to fetch app config', e);
+        Alert.alert('Error', 'Unable to load configuration.');
+      }
+    };
+    loadConfig();
     return () => {
       isMounted = false;
     };

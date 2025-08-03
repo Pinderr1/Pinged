@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Alert,
   Text,
   View,
   TextInput,
@@ -25,6 +26,7 @@ import Toast from 'react-native-toast-message';
 import { HEADER_SPACING, SPACING } from '../layout';
 import { CARD_STYLE } from '../components/Card';
 import { textStyles } from '../textStyles';
+import logger from '../utils/logger';
 
 const SettingsScreen = ({ navigation }) => {
   const { darkMode, toggleTheme, theme } = useTheme();
@@ -72,7 +74,8 @@ const SettingsScreen = ({ navigation }) => {
       // RootNavigator will detect the auth change and present the AuthStack
       // so no manual navigation reset is required here.
     } catch (e) {
-      console.warn('Failed to sign out', e);
+      logger.error('Failed to sign out', e);
+      Alert.alert('Sign out failed', 'Please try again later.');
     }
   };
   const handleGoPremium = () => navigation.navigate('Premium', { context: 'paywall' });
@@ -84,7 +87,7 @@ const SettingsScreen = ({ navigation }) => {
       await firebase.firestore().collection('users').doc(user.uid).set(updates, { merge: true });
       Toast.show({ type: 'success', text1: 'Settings updated' });
     } catch (e) {
-      console.warn('Failed to update settings', e);
+      logger.error('Failed to update settings', e);
       Toast.show({ type: 'error', text1: 'Update failed' });
     }
   };
