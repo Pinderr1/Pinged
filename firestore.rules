@@ -38,7 +38,9 @@ service cloud.firestore {
             request.resource.data.badges.hasAny(["premium", "premiumMember"]) : false) &&
         !("roles" in request.resource.data) &&
         !("xp" in request.resource.data) &&
-        !("streak" in request.resource.data);
+        !("streak" in request.resource.data) &&
+        !("dailyPlayCount" in request.resource.data) &&
+        !("lastGamePlayedAt" in request.resource.data);
 
       // Updates cannot modify server controlled fields like xp or streak
       allow update: if isSignedIn() && request.auth.uid == uid &&
@@ -47,7 +49,9 @@ service cloud.firestore {
             request.resource.data.badges.hasAny(["premium", "premiumMember"]) : false) &&
         !("roles" in request.resource.data) &&
         !("xp" in request.resource.data) &&
-        !("streak" in request.resource.data);
+        !("streak" in request.resource.data) &&
+        !("dailyPlayCount" in request.resource.data) &&
+        !("lastGamePlayedAt" in request.resource.data);
 
       allow delete: if isSignedIn() && request.auth.uid == uid;
 
@@ -73,15 +77,12 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).changedKeys().hasOnly(['typingIndicator'])
       );
 
-      // Chat messages can be created by participants
+      // Chat messages can only be written by the server
       match /messages/{messageId} {
         allow read: if request.auth.token.admin == true || (
           isSignedIn() &&
           request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users);
-        allow create: if request.auth.token.admin == true || (
-          isSignedIn() &&
-          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users);
-        allow update, delete: if request.auth.token.admin == true;
+        allow create, update, delete: if request.auth.token.admin == true;
       }
 
       // Game state for a match is writable by the participants

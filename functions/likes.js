@@ -118,4 +118,29 @@ const sendLike = functions.https.onCall(async (data, context) => {
   return { matchId: res.matchId };
 });
 
-module.exports = { onLikeCreate, onLikeDelete, sendLike };
+const getLikesRemaining = functions.https.onCall(async (_, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  const db = admin.firestore();
+  const DAILY_LIMIT = await getDailyLimit();
+  const userSnap = await db.collection('users').doc(uid).get();
+  if (!!userSnap.get('isPremium')) {
+    return { likesLeft: Infinity };
+  }
+
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const sent = await db
+    .collection('likes')
+    .doc(uid)
+    .collection('liked')
+    .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(start))
+    .get();
+
+  return { likesLeft: Math.max(DAILY_LIMIT - sent.size, 0) };
+});
+
+module.exports = { onLikeCreate, onLikeDelete, sendLike, getLikesRemaining };

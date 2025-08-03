@@ -32,7 +32,8 @@ export const GameLimitProvider = ({ children }) => {
   const recordGamePlayed = async () => {
     if (isPremium || !user?.uid) return;
 
-    const last = user.lastGamePlayedAt?.toDate?.() ||
+    const last =
+      user.lastGamePlayedAt?.toDate?.() ||
       (user.lastGamePlayedAt ? new Date(user.lastGamePlayedAt) : null);
     const today = new Date();
     let count = 1;
@@ -42,16 +43,9 @@ export const GameLimitProvider = ({ children }) => {
     const dailyLimit = maxFreeGames ?? DEFAULT_LIMIT;
     setGamesLeft(Math.max(dailyLimit - count, 0));
     try {
-      await firebase
-        .firestore()
-        .collection('users')
-        .doc(user.uid)
-        .update({
-          dailyPlayCount: count,
-          lastGamePlayedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
+      await firebase.functions().httpsCallable('recordGamePlay')();
     } catch (e) {
-      console.error('Failed to update play count', e);
+      console.error('Failed to record game play', e);
     }
   };
 

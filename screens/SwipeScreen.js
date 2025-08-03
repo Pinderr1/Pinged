@@ -37,7 +37,6 @@ import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
 import { useLikeLimit } from '../contexts/LikeLimitContext';
-import { useLikeLimit } from '../contexts/LikeLimitContext';
 import { FONT_FAMILY } from '../textStyles';
 import UserCard from '../components/UserCard';
 import SwipeControls from '../components/SwipeControls';
@@ -108,7 +107,7 @@ const SwipeScreen = () => {
   const { play } = useSound();
   const { addMatch } = useChats();
   const isPremiumUser = !!currentUser?.isPremium;
-  const { likesLeft, recordLikeSent } = useLikeLimit();
+  const { recordLikeSent } = useLikeLimit();
   const {
     location: filterLocation,
     ageRange,
@@ -336,16 +335,6 @@ const SwipeScreen = () => {
     };
 
     if (direction === 'right') {
-      if (likesLeft <= 0 && !isPremiumUser) {
-        navigation.navigate('PremiumPaywall', { context: 'paywall' });
-        Animated.spring(pan, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: false,
-        }).start();
-        setActionLoading(false);
-        return;
-      }
-
       applyOptimistic();
 
       try {
