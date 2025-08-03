@@ -1,6 +1,7 @@
 import { registerRootComponent } from 'expo';
 import * as SplashScreen from 'expo-splash-screen';
 
+import './utils/logger';
 import App from './App';
 
 SplashScreen.preventAutoHideAsync();
