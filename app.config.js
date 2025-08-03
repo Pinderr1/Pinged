@@ -20,19 +20,43 @@ export default {
     },
     assetBundlePatterns: ["**/*"],
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      googleServicesFile: "./GoogleService-Info.plist",
+      infoPlist: {
+        NSCameraUsageDescription: "Allow Pinged to access the camera",
+        NSMicrophoneUsageDescription: "Allow Pinged to use the microphone",
+        NSLocationWhenInUseUsageDescription: "Allow Pinged to access your location"
+      }
     },
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#FFFFFF"
-      }
+      },
+      googleServicesFile: "./google-services.json",
+      permissions: [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ]
     },
     web: {
       favicon: "./assets/favicon.png"
     },
     jsEngine: "hermes",
-    plugins: ["expo-web-browser"],
+    notification: {
+      icon: "./assets/bell.png",
+      color: "#ffffff"
+    },
+    plugins: [
+      "expo-web-browser",
+      "expo-secure-store",
+      "expo-notifications",
+      "expo-location",
+      "expo-camera"
+    ],
     extra: {
       EXPO_PUBLIC_FIREBASE_API_KEY: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
       EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
