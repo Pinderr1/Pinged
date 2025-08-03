@@ -39,28 +39,88 @@ const stripeWebhook = functions.https.onRequest(async (req, res) => {
     console.error('Webhook signature verification failed', err);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const uid = session.metadata && session.metadata.uid;
-    if (uid) {
-      try {
-        await admin.firestore().collection('users').doc(uid).update({
-          isPremium: true,
-          premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          badges: admin.firestore.FieldValue.arrayUnion('premiumMember'),
-        });
-      } catch (e) {
-        console.error('Failed to update premium status', e);
-        return res.status(500).send('Failed to update user');
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const uid = session.metadata && session.metadata.uid;
+        if (uid) {
+          await admin.firestore().collection('users').doc(uid).update({
+            isPremium: true,
+            premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            badges: admin.firestore.FieldValue.arrayUnion('premiumMember'),
+          });
+        }
+        break;
       }
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object;
+        const subscriptionId = invoice.subscription;
+        if (subscriptionId) {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const uid = subscription.metadata && subscription.metadata.uid;
+          if (uid) {
+            await admin.firestore().collection('users').doc(uid).update({
+              isPremium: true,
+              premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              premiumExpiresAt: admin.firestore.Timestamp.fromMillis(
+                subscription.current_period_end * 1000,
+              ),
+              badges: admin.firestore.FieldValue.arrayUnion('premiumMember'),
+            });
+          }
+        }
+        break;
+      }
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object;
+        const uid = subscription.metadata && subscription.metadata.uid;
+        if (uid) {
+          await admin.firestore().collection('users').doc(uid).update({
+            isPremium: false,
+            premiumUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            premiumExpiresAt: admin.firestore.FieldValue.delete(),
+          });
+        }
+        break;
+      }
+      default:
+        break;
     }
+  } catch (e) {
+    console.error('Failed to handle Stripe webhook', e);
+    return res.status(500).send('Webhook handler failed');
   }
 
   res.status(200).send('ok');
 });
 
+const refreshPremiumStatus = functions.https.onCall(async (data, context) => {
+  const uid = context.auth && context.auth.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+  try {
+    const ref = admin.firestore().collection('users').doc(uid);
+    const snap = await ref.get();
+    if (!snap.exists) return { isPremium: false };
+    const data = snap.data();
+    const expiresAt = data.premiumExpiresAt?.toDate?.() || null;
+    const now = new Date();
+    if (expiresAt && expiresAt > now) {
+      if (!data.isPremium) await ref.update({ isPremium: true });
+      return { isPremium: true };
+    }
+    if (data.isPremium) await ref.update({ isPremium: false });
+    return { isPremium: false };
+  } catch (e) {
+    console.error('Failed to refresh premium status', e);
+    throw new functions.https.HttpsError('internal', 'Failed to refresh status');
+  }
+});
+
 module.exports = {
   createCheckoutSession,
   stripeWebhook,
+  refreshPremiumStatus,
 };

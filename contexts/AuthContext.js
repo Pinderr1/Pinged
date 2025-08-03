@@ -123,6 +123,11 @@ export const AuthProvider = ({ children }) => {
         setLoading(true);
         await ensureUserDoc(fbUser);
         initPresence(fbUser.uid);
+        try {
+          await firebase.functions().httpsCallable('refreshPremiumStatus')();
+        } catch (e) {
+          console.warn('Failed to refresh premium status', e);
+        }
         const ref = firebase.firestore().collection("users").doc(fbUser.uid);
         unsubProfile = ref.onSnapshot(
           (snap) => {
