@@ -165,7 +165,7 @@ const CommunityScreen = () => {
         },
         {
           text: 'Upgrade',
-          onPress: () => navigation.navigate('Premium', { context: 'paywall' }),
+          onPress: () => navigation.navigate('PremiumPaywall', { context: 'premium-event' }),
         },
         { text: 'Cancel', style: 'cancel' },
       ]);

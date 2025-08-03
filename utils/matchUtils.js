@@ -91,7 +91,7 @@ export async function handleLike({
       return { success: true, matchId };
     } catch (e) {
       if (!isPremiumUser && e?.message?.includes('Daily like limit')) {
-        navigation.navigate('PremiumPaywall', { context: 'paywall' });
+        navigation.navigate('PremiumPaywall', { context: 'like-limit' });
         return { success: false, matchId: null };
       }
       console.error('Failed to process like', e);

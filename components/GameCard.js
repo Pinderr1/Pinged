@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Platform } from 'react-native';
 import { textStyles } from '../textStyles';
 import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,10 +9,15 @@ import FavoriteStar from './FavoriteStar';
 import PremiumBadge from './PremiumBadge';
 import TrendingBadge from './TrendingBadge';
 import useCardPressAnimation from '../hooks/useCardPressAnimation';
+import { useNavigation } from '@react-navigation/native';
+import { useUser } from '../contexts/UserContext';
 
 export default function GameCard({ item, onPress, toggleFavorite, isFavorite, trending }) {
   const { theme } = useTheme();
   const { scale, handlePressIn, handlePressOut } = useCardPressAnimation();
+  const navigation = useNavigation();
+  const { user } = useUser();
+  const isPremiumUser = !!user?.isPremium;
 
   return (
     <GameCardBase
@@ -20,6 +25,11 @@ export default function GameCard({ item, onPress, toggleFavorite, isFavorite, tr
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onPress={onPress}
+      onHoverIn={
+        item.premium && !isPremiumUser && Platform.OS === 'web'
+          ? () => navigation.navigate('PremiumPaywall', { context: 'premium-feature' })
+          : undefined
+      }
     >
       <FavoriteStar isFavorite={isFavorite} onPress={toggleFavorite} />
 

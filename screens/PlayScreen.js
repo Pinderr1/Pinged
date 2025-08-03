@@ -88,7 +88,7 @@ const PlayScreen = ({ navigation }) => {
     if (!previewGame) return;
     setPreviewGame(null);
     if (previewGame.premium && !isPremiumUser) {
-      navigation.navigate('Premium', { context: 'paywall' });
+      navigation.navigate('PremiumPaywall', { context: 'premium-feature' });
       return;
     }
     if (!requireCredits()) return;
@@ -101,7 +101,7 @@ const PlayScreen = ({ navigation }) => {
     if (!previewGame) return;
     setPreviewGame(null);
     if (previewGame.premium && !isPremiumUser) {
-      navigation.navigate('Premium', { context: 'paywall' });
+      navigation.navigate('PremiumPaywall', { context: 'premium-feature' });
       return;
     }
     if (!requireCredits()) return;

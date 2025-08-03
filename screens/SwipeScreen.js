@@ -296,7 +296,7 @@ const SwipeScreen = () => {
 
     if (direction === 'right') {
       if (likesLeft <= 0 && !isPremiumUser) {
-        navigation.navigate('PremiumPaywall', { context: 'paywall' });
+        navigation.navigate('PremiumPaywall', { context: 'like-limit' });
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
           useNativeDriver: false,
