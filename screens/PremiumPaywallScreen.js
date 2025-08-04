@@ -10,10 +10,12 @@ import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import PropTypes from 'prop-types';
+import { useAnalytics } from '../contexts/AnalyticsContext';
 
 export default function PremiumPaywallScreen({ navigation, route }) {
   const { theme } = useTheme();
   const { user } = useUser();
+  const { logUpgradeClicked } = useAnalytics();
   const styles = getStyles(theme);
 
   const context = route?.params?.context || '';
@@ -71,12 +73,18 @@ export default function PremiumPaywallScreen({ navigation, route }) {
         <Text style={styles.subtitle}>{subtitle}</Text>
         <GradientButton
           text="Go Premium"
-          onPress={() => navigation.replace('Premium')}
+          onPress={() => {
+            logUpgradeClicked();
+            navigation.replace('Premium');
+          }}
           style={{ marginTop: 20 }}
         />
         <GradientButton
           text="Subscribe"
-          onPress={startCheckout}
+          onPress={() => {
+            logUpgradeClicked();
+            startCheckout();
+          }}
           style={{ marginTop: 12 }}
         />
         <TouchableOpacity onPress={() => navigation.goBack()}>

@@ -37,6 +37,7 @@ import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
 import { useLikeLimit } from '../contexts/LikeLimitContext';
+import { useAnalytics } from '../contexts/AnalyticsContext';
 import { FONT_FAMILY } from '../textStyles';
 import UserCard from '../components/UserCard';
 import SwipeControls from '../components/SwipeControls';
@@ -115,6 +116,7 @@ const SwipeScreen = () => {
     gender: filterGender,
     verifiedOnly,
   } = useFilters();
+  const { logSwipe, logMatchCreated } = useAnalytics();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matchedUser, setMatchedUser] = useState(null);
@@ -323,6 +325,7 @@ const SwipeScreen = () => {
     // Provide light haptic feedback on every swipe
     Haptics.selectionAsync().catch(() => {});
     play(direction === 'left' ? 'swipe_left' : 'swipe_right');
+    logSwipe(direction);
 
     const prevIndex = currentIndex;
     const prevHistory = history;
@@ -349,7 +352,7 @@ const SwipeScreen = () => {
 
       try {
         const likeOp = async () => {
-          const { success } = await handleLike({
+          const { success, matchId } = await handleLike({
             currentUser,
             targetUser,
             firestore: firebase.firestore(),
@@ -366,6 +369,9 @@ const SwipeScreen = () => {
           if (!success) {
             throw new Error('Like failed');
           }
+          if (matchId) {
+            logMatchCreated();
+          }
           recordLikeSent();
         };
         await likeOp();
@@ -374,7 +380,7 @@ const SwipeScreen = () => {
         const state = await Network.getNetworkStateAsync();
         if (!state.isConnected) {
           likeRetryQueue.push(async () => {
-            const { success } = await handleLike({
+            const { success, matchId } = await handleLike({
               currentUser,
               targetUser,
               firestore: firebase.firestore(),
@@ -388,7 +394,10 @@ const SwipeScreen = () => {
               play,
               setShowFireworks,
             });
-            if (success) recordLikeSent();
+            if (success) {
+              if (matchId) logMatchCreated();
+              recordLikeSent();
+            }
           });
           Toast.show({
             type: 'info',
