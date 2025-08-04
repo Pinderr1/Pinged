@@ -17,6 +17,30 @@ const sendChatMessage = functions.https.onCall(async (data, context) => {
   }
 
   const db = admin.firestore();
+  const matchRef = db.collection('matches').doc(matchId);
+  const matchSnap = await matchRef.get();
+  if (!matchSnap.exists) {
+    throw new functions.https.HttpsError('not-found', 'Match not found');
+  }
+  const users = matchSnap.get('users') || [];
+  if (!users.includes(uid)) {
+    throw new functions.https.HttpsError('permission-denied', 'Not a participant');
+  }
+  const otherId = users.find((u) => u !== uid);
+  if (otherId) {
+    const [block1, block2] = await Promise.all([
+      db.doc(`blocks/${uid}/blocked/${otherId}`).get(),
+      db.doc(`blocks/${otherId}/blocked/${uid}`).get(),
+    ]);
+    if (block1.exists || block2.exists) {
+      await matchRef.update({
+        status: 'blocked',
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      throw new functions.https.HttpsError('failed-precondition', 'Users are blocked');
+    }
+  }
+
   const limiterRef = db.collection('messageLimits').doc(uid);
   const now = Date.now();
   await db.runTransaction(async (tx) => {

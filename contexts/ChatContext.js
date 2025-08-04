@@ -37,7 +37,7 @@ const getStorageKey = (uid) => `${STORAGE_PREFIX}${uid}`;
 const getGameStateKey = (matchId) => `${GAME_STATE_PREFIX}${matchId}`;
 
 export const ChatProvider = ({ children }) => {
-  const { user } = useUser();
+  const { user, blocked } = useUser();
   const { play } = useSound();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -253,6 +253,30 @@ export const ChatProvider = ({ children }) => {
 
   const sendMessage = async ({ matchId, text = '', meta = {} }) => {
     if (!matchId || !user?.uid) return;
+    const match = matches.find((m) => m.id === matchId);
+    const otherId = match?.otherUserId;
+    if (otherId) {
+      let isBlocked = Array.isArray(blocked) && blocked.includes(otherId);
+      if (!isBlocked) {
+        try {
+          const blockSnap = await firebase
+            .firestore()
+            .collection('blocks')
+            .doc(otherId)
+            .collection('blocked')
+            .doc(user.uid)
+            .get();
+          isBlocked = blockSnap.exists;
+        } catch (e) {
+          console.warn('Failed to check block status', e);
+        }
+      }
+      if (isBlocked) {
+        removeMatch(matchId);
+        Toast.show({ type: 'error', text1: 'User blocked' });
+        return;
+      }
+    }
     const now = Date.now();
     if (now - lastMessageRef.current < 1000) {
       Toast.show({ type: 'error', text1: 'You are sending messages too quickly' });
@@ -273,8 +297,6 @@ export const ChatProvider = ({ children }) => {
 
       if (trimmed) {
         if (!group) {
-          const match = matches.find((m) => m.id === matchId);
-          const otherId = match?.otherUserId;
           if (otherId) {
             const enc = await encryptText(trimmed, otherId);
             payload.ciphertext = enc.ciphertext;
