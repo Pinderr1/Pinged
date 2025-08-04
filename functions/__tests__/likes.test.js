@@ -1,6 +1,6 @@
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
-const { likeAndMaybeMatch } = require('../likes');
+const { sendLike } = require('../likes');
 
 jest.mock('firebase-functions', () => ({
   https: {
@@ -54,7 +54,7 @@ describe('likeAndMaybeMatch', () => {
 
     admin.firestore.mockReturnValue(db);
 
-    const res = await likeAndMaybeMatch(
+    const res = await sendLike(
       { targetUid: 'u2' },
       { auth: { uid: 'u1' } }
     );
