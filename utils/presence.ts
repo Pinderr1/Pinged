@@ -31,11 +31,13 @@ export async function initPresence(uid: string) {
     ...baseData,
   };
 
-  db.ref('.info/connected').on('value', (snap) => {
+  const infoRef = db.ref('.info/connected');
+  const handle = infoRef.on('value', (snap) => {
     if (!snap.val()) return;
     ref
       .onDisconnect()
       .update(isOffline)
       .then(() => ref.set(isOnline));
   });
+  return () => infoRef.off('value', handle);
 }

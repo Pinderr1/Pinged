@@ -107,6 +107,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     let unsubProfile;
+    let presenceCleanup;
     let currentUid = null;
     const unsub = firebase.auth().onAuthStateChanged(async (fbUser) => {
       if (fbUser?.uid !== currentUid) {
@@ -118,11 +119,15 @@ export const AuthProvider = ({ children }) => {
         unsubProfile();
         unsubProfile = null;
       }
+      if (presenceCleanup) {
+        presenceCleanup();
+        presenceCleanup = null;
+      }
 
       if (fbUser) {
         setLoading(true);
         await ensureUserDoc(fbUser);
-        initPresence(fbUser.uid);
+        presenceCleanup = await initPresence(fbUser.uid);
         try {
           await firebase.functions().httpsCallable('refreshPremiumStatus')();
         } catch (e) {
@@ -172,6 +177,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       unsub();
       if (unsubProfile) unsubProfile();
+      if (presenceCleanup) presenceCleanup();
     };
   }, []);
 
