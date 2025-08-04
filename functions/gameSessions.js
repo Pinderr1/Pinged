@@ -158,6 +158,23 @@ const makeMove = functions.https.onCall(async (data, context) => {
         return;
       }
 
+      const otherId = players[idx === 0 ? 1 : 0];
+      if (otherId) {
+        const [block1, block2] = await Promise.all([
+          tx.get(db.doc(`blocks/${uid}/blocked/${otherId}`)),
+          tx.get(db.doc(`blocks/${otherId}/blocked/${uid}`)),
+        ]);
+        if (block1.exists || block2.exists) {
+          tx.update(ref, {
+            status: 'blocked',
+            gameover: { reason: 'blocked' },
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          error = { code: 'failed-precondition', message: 'Users are blocked' };
+          return;
+        }
+      }
+
       const state = replayGame(Game, sess.state, sess.moves);
       if (state.gameover) {
         error = { code: 'failed-precondition', message: 'Game already finished' };
