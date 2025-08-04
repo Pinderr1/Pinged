@@ -19,6 +19,7 @@ const joinEvent = functions.https.onCall(async (data, context) => {
   const eventRef = db.collection('events').doc(eventId);
   const attendeeRef = eventRef.collection('attendees').doc(uid);
   const userRef = db.collection('users').doc(uid);
+  const ticketRef = userRef.collection('tickets').doc(eventId);
   const attemptRef = db.collection('joinAttempts').doc(uid);
 
   const now = admin.firestore.Timestamp.now();
@@ -76,9 +77,13 @@ const joinEvent = functions.https.onCall(async (data, context) => {
       const eventData = eventSnap.data() || {};
       const userData = userSnap.data() || {};
 
-      const hasTicket = Array.isArray(userData.eventTickets) && userData.eventTickets.includes(eventId);
-      if (eventData.ticketed && !userData.isPremium && !hasTicket) {
-        throw new functions.https.HttpsError('failed-precondition', 'Ticket required');
+      let ticketSnap;
+      if (eventData.ticketed && !userData.isPremium) {
+        ticketSnap = await tx.get(ticketRef);
+        const ticketData = ticketSnap.data() || {};
+        if (!ticketSnap.exists || ticketData.used) {
+          throw new functions.https.HttpsError('failed-precondition', 'Ticket required');
+        }
       }
 
       const capacity = Number(eventData.capacity) || null;
@@ -95,6 +100,16 @@ const joinEvent = functions.https.onCall(async (data, context) => {
       tx.update(eventRef, {
         attendeeCount: admin.firestore.FieldValue.increment(1),
       });
+
+      if (eventData.ticketed && !userData.isPremium) {
+        tx.update(ticketRef, {
+          used: true,
+          usedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        tx.update(userRef, {
+          eventTickets: admin.firestore.FieldValue.arrayRemove(eventId),
+        });
+      }
 
       return { success: true };
     });

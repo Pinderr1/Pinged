@@ -85,6 +85,10 @@ service cloud.firestore {
 
       // Admins may read or write unrestricted
       allow read, write: if request.auth.token.admin == true;
+
+      match /tickets/{ticketId} {
+        allow read, write: if request.auth.uid == uid || request.auth.token.admin == true;
+      }
     }
 
     // Match documents are readable by the matched users but may only be created by the server

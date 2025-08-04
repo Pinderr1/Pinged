@@ -159,13 +159,21 @@ export const UserProvider = ({ children }) => {
     if ((user.eventTickets || []).includes(eventId)) return;
     updateUser({ eventTickets: [...(user.eventTickets || []), eventId] });
     try {
-      await firebase
-        .firestore()
-        .collection("users")
-        .doc(user.uid)
-        .update({
+      const db = firebase.firestore();
+      const userDoc = db.collection("users").doc(user.uid);
+      await db.runTransaction(async (tx) => {
+        tx.set(
+          userDoc.collection("tickets").doc(eventId),
+          {
+            used: false,
+            redeemedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+        tx.update(userDoc, {
           eventTickets: firebase.firestore.FieldValue.arrayUnion(eventId),
         });
+      });
     } catch (e) {
       console.warn("Failed to redeem event ticket", e);
     }
