@@ -76,15 +76,30 @@ const joinEvent = functions.https.onCall(async (data, context) => {
       const eventData = eventSnap.data() || {};
       const userData = userSnap.data() || {};
 
-      const hasTicket = Array.isArray(userData.eventTickets) && userData.eventTickets.includes(eventId);
-      if (eventData.ticketed && !userData.isPremium && !hasTicket) {
+      const isPremiumUser = !!userData.isPremium;
+      const isPremiumEvent = !!eventData.premium;
+      const hasTicket =
+        Array.isArray(userData.eventTickets) &&
+        userData.eventTickets.includes(eventId);
+
+      if (isPremiumEvent && !isPremiumUser) {
+        throw new functions.https.HttpsError(
+          'failed-precondition',
+          'Premium membership required',
+        );
+      }
+
+      if (eventData.ticketed && !isPremiumUser && !hasTicket) {
         throw new functions.https.HttpsError('failed-precondition', 'Ticket required');
       }
 
-      const capacity = Number(eventData.capacity) || null;
+      const capacity = Number(eventData.capacity);
       const attendeeCount = Number(eventData.attendeeCount) || 0;
-      if (capacity && attendeeCount >= capacity) {
-        throw new functions.https.HttpsError('failed-precondition', 'Event is full');
+      if (!Number.isNaN(capacity) && capacity > 0 && attendeeCount >= capacity) {
+        throw new functions.https.HttpsError(
+          'failed-precondition',
+          'Event is full',
+        );
       }
 
       tx.set(
