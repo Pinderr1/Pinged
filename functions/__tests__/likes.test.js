@@ -1,6 +1,6 @@
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
-const { likeAndMaybeMatch } = require('../likes');
+const { sendLike } = require('../likes');
 
 jest.mock('firebase-functions', () => ({
   https: {
@@ -17,19 +17,21 @@ jest.mock('firebase-functions', () => ({
 jest.mock('firebase-admin', () => {
   const firestore = jest.fn();
   firestore.FieldValue = { serverTimestamp: jest.fn(() => 'ts') };
+  firestore.Timestamp = { now: jest.fn(() => ({ toDate: () => new Date('2020-01-01') })) };
   return { firestore };
 });
 
-describe('likeAndMaybeMatch', () => {
+describe('sendLike', () => {
   it('creates match when other user liked first', async () => {
+    const snap = (data) => ({ exists: true, data: () => data });
     const store = {
-      'config/app': { exists: true, data: { maxDailyLikes: 100 } },
-      'users/u1': { exists: true, data: { isPremium: true } },
-      'likes/u2/liked/u1': { exists: true },
-      'likes/u1/liked/u2': { exists: false },
-      'blocks/u1/blocked/u2': { exists: false },
-      'blocks/u2/blocked/u1': { exists: false },
-      'matches/u1_u2': { exists: false },
+      'config/app': snap({ maxDailyLikes: 100 }),
+      'users/u1': snap({ isPremium: true }),
+      'likes/u2/liked/u1': snap({}),
+      'likes/u1/liked/u2': { exists: false, data: () => ({}) },
+      'blocks/u1/blocked/u2': { exists: false, data: () => ({}) },
+      'blocks/u2/blocked/u1': { exists: false, data: () => ({}) },
+      'matches/u1_u2': { exists: false, data: () => ({}) },
     };
 
     const db = {
@@ -46,15 +48,19 @@ describe('likeAndMaybeMatch', () => {
     };
 
     const transaction = {
-      get: async (ref) => store[ref.path] || { exists: false },
+      get: async (ref) => store[ref.path] || { exists: false, data: () => ({}) },
       set: (ref, data) => {
-        store[ref.path] = { exists: true, data };
+        store[ref.path] = snap(data);
+      },
+      update: (ref, data) => {
+        const prev = store[ref.path]?.data?.() || {};
+        store[ref.path] = snap({ ...prev, ...data });
       },
     };
 
     admin.firestore.mockReturnValue(db);
 
-    const res = await likeAndMaybeMatch(
+    const res = await sendLike(
       { targetUid: 'u2' },
       { auth: { uid: 'u1' } }
     );

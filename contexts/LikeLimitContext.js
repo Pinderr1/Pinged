@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
 import useRemoteConfig from '../hooks/useRemoteConfig';
-import firebase from '../firebase';
 
 const LikeLimitContext = createContext();
 const DEFAULT_LIMIT = 100;
@@ -15,24 +14,20 @@ export const LikeLimitProvider = ({ children }) => {
 
   useEffect(() => {
     const dailyLimit = maxDailyLikes ?? DEFAULT_LIMIT;
-    if (isPremium || !user?.uid) {
+    if (isPremium) {
       setLikesLeft(Infinity);
       return;
     }
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    firebase
-      .firestore()
-      .collection('likes')
-      .doc(user?.uid || 'missing')
-      .collection('liked')
-      .where('createdAt', '>=', firebase.firestore.Timestamp.fromDate(start))
-      .get()
-      .then((snap) => {
-        setLikesLeft(Math.max(dailyLimit - snap.size, 0));
-      })
-      .catch(() => setLikesLeft(dailyLimit));
-  }, [isPremium, user?.uid, maxDailyLikes]);
+    const last =
+      user?.lastLikeSentAt?.toDate?.() ||
+      (user?.lastLikeSentAt ? new Date(user.lastLikeSentAt) : null);
+    const today = new Date().toDateString();
+    if (last && last.toDateString() === today) {
+      setLikesLeft(Math.max(dailyLimit - (user.dailyLikeCount || 0), 0));
+    } else {
+      setLikesLeft(dailyLimit);
+    }
+  }, [isPremium, user?.dailyLikeCount, user?.lastLikeSentAt, maxDailyLikes]);
 
   const recordLikeSent = () => {
     if (isPremium) return;

@@ -52,52 +52,72 @@ const sendLike = functions.https.onCall(async (data, context) => {
   const db = admin.firestore();
   const DAILY_LIMIT = await getDailyLimit();
 
-  const [block1, block2, userSnap] = await Promise.all([
-    db.doc(`blocks/${uid}/blocked/${targetUid}`).get(),
-    db.doc(`blocks/${targetUid}/blocked/${uid}`).get(),
-    db.collection('users').doc(uid).get(),
-  ]);
-
-  if (block1.exists || block2.exists) {
-    throw new functions.https.HttpsError('failed-precondition', 'Users are blocked');
-  }
-
-  const isPremium = !!userSnap.get('isPremium');
-  if (!isPremium) {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const sent = await db
-      .collection('likes')
-      .doc(uid)
-      .collection('liked')
-      .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(start))
-      .get();
-    if (sent.size >= DAILY_LIMIT) {
-      throw new functions.https.HttpsError('resource-exhausted', 'Daily like limit reached');
-    }
-  }
-
   const sorted = [uid, targetUid].sort();
   const matchId = sorted.join('_');
 
   const res = await db.runTransaction(async (tx) => {
+    const userRef = db.collection('users').doc(uid);
     const likeRef = db.collection('likes').doc(uid).collection('liked').doc(targetUid);
     const otherLikeRef = db.collection('likes').doc(targetUid).collection('liked').doc(uid);
     const matchRef = db.collection('matches').doc(matchId);
-    const [likeSnap, otherLikeSnap, matchSnap, blockSnap1, blockSnap2] = await Promise.all([
+    const blockRef1 = db
+      .collection('blocks')
+      .doc(uid)
+      .collection('blocked')
+      .doc(targetUid);
+    const blockRef2 = db
+      .collection('blocks')
+      .doc(targetUid)
+      .collection('blocked')
+      .doc(uid);
+
+    const [
+      userSnap,
+      likeSnap,
+      otherLikeSnap,
+      matchSnap,
+      blockSnap1,
+      blockSnap2,
+    ] = await Promise.all([
+      tx.get(userRef),
       tx.get(likeRef),
       tx.get(otherLikeRef),
       tx.get(matchRef),
-      tx.get(db.collection('blocks').doc(uid).collection('blocked').doc(targetUid)),
-      tx.get(db.collection('blocks').doc(targetUid).collection('blocked').doc(uid)),
+      tx.get(blockRef1),
+      tx.get(blockRef2),
     ]);
+
+    if (blockSnap1.exists || blockSnap2.exists) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Users are blocked',
+      );
+    }
+
+    const userData = userSnap.data() || {};
+    const isPremium = !!userData.isPremium;
+
+    if (!isPremium && !likeSnap.exists) {
+      const now = admin.firestore.Timestamp.now();
+      let dailyCount = 0;
+      const last = userData.lastLikeSentAt;
+      if (last && now.toDate().toDateString() === last.toDate().toDateString()) {
+        dailyCount = userData.dailyLikeCount || 0;
+      }
+      if (dailyCount >= DAILY_LIMIT) {
+        throw new functions.https.HttpsError(
+          'resource-exhausted',
+          'Daily like limit reached',
+        );
+      }
+      tx.update(userRef, {
+        dailyLikeCount: dailyCount + 1,
+        lastLikeSentAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
 
     if (matchSnap.exists) {
       return { matchId };
-    }
-
-    if (blockSnap1.exists || blockSnap2.exists) {
-      return { matchId: null };
     }
 
     if (!likeSnap.exists) {
