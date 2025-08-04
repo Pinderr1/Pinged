@@ -112,13 +112,13 @@ const SettingsScreen = ({ navigation }) => {
             { paddingTop: HEADER_SPACING, paddingHorizontal: SPACING.LG },
           ]}
         >
-        <Header />
+          <Header />
 
-        <Text
-          style={[styles.logoText, { color: theme.text, marginBottom: SPACING.LG }]}
-        >
-          Settings
-        </Text>
+          <Text
+            style={[styles.logoText, { color: theme.text, marginBottom: SPACING.LG }]}
+          >
+            Settings
+          </Text>
 
         <View style={local.sectionCard}>
           <Text style={local.sectionTitle}>Account</Text>
@@ -231,7 +231,14 @@ const SettingsScreen = ({ navigation }) => {
                       { label: 'Other', value: 'Other' },
                     ]}
                   />
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+                  <TouchableOpacity
+                    style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}
+                    onPress={() => {
+                      const newValue = !verifiedOnly;
+                      setVerifiedFilter(newValue);
+                      saveUserSetting({ seeVerifiedOnly: newValue });
+                    }}
+                  >
                     <Text style={[styles.settingText, { marginRight: 8 }]}>Verified Only</Text>
                     <Switch
                       value={verifiedOnly}
@@ -240,13 +247,20 @@ const SettingsScreen = ({ navigation }) => {
                         saveUserSetting({ seeVerifiedOnly: v });
                       }}
                     />
-                  </View>
+                  </TouchableOpacity>
                 </View>
               )}
             </>
           )}
 
-          <View style={local.switchRow}>
+          <TouchableOpacity
+            style={local.switchRow}
+            onPress={() => {
+              const newValue = !discoveryEnabled;
+              setDiscoveryEnabled(newValue);
+              saveUserSetting({ discoveryEnabled: newValue });
+            }}
+          >
             <Text style={[styles.settingText, { marginRight: 8 }]}>Discovery</Text>
             <Switch
               value={discoveryEnabled}
@@ -255,7 +269,7 @@ const SettingsScreen = ({ navigation }) => {
                 saveUserSetting({ discoveryEnabled: v });
               }}
             />
-          </View>
+          </TouchableOpacity>
 
           <RNPickerSelect
             onValueChange={(val) => {
@@ -292,7 +306,14 @@ const SettingsScreen = ({ navigation }) => {
             ]}
           />
 
-          <View style={local.switchRow}>
+          <TouchableOpacity
+            style={local.switchRow}
+            onPress={() => {
+              const newValue = !allowDMs;
+              setAllowDMs(newValue);
+              saveUserSetting({ allowDMs: newValue });
+            }}
+          >
             <Text style={[styles.settingText, { marginRight: 8 }]}>Allow DMs</Text>
             <Switch
               value={allowDMs}
@@ -301,9 +322,16 @@ const SettingsScreen = ({ navigation }) => {
                 saveUserSetting({ allowDMs: v });
               }}
             />
-          </View>
+          </TouchableOpacity>
 
-          <View style={local.switchRow}>
+          <TouchableOpacity
+            style={local.switchRow}
+            onPress={() => {
+              const newValue = !swipeSurge;
+              setSwipeSurge(newValue);
+              saveUserSetting({ swipeSurge: newValue });
+            }}
+          >
             <Text style={[styles.settingText, { marginRight: 8 }]}>Swipe Surge</Text>
             <Switch
               value={swipeSurge}
@@ -312,9 +340,16 @@ const SettingsScreen = ({ navigation }) => {
                 saveUserSetting({ swipeSurge: v });
               }}
             />
-          </View>
+          </TouchableOpacity>
 
-          <View style={local.switchRow}>
+          <TouchableOpacity
+            style={local.switchRow}
+            onPress={() => {
+              const newValue = !notificationsEnabled;
+              setNotificationsEnabled(newValue);
+              saveUserSetting({ notificationsEnabled: newValue });
+            }}
+          >
             <Text style={[styles.settingText, { marginRight: 8 }]}>Notifications</Text>
             <Switch
               value={notificationsEnabled}
@@ -323,7 +358,7 @@ const SettingsScreen = ({ navigation }) => {
                 saveUserSetting({ notificationsEnabled: v });
               }}
             />
-          </View>
+          </TouchableOpacity>
 
           <RNPickerSelect
             onValueChange={(val) => {
@@ -431,7 +466,7 @@ const SettingsScreen = ({ navigation }) => {
             <GradientButton text="Log Out" onPress={handleLogout} />
           </View>
         )}
-      </ScreenContainer>
+        </ScreenContainer>
       </SafeKeyboardView>
     </GradientBackground>
   );
