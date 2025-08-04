@@ -36,7 +36,8 @@ import FullProfileModal from '../components/FullProfileModal';
 import useVoicePlayback from '../hooks/useVoicePlayback';
 import { useSound } from '../contexts/SoundContext';
 import { useFilters } from '../contexts/FilterContext';
-import { useLikeLimit } from '../contexts/LikeLimitContext';
+import { usePremium } from '../contexts/PremiumContext';
+import { activateBoost as activateBoostService } from '../services/premium';
 import { FONT_FAMILY } from '../textStyles';
 import UserCard from '../components/UserCard';
 import SwipeControls from '../components/SwipeControls';
@@ -107,7 +108,8 @@ const SwipeScreen = () => {
   const { play } = useSound();
   const { addMatch } = useChats();
   const isPremiumUser = !!currentUser?.isPremium;
-  const { likesLeft, recordLikeSent } = useLikeLimit();
+  const { flags: premiumFlags, refresh: refreshPremium } = usePremium();
+  const canSwipe = premiumFlags.canSwipe !== false;
   const {
     location: filterLocation,
     ageRange,
@@ -335,7 +337,7 @@ const SwipeScreen = () => {
     };
 
     if (direction === 'right') {
-      if (likesLeft <= 0 && !isPremiumUser) {
+      if (!canSwipe && !isPremiumUser) {
         navigation.navigate('PremiumPaywall', { context: 'like-limit' });
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
@@ -366,7 +368,7 @@ const SwipeScreen = () => {
           if (!success) {
             throw new Error('Like failed');
           }
-          recordLikeSent();
+          await refreshPremium();
         };
         await likeOp();
         await processLikeQueue();
@@ -388,7 +390,7 @@ const SwipeScreen = () => {
               play,
               setShowFireworks,
             });
-            if (success) recordLikeSent();
+            if (success) await refreshPremium();
           });
           Toast.show({
             type: 'info',
@@ -507,13 +509,15 @@ const SwipeScreen = () => {
 
 
   const activateBoost = async () => {
-    if (!currentUser?.uid) return;
-    const boostUntil = new Date(Date.now() + 30 * 60 * 1000);
-    const updates = { boostUntil };
-    if (!currentUser.boostTrialUsed) updates.boostTrialUsed = true;
-    updateUser(updates);
     try {
-      await firebase.firestore().collection('users').doc(currentUser.uid).update(updates);
+      const res = await activateBoostService();
+      if (res?.boostUntil) {
+        updateUser({
+          boostUntil: new Date(res.boostUntil),
+          boostTrialUsed: isPremiumUser ? currentUser?.boostTrialUsed : true,
+        });
+      }
+      await refreshPremium();
       Toast.show({ type: 'success', text1: 'Boost activated!' });
     } catch (e) {
       console.warn('Failed to activate boost', e);

@@ -330,7 +330,9 @@ const HomeScreen = ({ navigation }) => {
       {!isPremiumUser && showPremiumBanner && (
         <PremiumBanner
           onClose={() => setShowPremiumBanner(false)}
-          onPress={() => navigation.navigate('Premium', { context: 'paywall' })}
+          onPress={() =>
+            navigation.navigate('PremiumPaywall', { context: 'paywall' })
+          }
         />
       )}
 
