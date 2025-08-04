@@ -14,44 +14,21 @@ export const GameLimitProvider = ({ children }) => {
   const [gamesLeft, setGamesLeft] = useState(isPremium ? Infinity : limit);
 
   useEffect(() => {
-    const dailyLimit = maxFreeGames ?? DEFAULT_LIMIT;
-    if (isPremium) {
-      setGamesLeft(Infinity);
-      return;
-    }
-    const last = user?.lastGamePlayedAt?.toDate?.() ||
-      (user?.lastGamePlayedAt ? new Date(user.lastGamePlayedAt) : null);
-    const today = new Date().toDateString();
-    if (last && last.toDateString() === today) {
-      setGamesLeft(Math.max(dailyLimit - (user.dailyPlayCount || 0), 0));
-    } else {
-      setGamesLeft(dailyLimit);
-    }
-  }, [isPremium, user?.dailyPlayCount, user?.lastGamePlayedAt, maxFreeGames]);
+    setGamesLeft(isPremium ? Infinity : limit);
+  }, [isPremium, limit]);
 
   const recordGamePlayed = async () => {
     if (isPremium || !user?.uid) return;
-
-    const last = user.lastGamePlayedAt?.toDate?.() ||
-      (user.lastGamePlayedAt ? new Date(user.lastGamePlayedAt) : null);
-    const today = new Date();
-    let count = 1;
-    if (last && last.toDateString() === today.toDateString()) {
-      count = (user.dailyPlayCount || 0) + 1;
-    }
-    const dailyLimit = maxFreeGames ?? DEFAULT_LIMIT;
-    setGamesLeft(Math.max(dailyLimit - count, 0));
     try {
-      await firebase
-        .firestore()
-        .collection('users')
-        .doc(user.uid)
-        .update({
-          dailyPlayCount: count,
-          lastGamePlayedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
+      const callable = firebase.functions().httpsCallable('recordGamePlay');
+      const res = await callable();
+      const remaining = res?.data?.gamesLeft;
+      if (Number.isFinite(remaining)) setGamesLeft(remaining);
     } catch (e) {
-      console.error('Failed to update play count', e);
+      if (e?.message?.includes('Daily game limit')) {
+        setGamesLeft(0);
+      }
+      throw e;
     }
   };
 

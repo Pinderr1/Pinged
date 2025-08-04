@@ -12,7 +12,7 @@ import Header from '../components/Header';
 import ScreenContainer from '../components/ScreenContainer';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
-import { useGameLimit } from '../contexts/GameLimitContext';
+import { useLikeLimit } from '../contexts/LikeLimitContext';
 import { HEADER_SPACING, SPACING } from '../layout';
 
 import { allGames } from '../data/games';
@@ -45,7 +45,7 @@ const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const { user, loginBonus } = useUser();
   const isPremiumUser = !!user?.isPremium;
-  const { gamesLeft } = useGameLimit();
+  const { sendLike } = useLikeLimit();
   const { addMatch } = useChats();
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
   const [playTarget, setPlayTarget] = useState('match');
@@ -92,70 +92,22 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate('Play');
       return;
     }
-    if (target === 'ai' || gamesLeft > 0 || isPremiumUser) {
-      setPlayTarget(target);
-      setGamePickerVisible(true);
-    } else {
-      navigation.navigate('PremiumPaywall', { context: 'game-limit' });
-    }
+    setPlayTarget(target);
+    setGamePickerVisible(true);
   };
 
-
-  const updateDailyUsage = async () => {
-    if (!user?.uid) return;
-    try {
-      await firebase
-        .firestore()
-        .collection('users')
-        .doc(user.uid)
-        .set(
-          {
-            dailyGameUsage: {
-              lastFreeGame: firebase.firestore.FieldValue.serverTimestamp(),
-            },
-          },
-          { merge: true }
-        );
-    } catch (e) {
-      console.warn('Failed to update daily usage', e);
-    }
-  };
 
   const matchWithStranger = async (gameId) => {
     try {
       if (!user?.uid) return;
-      const userSnap = await firebase
-        .firestore()
-        .collection('users')
-        .doc(user.uid)
-        .get();
-      const last =
-        userSnap.data()?.dailyGameUsage?.lastFreeGame?.toDate?.() ||
-        userSnap.data()?.dailyGameUsage?.lastFreeGame ||
-        null;
-      const today = new Date();
-      if (
-        !isPremiumUser &&
-        last &&
-        new Date(last).toDateString() === today.toDateString()
-      ) {
-        navigation.navigate('PremiumPaywall', { context: 'game-limit' });
-        return;
-      }
-
       const joinRes = await firebase
         .functions()
         .httpsCallable('joinGameSession')({ gameId });
       const { sessionId, opponentId } = joinRes.data || {};
 
       if (opponentId) {
-        const res = await firebase
-          .functions()
-          .httpsCallable('sendLike')({
-            uid: user.uid,
-            targetUid: opponentId,
-          });
-        const chatId = res.data?.matchId;
+        const res = await sendLike(opponentId);
+        const chatId = res?.matchId;
         if (!chatId) {
           Toast.show({ type: 'error', text1: 'Unable to create match' });
           return;
@@ -179,7 +131,6 @@ const HomeScreen = ({ navigation }) => {
           pendingInvite: null,
         };
         addMatch(match);
-        await updateDailyUsage();
         Toast.show({
           type: 'success',
           text1: "🎮 You're matched! Say hi & make your move…",
@@ -191,7 +142,6 @@ const HomeScreen = ({ navigation }) => {
         });
       } else {
         const ref = firebase.firestore().collection('gameSessions').doc(sessionId);
-        await updateDailyUsage();
         if (matchTimeout.current) clearTimeout(matchTimeout.current);
         const unsub = ref.onSnapshot(async (snap) => {
           const d = snap.data();
@@ -208,13 +158,8 @@ const HomeScreen = ({ navigation }) => {
               .doc(d.players[1])
               .get();
             const opp = oppSnap2.data() || {};
-            const res2 = await firebase
-              .functions()
-              .httpsCallable('sendLike')({
-                uid: user.uid,
-                targetUid: d.players[1],
-              });
-            const chatId = res2.data?.matchId;
+            const res2 = await sendLike(d.players[1]);
+            const chatId = res2?.matchId;
             if (!chatId) {
               Toast.show({ type: 'error', text1: 'Unable to create match' });
               return;
@@ -365,11 +310,7 @@ const HomeScreen = ({ navigation }) => {
           <GradientButton
             text="Swipe Now"
           onPress={() => {
-            if (!isPremiumUser && gamesLeft <= 0) {
-                navigation.navigate('PremiumPaywall', { context: 'game-limit' });
-            } else {
-              navigation.navigate('Swipe');
-            }
+            navigation.navigate('Swipe');
           }}
         />
       </View>

@@ -6,6 +6,19 @@ const games = require('./games');
 // Duration allowed for each move in milliseconds (24h)
 const TURN_DURATION_MS = 24 * 60 * 60 * 1000;
 
+const DEFAULT_LIMIT = 1;
+
+async function getDailyLimit() {
+  try {
+    const snap = await admin.firestore().collection('config').doc('app').get();
+    const val = snap.get('maxFreeGames');
+    return Number.isFinite(val) ? val : DEFAULT_LIMIT;
+  } catch (e) {
+    console.warn('Failed to load maxFreeGames', e);
+    return DEFAULT_LIMIT;
+  }
+}
+
 function replayGame(Game, initial, moves = []) {
   let G = JSON.parse(JSON.stringify(initial || Game.setup()));
   let currentPlayer = '0';
@@ -62,9 +75,32 @@ const joinGameSession = functions.https.onCall(async (data, context) => {
 
   const db = admin.firestore();
   const sessions = db.collection('gameSessions');
+  const dailyLimit = await getDailyLimit();
 
   try {
     return await db.runTransaction(async (tx) => {
+      const userRef = db.collection('users').doc(uid);
+      const userSnap = await tx.get(userRef);
+      const isPremium = !!userSnap.get('isPremium');
+      if (!isPremium) {
+        const last = userSnap.get('lastGamePlayedAt');
+        const count = userSnap.get('dailyPlayCount') || 0;
+        const lastDate = last?.toDate ? last.toDate() : last ? new Date(last) : null;
+        const today = new Date();
+        let newCount = count;
+        if (!lastDate || lastDate.toDateString() !== today.toDateString()) {
+          newCount = 0;
+        }
+        if (newCount >= dailyLimit) {
+          throw new functions.https.HttpsError('resource-exhausted', 'Daily game limit reached');
+        }
+        newCount += 1;
+        tx.update(userRef, {
+          dailyPlayCount: newCount,
+          lastGamePlayedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+
       const waiting = await tx.get(
         sessions
           .where('gameId', '==', gameId)

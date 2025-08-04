@@ -107,7 +107,7 @@ const SwipeScreen = () => {
   const { play } = useSound();
   const { addMatch } = useChats();
   const isPremiumUser = !!currentUser?.isPremium;
-  const { likesLeft, recordLikeSent } = useLikeLimit();
+  const { sendLike } = useLikeLimit();
   const {
     location: filterLocation,
     ageRange,
@@ -335,16 +335,6 @@ const SwipeScreen = () => {
     };
 
     if (direction === 'right') {
-      if (likesLeft <= 0 && !isPremiumUser) {
-        navigation.navigate('PremiumPaywall', { context: 'like-limit' });
-        Animated.spring(pan, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: false,
-        }).start();
-        setActionLoading(false);
-        return;
-      }
-
       applyOptimistic();
 
       try {
@@ -362,11 +352,11 @@ const SwipeScreen = () => {
             setMatchGame,
             play,
             setShowFireworks,
+            sendLikeFn: sendLike,
           });
           if (!success) {
             throw new Error('Like failed');
           }
-          recordLikeSent();
         };
         await likeOp();
         await processLikeQueue();
@@ -374,7 +364,7 @@ const SwipeScreen = () => {
         const state = await Network.getNetworkStateAsync();
         if (!state.isConnected) {
           likeRetryQueue.push(async () => {
-            const { success } = await handleLike({
+            await handleLike({
               currentUser,
               targetUser,
               firestore: firebase.firestore(),
@@ -387,8 +377,8 @@ const SwipeScreen = () => {
               setMatchGame,
               play,
               setShowFireworks,
+              sendLikeFn: sendLike,
             });
-            if (success) recordLikeSent();
           });
           Toast.show({
             type: 'info',

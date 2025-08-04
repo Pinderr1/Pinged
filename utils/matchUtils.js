@@ -41,19 +41,24 @@ export async function handleLike({
   setMatchGame = () => {},
   play = () => {},
   setShowFireworks = () => {},
+  sendLikeFn,
 }) {
   if (!targetUser) return { success: false, matchId: null };
 
   if (currentUser?.uid && targetUser.id) {
     try {
-      const res = await firebase
-        .functions()
-        .httpsCallable('sendLike')({
-          uid: currentUser.uid,
-          targetUid: targetUser.id,
-        });
+      const res = sendLikeFn
+        ? await sendLikeFn(targetUser.id)
+        : (
+            await firebase
+              .functions()
+              .httpsCallable('sendLike')({
+                uid: currentUser.uid,
+                targetUid: targetUser.id,
+              })
+          ).data;
 
-      const matchId = res?.data?.matchId || null;
+      const matchId = res?.matchId || null;
 
       showNotification(`You liked ${targetUser.displayName}`);
 

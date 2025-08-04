@@ -63,10 +63,11 @@ const sendLike = functions.https.onCall(async (data, context) => {
   }
 
   const isPremium = !!userSnap.get('isPremium');
+  let sent = null;
   if (!isPremium) {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-    const sent = await db
+    sent = await db
       .collection('likes')
       .doc(uid)
       .collection('liked')
@@ -93,14 +94,15 @@ const sendLike = functions.https.onCall(async (data, context) => {
     ]);
 
     if (matchSnap.exists) {
-      return { matchId };
+      return { matchId, liked: false };
     }
 
     if (blockSnap1.exists || blockSnap2.exists) {
-      return { matchId: null };
+      return { matchId: null, liked: false };
     }
 
-    if (!likeSnap.exists) {
+    const liked = !likeSnap.exists;
+    if (liked) {
       tx.set(likeRef, { createdAt: admin.firestore.FieldValue.serverTimestamp() });
     }
 
@@ -109,13 +111,19 @@ const sendLike = functions.https.onCall(async (data, context) => {
         users: sorted,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
-      return { matchId };
+      return { matchId, liked };
     }
 
-    return { matchId: null };
+    return { matchId: null, liked };
   });
 
-  return { matchId: res.matchId };
+  let remaining = Infinity;
+  if (!isPremium) {
+    const count = (sent ? sent.size : 0) + (res.liked ? 1 : 0);
+    remaining = Math.max(DAILY_LIMIT - count, 0);
+  }
+
+  return { matchId: res.matchId, remainingLikes: remaining };
 });
 
 module.exports = { onLikeCreate, onLikeDelete, sendLike };
