@@ -35,6 +35,33 @@ const onLikeDelete = functions.firestore
     await admin.firestore().doc(`likes/${targetUid}/likedBy/${uid}`).delete();
   });
 
+const getLikesRemaining = functions.https.onCall(async (_, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  const db = admin.firestore();
+  const DAILY_LIMIT = await getDailyLimit();
+
+  const userSnap = await db.collection('users').doc(uid).get();
+  const isPremium = !!userSnap.get('isPremium');
+  if (isPremium) {
+    return { likesLeft: Infinity };
+  }
+
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const sent = await db
+    .collection('likes')
+    .doc(uid)
+    .collection('liked')
+    .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(start))
+    .get();
+
+  return { likesLeft: Math.max(DAILY_LIMIT - sent.size, 0) };
+});
+
 const sendLike = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
   const targetUid = data?.targetUid;
@@ -63,6 +90,7 @@ const sendLike = functions.https.onCall(async (data, context) => {
   }
 
   const isPremium = !!userSnap.get('isPremium');
+  let sentToday = 0;
   if (!isPremium) {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -72,7 +100,8 @@ const sendLike = functions.https.onCall(async (data, context) => {
       .collection('liked')
       .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(start))
       .get();
-    if (sent.size >= DAILY_LIMIT) {
+    sentToday = sent.size;
+    if (sentToday >= DAILY_LIMIT) {
       throw new functions.https.HttpsError('resource-exhausted', 'Daily like limit reached');
     }
   }
@@ -100,7 +129,9 @@ const sendLike = functions.https.onCall(async (data, context) => {
       return { matchId: null };
     }
 
+    let added = false;
     if (!likeSnap.exists) {
+      added = true;
       tx.set(likeRef, { createdAt: admin.firestore.FieldValue.serverTimestamp() });
     }
 
@@ -112,10 +143,13 @@ const sendLike = functions.https.onCall(async (data, context) => {
       return { matchId };
     }
 
-    return { matchId: null };
+    return { matchId: null, added };
   });
 
-  return { matchId: res.matchId };
+  const used = isPremium ? 0 : sentToday + (res.added ? 1 : 0);
+  const likesLeft = isPremium ? Infinity : Math.max(DAILY_LIMIT - used, 0);
+
+  return { matchId: res.matchId, likesLeft };
 });
 
-module.exports = { onLikeCreate, onLikeDelete, sendLike };
+module.exports = { onLikeCreate, onLikeDelete, getLikesRemaining, sendLike };

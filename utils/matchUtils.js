@@ -54,6 +54,7 @@ export async function handleLike({
         });
 
       const matchId = res?.data?.matchId || null;
+      const likesLeft = res?.data?.likesLeft;
 
       showNotification(`You liked ${targetUser.displayName}`);
 
@@ -88,16 +89,16 @@ export async function handleLike({
         Toast.show({ type: 'success', text1: 'Like sent!' });
       }
 
-      return { success: true, matchId };
+      return { success: true, matchId, likesLeft };
     } catch (e) {
       if (!isPremiumUser && e?.message?.includes('Daily like limit')) {
         navigation.navigate('PremiumPaywall', { context: 'like-limit' });
-        return { success: false, matchId: null };
+        return { success: false, matchId: null, likesLeft: null };
       }
       console.error('Failed to process like', e);
       throw e;
     }
   }
 
-  return { success: false, matchId: null };
+  return { success: false, matchId: null, likesLeft: null };
 }

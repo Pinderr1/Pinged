@@ -19,24 +19,27 @@ export const LikeLimitProvider = ({ children }) => {
       setLikesLeft(Infinity);
       return;
     }
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
     firebase
-      .firestore()
-      .collection('likes')
-      .doc(user?.uid || 'missing')
-      .collection('liked')
-      .where('createdAt', '>=', firebase.firestore.Timestamp.fromDate(start))
-      .get()
-      .then((snap) => {
-        setLikesLeft(Math.max(dailyLimit - snap.size, 0));
+      .functions()
+      .httpsCallable('getLikesRemaining')()
+      .then((res) => {
+        const left = res?.data?.likesLeft;
+        setLikesLeft(
+          typeof left === 'number' ? Math.max(left, 0) : dailyLimit
+        );
       })
       .catch(() => setLikesLeft(dailyLimit));
   }, [isPremium, user?.uid, maxDailyLikes]);
 
-  const recordLikeSent = () => {
+  const recordLikeSent = (remaining) => {
     if (isPremium) return;
-    setLikesLeft((prev) => (prev === Infinity ? Infinity : Math.max(prev - 1, 0)));
+    if (typeof remaining === 'number') {
+      setLikesLeft(Math.max(remaining, 0));
+    } else {
+      setLikesLeft((prev) =>
+        prev === Infinity ? Infinity : Math.max(prev - 1, 0)
+      );
+    }
   };
 
   return (

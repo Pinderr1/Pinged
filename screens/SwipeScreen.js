@@ -349,7 +349,7 @@ const SwipeScreen = () => {
 
       try {
         const likeOp = async () => {
-          const { success } = await handleLike({
+          const { success, likesLeft } = await handleLike({
             currentUser,
             targetUser,
             firestore: firebase.firestore(),
@@ -366,7 +366,7 @@ const SwipeScreen = () => {
           if (!success) {
             throw new Error('Like failed');
           }
-          recordLikeSent();
+          recordLikeSent(likesLeft);
         };
         await likeOp();
         await processLikeQueue();
@@ -374,7 +374,7 @@ const SwipeScreen = () => {
         const state = await Network.getNetworkStateAsync();
         if (!state.isConnected) {
           likeRetryQueue.push(async () => {
-            const { success } = await handleLike({
+            const { success, likesLeft } = await handleLike({
               currentUser,
               targetUser,
               firestore: firebase.firestore(),
@@ -388,7 +388,7 @@ const SwipeScreen = () => {
               play,
               setShowFireworks,
             });
-            if (success) recordLikeSent();
+            if (success) recordLikeSent(likesLeft);
           });
           Toast.show({
             type: 'info',
