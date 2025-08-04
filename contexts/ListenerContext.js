@@ -25,10 +25,13 @@ export const ListenerProvider = ({ children }) => {
   const prevInvites = useRef([]);
   const prevMatches = useRef([]);
   const prevInfoMap = useRef({});
+  const matchListeners = useRef([]);
 
   // Subscribe to match metadata for current user
   useEffect(() => {
     if (!user?.uid) return;
+    matchListeners.current.forEach((u) => u());
+    matchListeners.current = [];
     const matchQ = firebase
       .firestore()
       .collection('matches')
@@ -78,8 +81,11 @@ export const ListenerProvider = ({ children }) => {
       setMessageInfoMap(infoMap);
     });
 
+    matchListeners.current.push(unsubMatches);
+
     return () => {
-      unsubMatches();
+      matchListeners.current.forEach((u) => u());
+      matchListeners.current = [];
       prevMatches.current = [];
       prevInfoMap.current = {};
       setMatches([]);
@@ -137,24 +143,28 @@ export const ListenerProvider = ({ children }) => {
 
   const getMatchInfo = (matchId) => messageInfoMap[matchId] || { lastMessage: '', unreadCount: 0 };
 
-  const loadMoreMatches = async () => {
+  const loadMoreMatches = () => {
     if (!user?.uid || !hasMoreMatches || !lastMatchDoc) return;
-    try {
-      const snap = await firebase
-        .firestore()
-        .collection('matches')
-        .where('users', 'array-contains', user.uid)
-        .orderBy('createdAt', 'desc')
-        .startAfter(lastMatchDoc)
-        .limit(MATCH_PAGE_SIZE)
-        .get();
+    const q = firebase
+      .firestore()
+      .collection('matches')
+      .where('users', 'array-contains', user.uid)
+      .orderBy('createdAt', 'desc')
+      .startAfter(lastMatchDoc)
+      .limit(MATCH_PAGE_SIZE);
+
+    const unsub = q.onSnapshot((snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setMatches((prev) => [...prev, ...data]);
+      setMatches((prev) => {
+        const existing = new Set(prev.map((m) => m.id));
+        const merged = data.filter((m) => !existing.has(m.id));
+        return [...prev, ...merged];
+      });
       setLastMatchDoc(snap.docs[snap.docs.length - 1] || lastMatchDoc);
       setHasMoreMatches(snap.docs.length === MATCH_PAGE_SIZE);
-    } catch (e) {
-      console.warn('Failed to load more matches', e);
-    }
+    });
+
+    matchListeners.current.push(unsub);
   };
 
   return (
