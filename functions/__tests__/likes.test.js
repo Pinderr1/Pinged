@@ -1,6 +1,6 @@
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
-const { likeAndMaybeMatch } = require('../likes');
+const { sendLike } = require('../likes');
 
 jest.mock('firebase-functions', () => ({
   https: {
@@ -20,7 +20,7 @@ jest.mock('firebase-admin', () => {
   return { firestore };
 });
 
-describe('likeAndMaybeMatch', () => {
+describe('sendLike', () => {
   it('creates match when other user liked first', async () => {
     const store = {
       'config/app': { exists: true, data: { maxDailyLikes: 100 } },
@@ -30,6 +30,23 @@ describe('likeAndMaybeMatch', () => {
       'blocks/u1/blocked/u2': { exists: false },
       'blocks/u2/blocked/u1': { exists: false },
       'matches/u1_u2': { exists: false },
+      'limits/u1': {
+        exists: true,
+        data: {
+          dailyLikes: 0,
+          dailyLikesDate: { toDate: () => new Date() },
+        },
+      },
+    };
+
+    const getDoc = (path) => {
+      const val = store[path];
+      if (!val) return { exists: false, data: () => ({}), get: () => undefined };
+      return {
+        exists: val.exists,
+        data: () => val.data || {},
+        get: (field) => (val.data || {})[field],
+      };
     };
 
     const db = {
@@ -39,14 +56,14 @@ describe('likeAndMaybeMatch', () => {
           collection: (sub) => ({
             doc: (sid) => ({ path: `${col}/${id}/${sub}/${sid}` }),
           }),
-          get: async () => store[`${col}/${id}`] || { exists: false, data: () => ({}) },
+          get: async () => getDoc(`${col}/${id}`),
         }),
       }),
       runTransaction: (fn) => fn(transaction),
     };
 
     const transaction = {
-      get: async (ref) => store[ref.path] || { exists: false },
+      get: async (ref) => getDoc(ref.path),
       set: (ref, data) => {
         store[ref.path] = { exists: true, data };
       },
@@ -54,10 +71,7 @@ describe('likeAndMaybeMatch', () => {
 
     admin.firestore.mockReturnValue(db);
 
-    const res = await likeAndMaybeMatch(
-      { targetUid: 'u2' },
-      { auth: { uid: 'u1' } }
-    );
+    const res = await sendLike({ targetUid: 'u2' }, { auth: { uid: 'u1' } });
 
     expect(res).toEqual({ matchId: 'u1_u2' });
     expect(store['likes/u1/liked/u2']).toBeDefined();

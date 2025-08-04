@@ -14,6 +14,31 @@ async function getDailyLimit() {
   }
 }
 
+async function updateDailyLikes(uid, delta) {
+  const db = admin.firestore();
+  const ref = db.collection('limits').doc(uid);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayTs = admin.firestore.Timestamp.fromDate(today);
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    let count = 0;
+    if (snap.exists) {
+      const data = snap.data();
+      const storedDate = data.dailyLikesDate?.toDate?.();
+      if (storedDate && storedDate.getTime() === today.getTime()) {
+        count = data.dailyLikes || 0;
+      }
+    }
+    count = Math.max(0, count + delta);
+    tx.set(
+      ref,
+      { dailyLikes: count, dailyLikesDate: todayTs },
+      { merge: true }
+    );
+  });
+}
+
 const onLikeCreate = functions.firestore
   .document('likes/{uid}/liked/{targetUid}')
   .onCreate(async (snap, ctx) => {
@@ -25,6 +50,7 @@ const onLikeCreate = functions.firestore
     await ref.set({
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+    await updateDailyLikes(uid, 1);
     return null;
   });
 
@@ -33,6 +59,7 @@ const onLikeDelete = functions.firestore
   .onDelete(async (_, context) => {
     const { uid, targetUid } = context.params;
     await admin.firestore().doc(`likes/${targetUid}/likedBy/${uid}`).delete();
+    await updateDailyLikes(uid, -1);
   });
 
 const sendLike = functions.https.onCall(async (data, context) => {
@@ -64,15 +91,18 @@ const sendLike = functions.https.onCall(async (data, context) => {
 
   const isPremium = !!userSnap.get('isPremium');
   if (!isPremium) {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const sent = await db
-      .collection('likes')
-      .doc(uid)
-      .collection('liked')
-      .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(start))
-      .get();
-    if (sent.size >= DAILY_LIMIT) {
+    const limitSnap = await db.collection('limits').doc(uid).get();
+    let sent = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (limitSnap.exists) {
+      const data = limitSnap.data();
+      const date = data.dailyLikesDate?.toDate?.();
+      if (date && date.getTime() === today.getTime()) {
+        sent = data.dailyLikes || 0;
+      }
+    }
+    if (sent >= DAILY_LIMIT) {
       throw new functions.https.HttpsError('resource-exhausted', 'Daily like limit reached');
     }
   }
