@@ -9,6 +9,7 @@ import { useSound } from './SoundContext';
 import { useListeners } from './ListenerContext';
 import debounce from '../utils/debounce';
 import { initEncryption, encryptText } from '../utils/encryption';
+import { useAnalytics } from './AnalyticsContext';
 
 const ChatContext = createContext();
 // Runtime actions for contexts that mount before ChatProvider
@@ -39,6 +40,7 @@ const getGameStateKey = (matchId) => `${GAME_STATE_PREFIX}${matchId}`;
 export const ChatProvider = ({ children }) => {
   const { user } = useUser();
   const { play } = useSound();
+  const { logGameStarted } = useAnalytics();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const lastMessageRef = useRef(0);
@@ -321,6 +323,7 @@ export const ChatProvider = ({ children }) => {
   };
 
   const setActiveGame = (matchId, gameId) => {
+    logGameStarted(gameId);
     setMatches((prev) =>
       prev.map((m) =>
         m.id === matchId

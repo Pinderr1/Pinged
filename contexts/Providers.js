@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnalyticsProvider } from './AnalyticsContext';
 import { ThemeProvider } from './ThemeContext';
 import { AuthProvider } from './AuthContext';
 import { NotificationProvider } from './NotificationContext';
@@ -16,9 +17,10 @@ import { SoundProvider } from './SoundContext';
 import { FilterProvider } from './FilterContext';
 
 const Providers = ({ children }) => (
-  <ThemeProvider>
-    <AuthProvider>
-      <NotificationProvider>
+  <AnalyticsProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <NotificationProvider>
         <OnboardingProvider>
           <UserProvider>
             <ListenerProvider>
@@ -44,9 +46,10 @@ const Providers = ({ children }) => (
             </ListenerProvider>
           </UserProvider>
         </OnboardingProvider>
-      </NotificationProvider>
-    </AuthProvider>
-  </ThemeProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  </AnalyticsProvider>
 );
 
 export default Providers;

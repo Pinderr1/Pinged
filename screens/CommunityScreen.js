@@ -32,6 +32,7 @@ import { HEADER_SPACING, FONT_SIZES, BUTTON_STYLE } from '../layout';
 import * as Haptics from 'expo-haptics';
 import EmptyState from '../components/EmptyState';
 import { FONT_FAMILY } from '../textStyles';
+import { useAnalytics } from '../contexts/AnalyticsContext';
 
 const EVENT_PAGE_SIZE = 10;
 const POST_PAGE_SIZE = 10;
@@ -44,6 +45,7 @@ const CommunityScreen = () => {
   const navigation = useNavigation();
   const { user, redeemEventTicket } = useUser();
   const { eventsLeft, recordEventCreated } = useEventLimit();
+  const { logEventJoined } = useAnalytics();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [hasMoreEvents, setHasMoreEvents] = useState(true);
@@ -139,6 +141,7 @@ const CommunityScreen = () => {
   const joinEvent = async (id) => {
     try {
       await firebase.functions().httpsCallable('joinEvent')({ eventId: id });
+      logEventJoined(id);
     } catch (e) {
       console.warn('Failed to join event', e);
       throw e;
