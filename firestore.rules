@@ -7,15 +7,14 @@ service cloud.firestore {
     }
 
     function isNotBlocked(a, b) {
-      return !(
-        exists(/databases/$(database)/documents/blocks/$(a)/blocked/$(b)) ||
-        exists(/databases/$(database)/documents/blocks/$(b)/blocked/$(a))
-      );
+      let data = get(/databases/$(database)/documents/users/$(a)).data;
+      return !((data.blockedUsers != null && data.blockedUsers.hasAny([b])) ||
+        (data.blockedBy != null && data.blockedBy.hasAny([b])));
     }
 
     function areMatched(a, b) {
-      let id = (a < b) ? a + '_' + b : b + '_' + a;
-      return exists(/databases/$(database)/documents/matches/$(id));
+      let data = get(/databases/$(database)/documents/users/$(a)).data;
+      return data.matchedUsers != null && data.matchedUsers.hasAny([b]);
     }
 
     function validGamePlayers(players) {
@@ -38,7 +37,10 @@ service cloud.firestore {
             request.resource.data.badges.hasAny(["premium", "premiumMember"]) : false) &&
         !("roles" in request.resource.data) &&
         !("xp" in request.resource.data) &&
-        !("streak" in request.resource.data);
+        !("streak" in request.resource.data) &&
+        !("matchedUsers" in request.resource.data) &&
+        !("blockedUsers" in request.resource.data) &&
+        !("blockedBy" in request.resource.data);
 
       // Updates are restricted to a predefined set of user-editable fields
       allow update: if request.auth.uid == uid &&

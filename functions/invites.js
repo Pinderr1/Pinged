@@ -92,6 +92,16 @@ const onMatchCreated = functions.firestore
     const data = snap.data();
     if (!data || !Array.isArray(data.users)) return null;
     await ensureMatchHistory(data.users);
+    const db = admin.firestore();
+    const [a, b] = data.users;
+    await Promise.all([
+      db.collection('users').doc(a).update({
+        matchedUsers: admin.firestore.FieldValue.arrayUnion(b),
+      }),
+      db.collection('users').doc(b).update({
+        matchedUsers: admin.firestore.FieldValue.arrayUnion(a),
+      }),
+    ]);
     await Promise.all(
       data.users.map((uid) =>
         pushToUser(uid, 'New Match', 'You have a new match!', {
@@ -270,8 +280,22 @@ const onMatchDeleted = functions.firestore
   .document('matches/{matchId}')
   .onDelete(async (snap, context) => {
     const matchId = context.params.matchId;
+    const data = snap.data() || {};
+    const users = Array.isArray(data.users) ? data.users : null;
+    const db = admin.firestore();
+    if (users && users.length === 2) {
+      const [a, b] = users;
+      await Promise.all([
+        db.collection('users').doc(a).update({
+          matchedUsers: admin.firestore.FieldValue.arrayRemove(b),
+        }),
+        db.collection('users').doc(b).update({
+          matchedUsers: admin.firestore.FieldValue.arrayRemove(a),
+        }),
+      ]);
+    }
     try {
-      await admin.firestore().collection('matchHistory').doc(matchId).delete();
+      await db.collection('matchHistory').doc(matchId).delete();
     } catch (e) {
       console.error('Failed to delete match history on match delete', e);
     }

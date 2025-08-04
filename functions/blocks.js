@@ -68,6 +68,12 @@ const blockUser = functions.https.onCall(async (data, context) => {
     await Promise.all([
       db.collection('blocks').doc(uid).collection('blocked').doc(targetUid).set(blockData),
       db.collection('blocks').doc(targetUid).collection('blocked').doc(uid).set(blockData),
+      db.collection('users').doc(uid).update({
+        blockedUsers: admin.firestore.FieldValue.arrayUnion(targetUid),
+      }),
+      db.collection('users').doc(targetUid).update({
+        blockedBy: admin.firestore.FieldValue.arrayUnion(uid),
+      }),
     ]);
     await Promise.all([
       deleteMatches(uid, targetUid),
@@ -96,6 +102,12 @@ const unblockUser = functions.https.onCall(async (data, context) => {
     await Promise.all([
       db.collection('blocks').doc(uid).collection('blocked').doc(targetUid).delete(),
       db.collection('blocks').doc(targetUid).collection('blocked').doc(uid).delete(),
+      db.collection('users').doc(uid).update({
+        blockedUsers: admin.firestore.FieldValue.arrayRemove(targetUid),
+      }),
+      db.collection('users').doc(targetUid).update({
+        blockedBy: admin.firestore.FieldValue.arrayRemove(uid),
+      }),
     ]);
     return { success: true };
   } catch (e) {

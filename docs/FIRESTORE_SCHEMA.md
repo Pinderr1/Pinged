@@ -47,6 +47,9 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `pushToken` (string)
 - `online` (boolean)
 - `lastOnline` (timestamp) – last presence update time
+- `matchedUsers` (array of string) – ids of users this account is matched with
+- `blockedUsers` (array of string) – ids of users this account has blocked
+- `blockedBy` (array of string) – ids of users who have blocked this account
 - `badges` (array of string) – earned badge IDs
 - `mood` (string) – optional status message
 - `introClipUrl` (string) – voice or video intro clip
