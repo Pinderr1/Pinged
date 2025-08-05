@@ -22,6 +22,7 @@ describe('swiping and matching flow', () => {
           navigation: { navigate: jest.fn() },
           isPremiumUser: true,
           showNotification: jest.fn(),
+          revertLike: jest.fn(),
           addMatch: jest.fn(),
           setMatchedUser: () => setMatched(true),
           setMatchLine: jest.fn(),
