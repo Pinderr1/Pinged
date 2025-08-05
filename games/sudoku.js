@@ -3,6 +3,7 @@ import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const puzzle = [
   5,3,0,0,7,0,0,0,0,
@@ -102,6 +103,6 @@ const SudokuClient = createGameClient({ game: SudokuGame, board: SudokuBoard });
 
 export const Game = SudokuGame;
 export const Board = SudokuBoard;
-export const meta = { id: 'sudoku', title: 'Sudoku' };
+export const meta = gameMap.sudoku;
 
 export default SudokuClient;

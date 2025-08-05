@@ -347,7 +347,7 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
                 <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 4 }}>{`Try: "${firstLine}"`}</Text>
               ) : null}
               {firstGame ? (
-                <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 2 }}>{`Or invite them to play ${firstGame.title}`}</Text>
+                <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 2 }}>{`Or invite them to play ${firstGame.name}`}</Text>
               ) : null}
             </View>
           )

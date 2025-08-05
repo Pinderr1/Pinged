@@ -4,6 +4,7 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Animated } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const lines = [
   [0, 1, 2],
@@ -161,9 +162,6 @@ const TicTacToeClient = createGameClient({
 
 export const Game = TicTacToeGame;
 export const Board = TicTacToeBoard;
-export const meta = {
-  id: 'ticTacToe',
-  title: 'Tic Tac Toe',
-};
+export const meta = gameMap.ticTacToe;
 
 export default TicTacToeClient;

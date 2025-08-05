@@ -3,6 +3,7 @@ import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const ROWS = 5;
 const COLS = 5;
@@ -151,6 +152,6 @@ const MinesweeperClient = createGameClient({ game: MinesweeperGame, board: Mines
 
 export const Game = MinesweeperGame;
 export const Board = MinesweeperBoard;
-export const meta = { id: 'minesweeper', title: 'Minesweeper' };
+export const meta = gameMap.minesweeper;
 
 export default MinesweeperClient;

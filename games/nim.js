@@ -4,6 +4,7 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const NimGame = {
   setup: () => ({ remaining: 21 }),
@@ -61,6 +62,6 @@ const NimClient = createGameClient({ game: NimGame, board: NimBoard });
 
 export const Game = NimGame;
 export const Board = NimBoard;
-export const meta = { id: 'nim', title: 'Nim' };
+export const meta = gameMap.nim;
 
 export default NimClient;

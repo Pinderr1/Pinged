@@ -19,7 +19,7 @@ import PropTypes from 'prop-types';
 import RNPickerSelect from 'react-native-picker-select';
 import MultiSelectList from '../components/MultiSelectList';
 import { useTheme } from '../contexts/ThemeContext';
-import { allGames } from '../data/games';
+import { allGames } from '../constants/games';
 import { Ionicons } from '@expo/vector-icons';
 import LocationInfoModal from '../components/LocationInfoModal';
 import Loader from '../components/Loader';
@@ -52,7 +52,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const [drinking, setDrinking] = useState(user?.drinking || '');
   const [smoking, setSmoking] = useState(user?.smoking || '');
   const [workout, setWorkout] = useState(user?.workout || '');
-  const defaultGameOptions = allGames.map((g) => ({ label: g.title, value: g.title }));
+  const defaultGameOptions = allGames.map((g) => ({ label: g.name, value: g.name }));
   const [gameOptions, setGameOptions] = useState(defaultGameOptions);
   const [avatar, setAvatar] = useState(user?.photoURL || '');
   const [showLocationInfo, setShowLocationInfo] = useState(false);

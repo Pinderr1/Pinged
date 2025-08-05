@@ -34,7 +34,6 @@ import MultiSelectList from '../components/MultiSelectList';
 import GameSelectList from '../components/GameSelectList';
 import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
-import { allGames } from '../data/games';
 import { BADGE_LIST } from '../data/badges';
 import LocationInfoModal from '../components/LocationInfoModal';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';

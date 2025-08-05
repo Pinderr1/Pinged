@@ -12,7 +12,7 @@ import Header from '../components/Header';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
-import { allGames } from '../data/games';
+import { allGames } from '../constants/games';
 import GameCard from '../components/GameCard';
 import GamePreviewModal from '../components/GamePreviewModal';
 import { games as gameRegistry } from '../games';
@@ -25,12 +25,12 @@ import PropTypes from 'prop-types';
 import { useTrending } from '../contexts/TrendingContext';
 import { HEADER_SPACING } from '../layout';
 
-// Map app game IDs to boardgame registry keys for AI play
+// Map app game slugs to boardgame registry keys for AI play
 const aiGameMap = allGames.reduce((acc, g) => {
   const key = Object.keys(gameRegistry).find(
-    (k) => gameRegistry[k].meta.title === g.title
+    (k) => gameRegistry[k].meta.slug === g.slug
   );
-  if (key) acc[g.id] = key;
+  if (key) acc[g.slug] = key;
   return acc;
 }, {});
 
@@ -55,9 +55,9 @@ const PlayScreen = ({ navigation }) => {
   const [previewGame, setPreviewGame] = useState(null);
   const flatListRef = useRef();
 
-  const toggleFavorite = (id) => {
+  const toggleFavorite = (slug) => {
     setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id]
+      prev.includes(slug) ? prev.filter((fid) => fid !== slug) : [...prev, slug]
     );
   };
 
@@ -66,8 +66,8 @@ const PlayScreen = ({ navigation }) => {
       filter === 'All' ||
       (filter === 'Free' && !game.premium) ||
       (filter === 'Premium' && game.premium) ||
-      (filter === 'Favorites' && favorites.includes(game.id));
-    const matchSearch = game.title.toLowerCase().includes(search.toLowerCase());
+      (filter === 'Favorites' && favorites.includes(game.slug));
+    const matchSearch = game.name.toLowerCase().includes(search.toLowerCase());
     const matchTag = category === 'All' || game.category === category;
     return matchCategory && matchSearch && matchTag;
   });
@@ -107,7 +107,7 @@ const PlayScreen = ({ navigation }) => {
     if (!requireCredits()) return;
     const bot = getRandomBot();
     const aiKeyMap = { rockPaperScissors: 'rps' };
-    const key = aiGameMap[previewGame.id];
+    const key = aiGameMap[previewGame.slug];
     const gameKey = key ? aiKeyMap[key] || key : 'ticTacToe';
     navigation.navigate('GameSession', {
       sessionType: 'bot',
@@ -118,19 +118,19 @@ const PlayScreen = ({ navigation }) => {
 
   const handleStrangerGame = () => {
     if (!previewGame) return null;
-    const id = previewGame.id;
+    const id = previewGame.slug;
     setPreviewGame(null);
     return id;
   };
 
   const renderItem = ({ item }) => {
-    const idx = allGames.findIndex((g) => g.id === item.id);
+    const idx = allGames.findIndex((g) => g.slug === item.slug);
     return (
       <GameCard
         item={item}
-        isFavorite={favorites.includes(item.id)}
-        trending={!!trendingMap[item.id]}
-        toggleFavorite={() => toggleFavorite(item.id)}
+        isFavorite={favorites.includes(item.slug)}
+        trending={!!trendingMap[item.slug]}
+        toggleFavorite={() => toggleFavorite(item.slug)}
         onPress={() => {
           Keyboard.dismiss();
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -172,7 +172,7 @@ const PlayScreen = ({ navigation }) => {
       <FlatList
         ref={flatListRef}
         data={filteredGames}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.slug}
         numColumns={2}
         contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 8 }}
         columnWrapperStyle={{ justifyContent: 'center' }}

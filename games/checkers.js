@@ -4,6 +4,7 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const SIZE = 8;
 
@@ -183,6 +184,6 @@ const CheckersClient = createGameClient({ game: CheckersGame, board: CheckersBoa
 
 export const Game = CheckersGame;
 export const Board = CheckersBoard;
-export const meta = { id: 'checkers', title: 'Checkers' };
+export const meta = gameMap.checkers;
 
 export default CheckersClient;

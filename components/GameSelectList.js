@@ -4,7 +4,7 @@ import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../contexts/UserContext';
-import { allGames } from '../data/games';
+import { allGames } from '../constants/games';
 import { BADGE_LIST } from '../data/badges';
 
 export default function GameSelectList({ selected = [], onChange, theme, showPreviewBadges = false }) {
@@ -17,12 +17,12 @@ export default function GameSelectList({ selected = [], onChange, theme, showPre
     : null;
   const isPremiumUser = premiumUntil ? premiumUntil.getTime() > Date.now() : false;
 
-  const toggle = (title) => {
+  const toggle = (name) => {
     if (!onChange) return;
-    if (selected.includes(title)) {
-      onChange(selected.filter((v) => v !== title));
+    if (selected.includes(name)) {
+      onChange(selected.filter((v) => v !== name));
     } else {
-      onChange([...selected, title]);
+      onChange([...selected, name]);
     }
   };
 
@@ -35,19 +35,19 @@ export default function GameSelectList({ selected = [], onChange, theme, showPre
           const locked = g.premium && !isPremiumUser;
           return (
             <TouchableOpacity
-              key={g.id}
+              key={g.slug}
               style={[styles.option, locked && styles.lockedOption]}
               onPress={() => {
                 if (locked) {
                   navigation.navigate('PremiumPaywall', { context: 'premium-feature' });
                   return;
                 }
-                toggle(g.title);
+                toggle(g.name);
               }}
             >
               {g.icon}
               <View style={styles.info}>
-                <Text style={[styles.label, locked && styles.lockedText]}>{g.title}</Text>
+                <Text style={[styles.label, locked && styles.lockedText]}>{g.name}</Text>
                 <Text style={[styles.category, locked && styles.lockedText]}>{g.category}</Text>
               </View>
               {locked ? (
@@ -60,7 +60,7 @@ export default function GameSelectList({ selected = [], onChange, theme, showPre
               ) : (
                 <MaterialCommunityIcons
                   name={
-                    selected.includes(g.title)
+                    selected.includes(g.name)
                       ? 'checkbox-marked'
                       : 'checkbox-blank-outline'
                   }

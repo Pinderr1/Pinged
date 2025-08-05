@@ -2,6 +2,7 @@ import React from 'react';
 import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { gameMap } from '../constants/games';
 
 const SIZE = 2; // 2x2 boxes
 
@@ -155,6 +156,6 @@ const DotsBoxesClient = createGameClient({ game: DotsBoxesGame, board: DotsBoxes
 
 export const Game = DotsBoxesGame;
 export const Board = DotsBoxesBoard;
-export const meta = { id: 'dotsAndBoxes', title: 'Dots and Boxes' };
+export const meta = gameMap.dotsAndBoxes;
 
 export default DotsBoxesClient;

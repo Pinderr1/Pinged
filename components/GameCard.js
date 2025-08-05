@@ -53,7 +53,7 @@ export default function GameCard({ item, onPress, toggleFavorite, isFavorite, tr
         {item.icon}
       </View>
       <Text style={[textStyles.subtitle, { textAlign: 'center' }]}>
-        {item.title}
+        {item.name}
       </Text>
       <Text style={[textStyles.label, { color: '#666', marginTop: 4 }]}>
         {item.category}

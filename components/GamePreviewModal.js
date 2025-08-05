@@ -37,7 +37,7 @@ export default function GamePreviewModal({
             loop
             style={styles.banner}
           />
-          <Text style={styles.title}>{game?.title}</Text>
+          <Text style={styles.title}>{game?.name}</Text>
           <View style={styles.levelBadge}>
             <Text style={styles.levelText}>{level}</Text>
           </View>
@@ -68,7 +68,7 @@ export default function GamePreviewModal({
           />
           <GradientButton
             text="Play With Stranger"
-            onPress={() => onPlayStranger(game?.id)}
+            onPress={() => onPlayStranger(game?.slug)}
             style={{ borderRadius: 12 }}
           />
           <TouchableOpacity onPress={onClose} style={{ marginTop: 12 }}>

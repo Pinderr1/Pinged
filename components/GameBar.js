@@ -77,7 +77,7 @@ export default function GameBar({ matchId, user }) {
 
   useEffect(() => {
     if (activeGameId) {
-      const title = games[activeGameId].meta.title;
+      const title = games[activeGameId].meta.name;
       showNotification(`Game started: ${title}`);
     }
   }, [activeGameId]);
@@ -132,8 +132,8 @@ export default function GameBar({ matchId, user }) {
       setShowGameModal(false);
       return;
     }
-    const gameId = game.id;
-    const title = games[gameId].meta.title;
+    const gameId = game.slug;
+    const title = games[gameId].meta.name;
     if (activeGameId && activeGameId !== gameId) {
       sendMessage({ matchId, text: `Switched game to ${title}`, meta: { system: true } });
     } else if (!activeGameId) {

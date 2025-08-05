@@ -3,6 +3,7 @@ import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const PAIRS = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'];
 const SIZE = 4; // 4x4 grid
@@ -83,6 +84,6 @@ const MemoryMatchClient = createGameClient({ game: MemoryMatchGame, board: Memor
 
 export const Game = MemoryMatchGame;
 export const Board = MemoryMatchBoard;
-export const meta = { id: 'memoryMatch', title: 'Memory Match' };
+export const meta = gameMap.memoryMatch;
 
 export default MemoryMatchClient;

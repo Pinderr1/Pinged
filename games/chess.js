@@ -5,6 +5,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const SIZE = 8;
 
@@ -331,6 +332,6 @@ const ChessClient = createGameClient({ game: ChessGame, board: ChessBoard });
 
 export const Game = ChessGame;
 export const Board = ChessBoard;
-export const meta = { id: 'chess', title: 'Chess' };
+export const meta = gameMap.chess;
 
 export default ChessClient;

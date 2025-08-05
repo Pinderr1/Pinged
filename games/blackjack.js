@@ -3,6 +3,7 @@ import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 function createDeck(random) {
   const values = [2,3,4,5,6,7,8,9,10,10,10,10,11];
@@ -121,6 +122,6 @@ const BlackjackClient = createGameClient({ game: BlackjackGame, board: Blackjack
 
 export const Game = BlackjackGame;
 export const Board = BlackjackBoard;
-export const meta = { id: 'blackjack', title: 'Blackjack' };
+export const meta = gameMap.blackjack;
 
 export default BlackjackClient;

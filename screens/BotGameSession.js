@@ -41,12 +41,12 @@ function BotGameSession({ route }) {
   const { play } = useSound();
   const [game, setGame] = useState(initialGame);
 
-  const aiKeyMap = { rockPaperScissors: 'rps' };
-  const gameMap = Object.keys(games).reduce((acc, key) => {
+    const aiKeyMap = { rockPaperScissors: 'rps' };
+    const gameMap = Object.keys(games).reduce((acc, key) => {
     const info = games[key];
     const aiKey = aiKeyMap[key] || key;
     acc[aiKey] = {
-      title: info.meta?.title || info.name,
+      title: info.meta?.name || info.name,
       board: info.Board,
       state: useBotGame(
         info.Game,

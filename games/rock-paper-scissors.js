@@ -3,6 +3,7 @@ import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const choices = ['Rock', 'Paper', 'Scissors'];
 
@@ -82,6 +83,6 @@ const RPSClient = createGameClient({ game: RPSGame, board: RPSBoard });
 
 export const Game = RPSGame;
 export const Board = RPSBoard;
-export const meta = { id: 'rockPaperScissors', title: 'Rock Paper Scissors' };
+export const meta = gameMap.rockPaperScissors;
 
 export default RPSClient;

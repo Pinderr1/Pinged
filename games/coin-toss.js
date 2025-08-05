@@ -4,6 +4,7 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const CoinTossGame = {
   setup: () => ({ choice: null, result: null }),
@@ -71,6 +72,6 @@ const CoinTossClient = createGameClient({ game: CoinTossGame, board: CoinTossBoa
 
 export const Game = CoinTossGame;
 export const Board = CoinTossBoard;
-export const meta = { id: 'coinToss', title: 'Coin Toss' };
+export const meta = gameMap.coinToss;
 
 export default CoinTossClient;
