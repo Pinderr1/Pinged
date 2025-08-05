@@ -463,7 +463,7 @@ const CommunityScreen = () => {
             <Text style={local.limitText}>
               {`Events remaining today: ${
                 eventsLeft === Infinity ? '∞' : eventsLeft
-              }/${limit === Infinity ? '∞' : limit}`}
+              } / ${limit === Infinity ? '∞' : limit}`}
             </Text>
             <GradientButton
               text="Submit Event"
