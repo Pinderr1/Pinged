@@ -93,15 +93,47 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
 
   useEffect(() => {
     if (!matchId || !currentUser?.uid) return;
-    let unsub = null;
     let isMounted = true;
+    const ref = firebase
+      .firestore()
+      .collection('matches')
+      .doc(matchId)
+      .collection('messages')
+      .orderBy('timestamp', 'desc')
+      .limit(1);
+    const unsubscribe = ref.onSnapshot((snap) => {
+      snap.docChanges().forEach(async (change) => {
+        const val = change.doc.data();
+        const msg = await formatMessage(val, change.doc.id, currentUser.uid);
+        if (change.type === 'added') {
+          setMessages((prev) => {
+            if (prev.find((m) => m.id === msg.id)) return prev;
+            return [msg, ...prev];
+          });
+        } else if (change.type === 'modified') {
+          setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
+        }
+        if (
+          val.senderId !== currentUser.uid &&
+          !(val.readBy || []).includes(currentUser.uid)
+        ) {
+          change.doc.ref.update({
+            readBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+          });
+        }
+      });
+    });
+
     const loadInitial = async () => {
       setFromArchive(false);
       setOldestArchiveDoc(null);
       setOldestDoc(null);
       setLoading(true);
       try {
-        const { messages: fetched, lastDoc } = await chatApi.getMessages(matchId, currentUser.uid);
+        const { messages: fetched, lastDoc } = await chatApi.getMessages(
+          matchId,
+          currentUser.uid,
+        );
         const mapped = await Promise.all(
           fetched.map((m) => formatMessage(m, m.id, currentUser.uid)),
         );
@@ -114,42 +146,12 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
         console.warn('Failed to load messages', e);
         setLoading(false);
       }
-
-      unsub = firebase
-        .firestore()
-        .collection('matches')
-        .doc(matchId)
-        .collection('messages')
-        .orderBy('timestamp', 'desc')
-        .limit(1)
-        .onSnapshot((snap) => {
-          snap.docChanges().forEach(async (change) => {
-            const val = change.doc.data();
-            const msg = await formatMessage(val, change.doc.id, currentUser.uid);
-            if (change.type === 'added') {
-              setMessages((prev) => {
-                if (prev.find((m) => m.id === msg.id)) return prev;
-                return [msg, ...prev];
-              });
-            } else if (change.type === 'modified') {
-              setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
-            }
-            if (
-              val.senderId !== currentUser.uid &&
-              !(val.readBy || []).includes(currentUser.uid)
-            ) {
-              change.doc.ref.update({
-                readBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
-              });
-            }
-          });
-        });
     };
 
     loadInitial();
     return () => {
       isMounted = false;
-      if (unsub) unsub();
+      unsubscribe();
     };
   }, [matchId, currentUser?.uid]);
 
