@@ -3,12 +3,8 @@ import sodium from 'libsodium-wrappers';
 
 const STORAGE_KEY_PREFIX = 'asym_keypair_';
 const REMOTE_KEY_PREFIX = 'remote_pubkey_';
-let keyPair = null;
-let ready = null;
-let currentUid = null;
-const publicKeyCache = {};
 
-async function loadKeyPair(uid) {
+export async function generateKeyPair(uid) {
   const stored = await AsyncStorage.getItem(`${STORAGE_KEY_PREFIX}${uid}`);
   if (stored) {
     const parsed = JSON.parse(stored);
@@ -28,23 +24,7 @@ async function loadKeyPair(uid) {
   return generated;
 }
 
-export async function initEncryption(uid) {
-  if (!uid) return;
-  if (!ready) {
-    ready = sodium.ready;
-  }
-  await ready;
-  if (currentUid !== uid) {
-    currentUid = uid;
-    keyPair = null;
-    Object.keys(publicKeyCache).forEach((k) => delete publicKeyCache[k]);
-  }
-  if (!keyPair) {
-    keyPair = await loadKeyPair(uid);
-  }
-}
-
-async function getPublicKey(uid) {
+export async function fetchPublicKey(uid, currentUid, keyPair, publicKeyCache) {
   if (uid === currentUid && keyPair) return keyPair.publicKey;
   if (publicKeyCache[uid]) return publicKeyCache[uid];
   const stored = await AsyncStorage.getItem(`${REMOTE_KEY_PREFIX}${uid}`);
@@ -56,7 +36,7 @@ async function getPublicKey(uid) {
   return null;
 }
 
-export async function saveRemotePublicKey(uid, keyBase64) {
+export async function saveRemotePublicKey(uid, keyBase64, publicKeyCache) {
   try {
     publicKeyCache[uid] = sodium.from_base64(keyBase64);
     await AsyncStorage.setItem(`${REMOTE_KEY_PREFIX}${uid}`, keyBase64);
@@ -65,15 +45,15 @@ export async function saveRemotePublicKey(uid, keyBase64) {
   }
 }
 
-export function getPublicKeyBase64() {
+export function getPublicKeyBase64(keyPair) {
   return keyPair ? sodium.to_base64(keyPair.publicKey) : null;
 }
 
-export async function encryptText(text, recipientUid) {
+export async function encryptText(text, recipientUid, keyPair, publicKeyCache, currentUid) {
   if (!keyPair) {
     throw new Error('Encryption not initialized');
   }
-  const recipientKey = await getPublicKey(recipientUid);
+  const recipientKey = await fetchPublicKey(recipientUid, currentUid, keyPair, publicKeyCache);
   if (!recipientKey) {
     throw new Error('Recipient public key not found');
   }
@@ -90,12 +70,12 @@ export async function encryptText(text, recipientUid) {
   };
 }
 
-export async function decryptText(ciphertext, nonce, senderUid) {
+export async function decryptText(ciphertext, nonce, senderUid, keyPair, publicKeyCache, currentUid) {
   if (!keyPair) {
     return '';
   }
   try {
-    const senderKey = await getPublicKey(senderUid);
+    const senderKey = await fetchPublicKey(senderUid, currentUid, keyPair, publicKeyCache);
     if (!senderKey) return '';
     const plain = sodium.crypto_box_open_easy(
       sodium.from_base64(ciphertext),
@@ -109,3 +89,4 @@ export async function decryptText(ciphertext, nonce, senderUid) {
     return '';
   }
 }
+

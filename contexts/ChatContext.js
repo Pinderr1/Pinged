@@ -8,7 +8,8 @@ import * as Haptics from 'expo-haptics';
 import { useSound } from './SoundContext';
 import { useListeners } from './ListenerContext';
 import debounce from '../utils/debounce';
-import { initEncryption, encryptText, getPublicKeyBase64 } from '../utils/encryption';
+import { getPublicKeyBase64 } from '../utils/encryption';
+import { useEncryption } from './EncryptionContext';
 import { useAnalytics } from './AnalyticsContext';
 
 const ChatContext = createContext();
@@ -41,6 +42,7 @@ export const ChatProvider = ({ children }) => {
   const { user, blocked } = useUser();
   const { play } = useSound();
   const { logGameStarted } = useAnalytics();
+  const { initEncryption, encryptText, keyPair } = useEncryption();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const lastMessageRef = useRef(0);
@@ -100,7 +102,7 @@ export const ChatProvider = ({ children }) => {
     initEncryption(user.uid).catch((e) => {
       console.warn('Encryption init failed', e);
     });
-  }, [user?.uid]);
+  }, [user?.uid, initEncryption]);
 
   // Matches from ListenerContext
   const { matches: listenerMatches, loadMoreMatches, hasMoreMatches } = useListeners();
@@ -292,7 +294,6 @@ export const ChatProvider = ({ children }) => {
     const { group, system, ...extras } = meta || {};
 
     try {
-      await initEncryption(user.uid);
       const payload = {
         ...extras,
       };
@@ -306,7 +307,7 @@ export const ChatProvider = ({ children }) => {
               payload.nonce = enc.nonce;
             } catch (e) {
               if (e.message === 'Recipient public key not found') {
-                const pk = getPublicKeyBase64();
+                const pk = getPublicKeyBase64(keyPair);
                 if (pk) {
                   await firebase
                     .functions()
