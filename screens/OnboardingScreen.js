@@ -200,7 +200,7 @@ const validateField = () => {
           .collection('users')
           .doc(uid)
           .get();
-        if (snapshotExists(snap) && snap.data().onboardingComplete) {
+        if (snapshotExists(snap) && snap.data().onboardingCompleted) {
           updateUser(snap.data());
           markOnboarded();
           navigation.reset({ index: 0, routes: [{ name: 'Main' }] });

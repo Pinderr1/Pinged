@@ -91,7 +91,7 @@ service cloud.firestore {
           'showSocialMedia',
           'isInternational',
           'socialLinks',
-          'onboardingComplete',
+          'onboardingCompleted',
           'pushToken',
           'introClipUrl',
           'profilePrompts',

@@ -45,7 +45,7 @@ export const OnboardingProvider = ({ children }) => {
       .onSnapshot(
         (snap) => {
           const data = snap.data() || {};
-          if (isMounted) setHasOnboarded(!!data.onboardingComplete);
+          if (isMounted) setHasOnboarded(!!data.onboardingCompleted);
         },
         (err) => {
           console.warn("Failed to subscribe onboarding status", err);
@@ -66,7 +66,7 @@ export const OnboardingProvider = ({ children }) => {
         .firestore()
         .collection("users")
         .doc(user.uid)
-        .update({ onboardingComplete: true });
+        .update({ onboardingCompleted: true });
       setHasOnboarded(true);
       await Analytics.logEvent("onboarding_complete");
     } catch (e) {
@@ -75,10 +75,10 @@ export const OnboardingProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (user?.uid && user.onboardingComplete) {
+    if (user?.uid && user.onboardingCompleted) {
       markOnboarded();
     }
-  }, [user?.uid, user?.onboardingComplete]);
+  }, [user?.uid, user?.onboardingCompleted]);
 
   const clearOnboarding = async () => {
     if (!user) {
