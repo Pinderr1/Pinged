@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
           email: fbUser.email,
           displayName: fbUser.displayName || "",
           photoURL: fbUser.photoURL || "",
-          onboardingComplete: false,
+          onboardingCompleted: false,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
           email: userCred.user.email,
           displayName: userCred.user.displayName || "",
           photoURL: userCred.user.photoURL || "",
-          onboardingComplete: false,
+          onboardingCompleted: false,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
     } catch (e) {

@@ -51,7 +51,7 @@ export default function LoginScreen() {
             .collection('users')
             .doc(res.user.uid)
             .get();
-          if (snapshotExists(snap) && snap.data().onboardingComplete) {
+          if (snapshotExists(snap) && snap.data().onboardingCompleted) {
             markOnboarded();
           }
         })

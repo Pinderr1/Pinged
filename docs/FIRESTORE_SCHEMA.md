@@ -28,7 +28,7 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `showSocialMedia` (boolean)
 - `isInternational` (boolean)
 - `socialLinks` (map) – `{ instagram, tiktok }`
-- `onboardingComplete` (boolean)
+- `onboardingCompleted` (boolean)
 - `createdAt` (timestamp)
 - `isPremium` (boolean)
 - `premiumUpdatedAt` (timestamp)
