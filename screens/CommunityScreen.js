@@ -44,7 +44,7 @@ const CommunityScreen = () => {
   const local = getStyles(theme, skeletonColor);
   const navigation = useNavigation();
   const { user, redeemEventTicket } = useUser();
-  const { eventsLeft, recordEventCreated } = useEventLimit();
+  const { eventsLeft, limit, recordEventCreated } = useEventLimit();
   const { logEventJoined } = useAnalytics();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
@@ -417,6 +417,9 @@ const CommunityScreen = () => {
         <View style={local.modalBackdrop}>
           <View style={local.modalCard}>
             <Text style={local.modalTitle}>Host an Event</Text>
+            <Text style={local.limitText}>
+              Events remaining: {eventsLeft} / {limit}
+            </Text>
             <TextInput
               placeholder="Event Title"
               value={newTitle}
@@ -685,6 +688,12 @@ const getStyles = (theme, skeletonColor) =>
     fontFamily: FONT_FAMILY.bold,
     fontSize: 16,
     marginBottom: 12
+  },
+  limitText: {
+    fontFamily: FONT_FAMILY.regular,
+    fontSize: 13,
+    marginBottom: 12,
+    color: theme.text,
   },
   input: {
     width: '100%',
