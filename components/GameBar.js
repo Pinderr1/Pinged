@@ -127,11 +127,12 @@ export default function GameBar({ matchId, user }) {
     }
   }, [gameResult]);
 
-  const handleGameSelect = (gameId) => {
+  const handleGameSelect = (game) => {
     if (!requireCredits()) {
       setShowGameModal(false);
       return;
     }
+    const gameId = game.id;
     const title = games[gameId].meta.title;
     if (activeGameId && activeGameId !== gameId) {
       sendMessage({ matchId, text: `Switched game to ${title}`, meta: { system: true } });
@@ -162,13 +163,13 @@ export default function GameBar({ matchId, user }) {
     setShowGameMenu(false);
   };
 
-  const handleInviteSelect = async (game) => {
+  const handlePlayStranger = async (gameId) => {
     setShowGameModal(false);
-    if (!game || inviting) return;
+    if (!gameId || inviting) return;
     if (!canPlay || !requireCredits()) return;
     setInviting(true);
     try {
-      await sendGameInvite(matchId, game.id);
+      await sendGameInvite(matchId, gameId);
       recordGamePlayed();
       Toast.show({ type: "success", text1: "Invite sent!" });
     } catch (e) {
@@ -218,7 +219,12 @@ export default function GameBar({ matchId, user }) {
         onChange={handleChangeGame}
         theme={theme}
       />
-      <GamePickerModal visible={showGameModal} onSelect={handleGameSelect} onClose={() => setShowGameModal(false)} />
+      <GamePickerModal
+        visible={showGameModal}
+        onSelect={handleGameSelect}
+        onPlayStranger={handlePlayStranger}
+        onClose={() => setShowGameModal(false)}
+      />
       {gameResult && (
         <View style={styles.resultOverlay} pointerEvents="none">
           <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
