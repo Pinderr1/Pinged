@@ -42,7 +42,7 @@ const LiveGameSession = ({ route, navigation }) => {
   const { user, addGameXP } = useUser();
   const isPremiumUser = !!user?.isPremium;
   const requireCredits = useRequireGameCredits();
-  const { sendGameInvite, cancelInvite } = useMatchmaking();
+  const { sendGameInvite, cancelInvite, inviteDisabled } = useMatchmaking();
 
   const { game, opponent, status = 'waiting', inviteId } = route.params || {};
 
@@ -303,7 +303,7 @@ const LiveGameSession = ({ route, navigation }) => {
             : null
         }
         onRematch={debouncedRematch}
-        rematchDisabled={rematchWaiting}
+        rematchDisabled={rematchWaiting || inviteDisabled}
         onExit={() => navigation.goBack()}
       />
     </GradientBackground>
