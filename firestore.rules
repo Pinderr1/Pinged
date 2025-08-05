@@ -23,6 +23,16 @@ service cloud.firestore {
         (players[0] == players[1] || areMatched(players[0], players[1]));
     }
 
+    function matchExists(matchId) {
+      return exists(/databases/$(database)/documents/matches/$(matchId));
+    }
+
+    function isMatchParticipant(matchId) {
+      let match = get(/databases/$(database)/documents/matches/$(matchId)).data;
+      return matchExists(matchId) &&
+        (request.auth.uid == match.player1 || request.auth.uid == match.player2);
+    }
+
     // User can read and write only their own profile, but certain fields are
     // server controlled and may not be written by the client. Admins may write
     // unrestricted for server-side updates such as Stripe webhooks.
@@ -96,18 +106,19 @@ service cloud.firestore {
     // Match documents are readable by the matched users but may only be created by the server
     match /matches/{matchId} {
       allow read: if request.auth.token.admin == true ||
-        (isSignedIn() && request.auth.uid in resource.data.users);
+        (isSignedIn() &&
+          (request.auth.uid == resource.data.player1 || request.auth.uid == resource.data.player2));
       allow create: if isSignedIn() &&
-        let other = request.resource.data.users[0] == request.auth.uid
-          ? request.resource.data.users[1]
-          : request.resource.data.users[0];
-        request.resource.data.users hasAll([request.auth.uid, other]) &&
+        let other = request.resource.data.player1 == request.auth.uid
+          ? request.resource.data.player2
+          : request.resource.data.player1;
+        [request.resource.data.player1, request.resource.data.player2] hasAll([request.auth.uid, other]) &&
         exists(/databases/$(database)/documents/likes/$(request.auth.uid)/liked/$(other)) &&
         exists(/databases/$(database)/documents/likes/$(other)/liked/$(request.auth.uid));
       allow delete: if request.auth.token.admin == true;
       allow update: if request.auth.token.admin == true || (
         isSignedIn() &&
-        request.auth.uid in resource.data.users &&
+        (request.auth.uid == resource.data.player1 || request.auth.uid == resource.data.player2) &&
         request.resource.data.diff(resource.data).changedKeys().hasOnly(['typingIndicator'])
       );
 
@@ -115,10 +126,10 @@ service cloud.firestore {
       match /messages/{messageId} {
         allow read: if request.auth.token.admin == true || (
           isSignedIn() &&
-          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users);
+          isMatchParticipant(matchId));
         allow create: if request.auth.token.admin == true || (
           isSignedIn() &&
-          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users);
+          isMatchParticipant(matchId));
         allow update, delete: if request.auth.token.admin == true;
       }
 
@@ -126,14 +137,14 @@ service cloud.firestore {
       match /state/{docId} {
         allow read, write: if request.auth.token.admin == true || (
           isSignedIn() &&
-          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users);
+          isMatchParticipant(matchId));
       }
 
       // All other subcollections under a match follow the admin-only write pattern
       match /{document=**} {
         allow read: if request.auth.token.admin == true || (
           isSignedIn() &&
-          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users);
+          isMatchParticipant(matchId));
         allow write: if request.auth.token.admin == true;
       }
     }
