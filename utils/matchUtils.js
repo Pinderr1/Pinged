@@ -6,14 +6,14 @@ import { allGames } from '../data/games';
 
 export async function validateMatch(uid, otherUid) {
   if (!uid || !otherUid) return false;
+  const matchId = [uid, otherUid].sort().join('_');
   try {
     const snap = await firebase
       .firestore()
-      .collection('users')
-      .doc(uid)
+      .collection('matches')
+      .doc(matchId)
       .get();
-    const matched = snap.get('matchedUsers') || [];
-    return Array.isArray(matched) && matched.includes(otherUid);
+    return snap.exists;
   } catch (e) {
     console.warn('Failed to validate match', e);
   }
