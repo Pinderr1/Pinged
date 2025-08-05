@@ -116,6 +116,13 @@ const PlayScreen = ({ navigation }) => {
     });
   };
 
+  const handleStrangerGame = () => {
+    if (!previewGame) return null;
+    const id = previewGame.id;
+    setPreviewGame(null);
+    return id;
+  };
+
   const renderItem = ({ item }) => {
     const idx = allGames.findIndex((g) => g.id === item.id);
     return (
@@ -185,6 +192,7 @@ const PlayScreen = ({ navigation }) => {
         onClose={() => setPreviewGame(null)}
         onPlayFriend={handleStartGame}
         onPracticeBot={handlePracticeGame}
+        onPlayStranger={handleStrangerGame}
       />
       </SafeKeyboardView>
     </GradientBackground>
