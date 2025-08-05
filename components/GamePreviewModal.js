@@ -10,6 +10,7 @@ export default function GamePreviewModal({
   game,
   onPlayFriend,
   onPracticeBot,
+  onPlayStranger,
   onClose,
 }) {
   const { theme } = useTheme();
@@ -65,6 +66,11 @@ export default function GamePreviewModal({
             onPress={onPracticeBot}
             style={{ borderRadius: 12 }}
           />
+          <GradientButton
+            text="Play With Stranger"
+            onPress={() => onPlayStranger(game?.id)}
+            style={{ borderRadius: 12 }}
+          />
           <TouchableOpacity onPress={onClose} style={{ marginTop: 12 }}>
             <Text style={styles.cancel}>Cancel</Text>
           </TouchableOpacity>
@@ -79,6 +85,7 @@ GamePreviewModal.propTypes = {
   game: PropTypes.object,
   onPlayFriend: PropTypes.func.isRequired,
   onPracticeBot: PropTypes.func.isRequired,
+  onPlayStranger: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
 };
 
