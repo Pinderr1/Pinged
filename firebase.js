@@ -11,6 +11,7 @@ import {
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 import { getDatabase } from 'firebase/database';
+import { initCrashlytics } from './utils/crashlytics';
 
 // Validate required environment variables at runtime
 const requiredEnv = [
@@ -50,6 +51,9 @@ const firebaseConfig = {
 };
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+
+// Initialize Crashlytics (no-op on unsupported platforms)
+initCrashlytics();
 
 const auth = getAuth(app);
 if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
