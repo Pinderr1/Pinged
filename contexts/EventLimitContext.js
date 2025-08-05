@@ -59,7 +59,7 @@ export const EventLimitProvider = ({ children }) => {
   };
 
   return (
-    <EventLimitContext.Provider value={{ eventsLeft, recordEventCreated }}>
+    <EventLimitContext.Provider value={{ eventsLeft, limit, recordEventCreated }}>
       {children}
     </EventLimitContext.Provider>
   );
