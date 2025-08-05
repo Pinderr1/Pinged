@@ -36,7 +36,8 @@ export const ListenerProvider = ({ children }) => {
       .firestore()
       .collection('matches')
       .where('users', 'array-contains', user.uid)
-      .orderBy('createdAt', 'desc')
+      // Order matches by most recent activity
+      .orderBy('updatedAt', 'desc')
       .limit(MATCH_PAGE_SIZE);
 
     const unsubMatches = matchQ.onSnapshot((snap) => {
@@ -149,7 +150,8 @@ export const ListenerProvider = ({ children }) => {
       .firestore()
       .collection('matches')
       .where('users', 'array-contains', user.uid)
-      .orderBy('createdAt', 'desc')
+      // Order matches by most recent activity
+      .orderBy('updatedAt', 'desc')
       .startAfter(lastMatchDoc)
       .limit(MATCH_PAGE_SIZE);
 
