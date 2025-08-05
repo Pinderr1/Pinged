@@ -71,8 +71,8 @@ export default function RootNavigator() {
   // Prefer the onboarding flag from the user's profile. Only fall back to
   // the locally persisted flag when the profile has not been loaded yet.
   const onboarded =
-    user?.onboardingComplete !== undefined
-      ? user.onboardingComplete
+    user?.onboardingCompleted !== undefined
+      ? user.onboardingCompleted
       : hasOnboarded;
 
   let content = null;
