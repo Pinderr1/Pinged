@@ -16,8 +16,8 @@ export async function validateMatch(uid, otherUid) {
     return snap.exists;
   } catch (e) {
     console.warn('Failed to validate match', e);
+    return false;
   }
-  return false;
 }
 
 export async function handleLike({
