@@ -67,6 +67,13 @@ User matches are stored separately in the `matches` collection (`matches/{matchI
 
 ### Subcollections
 - **notifications** – optional per-user notifications (see `notifications` below).
+- **notificationSettings** – per-user notification preferences.
+  - Documents keyed by type (`invite`, `reengage`, `streak`, ...).
+  - `enabled` (boolean) – whether that notification type is active.
+
+Existing users should be seeded with `notificationSettings` documents for the
+expected IDs (`invite`, `reengage`, `streak`) with `enabled: true` to preserve
+current behavior.
 
 ## Game Invites (`gameInvites/{inviteId}`)
 - `from` (string) – sender uid

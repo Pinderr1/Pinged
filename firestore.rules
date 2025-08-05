@@ -250,6 +250,15 @@ service cloud.firestore {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
+    match /users/{uid}/notificationSettings/{settingId} {
+      allow read: if request.auth.token.admin == true ||
+        (isSignedIn() && request.auth.uid == uid);
+      allow write: if request.auth.token.admin == true ||
+        (isSignedIn() && request.auth.uid == uid &&
+          request.resource.data.keys().hasOnly(['enabled']) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['enabled']));
+    }
+
     match /blocks/{uid}/blocked/{targetUid} {
       allow read, write: if request.auth.token.admin == true || request.auth.uid == uid;
     }
