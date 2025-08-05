@@ -128,6 +128,12 @@ const SettingsScreen = ({ navigation }) => {
           <Text style={[styles.settingText, { color: theme.textSecondary }]}>
             Status: {isPremium ? '🌟 Premium Member' : 'Free Member'}
           </Text>
+          {!user?.phoneVerified && (
+            <GradientButton
+              text="Verify Phone"
+              onPress={() => navigation.navigate('PhoneVerification')}
+            />
+          )}
           {!isPremium && (
             <GradientButton
               text="Go Premium"
