@@ -6,11 +6,12 @@ import { eventImageSource } from '../utils/avatar';
 import GradientButton from './GradientButton';
 import { CARD_STYLE } from './Card';
 
-const EventFlyer = ({ event, onJoin, joined, style, disabled }) => {
+const EventFlyer = ({ event, onJoin, joined, style }) => {
   const { darkMode, theme } = useTheme();
   const styles = getStyles(theme, darkMode);
 
   const remainingCapacity = Math.max(0, event.capacity - event.attendeeCount);
+  const isFull = remainingCapacity <= 0;
 
   return (
     <View
@@ -34,11 +35,11 @@ const EventFlyer = ({ event, onJoin, joined, style, disabled }) => {
           <Text style={styles.ticketed}>🎟 Ticketed Event</Text>
         )}
         <GradientButton
-          text={disabled ? 'Full' : joined ? "RSVP'd" : 'RSVP'}
+          text={isFull ? 'Full' : joined ? "RSVP'd" : 'RSVP'}
           onPress={onJoin}
           width={100}
           style={{ alignSelf: 'flex-start', marginVertical: 8 }}
-          disabled={disabled}
+          disabled={isFull}
         />
       </View>
     </View>
@@ -53,7 +54,6 @@ EventFlyer.propTypes = {
   onJoin: PropTypes.func,
   joined: PropTypes.bool,
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  disabled: PropTypes.bool,
 };
 
 const getStyles = (theme, darkMode) =>
