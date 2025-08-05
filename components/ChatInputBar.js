@@ -18,6 +18,7 @@ export default function ChatInputBar({
   theme,
   sendMessage,
   sendGameInvite,
+  inviteDisabled,
 }) {
   const styles = getStyles(theme);
   const [text, setText] = useState('');
@@ -62,7 +63,7 @@ export default function ChatInputBar({
   };
 
   const handleInvite = async () => {
-    if (inviting || !canPlay) return;
+    if (inviting || inviteDisabled || !canPlay) return;
     setInviting(true);
     try {
       const defaultGameId = gameList[0]?.id;
@@ -92,9 +93,12 @@ export default function ChatInputBar({
         <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.challengeButton, !canPlay && { opacity: 0.6 }]}
+        style={[
+          styles.challengeButton,
+          (inviting || inviteDisabled || !canPlay) && { opacity: 0.6 },
+        ]}
         onPress={handleInvite}
-        disabled={inviting || !canPlay}
+        disabled={inviting || inviteDisabled || !canPlay}
         accessibilityLabel="Challenge"
       >
         <Ionicons name="game-controller" size={18} color="#fff" />
@@ -124,6 +128,7 @@ ChatInputBar.propTypes = {
   theme: PropTypes.object.isRequired,
   sendMessage: PropTypes.func.isRequired,
   sendGameInvite: PropTypes.func.isRequired,
+  inviteDisabled: PropTypes.bool,
 };
 
 const getStyles = (theme) =>

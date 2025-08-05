@@ -26,7 +26,7 @@ export default function GameBar({ matchId, user }) {
   const { sendMessage, setActiveGame, getActiveGame, getSavedGameState, saveGameState, clearGameState } = useChats();
   const { gamesLeft, recordGamePlayed } = useGameLimit();
   const requireCredits = useRequireGameCredits();
-  const { sendGameInvite } = useMatchmaking();
+  const { sendGameInvite, inviteDisabled } = useMatchmaking();
   const { showNotification } = useNotification();
   const [showGame, setShowGame] = useState(true);
   const [showGameModal, setShowGameModal] = useState(false);
@@ -165,16 +165,16 @@ export default function GameBar({ matchId, user }) {
 
   const handlePlayStranger = async (gameId) => {
     setShowGameModal(false);
-    if (!gameId || inviting) return;
+    if (!gameId || inviting || inviteDisabled) return;
     if (!canPlay || !requireCredits()) return;
     setInviting(true);
     try {
       await sendGameInvite(matchId, gameId);
       recordGamePlayed();
-      Toast.show({ type: "success", text1: "Invite sent!" });
+      Toast.show({ type: 'success', text1: 'Invite sent!' });
     } catch (e) {
-      console.warn("Failed to send invite", e);
-      Toast.show({ type: "error", text1: "Failed to send invite" });
+      console.warn('Failed to send invite', e);
+      Toast.show({ type: 'error', text1: 'Failed to send invite' });
     } finally {
       setInviting(false);
     }
@@ -224,6 +224,9 @@ export default function GameBar({ matchId, user }) {
         onSelect={handleGameSelect}
         onPlayStranger={handlePlayStranger}
         onClose={() => setShowGameModal(false)}
+        inviting={inviting}
+        inviteDisabled={inviteDisabled}
+        canPlay={canPlay}
       />
       {gameResult && (
         <View style={styles.resultOverlay} pointerEvents="none">
