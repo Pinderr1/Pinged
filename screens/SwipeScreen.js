@@ -434,16 +434,20 @@ const SwipeScreen = () => {
   };
 
   const rewind = () => {
-    if (!isPremiumUser) {
-      navigation.navigate('PremiumPaywall', { context: 'paywall' });
-      return;
-    }
     if (history.length === 0) return;
     const prevIndex = history[history.length - 1];
     setHistory((h) => h.slice(0, -1));
     setCurrentIndex(prevIndex);
     setImageIndex(0);
     pan.setValue({ x: 0, y: 0 });
+  };
+
+  const handleRewind = () => {
+    if (!isPremiumUser) {
+      navigation.navigate('PremiumPaywall', { context: 'paywall' });
+      return;
+    }
+    rewind();
   };
 
 
@@ -552,10 +556,7 @@ const SwipeScreen = () => {
       icon: 'close',
       color: '#f87171',
       action: swipeLeft,
-      longAction: () =>
-        isPremiumUser
-          ? rewind()
-          : navigation.navigate('PremiumPaywall', { context: 'paywall' }),
+      longAction: handleRewind,
       label: 'Reject profile',
     },
     {
