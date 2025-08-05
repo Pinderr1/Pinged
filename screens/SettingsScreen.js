@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   Text,
@@ -47,6 +47,8 @@ const SettingsScreen = ({ navigation }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(
     user?.notificationsEnabled !== false
   );
+  const NOTIFICATION_TYPES = ['invites', 'idleReminders', 'streakRewards'];
+  const [notificationSettings, setNotificationSettings] = useState({});
   const [distanceUnit, setDistanceUnit] = useState(user?.distanceUnit || 'mi');
   const [colorTheme, setColorTheme] = useState(user?.colorTheme || 'pinkOrange');
   const {
@@ -100,7 +102,56 @@ const SettingsScreen = ({ navigation }) => {
     }
   };
 
+  const formatNotificationLabel = (id) =>
+    id
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (s) => s.toUpperCase());
+
   const local = getLocalStyles(theme);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (!user?.uid) return;
+      try {
+        const snapshot = await firebase
+          .firestore()
+          .collection('users')
+          .doc(user.uid)
+          .collection('notificationSettings')
+          .get();
+
+        const settings = {};
+        NOTIFICATION_TYPES.forEach((t) => {
+          settings[t] = true;
+        });
+        snapshot.forEach((doc) => {
+          settings[doc.id] = doc.data().enabled !== false;
+        });
+        setNotificationSettings(settings);
+      } catch (e) {
+        logger.error('Failed to fetch notification settings', e);
+      }
+    };
+
+    fetchSettings();
+  }, [user?.uid]);
+
+  const handleToggleNotification = async (type, value) => {
+    if (!user?.uid) return;
+    setNotificationSettings((prev) => ({ ...prev, [type]: value }));
+    try {
+      await firebase
+        .firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('notificationSettings')
+        .doc(type)
+        .set({ enabled: value }, { merge: true });
+    } catch (e) {
+      logger.error('Failed to update notification setting', e);
+      Toast.show({ type: 'error', text1: 'Update failed' });
+    }
+  };
 
   return (
     <GradientBackground style={{ flex: 1 }}>
@@ -365,6 +416,29 @@ const SettingsScreen = ({ navigation }) => {
               }}
             />
           </TouchableOpacity>
+
+          {NOTIFICATION_TYPES.map((type) => {
+            const enabled = notificationSettings[type];
+            return (
+              <TouchableOpacity
+                key={type}
+                style={local.switchRow}
+                onPress={() => {
+                  const newValue = !enabled;
+                  handleToggleNotification(type, newValue);
+                }}
+              >
+                <Text style={[styles.settingText, { marginRight: 8 }]}>
+                  {formatNotificationLabel(type)}
+                </Text>
+                <Switch
+                  value={!!enabled}
+                  onValueChange={(v) => handleToggleNotification(type, v)}
+                  disabled={!notificationsEnabled}
+                />
+              </TouchableOpacity>
+            );
+          })}
 
           <RNPickerSelect
             onValueChange={(val) => {
