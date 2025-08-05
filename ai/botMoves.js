@@ -1,6 +1,7 @@
 import { getBotMove as tttBot } from './ticTacToeBot';
 import { getBotMove as rpsBot } from './rockPaperScissorsBot';
 import { randomItem, fallbackBot, safeBot, indicesOf } from './botUtils';
+import { getCheckersMove } from './bots';
 
 
 export const bots = {
@@ -35,24 +36,7 @@ export const bots = {
     const idx = randomItem(valid);
     return { move: 'fire', args: [idx] };
   },
-  checkers: (G, player, game) => {
-    const SIZE = 8;
-    const moves = [];
-    for (let from = 0; from < SIZE * SIZE; from++) {
-      const piece = G.board[from];
-      if (!piece || !piece.startsWith(player)) continue;
-      for (let to = 0; to < SIZE * SIZE; to++) {
-        const copy = JSON.parse(JSON.stringify(G));
-        const ctx = { currentPlayer: player, events: { endTurn: () => {} } };
-        const res = game.moves.movePiece({ G: copy, ctx }, from, to);
-        if (res !== 'INVALID_MOVE') {
-          moves.push({ move: 'movePiece', args: [from, to] });
-        }
-      }
-    }
-    if (!moves.length) return null;
-    return randomItem(moves);
-  },
+  checkers: (G, player, game) => getCheckersMove(G, player, game),
   dominoes: (G, player, game) => {
     const moves = [];
     const hand = G.hands[player];

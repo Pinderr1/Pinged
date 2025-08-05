@@ -1,5 +1,7 @@
 export const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
+export const clone = (obj) => JSON.parse(JSON.stringify(obj));
+
 export function indicesOf(arr, predicate) {
   const out = [];
   for (let i = 0; i < arr.length; i++) if (predicate(arr[i], i)) out.push(i);
