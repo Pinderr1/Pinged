@@ -98,6 +98,7 @@ This document outlines the final Firestore structure used by the Pinged applicat
 ## Game Sessions (`gameSessions/{sessionId}`)
 - `gameId` (string)
 - `players` (array of string) – user ids
+- `sessionMatchId` (string) – associated match id
 - `state` (map) – current game state object
 - `currentPlayer` (string) – id of the current player (`"0"` or `"1"`)
 - `gameover` (map|null)
