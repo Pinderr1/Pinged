@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from 'react';
 import { useUser } from './UserContext';
 import useRemoteConfig from '../hooks/useRemoteConfig';
 import firebase from '../firebase';
@@ -11,12 +17,15 @@ export const EventLimitProvider = ({ children }) => {
   const { maxDailyEvents } = useRemoteConfig();
   const isPremium = !!user?.isPremium;
   const baseLimit = maxDailyEvents ?? DEFAULT_LIMIT;
-  const limit = isPremium ? Infinity : baseLimit;
+  const limit = useMemo(
+    () => (isPremium ? Infinity : baseLimit),
+    [isPremium, baseLimit]
+  );
   const [eventsLeft, setEventsLeft] = useState(limit);
 
   useEffect(() => {
-    const dailyLimit = isPremium ? Infinity : baseLimit;
-    if (isPremium) {
+    const dailyLimit = limit;
+    if (limit === Infinity) {
       setEventsLeft(Infinity);
       return;
     }
@@ -29,10 +38,10 @@ export const EventLimitProvider = ({ children }) => {
     } else {
       setEventsLeft(dailyLimit);
     }
-  }, [isPremium, user?.dailyEventCount, user?.lastEventCreatedAt, baseLimit]);
+  }, [limit, user?.dailyEventCount, user?.lastEventCreatedAt]);
 
   const recordEventCreated = async (localOnly = false) => {
-    if (isPremium || !user?.uid) return;
+    if (limit === Infinity || !user?.uid) return;
 
     const last =
       user.lastEventCreatedAt?.toDate?.() ||
@@ -42,7 +51,7 @@ export const EventLimitProvider = ({ children }) => {
     if (last && last.toDateString() === today.toDateString()) {
       count = (user.dailyEventCount || 0) + 1;
     }
-    const dailyLimit = baseLimit;
+    const dailyLimit = limit;
     setEventsLeft(Math.max(dailyLimit - count, 0));
     if (localOnly) return;
     try {

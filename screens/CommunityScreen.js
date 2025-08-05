@@ -44,7 +44,7 @@ const CommunityScreen = () => {
   const local = getStyles(theme, skeletonColor);
   const navigation = useNavigation();
   const { user, redeemEventTicket } = useUser();
-  const { eventsLeft, limit, recordEventCreated } = useEventLimit();
+  const { eventsLeft, recordEventCreated, limit } = useEventLimit();
   const { logEventJoined } = useAnalytics();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
@@ -433,7 +433,9 @@ const CommunityScreen = () => {
           <View style={local.modalCard}>
             <Text style={local.modalTitle}>Host an Event</Text>
             <Text style={local.limitText}>
-              Events remaining: {eventsLeft} / {limit}
+              {`Events remaining: ${
+                eventsLeft === Infinity ? '∞' : eventsLeft
+              } / ${limit === Infinity ? '∞' : limit}`}
             </Text>
             <TextInput
               placeholder="Event Title"
@@ -457,11 +459,6 @@ const CommunityScreen = () => {
               multiline
               placeholderTextColor="#888"
             />
-            <Text style={local.limitText}>
-              {`Events remaining today: ${
-                eventsLeft === Infinity ? '∞' : eventsLeft
-              }/${limit === Infinity ? '∞' : limit}`}
-            </Text>
             <GradientButton
               text="Submit Event"
               onPress={async () => {
