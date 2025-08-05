@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import PropTypes from 'prop-types';
-import { handleError } from '../utils/errorHandling';
+import { logError } from '../utils/crashlytics';
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -15,14 +15,18 @@ export default class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, info) {
     console.error('ErrorBoundary caught an error', error, info);
-    handleError(error);
+    const { componentName } = this.props;
+    const context = componentName
+      ? `${componentName}: ${info?.componentStack || ''}`
+      : info?.componentStack;
+    logError(error, context);
   }
 
   render() {
     if (this.state.hasError) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text>Something went wrong.</Text>
+          <Text>Something went wrong. Please restart the app.</Text>
         </View>
       );
     }
@@ -32,4 +36,5 @@ export default class ErrorBoundary extends React.Component {
 
 ErrorBoundary.propTypes = {
   children: PropTypes.node.isRequired,
+  componentName: PropTypes.string,
 };
