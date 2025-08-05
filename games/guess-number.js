@@ -4,6 +4,7 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const GuessNumberGame = {
   setup: (ctx) => ({ target: ctx.random.Die(100), guesses: [] }),
@@ -76,6 +77,6 @@ const GuessNumberClient = createGameClient({ game: GuessNumberGame, board: Guess
 
 export const Game = GuessNumberGame;
 export const Board = GuessNumberBoard;
-export const meta = { id: 'guessNumber', title: 'Guess Number' };
+export const meta = gameMap.guessNumber;
 
 export default GuessNumberClient;

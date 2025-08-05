@@ -709,7 +709,7 @@ const SwipeScreen = () => {
                 <Text style={styles.suggestText}>{`Try: "${matchLine}"`}</Text>
               ) : null}
               {matchGame ? (
-                <Text style={styles.suggestText}>{`Or invite them to play ${matchGame.title}`}</Text>
+                <Text style={styles.suggestText}>{`Or invite them to play ${matchGame.name}`}</Text>
               ) : null}
             </BlurView>
           </Modal>

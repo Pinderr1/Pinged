@@ -3,6 +3,7 @@ import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const SIZE = 5;
 const SHIPS = [3, 2];
@@ -161,6 +162,6 @@ const BattleshipClient = createGameClient({ game: BattleshipGame, board: Battles
 
 export const Game = BattleshipGame;
 export const Board = BattleshipBoard;
-export const meta = { id: 'battleship', title: 'Battleship' };
+export const meta = gameMap.battleship;
 
 export default BattleshipClient;

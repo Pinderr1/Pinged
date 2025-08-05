@@ -3,6 +3,7 @@ import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const WORDS = ['react', 'native', 'expo', 'javascript', 'hangman'];
 
@@ -76,6 +77,6 @@ const HangmanClient = createGameClient({ game: HangmanGame, board: HangmanBoard 
 
 export const Game = HangmanGame;
 export const Board = HangmanBoard;
-export const meta = { id: 'hangman', title: 'Hangman' };
+export const meta = gameMap.hangman;
 
 export default HangmanClient;

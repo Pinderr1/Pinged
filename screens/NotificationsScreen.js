@@ -102,7 +102,7 @@ const NotificationsScreen = ({ navigation }) => {
       navigation.navigate('GameSession', {
         game: {
           id: invite.gameId,
-          title: games[invite.gameId]?.meta?.title || 'Game',
+          title: games[invite.gameId]?.meta?.name || 'Game',
         },
         opponent: {
           id: invite.from,
@@ -181,7 +181,7 @@ const NotificationsScreen = ({ navigation }) => {
               ]}
             >
               <Text style={[local.text, { color: theme.text }]}> 
-                {inv.fromName ? `${inv.fromName} invited you to play ${games[inv.gameId]?.meta?.title || 'a game'}` : 'Game invite received'}
+                {inv.fromName ? `${inv.fromName} invited you to play ${games[inv.gameId]?.meta?.name || 'a game'}` : 'Game invite received'}
               </Text>
               <View style={local.actions}>
                 <AnimatedButton

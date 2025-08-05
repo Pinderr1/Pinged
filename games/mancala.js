@@ -3,6 +3,7 @@ import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const PITS = 6;
 const INIT_STONES = 4;
@@ -153,6 +154,6 @@ const MancalaClient = createGameClient({ game: MancalaGame, board: MancalaBoard 
 
 export const Game = MancalaGame;
 export const Board = MancalaBoard;
-export const meta = { id: 'mancala', title: 'Mancala' };
+export const meta = gameMap.mancala;
 
 export default MancalaClient;

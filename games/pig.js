@@ -3,6 +3,7 @@ import createGameClient from './createGameClient';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const PigGame = {
   setup: () => ({ scores: [0, 0], turnTotal: 0, lastRoll: null }),
@@ -91,6 +92,6 @@ const PigClient = createGameClient({ game: PigGame, board: PigBoard });
 
 export const Game = PigGame;
 export const Board = PigBoard;
-export const meta = { id: 'pig', title: 'Pig Dice' };
+export const meta = gameMap.pig;
 
 export default PigClient;

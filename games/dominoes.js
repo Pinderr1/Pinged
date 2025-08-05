@@ -4,6 +4,7 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 function initTiles(random) {
   const tiles = [];
@@ -184,7 +185,7 @@ const DominoesClient = createGameClient({ game: DominoesGame, board: DominoesBoa
 
 export const Game = DominoesGame;
 export const Board = DominoesBoard;
-export const meta = { id: 'dominoes', title: 'Dominoes' };
+export const meta = gameMap.dominoes;
 
 export default DominoesClient;
 

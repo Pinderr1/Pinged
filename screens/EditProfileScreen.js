@@ -19,7 +19,6 @@ import PropTypes from 'prop-types';
 import RNPickerSelect from 'react-native-picker-select';
 import GameSelectList from '../components/GameSelectList';
 import { useTheme } from '../contexts/ThemeContext';
-import { allGames } from '../data/games';
 
 const EditProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();

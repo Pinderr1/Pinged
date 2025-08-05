@@ -2,7 +2,7 @@ import Toast from 'react-native-toast-message';
 import * as Haptics from 'expo-haptics';
 import firebase from '../firebase';
 import { icebreakers } from '../data/prompts';
-import { allGames } from '../data/games';
+import { allGames } from '../constants/games';
 
 export async function validateMatch(uid, otherUid) {
   if (!uid || !otherUid) return false;

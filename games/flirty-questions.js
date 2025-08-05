@@ -2,6 +2,7 @@ import React from 'react';
 import createGameClient from './createGameClient';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const QUESTIONS = [
   'What first attracted you to me?',
@@ -64,6 +65,6 @@ const FlirtyClient = createGameClient({ game: FlirtyGame, board: FlirtyBoard });
 
 export const Game = FlirtyGame;
 export const Board = FlirtyBoard;
-export const meta = { id: 'flirtyQuestions', title: 'Flirty Questions' };
+export const meta = gameMap.flirtyQuestions;
 
 export default FlirtyClient;

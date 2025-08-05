@@ -15,7 +15,7 @@ import { useUser } from '../contexts/UserContext';
 import { useGameLimit } from '../contexts/GameLimitContext';
 import { HEADER_SPACING, SPACING } from '../layout';
 
-import { allGames } from '../data/games';
+import { allGames } from '../constants/games';
 import { games as gameRegistry } from '../games';
 import PropTypes from 'prop-types';
 import { getRandomBot } from '../ai/bots';
@@ -31,12 +31,12 @@ import { useChats } from '../contexts/ChatContext';
 import firebase from '../firebase';
 import Toast from 'react-native-toast-message';
 
-// Map app game IDs to boardgame registry keys for AI play
+// Map app game slugs to boardgame registry keys for AI play
 const aiGameMap = allGames.reduce((acc, g) => {
   const key = Object.keys(gameRegistry).find(
-    (k) => gameRegistry[k].meta.title === g.title
+    (k) => gameRegistry[k].meta.slug === g.slug
   );
-  if (key) acc[g.id] = key;
+  if (key) acc[g.slug] = key;
   return acc;
 }, {});
 
@@ -272,8 +272,8 @@ const HomeScreen = ({ navigation }) => {
     if (playTarget === 'ai') {
       const bot = getRandomBot();
       const aiKeyMap = { rockPaperScissors: 'rps' };
-      const key = aiGameMap[game.id];
-      if (!key) console.warn('No AI mapping for game id', game.id);
+      const key = aiGameMap[game.slug];
+      if (!key) console.warn('No AI mapping for game', game.slug);
       const gameKey = key ? aiKeyMap[key] || key : 'ticTacToe';
       navigation.navigate('GameSession', {
         sessionType: 'bot',
@@ -281,7 +281,7 @@ const HomeScreen = ({ navigation }) => {
         game: gameKey,
       });
     } else if (playTarget === 'stranger') {
-      matchWithStranger(game.id);
+      matchWithStranger(game.slug);
     } else {
       navigation.navigate('Matches');
     }
@@ -380,11 +380,11 @@ const HomeScreen = ({ navigation }) => {
               <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 12 }}>Choose a Game</Text>
               {allGames.slice(0, 6).map((game) => (
                 <TouchableOpacity
-                  key={game.id}
+                  key={game.slug}
                   style={local.gameOption}
                   onPress={() => selectGame(game)}
                 >
-                  <Text style={{ fontSize: 15 }}>{game.title}</Text>
+                  <Text style={{ fontSize: 15 }}>{game.name}</Text>
                 </TouchableOpacity>
               ))}
               <TouchableOpacity onPress={() => setGamePickerVisible(false)} style={{ marginTop: 16 }}>

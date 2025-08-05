@@ -3,6 +3,7 @@ import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const ROWS = 6;
 const COLS = 7;
@@ -128,6 +129,6 @@ const ConnectFourClient = createGameClient({ game: ConnectFourGame, board: Conne
 
 export const Game = ConnectFourGame;
 export const Board = ConnectFourBoard;
-export const meta = { id: 'connectFour', title: 'Connect Four' };
+export const meta = gameMap.connectFour;
 
 export default ConnectFourClient;

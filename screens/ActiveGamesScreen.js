@@ -49,7 +49,7 @@ const ActiveGamesScreen = ({ navigation }) => {
     const otherId = item.players.find((p) => p !== user.uid);
     const match = matches.find((m) => m.otherUserId === otherId);
     const opponentName = match?.displayName || 'Opponent';
-    const title = games[item.gameId]?.meta?.title || 'Game';
+    const title = games[item.gameId]?.meta?.name || 'Game';
     return (
       <TouchableOpacity
         style={[styles.card, { backgroundColor: theme.card }]}

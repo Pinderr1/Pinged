@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
-import { allGames } from '../data/games';
+import { allGames } from '../constants/games';
 
 export default function GamePickerModal({
   visible,
@@ -30,20 +30,20 @@ export default function GamePickerModal({
           <ScrollView style={{ width: '100%' }}>
             {allGames.map((game) => (
               <TouchableOpacity
-                key={game.id}
+                key={game.slug}
                 style={styles.option}
                 onPress={() => {
                   setSelectedGame(game);
                   onSelect(game);
                 }}
               >
-                <Text style={styles.optionText}>{game.title}</Text>
+                <Text style={styles.optionText}>{game.name}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
           {selectedGame && (
             <TouchableOpacity
-              onPress={() => onPlayStranger && onPlayStranger(selectedGame.id)}
+              onPress={() => onPlayStranger && onPlayStranger(selectedGame.slug)}
               style={[
                 styles.strangerBtn,
                 (inviting || inviteDisabled || !canPlay) && { opacity: 0.6 },

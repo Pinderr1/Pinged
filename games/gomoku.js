@@ -3,6 +3,7 @@ import createGameClient from './createGameClient';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { View, Text, TouchableOpacity } from 'react-native';
 import useOnGameOver from '../hooks/useOnGameOver';
+import { gameMap } from '../constants/games';
 
 const SIZE = 10;
 
@@ -107,6 +108,6 @@ const GomokuClient = createGameClient({ game: GomokuGame, board: GomokuBoard });
 
 export const Game = GomokuGame;
 export const Board = GomokuBoard;
-export const meta = { id: 'gomoku', title: 'Gomoku' };
+export const meta = gameMap.gomoku;
 
 export default GomokuClient;
