@@ -432,9 +432,6 @@ const CommunityScreen = () => {
         <View style={local.modalBackdrop}>
           <View style={local.modalCard}>
             <Text style={local.modalTitle}>Host an Event</Text>
-            <Text style={local.limitText}>
-              Events remaining: {eventsLeft} / {limit}
-            </Text>
             <TextInput
               placeholder="Event Title"
               value={newTitle}
@@ -460,7 +457,7 @@ const CommunityScreen = () => {
             <Text style={local.limitText}>
               {`Events remaining today: ${
                 eventsLeft === Infinity ? '∞' : eventsLeft
-              }/${limit === Infinity ? '∞' : limit}`}
+              } / ${limit === Infinity ? '∞' : limit}`}
             </Text>
             <GradientButton
               text="Submit Event"
