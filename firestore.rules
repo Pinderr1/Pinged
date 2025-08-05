@@ -13,8 +13,8 @@ service cloud.firestore {
     }
 
     function areMatched(a, b) {
-      let data = get(/databases/$(database)/documents/users/$(a)).data;
-      return data.matchedUsers != null && data.matchedUsers.hasAny([b]);
+      let matchId = a < b ? a + '_' + b : b + '_' + a;
+      return exists(/databases/$(database)/documents/matches/$(matchId));
     }
 
     function validGamePlayers(players) {
@@ -38,7 +38,6 @@ service cloud.firestore {
         !("roles" in request.resource.data) &&
         !("xp" in request.resource.data) &&
         !("streak" in request.resource.data) &&
-        !("matchedUsers" in request.resource.data) &&
         !("blockedUsers" in request.resource.data) &&
         !("blockedBy" in request.resource.data);
 
