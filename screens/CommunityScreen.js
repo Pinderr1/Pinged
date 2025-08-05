@@ -461,7 +461,7 @@ const CommunityScreen = () => {
               placeholderTextColor="#888"
             />
             <Text style={local.limitText}>
-              {`Events remaining today: ${
+              {`Events remaining: ${
                 eventsLeft === Infinity ? '∞' : eventsLeft
               } / ${limit === Infinity ? '∞' : limit}`}
             </Text>
