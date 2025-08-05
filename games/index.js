@@ -9,6 +9,7 @@ import SudokuClient, { Game as sudokuGame, Board as SudokuBoard, meta as sudokuM
 import GuessNumberClient, { Game as guessNumberGame, Board as GuessNumberBoard, meta as guessNumberMeta } from './guess-number';
 import BattleshipClient, { Game as battleshipGame, Board as BattleshipBoard, meta as battleshipMeta } from './battleship';
 import CheckersClient, { Game as checkersGame, Board as CheckersBoard, meta as checkersMeta } from './checkers';
+import ChessClient, { Game as chessGame, Board as ChessBoard, meta as chessMeta } from './chess';
 import DominoesClient, { Game as dominoesGame, Board as DominoesBoard, meta as dominoesMeta } from './dominoes';
 import DotsBoxesClient, { Game as dotsBoxesGame, Board as DotsBoxesBoard, meta as dotsBoxesMeta } from './dots-and-boxes';
 import SnakesLaddersClient, { Game as snakesLaddersGame, Board as SnakesLaddersBoard, meta as snakesLaddersMeta } from './snakes-and-ladders';
@@ -59,6 +60,12 @@ export const games = {
     Game: checkersGame,
     Board: CheckersBoard,
     meta: checkersMeta,
+  },
+  [chessMeta.id]: {
+    Client: ChessClient,
+    Game: chessGame,
+    Board: ChessBoard,
+    meta: chessMeta,
   },
   [dominoesMeta.id]: {
     Client: DominoesClient,
