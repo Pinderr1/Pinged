@@ -120,7 +120,7 @@ const AppInner = () => {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={60}
       >
-        <ErrorBoundary>
+        <ErrorBoundary componentName="App">
           <NavigationContainer linking={linking}>
             <RootNavigator />
           </NavigationContainer>
