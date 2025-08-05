@@ -17,10 +17,13 @@ service cloud.firestore {
       return data.matchedUsers != null && data.matchedUsers.hasAny([b]);
     }
 
-    function validGamePlayers(players) {
-      return players.size() == 2 &&
-        request.auth.uid in players &&
-        (players[0] == players[1] || areMatched(players[0], players[1]));
+    function matchExists(matchId) {
+      return exists(/databases/$(database)/documents/matches/$(matchId));
+    }
+
+    function canAccessSession(matchId) {
+      return isSignedIn() && matchExists(matchId) &&
+        request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
     }
 
     // User can read and write only their own profile, but certain fields are
@@ -172,10 +175,10 @@ service cloud.firestore {
       );
     }
 
-    // Game sessions are restricted to the listed players
+    // Game sessions are restricted to participants of the associated match
     match /gameSessions/{sessionId} {
-      allow read: if isSignedIn() && validGamePlayers(resource.data.players);
-      allow write: if isSignedIn() && validGamePlayers(request.resource.data.players);
+      allow read: if canAccessSession(resource.data.sessionMatchId);
+      allow write: if canAccessSession(request.resource.data.sessionMatchId);
     }
 
     // Public metadata about available games like trending status
