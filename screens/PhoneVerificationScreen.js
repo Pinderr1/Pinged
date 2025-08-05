@@ -7,7 +7,7 @@ import ScreenContainer from "../components/ScreenContainer";
 import SafeKeyboardView from "../components/SafeKeyboardView";
 import Header from "../components/Header";
 import RNPickerSelect from "react-native-picker-select";
-import { auth } from "../firebase";
+import firebase, { auth } from "../firebase";
 import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
@@ -18,6 +18,7 @@ import {
 import Toast from "react-native-toast-message";
 import PropTypes from "prop-types";
 import { useTheme } from "../contexts/ThemeContext";
+import { useUser } from "../contexts/UserContext";
 import getStyles from "../styles";
 import { HEADER_SPACING } from "../layout";
 
@@ -32,6 +33,7 @@ const countryItems = [
 export default function PhoneVerificationScreen({ navigation }) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
+  const { updateUser } = useUser();
   const [countryCode, setCountryCode] = useState("+1");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
@@ -99,6 +101,12 @@ export default function PhoneVerificationScreen({ navigation }) {
       } else {
         await signInWithCredential(auth, credential);
       }
+      await firebase
+        .firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .update({ phoneVerified: true });
+      updateUser({ phoneVerified: true });
       Toast.show({ type: "success", text1: "Phone verified" });
       navigation.goBack();
     } catch (e) {
