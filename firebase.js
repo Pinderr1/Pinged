@@ -1,11 +1,12 @@
 // firebase.js (Firebase modular API)
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import {
   getFirestore,
   serverTimestamp,
   arrayUnion,
   deleteField,
+  connectFirestoreEmulator,
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
@@ -51,9 +52,19 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
+if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+  const authEmulatorHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
+  const authEmulatorUrl = `http://${authEmulatorHost}`;
+  connectAuthEmulator(auth, authEmulatorUrl);
+}
+
 let firestore;
 try {
   firestore = getFirestore(app);
+  if (process.env.FIRESTORE_EMULATOR_HOST) {
+    const [host, port] = process.env.FIRESTORE_EMULATOR_HOST.split(':');
+    connectFirestoreEmulator(firestore, host, Number(port));
+  }
 } catch (e) {
   console.error('Firestore init error', e);
 }
