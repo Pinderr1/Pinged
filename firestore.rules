@@ -250,6 +250,11 @@ service cloud.firestore {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
+    // Notification preferences per type
+    match /users/{userId}/notificationSettings/{type} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
     match /blocks/{uid}/blocked/{targetUid} {
       allow read, write: if request.auth.token.admin == true || request.auth.uid == uid;
     }

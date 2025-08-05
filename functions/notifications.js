@@ -5,12 +5,42 @@ const fetch = global.fetch;
 require('../loadEnv.js');
 
 async function pushToUser(uid, title, body, extra = {}) {
-  const snap = await admin.firestore().collection('users').doc(uid).get();
-  const userData = snap.data();
-  const token = userData && userData.pushToken;
+  const db = admin.firestore();
+  const userRef = db.collection('users').doc(uid);
+  let userSnap;
+  let settingSnap = null;
+
+  if (extra.type) {
+    [userSnap, settingSnap] = await Promise.all([
+      userRef.get(),
+      userRef.collection('notificationSettings').doc(extra.type).get(),
+    ]);
+  } else {
+    userSnap = await userRef.get();
+  }
+
+  const userData = userSnap.data() || {};
+  const token = userData.pushToken;
   if (!token) {
     functions.logger.info(`No Expo push token for user ${uid}`);
     return null;
+  }
+
+  const globalEnabled = userData.notificationsEnabled !== false;
+  if (!globalEnabled) {
+    functions.logger.info(`Notifications disabled for user ${uid}`);
+    return null;
+  }
+
+  if (extra.type) {
+    const setting = settingSnap && settingSnap.data();
+    const typeEnabled = setting ? setting.enabled !== false : true;
+    if (!typeEnabled) {
+      functions.logger.info(
+        `Notification type ${extra.type} disabled for user ${uid}`,
+      );
+      return null;
+    }
   }
 
   const res = await fetch('https://exp.host/--/api/v2/push/send', {
@@ -44,6 +74,13 @@ const sendPushNotification = functions.https.onCall(async (data, context) => {
     );
   }
 
+  if (!extra || typeof extra.type !== 'string') {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'extra.type is required',
+    );
+  }
+
   if (context.auth.uid !== uid && !context.auth.token?.admin) {
     throw new functions.https.HttpsError(
       'permission-denied',
@@ -52,27 +89,7 @@ const sendPushNotification = functions.https.onCall(async (data, context) => {
   }
 
   try {
-    const snap = await admin.firestore().collection('users').doc(uid).get();
-    const userData = snap.data();
-    const token = userData && userData.pushToken;
-    if (!token) {
-      throw new Error('No Expo push token for user');
-    }
-
-    const res = await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        to: token,
-        title: title || 'Pinged',
-        sound: 'default',
-        body: message,
-        data: extra || {},
-      }),
-    });
-
-    const result = await res.json();
-    return result;
+    return await pushToUser(uid, title, message, extra);
   } catch (e) {
     console.error('Failed to send push notification', e);
     throw new functions.https.HttpsError(

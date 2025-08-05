@@ -67,6 +67,7 @@ User matches are stored separately in the `matches` collection (`matches/{matchI
 
 ### Subcollections
 - **notifications** – optional per-user notifications (see `notifications` below).
+- **notificationSettings** – per-type preferences (`enabled: boolean`).
 
 ## Game Invites (`gameInvites/{inviteId}`)
 - `from` (string) – sender uid
