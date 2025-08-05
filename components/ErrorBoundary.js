@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import PropTypes from 'prop-types';
-import Toast from 'react-native-toast-message';
+import { logError } from '../utils/crashlytics';
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -15,14 +15,17 @@ export default class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, info) {
     console.error('ErrorBoundary caught an error', error, info);
-    Toast.show({ type: 'error', text1: 'Something went wrong.' });
+    logError(error, {
+      component: this.props.componentName || 'Unknown',
+      info,
+    });
   }
 
   render() {
     if (this.state.hasError) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text>Something went wrong.</Text>
+          <Text>Something went wrong. Please restart the app.</Text>
         </View>
       );
     }
@@ -32,4 +35,9 @@ export default class ErrorBoundary extends React.Component {
 
 ErrorBoundary.propTypes = {
   children: PropTypes.node.isRequired,
+  componentName: PropTypes.string,
+};
+
+ErrorBoundary.defaultProps = {
+  componentName: 'ErrorBoundary',
 };
