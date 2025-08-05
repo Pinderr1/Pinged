@@ -382,9 +382,9 @@ const SwipeScreen = () => {
           if (matchId) {
             logMatchCreated();
           }
-          recordLikeSent();
         };
         await likeOp();
+        recordLikeSent();
         await processLikeQueue();
       } catch (e) {
         const state = await Network.getNetworkStateAsync();
