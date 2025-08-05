@@ -73,7 +73,7 @@ const lastRequiredIndex = Math.max(
 
 export default function OnboardingScreen() {
   const { darkMode, theme } = useTheme();
-  const { updateUser } = useUser();
+  const { user, updateUser } = useUser();
   const { markOnboarded } = useOnboarding();
   const navigation = useNavigation();
   const styles = getStyles(theme);
@@ -226,27 +226,24 @@ const validateField = () => {
     if (saving) return;
     setSaving(true);
     try {
-      const user = firebase.auth().currentUser;
-      const userRef = firebase.firestore().collection('users').doc(user.uid);
+      const authUser = firebase.auth().currentUser;
+      const userRef = firebase.firestore().collection('users').doc(authUser.uid);
       const existingSnap = await userRef.get();
 
       let photoURL = answers.avatar;
       if (photoURL && !photoURL.startsWith('http')) {
         try {
-          photoURL = await uploadAvatarAsync(
-            photoURL,
-            firebase.auth().currentUser.uid
-          );
+          photoURL = await uploadAvatarAsync(photoURL, authUser.uid);
         } catch (e) {
           throw e;
         }
       }
 
       const profile = {
-        uid: user.uid,
-        email: user.email,
+        uid: authUser.uid,
+        email: authUser.email,
         displayName: sanitizeText(
-          (answers.displayName || user.displayName || '').trim()
+          (answers.displayName || authUser.displayName || '').trim()
         ),
         photoURL,
         avatarOverlay: answers.overlay || '',
@@ -264,7 +261,6 @@ const validateField = () => {
         badgePrefs: answers.badgePrefs.map((b) => sanitizeText(b)),
         bio: sanitizeText(answers.bio.trim()),
         themePreset: answers.preset,
-        onboardingComplete: true,
       };
 
       if (!snapshotExists(existingSnap)) {
@@ -273,9 +269,15 @@ const validateField = () => {
 
       await userRef.set(profile, { merge: true });
       updateUser(profile);
-      markOnboarded();
-      Toast.show({ type: 'success', text1: 'Profile saved!' });
-      navigation.popToTop();
+
+      if (user?.phoneVerified) {
+        markOnboarded();
+        Toast.show({ type: 'success', text1: 'Profile saved!' });
+        navigation.popToTop();
+      } else {
+        Toast.show({ type: 'info', text1: 'Please verify your phone number' });
+        navigation.navigate('PhoneVerification');
+      }
     } catch (e) {
       console.error('Save error:', e);
       Toast.show({ type: 'error', text1: 'Failed to save profile' });
