@@ -10,6 +10,9 @@ const EventFlyer = ({ event, onJoin, joined, style }) => {
   const { darkMode, theme } = useTheme();
   const styles = getStyles(theme, darkMode);
 
+  const remainingCapacity = event.capacity - event.attendeeCount;
+  const isFull = remainingCapacity <= 0;
+
   return (
     <View
       style={[
@@ -27,14 +30,16 @@ const EventFlyer = ({ event, onJoin, joined, style }) => {
           </View>
         </View>
         <Text style={styles.desc}>{event.description}</Text>
+        <Text style={styles.capacity}>{`${remainingCapacity} spot${remainingCapacity === 1 ? '' : 's'} left`}</Text>
         {event.ticketed && (
           <Text style={styles.ticketed}>🎟 Ticketed Event</Text>
         )}
         <GradientButton
-          text={joined ? 'RSVP\'d' : 'RSVP'}
+          text={isFull ? 'Full' : joined ? "RSVP'd" : 'RSVP'}
           onPress={onJoin}
           width={100}
           style={{ alignSelf: 'flex-start', marginVertical: 8 }}
+          disabled={isFull}
         />
       </View>
     </View>
@@ -42,7 +47,10 @@ const EventFlyer = ({ event, onJoin, joined, style }) => {
 };
 
 EventFlyer.propTypes = {
-  event: PropTypes.object.isRequired,
+  event: PropTypes.shape({
+    capacity: PropTypes.number.isRequired,
+    attendeeCount: PropTypes.number.isRequired,
+  }).isRequired,
   onJoin: PropTypes.func,
   joined: PropTypes.bool,
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
@@ -100,6 +108,11 @@ const getStyles = (theme, darkMode) =>
       marginTop: 4,
       color: theme.textSecondary,
       fontSize: 13,
+    },
+    capacity: {
+      marginTop: 2,
+      color: theme.textSecondary,
+      fontSize: 12,
     },
     ticketed: {
       marginTop: 2,
