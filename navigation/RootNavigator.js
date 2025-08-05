@@ -82,7 +82,7 @@ export default function RootNavigator() {
     content = <SplashScreen onFinish={() => setIsSplash(false)} />;
   } else if (!user) {
     content = <AuthStack />;
-  } else if (!onboarded) {
+  } else if (!onboarded || !user.phoneVerified) {
     content = <OnboardingStack />;
   } else {
     content = <AppStack />;
