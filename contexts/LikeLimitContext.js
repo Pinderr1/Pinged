@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from 'react';
 import { useUser } from './UserContext';
 import useRemoteConfig from '../hooks/useRemoteConfig';
 
@@ -9,11 +15,15 @@ export const LikeLimitProvider = ({ children }) => {
   const { user } = useUser();
   const { maxDailyLikes } = useRemoteConfig();
   const isPremium = !!user?.isPremium;
-  const limit = maxDailyLikes ?? DEFAULT_LIMIT;
-  const [likesLeft, setLikesLeft] = useState(isPremium ? Infinity : limit);
+  const limit = useMemo(
+    () => maxDailyLikes ?? DEFAULT_LIMIT,
+    [maxDailyLikes],
+  );
+  const [likesLeft, setLikesLeft] = useState(
+    isPremium ? Infinity : limit,
+  );
 
   useEffect(() => {
-    const dailyLimit = maxDailyLikes ?? DEFAULT_LIMIT;
     if (isPremium) {
       setLikesLeft(Infinity);
       return;
@@ -23,11 +33,11 @@ export const LikeLimitProvider = ({ children }) => {
       (user?.lastLikeSentAt ? new Date(user.lastLikeSentAt) : null);
     const today = new Date().toDateString();
     if (last && last.toDateString() === today) {
-      setLikesLeft(Math.max(dailyLimit - (user.dailyLikeCount || 0), 0));
+      setLikesLeft(Math.max(limit - (user.dailyLikeCount || 0), 0));
     } else {
-      setLikesLeft(dailyLimit);
+      setLikesLeft(limit);
     }
-  }, [isPremium, user?.dailyLikeCount, user?.lastLikeSentAt, maxDailyLikes]);
+  }, [isPremium, user?.dailyLikeCount, user?.lastLikeSentAt, limit]);
 
   const recordLikeSent = () => {
     if (isPremium) return;

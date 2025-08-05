@@ -110,6 +110,8 @@ const sendLike = functions.https.onCall(async (data, context) => {
           'Daily like limit reached',
         );
       }
+      // Update the user's daily like count and timestamp so the limit
+      // resets automatically when the date changes.
       tx.update(userRef, {
         dailyLikeCount: dailyCount + 1,
         lastLikeSentAt: admin.firestore.FieldValue.serverTimestamp(),
