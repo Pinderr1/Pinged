@@ -225,5 +225,16 @@ export const allGames = [
     description: 'Roll and hold to reach 100 points first.',
     mode: 'versus',
     speed: 'quick'
+  },
+  {
+    id: '38',
+    title: 'Chess',
+    icon: <MaterialCommunityIcons name="chess-king" size={30} />,
+    route: 'Chess',
+    premium: false,
+    category: 'Board',
+    description: 'Classic strategy game of kings, queens, and tactics.',
+    mode: 'versus',
+    speed: 'slow'
   }
 ];
