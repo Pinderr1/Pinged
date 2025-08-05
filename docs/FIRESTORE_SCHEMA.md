@@ -69,6 +69,20 @@ User matches are stored separately in the `matches` collection (`matches/{matchI
 - **notifications** – optional per-user notifications (see `notifications` below).
 - **notificationSettings** – per-type preferences (`enabled: boolean`).
 
+#### `notificationSettings` (`users/{uid}/notificationSettings/{settingId}`)
+Each document controls whether a specific category of notifications is sent.
+
+Document IDs:
+- `invite` – game invite reminders.
+- `reengage` – prompts inactive users to return.
+- `streak` – streak milestone rewards.
+
+Fields:
+- `enabled` (boolean) – `true` to allow notifications of this type.
+
+To migrate existing users, create the above documents under each user's
+`notificationSettings` subcollection with `{ enabled: true }`.
+
 ## Game Invites (`gameInvites/{inviteId}`)
 - `from` (string) – sender uid
 - `to` (string) – recipient uid
