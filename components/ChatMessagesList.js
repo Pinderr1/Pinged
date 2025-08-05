@@ -6,37 +6,12 @@ import AvatarRing from './AvatarRing';
 import VoiceMessageBubble from './VoiceMessageBubble';
 import EmptyState from './EmptyState';
 import Loader from './Loader';
-import { games, gameList } from '../games';
+import { gameList } from '../games';
 import { icebreakers } from '../data/prompts';
-import * as chatApi from '../utils/chatApi';
-import { decryptText, initEncryption } from '../utils/encryption';
+import { useChatApi } from '../utils/chatApi';
+import { useEncryption } from '../contexts/EncryptionContext';
 
 const REACTIONS = ['❤️', '🔥', '😂'];
-
-const formatMessage = async (val, id, currentUid) => {
-  let text = val.text;
-  if (!text && val.ciphertext && val.nonce && val.senderId) {
-    try {
-      text = await decryptText(val.ciphertext, val.nonce, val.senderId);
-    } catch (e) {
-      text = '';
-    }
-  }
-  return {
-    id,
-    text,
-    readBy: val.readBy || [],
-    reactions: val.reactions || {},
-    sender: val.senderId === currentUid ? 'you' : val.senderId || 'them',
-    voice: !!val.voice,
-    url: val.url,
-    duration: val.duration,
-    time: val.timestamp
-      ? val.timestamp.toDate().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-      : '',
-    timestamp: val.timestamp,
-  };
-};
 
 const FadeInView = ({ children, style }) => {
   const fade = useRef(new Animated.Value(0)).current;
@@ -64,15 +39,38 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
 
   const showPlaceholders = loading && messages.length === 0;
 
+  const { decryptText } = useEncryption();
+  const { getMessages } = useChatApi();
+
+  const formatMessage = async (val, id, currentUid) => {
+    let text = val.text;
+    if (!text && val.ciphertext && val.nonce && val.senderId) {
+      try {
+        text = await decryptText(val.ciphertext, val.nonce, val.senderId);
+      } catch (e) {
+        text = '';
+      }
+    }
+    return {
+      id,
+      text,
+      readBy: val.readBy || [],
+      reactions: val.reactions || {},
+      sender: val.senderId === currentUid ? 'you' : val.senderId || 'them',
+      voice: !!val.voice,
+      url: val.url,
+      duration: val.duration,
+      time: val.timestamp
+        ? val.timestamp.toDate().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        : '',
+      timestamp: val.timestamp,
+    };
+  };
+
   useEffect(() => {
     setFirstLine(icebreakers[Math.floor(Math.random() * icebreakers.length)] || '');
     setFirstGame(gameList[Math.floor(Math.random() * gameList.length)] || null);
   }, []);
-
-  useEffect(() => {
-    if (!currentUser?.uid) return;
-    initEncryption(currentUser.uid).catch(() => {});
-  }, [currentUser?.uid]);
 
   useEffect(() => {
     if (!matchId || !currentUser?.uid) return;
@@ -130,7 +128,7 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
       setOldestDoc(null);
       setLoading(true);
       try {
-        const { messages: fetched, lastDoc } = await chatApi.getMessages(
+        const { messages: fetched, lastDoc } = await getMessages(
           matchId,
           currentUser.uid,
         );
@@ -160,7 +158,7 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
     setLoadingEarlier(true);
     try {
       if (fromArchive) {
-        const { messages: fetched, lastDoc } = await chatApi.getMessages(
+        const { messages: fetched, lastDoc } = await getMessages(
           matchId,
           currentUser.uid,
           oldestArchiveDoc,
@@ -178,7 +176,7 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
           setHasEarlier(false);
         }
       } else {
-        const { messages: fetched, lastDoc } = await chatApi.getMessages(
+        const { messages: fetched, lastDoc } = await getMessages(
           matchId,
           currentUser.uid,
           oldestDoc,
@@ -193,7 +191,7 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
         } else {
           setFromArchive(true);
           const { messages: archFetched, lastDoc: archLast } =
-            await chatApi.getMessages(matchId, currentUser.uid, null, 30, true);
+            await getMessages(matchId, currentUser.uid, null, 30, true);
           const archData = await Promise.all(
             archFetched.map((d) => formatMessage(d, d.id, currentUser.uid)),
           );

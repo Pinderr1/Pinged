@@ -15,6 +15,7 @@ import { GameSessionProvider } from './GameSessionContext';
 import { TrendingProvider } from './TrendingContext';
 import { SoundProvider } from './SoundContext';
 import { FilterProvider } from './FilterContext';
+import { EncryptionProvider } from './EncryptionContext';
 
 const Providers = ({ children }) => (
   <AnalyticsProvider>
@@ -29,15 +30,17 @@ const Providers = ({ children }) => (
                   <LikeLimitProvider>
                     <SoundProvider>
                       <FilterProvider>
-                        <ChatProvider>
-                          <MatchmakingProvider>
-                            <GameSessionProvider>
-                              <TrendingProvider>
-                                {children}
-                              </TrendingProvider>
-                            </GameSessionProvider>
-                          </MatchmakingProvider>
-                        </ChatProvider>
+                        <EncryptionProvider>
+                          <ChatProvider>
+                            <MatchmakingProvider>
+                              <GameSessionProvider>
+                                <TrendingProvider>
+                                  {children}
+                                </TrendingProvider>
+                              </GameSessionProvider>
+                            </MatchmakingProvider>
+                          </ChatProvider>
+                        </EncryptionProvider>
                       </FilterProvider>
                     </SoundProvider>
                   </LikeLimitProvider>
