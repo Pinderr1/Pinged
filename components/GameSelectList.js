@@ -2,10 +2,18 @@ import React from 'react';
 import { ScrollView, TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
+import { useNavigation } from '@react-navigation/native';
+import { useUser } from '../contexts/UserContext';
 import { allGames } from '../data/games';
 import { BADGE_LIST } from '../data/badges';
 
 export default function GameSelectList({ selected = [], onChange, theme, showPreviewBadges = false }) {
+  const navigation = useNavigation();
+  const { user } = useUser();
+  const premiumUntil =
+    user?.premiumUntil?.toDate?.() || (user?.premiumUntil ? new Date(user.premiumUntil) : null);
+  const isPremiumUser = !!premiumUntil && premiumUntil > new Date();
+
   const toggle = (title) => {
     if (!onChange) return;
     if (selected.includes(title)) {
@@ -20,25 +28,45 @@ export default function GameSelectList({ selected = [], onChange, theme, showPre
   return (
     <>
       <ScrollView style={styles.container}>
-        {allGames.map((g) => (
-          <TouchableOpacity
-            key={g.id}
-            style={styles.option}
-            onPress={() => toggle(g.title)}
-          >
-            {g.icon}
-            <View style={styles.info}>
-              <Text style={styles.label}>{g.title}</Text>
-              <Text style={styles.category}>{g.category}</Text>
-            </View>
-            <MaterialCommunityIcons
-              name={selected.includes(g.title) ? 'checkbox-marked' : 'checkbox-blank-outline'}
-              size={24}
-              color={theme?.accent}
-              style={styles.checkbox}
-            />
-          </TouchableOpacity>
-        ))}
+        {allGames.map((g) => {
+          const locked = g.premium && !isPremiumUser;
+          return (
+            <TouchableOpacity
+              key={g.id}
+              style={[styles.option, locked && styles.lockedOption]}
+              onPress={() =>
+                locked
+                  ? navigation.navigate('PremiumPaywall', { context: 'premium-feature' })
+                  : toggle(g.title)
+              }
+            >
+              {g.icon}
+              <View style={styles.info}>
+                <Text style={[styles.label, locked && styles.lockedText]}>{g.title}</Text>
+                <Text style={[styles.category, locked && styles.lockedText]}>{g.category}</Text>
+              </View>
+              {locked ? (
+                <Ionicons
+                  name="lock-closed"
+                  size={24}
+                  color={theme?.accent}
+                  style={styles.checkbox}
+                />
+              ) : (
+                <MaterialCommunityIcons
+                  name={
+                    selected.includes(g.title)
+                      ? 'checkbox-marked'
+                      : 'checkbox-blank-outline'
+                  }
+                  size={24}
+                  color={theme?.accent}
+                  style={styles.checkbox}
+                />
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
       {showPreviewBadges && (
         <View style={styles.badgeRow}>
@@ -76,6 +104,8 @@ const getStyles = (theme) =>
     label: { color: theme?.text || '#000', fontSize: 16 },
     category: { color: theme?.textSecondary || '#666', fontSize: 12 },
     checkbox: { marginLeft: 8 },
+    lockedOption: { opacity: 0.5 },
+    lockedText: { color: theme?.textSecondary || '#666' },
     badgeRow: {
       flexDirection: 'row',
       justifyContent: 'center',
