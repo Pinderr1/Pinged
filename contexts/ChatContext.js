@@ -469,6 +469,7 @@ export const ChatProvider = ({ children }) => {
         .firestore()
         .collection('matches')
         .where('users', 'array-contains', user.uid)
+        .orderBy('updatedAt', 'desc')
         .get();
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setMatches((prev) => {
