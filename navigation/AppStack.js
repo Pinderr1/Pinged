@@ -3,6 +3,7 @@ import React, { lazy, Suspense, useState, useEffect } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Loader from "../components/Loader";
 import useRequireMatch from "../hooks/useRequireMatch";
+import { useUser } from "../contexts/UserContext";
 const MainTabs = lazy(() => import("./MainTabs"));
 const ProfileScreen = lazy(() => import("../screens/ProfileScreen"));
 const EditProfileScreen = lazy(() => import("../screens/EditProfileScreen"));
@@ -56,6 +57,7 @@ function GuardedGameSessionScreen(props) {
 }
 
 export default function AppStack() {
+  const { user } = useUser();
   return (
     <Suspense fallback={<Loader /> }>
     <Stack.Navigator
@@ -87,10 +89,12 @@ export default function AppStack() {
         component={SwipeScreen}
         options={{ animation: "slide_from_bottom" }}
       />
-      <Stack.Screen
-        name="PhoneVerification"
-        component={PhoneVerificationScreen}
-      />
+      {!user?.phoneVerified && (
+        <Stack.Screen
+          name="PhoneVerification"
+          component={PhoneVerificationScreen}
+        />
+      )}
       <Stack.Screen name="AdminReview" component={AdminReviewScreen} />
     </Stack.Navigator>
     </Suspense>
