@@ -1,24 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import sodium from 'libsodium-wrappers';
-import firebase from '../firebase';
 
 const STORAGE_KEY_PREFIX = 'asym_keypair_';
+const REMOTE_KEY_PREFIX = 'remote_pubkey_';
 let keyPair = null;
 let ready = null;
 let currentUid = null;
 const publicKeyCache = {};
-
-async function storePublicKey(uid, publicKey) {
-  try {
-    await firebase
-      .firestore()
-      .collection('users')
-      .doc(uid)
-      .set({ publicKey: sodium.to_base64(publicKey) }, { merge: true });
-  } catch (e) {
-    console.warn('Failed to store public key', e);
-  }
-}
 
 async function loadKeyPair(uid) {
   const stored = await AsyncStorage.getItem(`${STORAGE_KEY_PREFIX}${uid}`);
@@ -37,7 +25,6 @@ async function loadKeyPair(uid) {
       privateKey: sodium.to_base64(generated.privateKey),
     }),
   );
-  await storePublicKey(uid, generated.publicKey);
   return generated;
 }
 
@@ -60,18 +47,26 @@ export async function initEncryption(uid) {
 async function getPublicKey(uid) {
   if (uid === currentUid && keyPair) return keyPair.publicKey;
   if (publicKeyCache[uid]) return publicKeyCache[uid];
-  try {
-    const snap = await firebase.firestore().collection('users').doc(uid).get();
-    const pk = snap.get('publicKey');
-    if (pk) {
-      const bytes = sodium.from_base64(pk);
-      publicKeyCache[uid] = bytes;
-      return bytes;
-    }
-  } catch (e) {
-    console.warn('Failed to fetch public key', e);
+  const stored = await AsyncStorage.getItem(`${REMOTE_KEY_PREFIX}${uid}`);
+  if (stored) {
+    const bytes = sodium.from_base64(stored);
+    publicKeyCache[uid] = bytes;
+    return bytes;
   }
   return null;
+}
+
+export async function saveRemotePublicKey(uid, keyBase64) {
+  try {
+    publicKeyCache[uid] = sodium.from_base64(keyBase64);
+    await AsyncStorage.setItem(`${REMOTE_KEY_PREFIX}${uid}`, keyBase64);
+  } catch (e) {
+    console.warn('Failed to save remote public key', e);
+  }
+}
+
+export function getPublicKeyBase64() {
+  return keyPair ? sodium.to_base64(keyPair.publicKey) : null;
 }
 
 export async function encryptText(text, recipientUid) {
