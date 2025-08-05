@@ -141,6 +141,11 @@ const CommunityScreen = () => {
       ? events
       : events.filter((e) => e.category === activeFilter);
 
+  const isEventFull = (event) =>
+    event.capacity != null &&
+    event.attendeeCount != null &&
+    event.attendeeCount >= event.capacity;
+
   const joinEvent = async (id) => {
     try {
       await firebase.functions().httpsCallable('joinEvent')({ eventId: id });
@@ -185,10 +190,7 @@ const CommunityScreen = () => {
 
   const handleJoin = (event) => {
     const isJoined = joinedEvents.includes(event.id);
-    const isFull =
-      event.capacity != null &&
-      event.attendeeCount != null &&
-      event.attendeeCount >= event.capacity;
+    const isFull = isEventFull(event);
     if (!isJoined && isFull) {
       Alert.alert('Event Full', 'This event has reached capacity.');
       return;
@@ -264,10 +266,7 @@ const CommunityScreen = () => {
 
   const renderEventCard = (event) => {
     const isJoined = joinedEvents.includes(event.id);
-    const isFull =
-      event.capacity != null &&
-      event.attendeeCount != null &&
-      event.attendeeCount >= event.capacity;
+    const isFull = isEventFull(event);
     return (
       <EventFlyer
         key={event.id}
