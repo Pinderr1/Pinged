@@ -1,5 +1,5 @@
 import firebase from '../firebase';
-import { decryptText, initEncryption } from './encryption';
+import { decryptText, initEncryption, saveRemotePublicKey } from './encryption';
 
 export interface MSG {
   id: string;
@@ -11,6 +11,7 @@ export interface MSG {
   voice?: boolean;
   url?: string;
   duration?: number;
+  publicKey?: string;
 }
 
 export async function getMessages(
@@ -36,6 +37,10 @@ export async function getMessages(
   const messages = await Promise.all(
     snap.docs.map(async (d) => {
       const data = d.data() as any;
+      if (data.publicKey && data.senderId) {
+        await saveRemotePublicKey(data.senderId, data.publicKey);
+        return null;
+      }
       if (!data.text && data.ciphertext && data.nonce && data.senderId) {
         data.text = await decryptText(data.ciphertext, data.nonce, data.senderId);
       }
@@ -43,5 +48,5 @@ export async function getMessages(
     }),
   );
   const lastDoc = snap.docs[snap.docs.length - 1] || null;
-  return { messages, lastDoc }; // descending order
+  return { messages: messages.filter(Boolean) as MSG[], lastDoc }; // descending order
 }

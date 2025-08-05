@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useSound } from './SoundContext';
 import { useListeners } from './ListenerContext';
 import debounce from '../utils/debounce';
-import { initEncryption, encryptText } from '../utils/encryption';
+import { initEncryption, encryptText, getPublicKeyBase64 } from '../utils/encryption';
 import { useAnalytics } from './AnalyticsContext';
 
 const ChatContext = createContext();
@@ -300,9 +300,27 @@ export const ChatProvider = ({ children }) => {
       if (trimmed) {
         if (!group) {
           if (otherId) {
-            const enc = await encryptText(trimmed, otherId);
-            payload.ciphertext = enc.ciphertext;
-            payload.nonce = enc.nonce;
+            try {
+              const enc = await encryptText(trimmed, otherId);
+              payload.ciphertext = enc.ciphertext;
+              payload.nonce = enc.nonce;
+            } catch (e) {
+              if (e.message === 'Recipient public key not found') {
+                const pk = getPublicKeyBase64();
+                if (pk) {
+                  await firebase
+                    .functions()
+                    .httpsCallable('sendChatMessage')({
+                      matchId,
+                      system: true,
+                      message: { publicKey: pk },
+                    });
+                }
+                payload.text = trimmed;
+              } else {
+                throw e;
+              }
+            }
           } else {
             payload.text = trimmed;
           }
