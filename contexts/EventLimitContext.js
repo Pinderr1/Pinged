@@ -10,11 +10,12 @@ export const EventLimitProvider = ({ children }) => {
   const { user } = useUser();
   const { maxDailyEvents } = useRemoteConfig();
   const isPremium = !!user?.isPremium;
-  const limit = maxDailyEvents ?? DEFAULT_LIMIT;
-  const [eventsLeft, setEventsLeft] = useState(isPremium ? Infinity : limit);
+  const baseLimit = maxDailyEvents ?? DEFAULT_LIMIT;
+  const limit = isPremium ? Infinity : baseLimit;
+  const [eventsLeft, setEventsLeft] = useState(limit);
 
   useEffect(() => {
-    const dailyLimit = maxDailyEvents ?? DEFAULT_LIMIT;
+    const dailyLimit = isPremium ? Infinity : baseLimit;
     if (isPremium) {
       setEventsLeft(Infinity);
       return;
@@ -28,7 +29,7 @@ export const EventLimitProvider = ({ children }) => {
     } else {
       setEventsLeft(dailyLimit);
     }
-  }, [isPremium, user?.dailyEventCount, user?.lastEventCreatedAt, maxDailyEvents]);
+  }, [isPremium, user?.dailyEventCount, user?.lastEventCreatedAt, baseLimit]);
 
   const recordEventCreated = async (localOnly = false) => {
     if (isPremium || !user?.uid) return;
@@ -41,7 +42,7 @@ export const EventLimitProvider = ({ children }) => {
     if (last && last.toDateString() === today.toDateString()) {
       count = (user.dailyEventCount || 0) + 1;
     }
-    const dailyLimit = maxDailyEvents ?? DEFAULT_LIMIT;
+    const dailyLimit = baseLimit;
     setEventsLeft(Math.max(dailyLimit - count, 0));
     if (localOnly) return;
     try {
@@ -59,7 +60,7 @@ export const EventLimitProvider = ({ children }) => {
   };
 
   return (
-    <EventLimitContext.Provider value={{ eventsLeft, recordEventCreated }}>
+    <EventLimitContext.Provider value={{ eventsLeft, limit, recordEventCreated }}>
       {children}
     </EventLimitContext.Provider>
   );

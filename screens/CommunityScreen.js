@@ -44,7 +44,7 @@ const CommunityScreen = () => {
   const local = getStyles(theme, skeletonColor);
   const navigation = useNavigation();
   const { user, redeemEventTicket } = useUser();
-  const { eventsLeft, recordEventCreated } = useEventLimit();
+  const { eventsLeft, limit, recordEventCreated } = useEventLimit();
   const { logEventJoined } = useAnalytics();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
@@ -73,6 +73,9 @@ const CommunityScreen = () => {
   const [showFabMenu, setShowFabMenu] = useState(false);
 
   const listeners = useRef([]);
+
+  const submitDisabled =
+    eventsLeft <= 0 || !newTitle.trim() || !newTime.trim();
 
   useEffect(() => {
     if (firstJoin) {
@@ -439,11 +442,20 @@ const CommunityScreen = () => {
               multiline
               placeholderTextColor="#888"
             />
+            <Text style={local.limitText}>
+              {`Events remaining today: ${
+                eventsLeft === Infinity ? '∞' : eventsLeft
+              }/${limit === Infinity ? '∞' : limit}`}
+            </Text>
             <GradientButton
               text="Submit Event"
               onPress={async () => {
                 if (eventsLeft <= 0) {
                   Alert.alert('Limit Reached', 'You have reached your daily event limit.');
+                  return;
+                }
+                if (!newTitle.trim() || !newTime.trim()) {
+                  Alert.alert('Missing Info', 'Title and time are required.');
                   return;
                 }
                 try {
@@ -464,6 +476,7 @@ const CommunityScreen = () => {
                   Alert.alert('Error', 'Failed to create event');
                 }
               }}
+              disabled={submitDisabled}
               marginVertical={14}
             />
             <TouchableOpacity onPress={() => setShowHostModal(false)} style={{ marginTop: 10 }}>
@@ -694,6 +707,13 @@ const getStyles = (theme, skeletonColor) =>
     fontSize: 13,
     marginBottom: 10,
     fontFamily: FONT_FAMILY.regular,
+  },
+  limitText: {
+    fontSize: FONT_SIZES.SM - 1,
+    color: '#666',
+    fontFamily: FONT_FAMILY.regular,
+    textAlign: 'center',
+    marginBottom: 4,
   },
   fab: {
     position: 'absolute',
