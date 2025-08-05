@@ -251,8 +251,17 @@ service cloud.firestore {
     }
 
     // Notification preferences per type
-    match /users/{userId}/notificationSettings/{type} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    match /users/{uid}/notificationSettings/{settingId} {
+      allow read, delete: if isSignedIn() &&
+        (request.auth.uid == uid || request.auth.token.admin == true);
+
+      allow create: if isSignedIn() &&
+        (request.auth.uid == uid || request.auth.token.admin == true) &&
+        request.resource.data.keys().hasOnly(['enabled']);
+
+      allow update: if isSignedIn() &&
+        (request.auth.uid == uid || request.auth.token.admin == true) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['enabled']);
     }
 
     match /blocks/{uid}/blocked/{targetUid} {
