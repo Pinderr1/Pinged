@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useSound } from './SoundContext';
 import { useListeners } from './ListenerContext';
 import debounce from '../utils/debounce';
-import { initEncryption, encryptText, getPublicKeyBase64 } from '../utils/encryption';
+import { useEncryption } from './EncryptionContext';
 import { useAnalytics } from './AnalyticsContext';
 
 const ChatContext = createContext();
@@ -41,6 +41,7 @@ export const ChatProvider = ({ children }) => {
   const { user, blocked } = useUser();
   const { play } = useSound();
   const { logGameStarted } = useAnalytics();
+  const { initEncryption, encryptText, getPublicKeyBase64 } = useEncryption();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const lastMessageRef = useRef(0);
@@ -292,7 +293,6 @@ export const ChatProvider = ({ children }) => {
     const { group, system, ...extras } = meta || {};
 
     try {
-      await initEncryption(user.uid);
       const payload = {
         ...extras,
       };
