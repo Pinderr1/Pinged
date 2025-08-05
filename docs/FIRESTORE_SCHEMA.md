@@ -70,6 +70,7 @@ This document outlines the final Firestore structure used by the Pinged applicat
 ## Game Invites (`gameInvites/{inviteId}`)
 - `from` (string) – sender uid
 - `to` (string) – recipient uid
+- `matchId` (string) – related match document id
 - `gameId` (string)
 - `fromName` (string)
 - `status` (string) – `pending`, `ready`, `accepted`, `declined`, `cancelled`
