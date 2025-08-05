@@ -6,12 +6,12 @@ import { eventImageSource } from '../utils/avatar';
 import GradientButton from './GradientButton';
 import { CARD_STYLE } from './Card';
 
-const EventFlyer = ({ event, onJoin, joined, style }) => {
+const EventFlyer = ({ event, onJoin, joined, style, disabled }) => {
   const { darkMode, theme } = useTheme();
   const styles = getStyles(theme, darkMode);
 
   const remainingCapacity = Math.max(0, event.capacity - event.attendeeCount);
-  const isFull = remainingCapacity <= 0;
+  const isFull = disabled || remainingCapacity <= 0;
 
   return (
     <View
@@ -54,6 +54,7 @@ EventFlyer.propTypes = {
   onJoin: PropTypes.func,
   joined: PropTypes.bool,
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  disabled: PropTypes.bool,
 };
 
 const getStyles = (theme, darkMode) =>
