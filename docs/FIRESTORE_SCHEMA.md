@@ -47,7 +47,6 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `pushToken` (string)
 - `online` (boolean)
 - `lastOnline` (timestamp) – last presence update time
-- `matchedUsers` (array of string) – ids of users this account is matched with
 - `blockedUsers` (array of string) – ids of users this account has blocked
 - `blockedBy` (array of string) – ids of users who have blocked this account
 - `badges` (array of string) – earned badge IDs
@@ -64,6 +63,8 @@ This document outlines the final Firestore structure used by the Pinged applicat
 - `seeLocation` (string) – preferred location for matches
 - `seeVerifiedOnly` (boolean) – show only verified profiles
 
+User matches are stored separately in the `matches` collection (`matches/{matchId}`), where each document tracks the pair of user IDs and related chat metadata.
+
 ### Subcollections
 - **notifications** – optional per-user notifications (see `notifications` below).
 
@@ -78,6 +79,8 @@ This document outlines the final Firestore structure used by the Pinged applicat
 
 
 ## Matches (`matches/{matchId}`)
+Each document in this collection represents a match between two users and serves as the container for their chat.
+
 - `users` (array of string) – exactly two user ids
 - `createdAt` (timestamp)
 - `typingIndicator` (map) – per-user typing status
