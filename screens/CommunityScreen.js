@@ -182,7 +182,12 @@ const CommunityScreen = () => {
 
   const handleJoin = (event) => {
     const isJoined = joinedEvents.includes(event.id);
-    if (!isJoined && event.ticketed && !user?.isPremium && !(user.eventTickets || []).includes(event.id)) {
+    if (
+      !isJoined &&
+      event.ticketed &&
+      !user?.isPremium &&
+      !(user.eventTickets || []).includes(event.id)
+    ) {
       Alert.alert('Ticket Required', 'Redeem a ticket or upgrade to Premium.', [
         {
           text: 'Use Ticket',
@@ -198,6 +203,14 @@ const CommunityScreen = () => {
         },
         { text: 'Cancel', style: 'cancel' },
       ]);
+      return;
+    }
+    if (
+      !isJoined &&
+      event.capacity &&
+      event.attendeeCount >= event.capacity
+    ) {
+      Alert.alert('Event Full', 'This event has reached its capacity.');
       return;
     }
     if (isJoined) {
@@ -248,12 +261,14 @@ const CommunityScreen = () => {
 
   const renderEventCard = (event) => {
     const isJoined = joinedEvents.includes(event.id);
+    const isFull = event.capacity && event.attendeeCount >= event.capacity;
     return (
       <EventFlyer
         key={event.id}
         event={event}
         joined={isJoined}
         onJoin={() => handleJoin(event)}
+        disabled={!isJoined && isFull}
       />
     );
   };
