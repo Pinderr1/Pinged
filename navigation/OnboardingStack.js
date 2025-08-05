@@ -1,23 +1,43 @@
 // navigation/OnboardingStack.js
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import { useUser } from '../contexts/UserContext';
 import Loader from '../components/Loader';
 const OnboardingScreen = lazy(() => import('../screens/OnboardingScreen'));
+const PhoneVerificationScreen = lazy(() => import('../screens/PhoneVerificationScreen'));
 
 const Stack = createNativeStackNavigator();
 
 export default function OnboardingStack() {
+  const { user } = useUser();
+  const navigation = useNavigation();
+  const showVerification = !user?.phoneVerified;
+
+  useEffect(() => {
+    if (user?.phoneVerified) {
+      navigation.reset({ index: 0, routes: [{ name: 'Onboarding' }] });
+    }
+  }, [user?.phoneVerified, navigation]);
+
   return (
-    <Suspense fallback={<Loader /> }>
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        animation: 'slide_from_right',
-        animationDuration: 200,
-      }}
-    >
-      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-    </Stack.Navigator>
+    <Suspense fallback={<Loader />}>
+      <Stack.Navigator
+        initialRouteName={showVerification ? 'PhoneVerification' : 'Onboarding'}
+        screenOptions={{
+          headerShown: false,
+          animation: 'slide_from_right',
+          animationDuration: 200,
+        }}
+      >
+        {showVerification && (
+          <Stack.Screen
+            name="PhoneVerification"
+            component={PhoneVerificationScreen}
+          />
+        )}
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      </Stack.Navigator>
     </Suspense>
   );
 }
