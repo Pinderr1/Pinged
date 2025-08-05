@@ -81,6 +81,7 @@ export default function useGameSession(
   const Game = gameEntry?.Game;
 
   const [session, setSession] = useState(null);
+  const [pending, setPending] = useState(false);
 
   useEffect(() => {
     if (!Game || !sessionId || !user?.uid) return;
@@ -107,24 +108,48 @@ export default function useGameSession(
     return unsub;
   }, [Game, sessionId, user?.uid, opponentId, gameId, allowSpectate]);
 
-  const sendMove = useCallback(async (moveName, ...args) => {
-    if (!session || !Game) return;
-    try {
-      await firebase.functions().httpsCallable('makeMove')({
-        sessionId,
-        move: moveName,
-        args,
-      });
-      play('game_move');
-    } catch (e) {
-      console.warn('Failed to send move', e);
-    }
-  }, [session, Game, sessionId]);
+  const sendMove = useCallback(
+    async (moveName, ...args) => {
+      if (!session || !Game) return;
+      if (pending) {
+        throw new Error('Move already in progress');
+      }
+      setPending(true);
+      try {
+        await firebase.functions().httpsCallable('makeMove')({
+          sessionId,
+          move: moveName,
+          args,
+        });
+        play('game_move');
+
+        const snap = await firebase
+          .firestore()
+          .collection('gameSessions')
+          .doc(sessionId)
+          .get();
+        if (snapshotExists(snap)) {
+          const data = snap.data();
+          if (allowSpectate || data.players?.includes(user.uid)) {
+            setSession(data);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to send move', e);
+        throw e;
+      } finally {
+        setPending(false);
+      }
+    },
+    [session, Game, sessionId, pending, allowSpectate, user?.uid, play]
+  );
 
   const moves = {};
   if (Game) {
     for (const name of Object.keys(Game.moves)) {
-      moves[name] = (...args) => sendMove(name, ...args);
+      moves[name] = async (...args) => {
+        await sendMove(name, ...args);
+      };
     }
   }
 
@@ -157,5 +182,6 @@ export default function useGameSession(
     moves,
     moveHistory: session?.moves || [],
     loading: !session,
+    pending,
   };
 }
