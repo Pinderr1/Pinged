@@ -261,14 +261,12 @@ const CommunityScreen = () => {
 
   const renderEventCard = (event) => {
     const isJoined = joinedEvents.includes(event.id);
-    const isFull = event.attendeeCount >= event.capacity;
     return (
       <EventFlyer
         key={event.id}
         event={event}
         joined={isJoined}
         onJoin={() => handleJoin(event)}
-        disabled={!isJoined && isFull}
       />
     );
   };
