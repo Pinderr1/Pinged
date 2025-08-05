@@ -43,6 +43,14 @@
         {"fieldPath": "verified", "order": "ASCENDING"},
         {"fieldPath": "priorityScore", "order": "DESCENDING"}
       ]
+    },
+    {
+      "collectionGroup": "matches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "users", "arrayConfig": "CONTAINS"},
+        {"fieldPath": "updatedAt", "order": "DESCENDING"}
+      ]
     }
   ],
   "fieldOverrides": []
