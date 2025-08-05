@@ -10,9 +10,12 @@ import { BADGE_LIST } from '../data/badges';
 export default function GameSelectList({ selected = [], onChange, theme, showPreviewBadges = false }) {
   const navigation = useNavigation();
   const { user } = useUser();
-  const premiumUntil =
-    user?.premiumUntil?.toDate?.() || (user?.premiumUntil ? new Date(user.premiumUntil) : null);
-  const isPremiumUser = !!premiumUntil && premiumUntil > new Date();
+  const premiumUntil = user?.premiumUntil
+    ? typeof user.premiumUntil.toDate === 'function'
+      ? user.premiumUntil.toDate()
+      : new Date(user.premiumUntil)
+    : null;
+  const isPremiumUser = premiumUntil ? premiumUntil.getTime() > Date.now() : false;
 
   const toggle = (title) => {
     if (!onChange) return;
