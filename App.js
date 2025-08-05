@@ -22,6 +22,7 @@ import usePushNotifications from "./hooks/usePushNotifications";
 import useRemoteConfig from "./hooks/useRemoteConfig";
 import RootNavigator from "./navigation/RootNavigator";
 import { useTheme } from "./contexts/ThemeContext";
+import initErrorHandling from "./initErrorHandling";
 
 const linking = {
   prefixes: ['https://pinged.app', 'pinged://'],
@@ -32,6 +33,9 @@ const linking = {
     },
   },
 };
+
+// Initialize global error handling once at startup
+initErrorHandling();
 
 const ThemedNotificationCenter = () => {
   const { theme } = useTheme();
