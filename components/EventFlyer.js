@@ -6,7 +6,7 @@ import { eventImageSource } from '../utils/avatar';
 import GradientButton from './GradientButton';
 import { CARD_STYLE } from './Card';
 
-const EventFlyer = ({ event, onJoin, joined, style, disabled }) => {
+const EventFlyer = ({ event, onJoin, joined, style, disabled = false }) => {
   const { darkMode, theme } = useTheme();
   const styles = getStyles(theme, darkMode);
 
