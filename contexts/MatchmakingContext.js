@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import firebase, { firestore } from '../firebase';
 import { useUser } from './UserContext';
 import { useListeners } from './ListenerContext';
@@ -13,18 +13,25 @@ export const MatchmakingProvider = ({ children }) => {
   const { user } = useUser();
   const { show, hide } = useLoading();
   const { incomingInvites, outgoingInvites } = useListeners();
-  const lastInviteRef = useRef(0);
+  const [lastInviteTime, setLastInviteTime] = useState(0);
+  const [inviteDisabled, setInviteDisabled] = useState(false);
 
 
   const sendGameInvite = async (to, gameId) => {
     if (!user?.uid || !to || !gameId) return null;
 
+    const throttle = 10000;
     const now = Date.now();
-    if (now - lastInviteRef.current < 10000) {
+    if (now - lastInviteTime < throttle) {
       Toast.show({ type: 'error', text1: 'You are sending invites too quickly' });
+      setInviteDisabled(true);
+      setLastInviteTime(now);
+      setTimeout(() => setInviteDisabled(false), throttle);
       return null;
     }
-    lastInviteRef.current = now;
+    setLastInviteTime(now);
+    setInviteDisabled(true);
+    setTimeout(() => setInviteDisabled(false), throttle);
 
     show();
     try {
@@ -127,7 +134,7 @@ export const MatchmakingProvider = ({ children }) => {
 
   return (
     <MatchmakingContext.Provider
-      value={{ sendGameInvite, acceptGameInvite, cancelInvite }}
+      value={{ sendGameInvite, acceptGameInvite, cancelInvite, inviteDisabled }}
     >
       {children}
     </MatchmakingContext.Provider>

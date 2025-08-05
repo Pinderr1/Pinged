@@ -20,7 +20,7 @@ export default function PrivateChat({ user, initialGameId }) {
   const { user: currentUser, blocked } = useUser();
   const { gamesLeft } = useGameLimit();
   const { setActiveGame, getActiveGame, sendMessage } = useChats();
-  const { sendGameInvite } = useMatchmaking();
+  const { sendGameInvite, inviteDisabled } = useMatchmaking();
   const insets = useSafeAreaInsets();
   const { theme, darkMode } = useTheme();
   const styles = getStyles(theme);
@@ -57,6 +57,7 @@ export default function PrivateChat({ user, initialGameId }) {
             theme={theme}
             sendMessage={sendMessage}
             sendGameInvite={sendGameInvite}
+            inviteDisabled={inviteDisabled}
           />
           </ChatContainer>
         </ScreenContainer>

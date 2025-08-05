@@ -4,7 +4,15 @@ import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
 import { allGames } from '../data/games';
 
-export default function GamePickerModal({ visible, onSelect, onPlayStranger, onClose }) {
+export default function GamePickerModal({
+  visible,
+  onSelect,
+  onPlayStranger,
+  onClose,
+  inviting,
+  inviteDisabled,
+  canPlay,
+}) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const [selectedGame, setSelectedGame] = useState(null);
@@ -36,7 +44,11 @@ export default function GamePickerModal({ visible, onSelect, onPlayStranger, onC
           {selectedGame && (
             <TouchableOpacity
               onPress={() => onPlayStranger && onPlayStranger(selectedGame.id)}
-              style={styles.strangerBtn}
+              style={[
+                styles.strangerBtn,
+                (inviting || inviteDisabled || !canPlay) && { opacity: 0.6 },
+              ]}
+              disabled={inviting || inviteDisabled || !canPlay}
             >
               <Text style={styles.strangerText}>Play with Stranger</Text>
             </TouchableOpacity>
@@ -55,6 +67,9 @@ GamePickerModal.propTypes = {
   onSelect: PropTypes.func.isRequired,
   onPlayStranger: PropTypes.func,
   onClose: PropTypes.func.isRequired,
+  inviting: PropTypes.bool,
+  inviteDisabled: PropTypes.bool,
+  canPlay: PropTypes.bool,
 };
 
 const getStyles = (theme) =>
