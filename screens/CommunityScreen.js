@@ -185,7 +185,10 @@ const CommunityScreen = () => {
 
   const handleJoin = (event) => {
     const isJoined = joinedEvents.includes(event.id);
-    const isFull = event.attendeeCount >= event.capacity;
+    const hasCapacity =
+      typeof event.capacity === 'number' &&
+      typeof event.attendeeCount === 'number';
+    const isFull = hasCapacity && event.attendeeCount >= event.capacity;
     if (!isJoined && isFull) {
       Alert.alert('Event Full', 'This event has reached capacity.');
       return;
@@ -261,7 +264,10 @@ const CommunityScreen = () => {
 
   const renderEventCard = (event) => {
     const isJoined = joinedEvents.includes(event.id);
-    const isFull = event.attendeeCount >= event.capacity;
+    const hasCapacity =
+      typeof event.capacity === 'number' &&
+      typeof event.attendeeCount === 'number';
+    const isFull = hasCapacity && event.attendeeCount >= event.capacity;
     return (
       <EventFlyer
         key={event.id}

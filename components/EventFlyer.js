@@ -10,7 +10,11 @@ const EventFlyer = ({ event, onJoin, joined, style, disabled }) => {
   const { darkMode, theme } = useTheme();
   const styles = getStyles(theme, darkMode);
 
-  const remainingCapacity = Math.max(0, event.capacity - event.attendeeCount);
+  const remainingCapacity =
+    typeof event.capacity === 'number' &&
+    typeof event.attendeeCount === 'number'
+      ? Math.max(0, event.capacity - event.attendeeCount)
+      : 0;
 
   return (
     <View
