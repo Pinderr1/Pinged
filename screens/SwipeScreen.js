@@ -337,6 +337,15 @@ const SwipeScreen = () => {
       setCurrentIndex((i) => i + 1);
     };
 
+    const revertOptimistic = () => {
+      setHistory(prevHistory);
+      setCurrentIndex(prevIndex);
+      Animated.spring(pan, {
+        toValue: { x: 0, y: 0 },
+        useNativeDriver: false,
+      }).start();
+    };
+
     if (direction === 'right') {
       if (likesLeft <= 0 && !isPremiumUser) {
         navigation.navigate('PremiumPaywall', { context: 'like-limit' });
@@ -359,6 +368,7 @@ const SwipeScreen = () => {
             navigation,
             isPremiumUser,
             showNotification,
+            revertLike: revertOptimistic,
             addMatch,
             setMatchedUser,
             setMatchLine,
@@ -387,6 +397,7 @@ const SwipeScreen = () => {
               navigation,
               isPremiumUser,
               showNotification,
+              revertLike: () => {},
               addMatch,
               setMatchedUser,
               setMatchLine,
@@ -406,12 +417,6 @@ const SwipeScreen = () => {
         } else {
           console.warn('Failed to like user', e);
           Toast.show({ type: 'error', text1: 'Failed to like user' });
-          setHistory(prevHistory);
-          setCurrentIndex(prevIndex);
-          Animated.spring(pan, {
-            toValue: { x: 0, y: 0 },
-            useNativeDriver: false,
-          }).start();
         }
         setActionLoading(false);
         return;

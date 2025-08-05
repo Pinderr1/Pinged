@@ -27,6 +27,7 @@ export async function handleLike({
   navigation,
   isPremiumUser = false,
   showNotification = () => {},
+  revertLike = () => {},
   addMatch = () => {},
   setMatchedUser = () => {},
   setMatchLine = () => {},
@@ -47,9 +48,8 @@ export async function handleLike({
 
       const matchId = res?.data?.matchId || null;
 
-      showNotification(`You liked ${targetUser.displayName}`);
-
       if (matchId) {
+        showNotification(`You liked ${targetUser.displayName}`);
         addMatch({
           id: matchId,
           displayName: targetUser.displayName,
@@ -82,12 +82,14 @@ export async function handleLike({
 
       return { success: true, matchId };
     } catch (e) {
+      revertLike();
       if (!isPremiumUser && e?.message?.includes('Daily like limit')) {
         navigation.navigate('PremiumPaywall', { context: 'like-limit' });
-        return { success: false, matchId: null };
+      } else {
+        console.error('Failed to process like', e);
       }
-      console.error('Failed to process like', e);
-      throw e;
+      Toast.show({ type: 'error', text1: 'Failed to send like' });
+      return { success: false, matchId: null };
     }
   }
 
