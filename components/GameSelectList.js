@@ -34,11 +34,13 @@ export default function GameSelectList({ selected = [], onChange, theme, showPre
             <TouchableOpacity
               key={g.id}
               style={[styles.option, locked && styles.lockedOption]}
-              onPress={() =>
-                locked
-                  ? navigation.navigate('PremiumPaywall', { context: 'premium-feature' })
-                  : toggle(g.title)
-              }
+              onPress={() => {
+                if (locked) {
+                  navigation.navigate('PremiumPaywall', { context: 'premium-feature' });
+                  return;
+                }
+                toggle(g.title);
+              }}
             >
               {g.icon}
               <View style={styles.info}>
