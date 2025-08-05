@@ -18,13 +18,14 @@ export async function getMessages(
   currentUid: string,
   startAfter?: firebase.firestore.DocumentSnapshot | null,
   limit = 30,
+  fromArchive = false,
 ): Promise<{ messages: MSG[]; lastDoc: firebase.firestore.DocumentSnapshot | null }> {
   await initEncryption(currentUid);
   let query = firebase
     .firestore()
     .collection('matches')
     .doc(matchId)
-    .collection('messages')
+    .collection(fromArchive ? 'messages_archive' : 'messages')
     .orderBy('timestamp', 'desc');
 
   if (startAfter) {

@@ -53,6 +53,8 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
   const [loading, setLoading] = useState(true);
   const [loadingEarlier, setLoadingEarlier] = useState(false);
   const [oldestDoc, setOldestDoc] = useState(null);
+  const [fromArchive, setFromArchive] = useState(false);
+  const [oldestArchiveDoc, setOldestArchiveDoc] = useState(null);
   const [hasEarlier, setHasEarlier] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserId, setOtherUserId] = useState(null);
@@ -94,6 +96,9 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
     let unsub = null;
     let isMounted = true;
     const loadInitial = async () => {
+      setFromArchive(false);
+      setOldestArchiveDoc(null);
+      setOldestDoc(null);
       setLoading(true);
       try {
         const { messages: fetched, lastDoc } = await chatApi.getMessages(matchId, currentUser.uid);
@@ -149,23 +154,55 @@ export default function ChatMessagesList({ matchId, user, currentUser, theme, da
   }, [matchId, currentUser?.uid]);
 
   const loadEarlier = async () => {
-    if (loadingEarlier || !oldestDoc) return;
+    if (loadingEarlier) return;
     setLoadingEarlier(true);
     try {
-      const { messages: fetched, lastDoc } = await chatApi.getMessages(
-        matchId,
-        currentUser.uid,
-        oldestDoc,
-      );
-      const data = await Promise.all(
-        fetched.map((d) => formatMessage(d, d.id, currentUser.uid)),
-      );
-      if (data.length > 0) {
-        setOldestDoc(lastDoc);
-        setMessages((prev) => [...prev, ...data]);
-        setHasEarlier(data.length === 30);
+      if (fromArchive) {
+        const { messages: fetched, lastDoc } = await chatApi.getMessages(
+          matchId,
+          currentUser.uid,
+          oldestArchiveDoc,
+          30,
+          true,
+        );
+        const data = await Promise.all(
+          fetched.map((d) => formatMessage(d, d.id, currentUser.uid)),
+        );
+        if (data.length > 0) {
+          setOldestArchiveDoc(lastDoc);
+          setMessages((prev) => [...prev, ...data]);
+          setHasEarlier(data.length === 30);
+        } else {
+          setHasEarlier(false);
+        }
       } else {
-        setHasEarlier(false);
+        const { messages: fetched, lastDoc } = await chatApi.getMessages(
+          matchId,
+          currentUser.uid,
+          oldestDoc,
+        );
+        const data = await Promise.all(
+          fetched.map((d) => formatMessage(d, d.id, currentUser.uid)),
+        );
+        if (data.length > 0) {
+          setOldestDoc(lastDoc);
+          setMessages((prev) => [...prev, ...data]);
+          setHasEarlier(data.length === 30);
+        } else {
+          setFromArchive(true);
+          const { messages: archFetched, lastDoc: archLast } =
+            await chatApi.getMessages(matchId, currentUser.uid, null, 30, true);
+          const archData = await Promise.all(
+            archFetched.map((d) => formatMessage(d, d.id, currentUser.uid)),
+          );
+          if (archData.length > 0) {
+            setOldestArchiveDoc(archLast);
+            setMessages((prev) => [...prev, ...archData]);
+            setHasEarlier(archData.length === 30);
+          } else {
+            setHasEarlier(false);
+          }
+        }
       }
     } catch (e) {
       console.warn('Failed to load earlier messages', e);
