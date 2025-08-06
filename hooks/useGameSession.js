@@ -98,6 +98,7 @@ export default function useGameSession(
         await ref.set({
           gameId,
           players: [user.uid, opponentId],
+          playersCount: 2,
           state: Game.setup(),
           currentPlayer: '0',
           moves: [],

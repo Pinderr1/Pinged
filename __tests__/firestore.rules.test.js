@@ -126,7 +126,11 @@ describe('gameSessions security rules', () => {
     const bob = testEnv.authenticatedContext('bob');
     const carol = testEnv.authenticatedContext('carol');
 
-    const sessionData = { sessionMatchId: matchId };
+    const sessionData = {
+      sessionMatchId: matchId,
+      players: ['alice', 'bob'],
+      playersCount: 2,
+    };
 
     await assertSucceeds(
       setDoc(doc(alice.firestore(), 'gameSessions/session1'), sessionData)

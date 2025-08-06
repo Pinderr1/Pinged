@@ -168,6 +168,7 @@ describe('acceptInvite', () => {
       acceptedBy: ['u1', 'u2'],
     });
     expect(store['gameSessions/inv1']).toBeDefined();
+    expect(store['gameSessions/inv1'].data()).toMatchObject({ playersCount: 2 });
     expect(res).toEqual({ matchId: 'u1_u2' });
     expect(createMatchIfMutualLikeInternal).toHaveBeenCalled();
   });

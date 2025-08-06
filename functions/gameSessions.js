@@ -68,8 +68,8 @@ const joinGameSession = functions.https.onCall(async (data, context) => {
       const waiting = await tx.get(
         sessions
           .where('gameId', '==', gameId)
-          .where('players.1', '==', null)
           .where('status', '==', 'waiting')
+          .where('playersCount', '==', 1)
           .limit(1)
       );
 
@@ -81,6 +81,7 @@ const joinGameSession = functions.https.onCall(async (data, context) => {
         tx.update(doc.ref, {
           players: [firstPlayer, uid],
           status: 'active',
+          playersCount: 2,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           turnExpiresAt: expireAt,
         });
@@ -93,6 +94,7 @@ const joinGameSession = functions.https.onCall(async (data, context) => {
         gameId,
         players: [uid, null],
         status: 'waiting',
+        playersCount: 1,
         moves: [],
         currentPlayer: '0',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),

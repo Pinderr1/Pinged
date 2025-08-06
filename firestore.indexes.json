@@ -18,6 +18,16 @@
     }
     ,
     {
+      "collectionGroup": "gameSessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "gameId", "order": "ASCENDING"},
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "playersCount", "order": "ASCENDING"}
+      ]
+    }
+    ,
+    {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
