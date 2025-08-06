@@ -1,4 +1,3 @@
-// navigation/AppStack.js
 import React, { lazy, Suspense, useState, useEffect } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Loader from "../components/Loader";
@@ -59,44 +58,44 @@ function GuardedGameSessionScreen(props) {
 export default function AppStack() {
   const { user } = useUser();
   return (
-    <Suspense fallback={<Loader /> }>
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        animation: "slide_from_right",
-        animationDuration: 200,
-      }}
-    >
-      <Stack.Screen name="Main" component={MainTabs} />
-      <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-      <Stack.Screen name="Chat" component={GuardedChatScreen} />
-      <Stack.Screen name="Notifications" component={NotificationsScreen} />
-      <Stack.Screen
-        name="GameSession"
-        component={GuardedGameSessionScreen}
-        options={{ animation: "fade_from_bottom" }}
-      />
-      <Stack.Screen name="Community" component={CommunityScreen} />
-      <Stack.Screen name="Premium" component={PremiumScreen} />
-      <Stack.Screen name="PremiumPaywall" component={PremiumPaywallScreen} />
-      <Stack.Screen name="Stats" component={StatsScreen} />
-      <Stack.Screen name="BlockedUsers" component={BlockedUsersScreen} />
-      <Stack.Screen name="LikedYou" component={LikedYouScreen} />
-      <Stack.Screen name="Play" component={PlayScreen} />
-      <Stack.Screen
-        name="Swipe"
-        component={SwipeScreen}
-        options={{ animation: "slide_from_bottom" }}
-      />
-      {!user?.phoneVerified && (
+    <Suspense fallback={<Loader />}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          animation: "slide_from_right",
+          animationDuration: 200,
+        }}
+      >
+        <Stack.Screen name="Main" component={MainTabs} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+        <Stack.Screen name="Chat" component={GuardedChatScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
         <Stack.Screen
-          name="PhoneVerification"
-          component={PhoneVerificationScreen}
+          name="GameSession"
+          component={GuardedGameSessionScreen}
+          options={{ animation: "fade_from_bottom" }}
         />
-      )}
-      <Stack.Screen name="AdminReview" component={AdminReviewScreen} />
-    </Stack.Navigator>
+        <Stack.Screen name="Community" component={CommunityScreen} />
+        <Stack.Screen name="Premium" component={PremiumScreen} />
+        <Stack.Screen name="PremiumPaywall" component={PremiumPaywallScreen} />
+        <Stack.Screen name="Stats" component={StatsScreen} />
+        <Stack.Screen name="BlockedUsers" component={BlockedUsersScreen} />
+        <Stack.Screen name="LikedYou" component={LikedYouScreen} />
+        <Stack.Screen name="Play" component={PlayScreen} />
+        <Stack.Screen
+          name="Swipe"
+          component={SwipeScreen}
+          options={{ animation: "slide_from_bottom" }}
+        />
+        {!user?.phoneVerified && (
+          <Stack.Screen
+            name="PhoneVerification"
+            component={PhoneVerificationScreen}
+          />
+        )}
+        <Stack.Screen name="AdminReview" component={AdminReviewScreen} />
+      </Stack.Navigator>
     </Suspense>
   );
 }
