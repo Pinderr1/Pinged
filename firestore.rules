@@ -202,10 +202,16 @@ service cloud.firestore {
       );
     }
 
-    // Game sessions are restricted to participants of the associated match
+    // Game sessions are restricted to match participants or listed players
     match /gameSessions/{sessionId} {
-      allow read: if canAccessSession(resource.data.sessionMatchId);
-      allow write: if canAccessSession(request.resource.data.sessionMatchId);
+      allow read: if canAccessSession(resource.data.sessionMatchId) ||
+        (isSignedIn() && resource.data.players != null &&
+          resource.data.players.hasAny([request.auth.uid]));
+      allow write: if canAccessSession(request.resource.data.sessionMatchId) ||
+        (isSignedIn() && ((request.resource.data.players != null &&
+            request.resource.data.players.hasAny([request.auth.uid])) ||
+            (resource.data.players != null &&
+              resource.data.players.hasAny([request.auth.uid]))));
     }
 
     // Public metadata about available games like trending status

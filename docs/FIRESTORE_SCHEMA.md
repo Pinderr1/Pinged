@@ -116,8 +116,8 @@ Each document in this collection represents a match between two users and serves
 
 ## Game Sessions (`gameSessions/{sessionId}`)
 - `gameId` (string)
-- `players` (array of string) – user ids
-- `sessionMatchId` (string) – associated match id
+- `players` (array of string) – user ids; also used for access control when no match exists
+- `sessionMatchId` (string|null) – associated match id, may be `null` for open matchmaking sessions
 - `state` (map) – current game state object
 - `currentPlayer` (string) – id of the current player (`"0"` or `"1"`)
 - `gameover` (map|null)

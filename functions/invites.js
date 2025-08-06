@@ -377,15 +377,18 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
         tx.set(sessionRef, {
           gameId,
           players: [fromUid, toUid],
+          sessionMatchId: matchId,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
+      } else if (!sessionSnap.get('sessionMatchId')) {
+        tx.update(sessionRef, { sessionMatchId: matchId });
       }
       const res = await createMatchIfMutualLikeInternal(
         { uid: fromUid, targetUid: toUid },
         { auth: context.auth },
         tx,
       );
-      matchId = res?.matchId || null;
+      matchId = res?.matchId || matchId || null;
     }
 
     tx.update(inviteRef, updates);

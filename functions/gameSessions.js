@@ -78,11 +78,13 @@ const joinGameSession = functions.https.onCall(async (data, context) => {
         const data = doc.data() || {};
         const firstPlayer = Array.isArray(data.players) ? data.players[0] : null;
         const expireAt = admin.firestore.Timestamp.fromMillis(Date.now() + TURN_DURATION_MS);
+        const matchId = [firstPlayer, uid].sort().join('_');
         tx.update(doc.ref, {
           players: [firstPlayer, uid],
           status: 'active',
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           turnExpiresAt: expireAt,
+          sessionMatchId: matchId,
         });
         return { sessionId: doc.id, opponentId: firstPlayer };
       }
@@ -97,6 +99,7 @@ const joinGameSession = functions.https.onCall(async (data, context) => {
         currentPlayer: '0',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         turnExpiresAt: expireAt,
+        sessionMatchId: null,
       });
       return { sessionId: newRef.id, opponentId: null };
     });

@@ -111,13 +111,13 @@ describe('gameInvites security rules', () => {
 });
 
 describe('gameSessions security rules', () => {
-  test('gameSessions read/write succeed only for match participants', async () => {
+  test('gameSessions read/write succeed only for listed players', async () => {
     await seedUsers();
     const alice = testEnv.authenticatedContext('alice');
     const bob = testEnv.authenticatedContext('bob');
     const carol = testEnv.authenticatedContext('carol');
 
-    const sessionData = { sessionMatchId: matchId };
+    const sessionData = { players: ['alice', 'bob'] };
 
     await assertSucceeds(
       setDoc(doc(alice.firestore(), 'gameSessions/session1'), sessionData)
