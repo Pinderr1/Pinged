@@ -60,10 +60,15 @@ const onGameInviteCreated = functions.firestore
   .document('gameInvites/{inviteId}')
   .onCreate(async (snap, context) => {
     const data = snap.data() || {};
-    const { from, to, gameId, fromName } = data;
+    const { from, to, gameId, fromName, matchId } = data;
     if (!from || !to) return null;
 
-    const matchId = [from, to].sort().join('_');
+    const expected = [from, to].sort().join('_');
+    if (matchId !== expected) {
+      await snap.ref.delete();
+      return null;
+    }
+
     const matchSnap = await admin.firestore().collection('matches').doc(matchId).get();
     if (!matchSnap.exists) {
       await snap.ref.delete();
@@ -212,8 +217,11 @@ const trackGameInvite = functions.firestore
       await ensureMatchHistory([after.from, after.to], { gameId: after.gameId });
     }
 
+    const id = after.matchId;
+    const expected = [after.from, after.to].sort().join('_');
+    if (!id || id !== expected) return null;
+
     if (before.status !== 'finished' && after.status === 'finished') {
-      const id = [after.from, after.to].sort().join('_');
       await admin
         .firestore()
         .collection('matchHistory')
@@ -304,10 +312,13 @@ const sendInvite = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('resource-exhausted', 'Invites sent too frequently');
   }
 
+  const matchId = [uid, toUid].sort().join('_');
+
   const payload = {
     from: uid,
     to: toUid,
     gameId,
+    matchId,
     fromName: data?.fromName || null,
     status: 'pending',
     acceptedBy: [uid],
