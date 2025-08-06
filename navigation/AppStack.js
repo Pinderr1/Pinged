@@ -75,7 +75,7 @@ export default function AppStack() {
       <Stack.Screen
         name="GameSession"
         component={GuardedGameSessionScreen}
-        options={{ animation: "fade_from_bottom" }}
+        options={{ animation: "fade" }}
       />
       <Stack.Screen name="Community" component={CommunityScreen} />
       <Stack.Screen name="Premium" component={PremiumScreen} />
