@@ -15,10 +15,10 @@ export default function OnboardingStack() {
   const showVerification = !user?.phoneVerified;
 
   useEffect(() => {
-    if (user?.phoneVerified) {
-      navigation.reset({ index: 0, routes: [{ name: 'Onboarding' }] });
-    }
-  }, [user?.phoneVerified, navigation]);
+    navigation.navigate(
+      showVerification ? 'PhoneVerification' : 'Onboarding'
+    );
+  }, [showVerification, navigation]);
 
   return (
     <Suspense fallback={<Loader />}>
