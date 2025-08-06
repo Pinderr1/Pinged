@@ -94,6 +94,7 @@ describe('sendInvite', () => {
       from: 'u1',
       to: 'u2',
       gameId: 'g1',
+      matchId: 'u1_u2',
       status: 'pending',
       acceptedBy: ['u1'],
     });
@@ -133,6 +134,7 @@ describe('acceptInvite', () => {
         from: 'u1',
         to: 'u2',
         gameId: 'g1',
+        matchId: 'u1_u2',
         acceptedBy: ['u1'],
         status: 'pending',
       }),
@@ -150,6 +152,7 @@ describe('acceptInvite', () => {
         from: 'u1',
         to: 'u2',
         gameId: 'g1',
+        matchId: 'u1_u2',
         acceptedBy: ['u1'],
         status: 'pending',
       }),

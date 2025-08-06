@@ -67,6 +67,7 @@ describe('MatchmakingContext invite cooldown', () => {
       await ref.current.sendGameInvite('u2', 'game1');
     });
     expect(addMock).toHaveBeenCalledTimes(1);
+    expect(addMock.mock.calls[0][0]).toMatchObject({ matchId: 'u1_u2' });
     expect(ref.current.getInviteDisabled()).toBe(true);
 
     let result;

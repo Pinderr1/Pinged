@@ -75,6 +75,15 @@ describe('gameInvites security rules', () => {
     );
   });
 
+  test('deny creating gameInvite without matchId', async () => {
+    await seedUsers();
+    const alice = testEnv.authenticatedContext('alice');
+    const invite = { from: 'alice', to: 'bob', status: 'pending' };
+    await assertFails(
+      setDoc(doc(alice.firestore(), 'gameInvites/invite1'), invite)
+    );
+  });
+
   test('deny creating gameInvite when users are blocked', async () => {
     await seedUsers({ blocked: true });
     const alice = testEnv.authenticatedContext('alice');

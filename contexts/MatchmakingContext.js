@@ -51,10 +51,13 @@ export const MatchmakingProvider = ({ children }) => {
         Toast.show({ type: 'info', text1: 'Invite already pending' });
         return existing.id;
       }
+      const matchId = [user.uid, to].sort().join('_');
+
       const payload = {
         from: user.uid,
         to,
         gameId,
+        matchId,
         fromName: user.displayName || 'User',
         status: 'pending',
         acceptedBy: [user.uid],
