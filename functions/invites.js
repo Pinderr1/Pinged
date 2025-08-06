@@ -337,9 +337,6 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
   const db = admin.firestore();
   const inviteRef = db.collection('gameInvites').doc(inviteId);
   let matchId = null;
-  let fromUid = null;
-  let toUid = null;
-  let gameId = null;
 
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(inviteRef);
@@ -348,17 +345,23 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
     }
 
     const invite = snap.data() || {};
-    fromUid = invite.from;
-    toUid = invite.to;
-    gameId = invite.gameId;
+    const fromUid = invite.from;
+    const toUid = invite.to;
+    const gameId = invite.gameId;
 
     if (toUid !== uid && fromUid !== uid) {
       throw new functions.https.HttpsError('permission-denied', 'Not an invite participant');
     }
 
+    const res = await createMatchIfMutualLikeInternal(
+      { uid: fromUid, targetUid: toUid },
+      { auth: context.auth },
+      tx,
+    );
+    matchId = res?.matchId || null;
+
     const alreadyAccepted = Array.isArray(invite.acceptedBy) && invite.acceptedBy.includes(uid);
     if (alreadyAccepted) {
-      matchId = [fromUid, toUid].sort().join('_');
       return;
     }
 
@@ -367,7 +370,6 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
 
     const bothAccepted = acceptedBy.includes(fromUid) && acceptedBy.includes(toUid);
     if (bothAccepted) {
-      matchId = [fromUid, toUid].sort().join('_');
       updates.status = 'ready';
       updates.gameSessionId = inviteId;
 
@@ -380,32 +382,10 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       }
-      const res = await createMatchIfMutualLikeInternal(
-        { uid: fromUid, targetUid: toUid },
-        { auth: context.auth },
-        tx,
-      );
-      matchId = res?.matchId || null;
     }
 
     tx.update(inviteRef, updates);
   });
-
-  if (!matchId && fromUid && toUid) {
-    const potentialId = [fromUid, toUid].sort().join('_');
-    const matchRef = db.collection('matches').doc(potentialId);
-    const matchSnap = await matchRef.get();
-    if (matchSnap.exists) {
-      matchId = potentialId;
-    } else {
-      const res = await createMatchIfMutualLikeInternal(
-        { uid: fromUid, targetUid: toUid },
-        { auth: context.auth },
-      );
-      matchId = res?.matchId || null;
-    }
-  }
-
 
   return { matchId };
 });
