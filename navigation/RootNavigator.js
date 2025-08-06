@@ -64,8 +64,12 @@ export default function RootNavigator() {
         // deep link to chat
       }
     };
-    const sub = Linking.addEventListener('url', handleDeepLink);
-    return () => sub.remove();
+
+    const subscribe = Linking.addEventListener('url', handleDeepLink);
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink({ url });
+    });
+    return () => subscribe.remove();
   }, []);
 
   // Prefer the onboarding flag from the user's profile. Only fall back to
