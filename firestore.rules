@@ -205,7 +205,9 @@ service cloud.firestore {
     // Game sessions are restricted to participants of the associated match
     match /gameSessions/{sessionId} {
       allow read: if canAccessSession(resource.data.sessionMatchId);
-      allow write: if canAccessSession(request.resource.data.sessionMatchId);
+      allow write: if canAccessSession(request.resource.data.sessionMatchId) &&
+        request.resource.data.keys().hasAll(['players', 'playersCount']) &&
+        request.resource.data.playersCount == request.resource.data.players.size();
     }
 
     // Public metadata about available games like trending status

@@ -117,6 +117,7 @@ Each document in this collection represents a match between two users and serves
 ## Game Sessions (`gameSessions/{sessionId}`)
 - `gameId` (string)
 - `players` (array of string) – user ids
+- `playersCount` (number) – current number of players in the session
 - `sessionMatchId` (string) – associated match id
 - `state` (map) – current game state object
 - `currentPlayer` (string) – id of the current player (`"0"` or `"1"`)

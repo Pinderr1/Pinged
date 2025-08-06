@@ -379,6 +379,7 @@ const acceptInvite = functions.https.onCall(async (data, context) => {
         tx.set(sessionRef, {
           gameId,
           players: [fromUid, toUid],
+          playersCount: 2,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       }
