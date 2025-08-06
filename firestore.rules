@@ -21,28 +21,13 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/matches/$(matchId));
     }
 
+    function isMatchParticipant(matchId) {
+      return matchExists(matchId) &&
+        request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
+    }
+
     function canAccessSession(matchId) {
-      return isSignedIn() && matchExists(matchId) &&
-        request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
-    }
-
-    function matchExists(matchId) {
-      return exists(/databases/$(database)/documents/matches/$(matchId));
-    }
-
-    function isMatchParticipant(matchId) {
-      return matchExists(matchId) &&
-        request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
-    }
-
-    function matchExists(matchId) {
-      return exists(/databases/$(database)/documents/matches/$(matchId));
-    }
-
-    function isMatchParticipant(matchId) {
-      let match = get(/databases/$(database)/documents/matches/$(matchId)).data;
-      return matchExists(matchId) &&
-        (request.auth.uid == match.player1 || request.auth.uid == match.player2);
+      return isSignedIn() && matchExists(matchId) && isMatchParticipant(matchId);
     }
 
     // User can read and write only their own profile, but certain fields are
