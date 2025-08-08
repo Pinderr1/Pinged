@@ -35,29 +35,46 @@ function initDb(initial = {}) {
   const store = { ...initial };
   let idCount = 0;
 
-  const db = {
-    collection: (col) => ({
-      doc: (id) => ({
-        path: `${col}/${id}`,
-        get: async () => store[`${col}/${id}`] || { exists: false, data: () => ({}), get: () => undefined },
-        set: async (data, options) => {
-          const prev = store[`${col}/${id}`]?.data?.() || {};
-          store[`${col}/${id}`] = snap(options?.merge ? { ...prev, ...data } : data);
-        },
-        update: async (data) => {
-          const prev = store[`${col}/${id}`]?.data?.() || {};
-          store[`${col}/${id}`] = snap({ ...prev, ...data });
-        },
-        collection: (sub) => ({
-          doc: (sid) => ({ path: `${col}/${id}/${sub}/${sid}` }),
-        }),
+  const collection = (col, filters = {}) => ({
+    doc: (id) => ({
+      path: `${col}/${id}`,
+      get: async () => store[`${col}/${id}`] || { exists: false, data: () => ({}), get: () => undefined },
+      set: async (data, options) => {
+        const prev = store[`${col}/${id}`]?.data?.() || {};
+        store[`${col}/${id}`] = snap(options?.merge ? { ...prev, ...data } : data);
+      },
+      update: async (data) => {
+        const prev = store[`${col}/${id}`]?.data?.() || {};
+        store[`${col}/${id}`] = snap({ ...prev, ...data });
+      },
+      collection: (sub) => ({
+        doc: (sid) => ({ path: `${col}/${id}/${sub}/${sid}` }),
       }),
-      add: async (data) => {
-        const id = `inv${++idCount}`;
-        store[`${col}/${id}`] = snap(data);
-        return { id };
+    }),
+    add: async (data) => {
+      const id = `inv${++idCount}`;
+      store[`${col}/${id}`] = snap(data);
+      return { id };
+    },
+    where: (field, op, value) =>
+      collection(col, { ...filters, [field]: value }),
+    limit: (n) => ({
+      get: async () => {
+        const prefix = `${col}/`;
+        const docs = Object.entries(store)
+          .filter(([k]) => k.startsWith(prefix))
+          .map(([k, v]) => ({ id: k.slice(prefix.length), data: v.data }));
+        const filtered = docs.filter((d) =>
+          Object.entries(filters).every(([f, val]) => d.data()[f] === val),
+        );
+        const sliced = filtered.slice(0, n);
+        return { empty: sliced.length === 0, docs: sliced };
       },
     }),
+  });
+
+  const db = {
+    collection,
     runTransaction: async (fn) => fn(transaction),
   };
 
@@ -97,7 +114,9 @@ describe('sendInvite', () => {
       status: 'pending',
       acceptedBy: ['u1'],
     });
-    expect(store['inviteMeta/u1'].data()).toHaveProperty('lastInviteAt', 'ts');
+    const meta = store['inviteMeta/u1'].data();
+    expect(meta).toHaveProperty('lastInviteAt', 'ts');
+    expect(meta.lastInviteTo).toEqual({ u2: 'ts' });
   });
 
   it('throws when inviting oneself', async () => {
@@ -112,6 +131,34 @@ describe('sendInvite', () => {
   it('throws when invites are sent too frequently', async () => {
     const { db } = initDb({
       'inviteMeta/u1': snap({ lastInviteAt: { toMillis: () => Date.now() } }),
+    });
+    admin.firestore.mockReturnValue(db);
+
+    await expect(
+      sendInvite({ to: 'u2', gameId: 'g1' }, { auth: { uid: 'u1' } }),
+    ).rejects.toHaveProperty('code', 'resource-exhausted');
+  });
+
+  it('throws when a pending invite already exists', async () => {
+    const { db } = initDb({
+      'gameInvites/inv1': snap({
+        from: 'u1',
+        to: 'u2',
+        status: 'pending',
+      }),
+    });
+    admin.firestore.mockReturnValue(db);
+
+    await expect(
+      sendInvite({ to: 'u2', gameId: 'g1' }, { auth: { uid: 'u1' } }),
+    ).rejects.toHaveProperty('code', 'already-exists');
+  });
+
+  it('throws when invites to same user are sent too frequently', async () => {
+    const { db } = initDb({
+      'inviteMeta/u1': snap({
+        lastInviteTo: { u2: { toMillis: () => Date.now() } },
+      }),
     });
     admin.firestore.mockReturnValue(db);
 

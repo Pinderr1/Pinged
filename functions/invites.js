@@ -297,11 +297,34 @@ const sendInvite = functions.https.onCall(async (data, context) => {
   }
 
   const db = admin.firestore();
+
+  // Check for existing pending invite between sender and recipient
+  const existing = await db
+    .collection('gameInvites')
+    .where('from', '==', uid)
+    .where('to', '==', toUid)
+    .where('status', '==', 'pending')
+    .limit(1)
+    .get();
+  if (!existing.empty) {
+    const id = existing.docs[0].id;
+    throw new functions.https.HttpsError('already-exists', 'Invite already pending', {
+      inviteId: id,
+    });
+  }
+
   const metaRef = db.collection('inviteMeta').doc(uid);
   const metaSnap = await metaRef.get();
-  const last = metaSnap.get('lastInviteAt');
+  const meta = metaSnap.data() || {};
+  const last = meta.lastInviteAt;
+  const lastTo = meta.lastInviteTo?.[toUid];
+
   if (last && Date.now() - last.toMillis() < INVITE_GAP_MS) {
     throw new functions.https.HttpsError('resource-exhausted', 'Invites sent too frequently');
+  }
+
+  if (lastTo && Date.now() - lastTo.toMillis() < INVITE_GAP_MS) {
+    throw new functions.https.HttpsError('resource-exhausted', 'Invites to this user sent too frequently');
   }
 
   const payload = {
@@ -316,7 +339,10 @@ const sendInvite = functions.https.onCall(async (data, context) => {
 
   const ref = await db.collection('gameInvites').add(payload);
   await metaRef.set(
-    { lastInviteAt: admin.firestore.FieldValue.serverTimestamp() },
+    {
+      lastInviteAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastInviteTo: { [toUid]: admin.firestore.FieldValue.serverTimestamp() },
+    },
     { merge: true },
   );
 
