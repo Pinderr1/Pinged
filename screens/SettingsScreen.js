@@ -27,6 +27,7 @@ import { HEADER_SPACING, SPACING } from '../layout';
 import { CARD_STYLE } from '../components/Card';
 import { textStyles } from '../textStyles';
 import logger from '../utils/logger';
+import { GOOGLE_PLAY_SUBSCRIPTIONS_URL } from '../config';
 
 const SettingsScreen = ({ navigation }) => {
   const { darkMode, toggleTheme, theme } = useTheme();
@@ -467,9 +468,7 @@ const SettingsScreen = ({ navigation }) => {
           <GradientButton
             text="Manage Google Play Subscriptions"
             onPress={() =>
-              WebBrowser.openBrowserAsync(
-                'https://play.google.com/store/account/subscriptions'
-              )
+              WebBrowser.openBrowserAsync(GOOGLE_PLAY_SUBSCRIPTIONS_URL)
             }
           />
           <GradientButton
