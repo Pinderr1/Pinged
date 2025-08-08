@@ -51,6 +51,53 @@ async function seedUsers({ match = true, blocked = false } = {}) {
   });
 }
 
+async function seedLikes({ mutual = true } = {}) {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(doc(db, 'users/alice'), {});
+    await setDoc(doc(db, 'users/bob'), {});
+    await setDoc(doc(db, 'likes/alice/liked/bob'), { created: true });
+    if (mutual) {
+      await setDoc(doc(db, 'likes/bob/liked/alice'), { created: true });
+    }
+  });
+}
+
+describe('matches security rules', () => {
+  test('allow match creation with mutual likes and participants may read', async () => {
+    await seedLikes();
+    const alice = testEnv.authenticatedContext('alice');
+    const bob = testEnv.authenticatedContext('bob');
+
+    const matchRef = doc(alice.firestore(), `matches/${matchId}`);
+    const matchData = { player1: 'alice', player2: 'bob', users: ['alice', 'bob'] };
+    await assertSucceeds(setDoc(matchRef, matchData));
+
+    await assertSucceeds(getDoc(doc(alice.firestore(), `matches/${matchId}`)));
+    await assertSucceeds(getDoc(doc(bob.firestore(), `matches/${matchId}`)));
+  });
+
+  test('deny match creation when likes are not mutual', async () => {
+    await seedLikes({ mutual: false });
+    const alice = testEnv.authenticatedContext('alice');
+
+    const matchRef = doc(alice.firestore(), `matches/${matchId}`);
+    const matchData = { player1: 'alice', player2: 'bob', users: ['alice', 'bob'] };
+    await assertFails(setDoc(matchRef, matchData));
+  });
+
+  test('deny updates from non-participants', async () => {
+    await seedUsers();
+    const carol = testEnv.authenticatedContext('carol');
+
+    await assertFails(
+      updateDoc(doc(carol.firestore(), `matches/${matchId}`), {
+        typingIndicator: 'alice',
+      })
+    );
+  });
+});
+
 describe('gameInvites security rules', () => {
   test('only sender can create gameInvites', async () => {
     await seedUsers();
