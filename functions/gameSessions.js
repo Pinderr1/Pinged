@@ -93,7 +93,6 @@ const joinGameSession = functions.https.onCall(async (data, context) => {
         gameId,
         players: [uid, null],
         status: 'waiting',
-        moves: [],
         currentPlayer: '0',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         turnExpiresAt: expireAt,
@@ -175,7 +174,10 @@ const makeMove = functions.https.onCall(async (data, context) => {
         }
       }
 
-      const state = replayGame(Game, sess.state, sess.moves);
+      const movesSnap = await tx.get(ref.collection('moves').orderBy('at'));
+      const moves = movesSnap.docs.map((d) => d.data() || {});
+
+      const state = replayGame(Game, sess.state, moves);
       if (state.gameover) {
         error = { code: 'failed-precondition', message: 'Game already finished' };
         return;
@@ -187,7 +189,7 @@ const makeMove = functions.https.onCall(async (data, context) => {
       }
 
       const attempted = replayGame(Game, sess.state, [
-        ...sess.moves,
+        ...moves,
         { action: moveName, args },
       ]);
       if (attempted.invalid) {
@@ -198,17 +200,19 @@ const makeMove = functions.https.onCall(async (data, context) => {
 
       const expireAt = admin.firestore.Timestamp.fromMillis(Date.now() + TURN_DURATION_MS);
 
+      const moveRef = ref.collection('moves').doc();
+      tx.set(moveRef, {
+        action: moveName,
+        player: String(idx),
+        args,
+        at: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
       tx.update(ref, {
         currentPlayer: attempted.currentPlayer,
         gameover: attempted.gameover || null,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         turnExpiresAt: expireAt,
-        moves: admin.firestore.FieldValue.arrayUnion({
-          action: moveName,
-          player: String(idx),
-          args,
-          at: admin.firestore.FieldValue.serverTimestamp(),
-        }),
       });
     });
 

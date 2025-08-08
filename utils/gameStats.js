@@ -10,6 +10,9 @@ export async function logGameStats(sessionId) {
     const data = snap.data() || {};
     if (!data.gameover) return;
 
+    const movesSnap = await ref.collection('moves').orderBy('at').get();
+    const moves = movesSnap.docs.map((d) => d.data() || {});
+
     const created = data.createdAt?.toDate?.() || data.createdAt;
     const updated = data.updatedAt?.toDate?.() || new Date();
     const duration = created && updated ? Math.round((updated - created) / 1000) : 0;
@@ -28,7 +31,7 @@ export async function logGameStats(sessionId) {
         players,
         durationSec: duration,
         winner,
-        moves: data.moves || [],
+        moves,
         loggedAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
   } catch (e) {

@@ -125,6 +125,13 @@ Each document in this collection represents a match between two users and serves
 - `updatedAt` (timestamp)
  - `turnExpiresAt` (timestamp) – when the current player's timer ends
 
+### Subcollections
+- **moves** (`gameSessions/{sessionId}/moves/{moveId}`)
+  - `action` (string)
+  - `player` (string) – `"0"` or `"1"`
+  - `args` (array)
+  - `at` (timestamp) – time of the move
+
 ## Game Stats (`gameStats/{statId}`)
 - `gameId` (string)
 - `players` (array of string)

@@ -81,6 +81,7 @@ export default function useGameSession(
   const Game = gameEntry?.Game;
 
   const [session, setSession] = useState(null);
+  const [moveHistory, setMoveHistory] = useState([]);
   const [pending, setPending] = useState(false);
 
   useEffect(() => {
@@ -100,13 +101,28 @@ export default function useGameSession(
           players: [user.uid, opponentId],
           state: Game.setup(),
           currentPlayer: '0',
-          moves: [],
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
     });
     return unsub;
   }, [Game, sessionId, user?.uid, opponentId, gameId, allowSpectate]);
+
+  useEffect(() => {
+    if (!Game || !sessionId) return;
+    const ref = firebase
+      .firestore()
+      .collection('gameSessions')
+      .doc(sessionId)
+      .collection('moves')
+      .orderBy('at');
+    const unsub = ref.onSnapshot((snap) => {
+      const moves = [];
+      snap.forEach((d) => moves.push(d.data()));
+      setMoveHistory(moves);
+    });
+    return unsub;
+  }, [Game, sessionId]);
 
   const sendMove = useCallback(
     async (moveName, ...args) => {
@@ -144,10 +160,10 @@ export default function useGameSession(
     [session, Game, sessionId, pending, allowSpectate, user?.uid, play]
   );
 
-  const moves = {};
+  const boundMoves = {};
   if (Game) {
     for (const name of Object.keys(Game.moves)) {
-      moves[name] = async (...args) => {
+      boundMoves[name] = async (...args) => {
         await sendMove(name, ...args);
       };
     }
@@ -156,31 +172,31 @@ export default function useGameSession(
   const cacheRef = useRef(null);
   const computed = useMemo(() => {
     if (!Game || !session) return null;
-    const moveCount = session.moves?.length || 0;
+    const moveCount = moveHistory.length;
     const baseState = session.state;
     const prev = cacheRef.current;
     if (!prev || prev.baseState !== baseState || moveCount < prev.moveCount) {
-      const fresh = replayGame(Game, baseState, session.moves);
+      const fresh = replayGame(Game, baseState, moveHistory);
       const res = { ...fresh, moveCount, baseState };
       cacheRef.current = res;
       return res;
     }
     if (moveCount === prev.moveCount) return prev;
     let state = { G: prev.G, currentPlayer: prev.currentPlayer, gameover: prev.gameover };
-    for (const m of session.moves.slice(prev.moveCount)) {
+    for (const m of moveHistory.slice(prev.moveCount)) {
       state = applyMove(Game, state, m);
       if (state.gameover) break;
     }
     const res = { ...state, moveCount, baseState };
     cacheRef.current = res;
     return res;
-  }, [Game, session?.state, session?.moves?.length]);
+  }, [Game, session?.state, moveHistory.length]);
 
   return {
     G: computed?.G,
     ctx: { currentPlayer: computed?.currentPlayer, gameover: computed?.gameover },
-    moves,
-    moveHistory: session?.moves || [],
+    moves: boundMoves,
+    moveHistory,
     loading: !session,
     pending,
   };
