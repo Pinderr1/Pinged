@@ -6,16 +6,14 @@ import ScreenContainer from '../components/ScreenContainer';
 import Header from '../components/Header';
 import getStyles from '../styles';
 import { useTheme } from '../contexts/ThemeContext';
+import { APPLE_STORE_URL, GOOGLE_PLAY_STORE_URL } from '../config';
 
 export default function UpdateScreen() {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
   const openStore = () => {
-    const url =
-      Platform.OS === 'ios'
-        ? 'https://apps.apple.com/'
-        : 'https://play.google.com/store';
+    const url = Platform.OS === 'ios' ? APPLE_STORE_URL : GOOGLE_PLAY_STORE_URL;
     Linking.openURL(url).catch(() => {});
   };
 
