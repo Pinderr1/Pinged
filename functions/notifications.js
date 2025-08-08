@@ -4,7 +4,7 @@ const fetch = global.fetch;
 // Load environment variables from root .env file without external packages
 require('../loadEnv.js');
 
-async function pushToUser(uid, title, body, extra = {}) {
+async function pushToUser(uid, title, body, extra = {}, options = {}) {
   const db = admin.firestore();
   const userRef = db.collection('users').doc(uid);
   let userSnap;
@@ -43,19 +43,35 @@ async function pushToUser(uid, title, body, extra = {}) {
     }
   }
 
-  const res = await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      to: token,
-      title: title || 'Pinged',
-      sound: 'default',
-      body,
-      data: extra,
-    }),
-  });
+  const maxAttempts = options.maxAttempts || 3;
+  const baseDelay = options.baseDelay || 100;
+  let delay = baseDelay;
 
-  return res.json();
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: token,
+          title: title || 'Pinged',
+          sound: 'default',
+          body,
+          data: extra,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`Expo push failed with status ${res.status}`);
+      }
+      return await res.json();
+    } catch (e) {
+      if (attempt === maxAttempts) {
+        throw e;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      delay *= 2;
+    }
+  }
 }
 
 const sendPushNotification = functions.https.onCall(async (data, context) => {
