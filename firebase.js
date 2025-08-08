@@ -21,13 +21,15 @@ const requiredEnv = [
   'EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET',
   'EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
   'EXPO_PUBLIC_FIREBASE_APP_ID',
+  'EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID',
 ];
 
-requiredEnv.forEach((key) => {
-  if (!process.env[key]) {
-    console.error(`Missing required env var: ${key}`);
-  }
-});
+const missingEnv = requiredEnv.filter((key) => !process.env[key]);
+if (missingEnv.length) {
+  const message = `Missing required env var(s): ${missingEnv.join(', ')}`;
+  console.error(message);
+  throw new Error(message);
+}
 
 const optionalEnv = [
   'EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID',
