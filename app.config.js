@@ -55,7 +55,8 @@ export default {
       "expo-secure-store",
       "expo-notifications",
       "expo-location",
-      "expo-camera"
+      "expo-camera",
+      "sentry-expo"
     ],
     extra: {
       EXPO_PUBLIC_FIREBASE_API_KEY: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
