@@ -2,44 +2,51 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
 import useRemoteConfig from '../hooks/useRemoteConfig';
 import firebase from '../firebase';
+import { isSameResetPeriod } from '../utils/resetPeriod';
 
 const GameLimitContext = createContext();
-const DEFAULT_LIMIT = 1;
 
 export const GameLimitProvider = ({ children }) => {
   const { user } = useUser();
-  const { maxFreeGames } = useRemoteConfig();
+  const { maxFreeGames, resetHour, timezonePolicy } = useRemoteConfig();
   const isPremium = !!user?.isPremium;
-  const limit = maxFreeGames ?? DEFAULT_LIMIT;
+  const limit = Number.isFinite(maxFreeGames) ? maxFreeGames : Infinity;
   const [gamesLeft, setGamesLeft] = useState(isPremium ? Infinity : limit);
 
   useEffect(() => {
-    const dailyLimit = maxFreeGames ?? DEFAULT_LIMIT;
-    if (isPremium) {
+    const dailyLimit = limit;
+    if (isPremium || !Number.isFinite(dailyLimit)) {
       setGamesLeft(Infinity);
       return;
     }
     const last = user?.lastGamePlayedAt?.toDate?.() ||
       (user?.lastGamePlayedAt ? new Date(user.lastGamePlayedAt) : null);
-    const today = new Date().toDateString();
-    if (last && last.toDateString() === today) {
+    const now = new Date();
+    if (last && isSameResetPeriod(last, now, resetHour, timezonePolicy)) {
       setGamesLeft(Math.max(dailyLimit - (user.dailyPlayCount || 0), 0));
     } else {
       setGamesLeft(dailyLimit);
     }
-  }, [isPremium, user?.dailyPlayCount, user?.lastGamePlayedAt, maxFreeGames]);
+  }, [
+    isPremium,
+    user?.dailyPlayCount,
+    user?.lastGamePlayedAt,
+    limit,
+    resetHour,
+    timezonePolicy,
+  ]);
 
   const recordGamePlayed = async () => {
     if (isPremium || !user?.uid) return;
 
     const last = user.lastGamePlayedAt?.toDate?.() ||
       (user.lastGamePlayedAt ? new Date(user.lastGamePlayedAt) : null);
-    const today = new Date();
+    const now = new Date();
     let count = 1;
-    if (last && last.toDateString() === today.toDateString()) {
+    if (last && isSameResetPeriod(last, now, resetHour, timezonePolicy)) {
       count = (user.dailyPlayCount || 0) + 1;
     }
-    const dailyLimit = maxFreeGames ?? DEFAULT_LIMIT;
+    const dailyLimit = limit;
     setGamesLeft(Math.max(dailyLimit - count, 0));
     try {
       await firebase

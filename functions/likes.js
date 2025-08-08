@@ -1,16 +1,45 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
-const DEFAULT_LIMIT = 100;
+function isSameResetPeriod(last, now, resetHour = 0, policy = 'utc') {
+  if (!last) return false;
+  const hour = Number.isFinite(resetHour) ? resetHour : 0;
+  const useUTC = policy === 'utc';
+  const start = (d) => {
+    const year = useUTC ? d.getUTCFullYear() : d.getFullYear();
+    const month = useUTC ? d.getUTCMonth() : d.getMonth();
+    const date = useUTC ? d.getUTCDate() : d.getDate();
+    let ms = useUTC
+      ? Date.UTC(year, month, date, hour)
+      : new Date(year, month, date, hour).getTime();
+    const hours = useUTC ? d.getUTCHours() : d.getHours();
+    if (hours < hour) ms -= 86400000;
+    return ms;
+  };
+  return start(last) === start(now);
+}
 
-async function getDailyLimit() {
+async function getLimitConfig() {
   try {
     const snap = await admin.firestore().collection('config').doc('app').get();
-    const val = snap.get('maxDailyLikes');
-    return Number.isFinite(val) ? val : DEFAULT_LIMIT;
+    const maxDailyLikes = snap.get('maxDailyLikes');
+    const resetHour = snap.get('resetHour');
+    const timezonePolicy = snap.get('timezonePolicy');
+    const enforce = snap.get('enforceLimitsServerSide');
+    return {
+      maxDailyLikes: Number.isFinite(maxDailyLikes) ? maxDailyLikes : null,
+      resetHour: Number.isFinite(resetHour) ? resetHour : 0,
+      timezonePolicy: typeof timezonePolicy === 'string' ? timezonePolicy : 'utc',
+      enforceLimitsServerSide: !!enforce,
+    };
   } catch (e) {
-    console.warn('Failed to load maxDailyLikes', e);
-    return DEFAULT_LIMIT;
+    console.warn('Failed to load like limit config', e);
+    return {
+      maxDailyLikes: null,
+      resetHour: 0,
+      timezonePolicy: 'utc',
+      enforceLimitsServerSide: true,
+    };
   }
 }
 
@@ -50,7 +79,13 @@ const sendLike = functions.https.onCall(async (data, context) => {
   }
 
   const db = admin.firestore();
-  const DAILY_LIMIT = await getDailyLimit();
+  const {
+    maxDailyLikes: DAILY_LIMIT,
+    resetHour,
+    timezonePolicy,
+    enforceLimitsServerSide,
+  } =
+    await getLimitConfig();
 
   const sorted = [uid, targetUid].sort();
   const matchId = sorted.join('_');
@@ -97,21 +132,24 @@ const sendLike = functions.https.onCall(async (data, context) => {
     const userData = userSnap.data() || {};
     const isPremium = !!userData.isPremium;
 
-    if (!isPremium && !likeSnap.exists) {
+    if (!isPremium && !likeSnap.exists && enforceLimitsServerSide) {
       const now = admin.firestore.Timestamp.now();
       let dailyCount = 0;
       const last = userData.lastLikeSentAt;
-      if (last && now.toDate().toDateString() === last.toDate().toDateString()) {
+      if (
+        last &&
+        isSameResetPeriod(last.toDate(), now.toDate(), resetHour, timezonePolicy)
+      ) {
         dailyCount = userData.dailyLikeCount || 0;
       }
-      if (dailyCount >= DAILY_LIMIT) {
+      if (Number.isFinite(DAILY_LIMIT) && dailyCount >= DAILY_LIMIT) {
         throw new functions.https.HttpsError(
           'resource-exhausted',
           'Daily like limit reached',
         );
       }
       // Update the user's daily like count and timestamp so the limit
-      // resets automatically when the date changes.
+      // resets automatically when the period changes.
       tx.update(userRef, {
         dailyLikeCount: dailyCount + 1,
         lastLikeSentAt: admin.firestore.FieldValue.serverTimestamp(),

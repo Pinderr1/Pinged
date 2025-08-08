@@ -23,9 +23,13 @@ jest.mock('firebase-admin', () => {
 
 describe('sendLike', () => {
   it('creates match when other user liked first', async () => {
-    const snap = (data) => ({ exists: true, data: () => data });
+    const snap = (data) => ({
+      exists: true,
+      data: () => data,
+      get: (field) => data[field],
+    });
     const store = {
-      'config/app': snap({ maxDailyLikes: 100 }),
+      'config/app': snap({ maxDailyLikes: 100, resetHour: 0, timezonePolicy: 'utc', enforceLimitsServerSide: true }),
       'users/u1': snap({ isPremium: true }),
       'likes/u2/liked/u1': snap({}),
       'likes/u1/liked/u2': { exists: false, data: () => ({}) },
