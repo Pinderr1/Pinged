@@ -2,34 +2,42 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
 import useRemoteConfig from '../hooks/useRemoteConfig';
 import firebase from '../firebase';
+import { isSameResetPeriod } from '../utils/resetPeriod';
 
 const EventLimitContext = createContext();
-const DEFAULT_LIMIT = 1;
 
 export const EventLimitProvider = ({ children }) => {
   const { user } = useUser();
-  const { maxDailyEvents } = useRemoteConfig();
+  const { maxDailyEvents, resetHour, timezonePolicy } = useRemoteConfig();
   const isPremium = !!user?.isPremium;
-  const baseLimit = maxDailyEvents ?? DEFAULT_LIMIT;
+  const baseLimit = Number.isFinite(maxDailyEvents) ? maxDailyEvents : Infinity;
   const limit = isPremium ? Infinity : baseLimit;
   const [eventsLeft, setEventsLeft] = useState(limit);
 
   useEffect(() => {
-    const dailyLimit = isPremium ? Infinity : baseLimit;
-    if (isPremium) {
+    const dailyLimit = limit;
+    if (isPremium || !Number.isFinite(dailyLimit)) {
       setEventsLeft(Infinity);
       return;
     }
     const last =
       user?.lastEventCreatedAt?.toDate?.() ||
       (user?.lastEventCreatedAt ? new Date(user.lastEventCreatedAt) : null);
-    const today = new Date().toDateString();
-    if (last && last.toDateString() === today) {
+    const now = new Date();
+    if (last && isSameResetPeriod(last, now, resetHour, timezonePolicy)) {
       setEventsLeft(Math.max(dailyLimit - (user.dailyEventCount || 0), 0));
     } else {
       setEventsLeft(dailyLimit);
     }
-  }, [isPremium, user?.dailyEventCount, user?.lastEventCreatedAt, baseLimit]);
+  }, [
+    isPremium,
+    user?.dailyEventCount,
+    user?.lastEventCreatedAt,
+    baseLimit,
+    limit,
+    resetHour,
+    timezonePolicy,
+  ]);
 
   const recordEventCreated = async (localOnly = false) => {
     if (isPremium || !user?.uid) return;
@@ -37,12 +45,12 @@ export const EventLimitProvider = ({ children }) => {
     const last =
       user.lastEventCreatedAt?.toDate?.() ||
       (user.lastEventCreatedAt ? new Date(user.lastEventCreatedAt) : null);
-    const today = new Date();
+    const now = new Date();
     let count = 1;
-    if (last && last.toDateString() === today.toDateString()) {
+    if (last && isSameResetPeriod(last, now, resetHour, timezonePolicy)) {
       count = (user.dailyEventCount || 0) + 1;
     }
-    const dailyLimit = baseLimit;
+    const dailyLimit = limit;
     setEventsLeft(Math.max(dailyLimit - count, 0));
     if (localOnly) return;
     try {

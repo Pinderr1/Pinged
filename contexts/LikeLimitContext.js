@@ -3,45 +3,48 @@ import React, {
   useContext,
   useState,
   useEffect,
-  useMemo,
 } from 'react';
 import { useUser } from './UserContext';
 import useRemoteConfig from '../hooks/useRemoteConfig';
+import { isSameResetPeriod } from '../utils/resetPeriod';
 
 const LikeLimitContext = createContext();
-const DEFAULT_LIMIT = 100;
 
 export const LikeLimitProvider = ({ children }) => {
   const { user } = useUser();
-  const { maxDailyLikes } = useRemoteConfig();
+  const { maxDailyLikes, resetHour, timezonePolicy } = useRemoteConfig();
   const isPremium = !!user?.isPremium;
-  const limit = useMemo(
-    () => maxDailyLikes ?? DEFAULT_LIMIT,
-    [maxDailyLikes],
-  );
-  const [likesLeft, setLikesLeft] = useState(
-    isPremium ? Infinity : limit,
-  );
+  const limit = Number.isFinite(maxDailyLikes) ? maxDailyLikes : Infinity;
+  const [likesLeft, setLikesLeft] = useState(isPremium ? Infinity : limit);
 
   useEffect(() => {
-    if (isPremium) {
+    if (isPremium || !Number.isFinite(limit)) {
       setLikesLeft(Infinity);
       return;
     }
     const last =
       user?.lastLikeSentAt?.toDate?.() ||
       (user?.lastLikeSentAt ? new Date(user.lastLikeSentAt) : null);
-    const today = new Date().toDateString();
-    if (last && last.toDateString() === today) {
+    const now = new Date();
+    if (last && isSameResetPeriod(last, now, resetHour, timezonePolicy)) {
       setLikesLeft(Math.max(limit - (user.dailyLikeCount || 0), 0));
     } else {
       setLikesLeft(limit);
     }
-  }, [isPremium, user?.dailyLikeCount, user?.lastLikeSentAt, limit]);
+  }, [
+    isPremium,
+    user?.dailyLikeCount,
+    user?.lastLikeSentAt,
+    limit,
+    resetHour,
+    timezonePolicy,
+  ]);
 
   const recordLikeSent = () => {
-    if (isPremium) return;
-    setLikesLeft((prev) => (prev === Infinity ? Infinity : Math.max(prev - 1, 0)));
+    if (isPremium || !Number.isFinite(limit)) return;
+    setLikesLeft((prev) =>
+      prev === Infinity ? Infinity : Math.max(prev - 1, 0)
+    );
   };
 
   return (

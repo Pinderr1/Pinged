@@ -2,6 +2,18 @@
 
 This document outlines the final Firestore structure used by the Pinged application. It lists the primary collections and the fields stored for each document.
 
+## App Config (`config/app`)
+Global configuration values that drive feature limits and global messaging.
+
+- `minVersion` (string|null) – minimum app version required to sign in.
+- `maxFreeGames` (number|null) – daily free game limit for non-premium users.
+- `maxDailyEvents` (number|null) – daily event creation limit for non-premium users.
+- `maxDailyLikes` (number|null) – daily like limit for non-premium users.
+- `resetHour` (number) – hour of day when counters reset.
+- `timezonePolicy` (string) – `'utc'` or `'local'` timezone for `resetHour`.
+- `enforceLimitsServerSide` (boolean) – if true, Cloud Functions enforce these limits.
+- `alertMessage` (string|null) – optional broadcast alert message.
+
 ## Users (`users/{uid}`)
 - `uid` (string) – user identifier (document ID)
 - `email` (string)
