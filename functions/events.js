@@ -155,13 +155,15 @@ const createEvent = functions.https.onCall(async (data, context) => {
 
       let dailyCount = 0;
       if (!isPremium) {
-        const last = userData.lastEventCreatedAt;
-        const now = admin.firestore.Timestamp.now();
-        if (
-          last &&
-          now.toDate().toDateString() === last.toDate().toDateString()
-        ) {
-          dailyCount = userData.dailyEventCount || 0;
+        const tz = userData.timezone || 'UTC';
+        const nowMs = Date.now();
+        const last = userData.lastEventCreatedAt?.toMillis?.() || userData.lastEventCreatedAt;
+        if (last) {
+          const nowStr = new Date(nowMs).toLocaleDateString('en-US', { timeZone: tz });
+          const lastStr = new Date(last).toLocaleDateString('en-US', { timeZone: tz });
+          if (nowStr === lastStr) {
+            dailyCount = userData.dailyEventCount || 0;
+          }
         }
         if (dailyCount >= MAX_DAILY_EVENTS) {
           throw new functions.https.HttpsError(

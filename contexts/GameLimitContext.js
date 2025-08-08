@@ -1,62 +1,47 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
-import useRemoteConfig from '../hooks/useRemoteConfig';
 import firebase from '../firebase';
 
 const GameLimitContext = createContext();
-const DEFAULT_LIMIT = 1;
 
 export const GameLimitProvider = ({ children }) => {
   const { user } = useUser();
-  const { maxFreeGames } = useRemoteConfig();
-  const isPremium = !!user?.isPremium;
-  const limit = maxFreeGames ?? DEFAULT_LIMIT;
-  const [gamesLeft, setGamesLeft] = useState(isPremium ? Infinity : limit);
+  const [gamesLeft, setGamesLeft] = useState(Infinity);
+  const [limit, setLimit] = useState(Infinity);
 
   useEffect(() => {
-    const dailyLimit = maxFreeGames ?? DEFAULT_LIMIT;
-    if (isPremium) {
-      setGamesLeft(Infinity);
-      return;
-    }
-    const last = user?.lastGamePlayedAt?.toDate?.() ||
-      (user?.lastGamePlayedAt ? new Date(user.lastGamePlayedAt) : null);
-    const today = new Date().toDateString();
-    if (last && last.toDateString() === today) {
-      setGamesLeft(Math.max(dailyLimit - (user.dailyPlayCount || 0), 0));
-    } else {
-      setGamesLeft(dailyLimit);
-    }
-  }, [isPremium, user?.dailyPlayCount, user?.lastGamePlayedAt, maxFreeGames]);
+    let cancelled = false;
+    const fetchLimits = async () => {
+      if (!user?.uid) return;
+      try {
+        const fn = firebase.functions().httpsCallable('getLimits');
+        const res = await fn();
+        if (!cancelled) {
+          setGamesLeft(res.data.gamesLeft);
+          setLimit(res.data.gameLimit);
+        }
+      } catch (e) {
+        console.warn('Failed to fetch game limits', e);
+      }
+    };
+    fetchLimits();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid]);
 
   const recordGamePlayed = async () => {
-    if (isPremium || !user?.uid) return;
-
-    const last = user.lastGamePlayedAt?.toDate?.() ||
-      (user.lastGamePlayedAt ? new Date(user.lastGamePlayedAt) : null);
-    const today = new Date();
-    let count = 1;
-    if (last && last.toDateString() === today.toDateString()) {
-      count = (user.dailyPlayCount || 0) + 1;
-    }
-    const dailyLimit = maxFreeGames ?? DEFAULT_LIMIT;
-    setGamesLeft(Math.max(dailyLimit - count, 0));
+    if (!user?.uid) return;
     try {
-      await firebase
-        .firestore()
-        .collection('users')
-        .doc(user.uid)
-        .update({
-          dailyPlayCount: count,
-          lastGamePlayedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
+      await firebase.functions().httpsCallable('recordGamePlayed')();
+      setGamesLeft((prev) => (prev === Infinity ? Infinity : Math.max(prev - 1, 0)));
     } catch (e) {
-      console.error('Failed to update play count', e);
+      console.error('Failed to record game played', e);
     }
   };
 
   return (
-    <GameLimitContext.Provider value={{ gamesLeft, recordGamePlayed }}>
+    <GameLimitContext.Provider value={{ gamesLeft, limit, recordGamePlayed }}>
       {children}
     </GameLimitContext.Provider>
   );

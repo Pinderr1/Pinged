@@ -1,46 +1,32 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useMemo,
-} from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
-import useRemoteConfig from '../hooks/useRemoteConfig';
+import firebase from '../firebase';
 
 const LikeLimitContext = createContext();
-const DEFAULT_LIMIT = 100;
 
 export const LikeLimitProvider = ({ children }) => {
   const { user } = useUser();
-  const { maxDailyLikes } = useRemoteConfig();
-  const isPremium = !!user?.isPremium;
-  const limit = useMemo(
-    () => maxDailyLikes ?? DEFAULT_LIMIT,
-    [maxDailyLikes],
-  );
-  const [likesLeft, setLikesLeft] = useState(
-    isPremium ? Infinity : limit,
-  );
+  const [likesLeft, setLikesLeft] = useState(Infinity);
 
   useEffect(() => {
-    if (isPremium) {
-      setLikesLeft(Infinity);
-      return;
-    }
-    const last =
-      user?.lastLikeSentAt?.toDate?.() ||
-      (user?.lastLikeSentAt ? new Date(user.lastLikeSentAt) : null);
-    const today = new Date().toDateString();
-    if (last && last.toDateString() === today) {
-      setLikesLeft(Math.max(limit - (user.dailyLikeCount || 0), 0));
-    } else {
-      setLikesLeft(limit);
-    }
-  }, [isPremium, user?.dailyLikeCount, user?.lastLikeSentAt, limit]);
+    let cancelled = false;
+    const fetchLimits = async () => {
+      if (!user?.uid) return;
+      try {
+        const fn = firebase.functions().httpsCallable('getLimits');
+        const res = await fn();
+        if (!cancelled) setLikesLeft(res.data.likesLeft);
+      } catch (e) {
+        console.warn('Failed to fetch like limits', e);
+      }
+    };
+    fetchLimits();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid]);
 
   const recordLikeSent = () => {
-    if (isPremium) return;
     setLikesLeft((prev) => (prev === Infinity ? Infinity : Math.max(prev - 1, 0)));
   };
 
