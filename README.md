@@ -98,6 +98,10 @@ This deploys:
 
     Mobile/web build via EAS or Expo export
 
+## Scheduled Jobs
+
+- `summariseInfractions` – runs every 24 hours to archive and clear session infractions. See [`docs/infractions-summary.md`](docs/infractions-summary.md) for details and deployment instructions.
+
 License
 
 This project is private and not licensed for redistribution.
