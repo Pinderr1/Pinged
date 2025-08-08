@@ -1,43 +1,42 @@
-import { getApp } from 'firebase/app';
+let Sentry;
 
-let crashlyticsInstance;
-
-async function initCrashlytics() {
-  if (crashlyticsInstance !== undefined) return crashlyticsInstance;
+function initCrashlytics() {
+  if (Sentry !== undefined) return;
   try {
-    const { getCrashlytics } = await import('firebase/crashlytics');
-    crashlyticsInstance = getCrashlytics(getApp());
+    // eslint-disable-next-line global-require
+    Sentry = require('sentry-expo');
+    Sentry.init({
+      dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+      enableInExpoDevelopment: true,
+      debug: false,
+    });
   } catch (e) {
-    console.warn('Crashlytics not initialized', e);
-    crashlyticsInstance = null;
+    console.warn('Sentry not initialized', e);
+    Sentry = null;
   }
-  return crashlyticsInstance;
 }
 
-export async function logError(error, context) {
-  const crashlytics = await initCrashlytics();
-  if (!crashlytics) return;
+function logError(error, context) {
+  initCrashlytics();
+  if (!Sentry) return;
   try {
-    const { log, recordError } = await import('firebase/crashlytics');
-    if (context) log(crashlytics, context);
     const err = error instanceof Error ? error : new Error(error);
-    recordError(crashlytics, err);
+    const extra = context ? { extra: { context } } : undefined;
+    Sentry.Native.captureException(err, extra);
   } catch (e) {
     console.warn('logError failed', e);
   }
 }
 
-export async function log(message) {
-  const crashlytics = await initCrashlytics();
-  if (!crashlytics) return;
+function log(message) {
+  initCrashlytics();
+  if (!Sentry) return;
   try {
-    const { log: fbLog } = await import('firebase/crashlytics');
-    fbLog(crashlytics, message);
+    Sentry.Native.captureMessage(message);
   } catch (e) {
     console.warn('log failed', e);
   }
 }
 
-export { initCrashlytics };
+export { initCrashlytics, log, logError };
 export default { initCrashlytics, log, logError };
-
