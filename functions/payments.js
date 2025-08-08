@@ -4,6 +4,19 @@ const Stripe = require('stripe');
 // Load environment variables from root .env file without external packages
 require('../loadEnv.js');
 
+const REQUIRED_KEYS = [
+  'STRIPE_SECRET_KEY',
+  'STRIPE_PRICE_ID',
+  'STRIPE_WEBHOOK_SECRET',
+  'EXPO_PUBLIC_SUCCESS_URL',
+  'EXPO_PUBLIC_CANCEL_URL',
+];
+
+const missingKeys = REQUIRED_KEYS.filter((key) => !process.env[key]);
+if (missingKeys.length) {
+  throw new Error(`Missing environment variables: ${missingKeys.join(', ')}`);
+}
+
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const createCheckoutSession = functions.https.onCall(async (data, context) => {
