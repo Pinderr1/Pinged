@@ -17,6 +17,7 @@ const events = require('./events');
 const messages = require('./messages');
 const cleanup = require('./cleanup');
 const archive = require('./archive');
+const sessionCompression = require('./sessionCompression');
 
 // Re-export all handlers for Firebase deployment
 module.exports = {
@@ -34,4 +35,5 @@ module.exports = {
   ...messages,
   ...cleanup,
   ...archive,
+  ...sessionCompression,
 };
