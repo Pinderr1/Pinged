@@ -40,10 +40,9 @@ export default function RootNavigator() {
           .get();
         if (!isMounted) return;
         const minVersion = doc.data()?.minVersion;
-        if (
-          minVersion &&
-          isVersionLess(Constants.manifest.version, String(minVersion))
-        ) {
+        const currentVersion =
+          Constants.expoConfig?.version || Constants.manifest?.version;
+        if (minVersion && isVersionLess(currentVersion, String(minVersion))) {
           setRequiresUpdate(true);
         }
       } catch (e) {
