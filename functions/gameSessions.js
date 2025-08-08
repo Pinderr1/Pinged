@@ -5,6 +5,8 @@ const games = require('./games');
 
 // Duration allowed for each move in milliseconds (24h)
 const TURN_DURATION_MS = 24 * 60 * 60 * 1000;
+// Maximum number of infractions to retain per session
+const MAX_INFRACTIONS = 100;
 
 function replayGame(Game, initial, moves = []) {
   let G = JSON.parse(JSON.stringify(initial || Game.setup()));
@@ -142,20 +144,27 @@ const makeMove = functions.https.onCall(async (data, context) => {
 
       const players = sess.players || [];
       const idx = players.indexOf(uid);
-      const logInfraction = (reason, playerId = uid) => {
-        tx.update(ref, {
-          infractions: admin.firestore.FieldValue.arrayUnion({
-            player: playerId,
-            reason,
-            move: moveName,
-            args,
-            at: admin.firestore.FieldValue.serverTimestamp(),
-          }),
+      const logInfraction = async (reason, playerId = uid) => {
+        const snap = await tx.get(ref);
+        const data = snap.data() || {};
+        const infractions = Array.isArray(data.infractions)
+          ? data.infractions.slice()
+          : [];
+        infractions.push({
+          player: playerId,
+          reason,
+          move: moveName,
+          args,
+          at: admin.firestore.FieldValue.serverTimestamp(),
         });
+        if (infractions.length > MAX_INFRACTIONS) {
+          infractions.splice(0, infractions.length - MAX_INFRACTIONS);
+        }
+        tx.update(ref, { infractions });
       };
 
       if (idx === -1) {
-        logInfraction('not-participant');
+        await logInfraction('not-participant');
         error = { code: 'permission-denied', message: 'Not a participant' };
         return;
       }
@@ -183,7 +192,7 @@ const makeMove = functions.https.onCall(async (data, context) => {
         return;
       }
       if (String(idx) !== state.currentPlayer) {
-        logInfraction('not-your-turn');
+        await logInfraction('not-your-turn');
         error = { code: 'failed-precondition', message: 'Not your turn' };
         return;
       }
@@ -193,7 +202,7 @@ const makeMove = functions.https.onCall(async (data, context) => {
         { action: moveName, args },
       ]);
       if (attempted.invalid) {
-        logInfraction('invalid-move');
+        await logInfraction('invalid-move');
         error = { code: 'failed-precondition', message: 'Invalid move' };
         return;
       }
