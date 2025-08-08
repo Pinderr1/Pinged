@@ -1,62 +1,37 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
-import useRemoteConfig from '../hooks/useRemoteConfig';
 import firebase from '../firebase';
 
 const EventLimitContext = createContext();
-const DEFAULT_LIMIT = 1;
 
 export const EventLimitProvider = ({ children }) => {
   const { user } = useUser();
-  const { maxDailyEvents } = useRemoteConfig();
-  const isPremium = !!user?.isPremium;
-  const baseLimit = maxDailyEvents ?? DEFAULT_LIMIT;
-  const limit = isPremium ? Infinity : baseLimit;
-  const [eventsLeft, setEventsLeft] = useState(limit);
+  const [eventsLeft, setEventsLeft] = useState(Infinity);
+  const [limit, setLimit] = useState(Infinity);
 
   useEffect(() => {
-    const dailyLimit = isPremium ? Infinity : baseLimit;
-    if (isPremium) {
-      setEventsLeft(Infinity);
-      return;
-    }
-    const last =
-      user?.lastEventCreatedAt?.toDate?.() ||
-      (user?.lastEventCreatedAt ? new Date(user.lastEventCreatedAt) : null);
-    const today = new Date().toDateString();
-    if (last && last.toDateString() === today) {
-      setEventsLeft(Math.max(dailyLimit - (user.dailyEventCount || 0), 0));
-    } else {
-      setEventsLeft(dailyLimit);
-    }
-  }, [isPremium, user?.dailyEventCount, user?.lastEventCreatedAt, baseLimit]);
+    let cancelled = false;
+    const fetchLimits = async () => {
+      if (!user?.uid) return;
+      try {
+        const fn = firebase.functions().httpsCallable('getLimits');
+        const res = await fn();
+        if (!cancelled) {
+          setEventsLeft(res.data.eventsLeft);
+          setLimit(res.data.eventLimit);
+        }
+      } catch (e) {
+        console.error('Failed to fetch event limits', e);
+      }
+    };
+    fetchLimits();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid]);
 
-  const recordEventCreated = async (localOnly = false) => {
-    if (isPremium || !user?.uid) return;
-
-    const last =
-      user.lastEventCreatedAt?.toDate?.() ||
-      (user.lastEventCreatedAt ? new Date(user.lastEventCreatedAt) : null);
-    const today = new Date();
-    let count = 1;
-    if (last && last.toDateString() === today.toDateString()) {
-      count = (user.dailyEventCount || 0) + 1;
-    }
-    const dailyLimit = baseLimit;
-    setEventsLeft(Math.max(dailyLimit - count, 0));
-    if (localOnly) return;
-    try {
-      await firebase
-        .firestore()
-        .collection('users')
-        .doc(user.uid)
-        .update({
-          dailyEventCount: count,
-          lastEventCreatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-    } catch (e) {
-      console.error('Failed to update event count', e);
-    }
+  const recordEventCreated = () => {
+    setEventsLeft((prev) => (prev === Infinity ? Infinity : Math.max(prev - 1, 0)));
   };
 
   const value = { eventsLeft, limit, recordEventCreated };

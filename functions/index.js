@@ -17,6 +17,8 @@ const events = require('./events');
 const messages = require('./messages');
 const cleanup = require('./cleanup');
 const archive = require('./archive');
+const timezone = require('./timezone');
+const limits = require('./limits');
 
 // Re-export all handlers for Firebase deployment
 module.exports = {
@@ -34,4 +36,6 @@ module.exports = {
   ...messages,
   ...cleanup,
   ...archive,
+  ...timezone,
+  ...limits,
 };

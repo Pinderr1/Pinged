@@ -133,6 +133,11 @@ export const AuthProvider = ({ children }) => {
         } catch (e) {
           console.warn('Failed to refresh premium status', e);
         }
+        try {
+          await firebase.functions().httpsCallable('setTimezone')();
+        } catch (e) {
+          console.warn('Failed to set timezone', e);
+        }
         const ref = firebase.firestore().collection("users").doc(fbUser.uid);
         unsubProfile = ref.onSnapshot(
           (snap) => {

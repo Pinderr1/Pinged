@@ -98,11 +98,16 @@ const sendLike = functions.https.onCall(async (data, context) => {
     const isPremium = !!userData.isPremium;
 
     if (!isPremium && !likeSnap.exists) {
-      const now = admin.firestore.Timestamp.now();
+      const tz = userData.timezone || 'UTC';
+      const nowMs = Date.now();
       let dailyCount = 0;
-      const last = userData.lastLikeSentAt;
-      if (last && now.toDate().toDateString() === last.toDate().toDateString()) {
-        dailyCount = userData.dailyLikeCount || 0;
+      const last = userData.lastLikeSentAt?.toMillis?.() || userData.lastLikeSentAt;
+      if (last) {
+        const nowStr = new Date(nowMs).toLocaleDateString('en-US', { timeZone: tz });
+        const lastStr = new Date(last).toLocaleDateString('en-US', { timeZone: tz });
+        if (nowStr === lastStr) {
+          dailyCount = userData.dailyLikeCount || 0;
+        }
       }
       if (dailyCount >= DAILY_LIMIT) {
         throw new functions.https.HttpsError(
@@ -110,8 +115,6 @@ const sendLike = functions.https.onCall(async (data, context) => {
           'Daily like limit reached',
         );
       }
-      // Update the user's daily like count and timestamp so the limit
-      // resets automatically when the date changes.
       tx.update(userRef, {
         dailyLikeCount: dailyCount + 1,
         lastLikeSentAt: admin.firestore.FieldValue.serverTimestamp(),
