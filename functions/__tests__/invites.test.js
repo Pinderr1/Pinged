@@ -2,6 +2,12 @@ const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 const { sendInvite, acceptInvite } = require('../invites');
 const { createMatchIfMutualLikeInternal } = require('../src/match');
+const fs = require('fs');
+const {
+  initializeTestEnvironment,
+  assertSucceeds,
+  assertFails,
+} = require('@firebase/rules-unit-testing');
 
 jest.mock('firebase-functions', () => ({
   https: {
@@ -171,6 +177,76 @@ describe('acceptInvite', () => {
     expect(store['gameSessions/inv1'].data()).toMatchObject({ playersCount: 2 });
     expect(res).toEqual({ matchId: 'u1_u2' });
     expect(createMatchIfMutualLikeInternal).toHaveBeenCalled();
+  });
+});
+
+describe('firestore security for invites and sessions', () => {
+  let testEnv;
+  let doc, setDoc, getDoc, updateDoc;
+  const matchId = 'u1_u2';
+
+  beforeAll(async () => {
+    ({ doc, setDoc, getDoc, updateDoc } = await import('firebase/firestore'));
+    testEnv = await initializeTestEnvironment({
+      projectId: 'pinged-test',
+      firestore: { rules: fs.readFileSync('firestore.rules', 'utf8') },
+    });
+  });
+
+  afterEach(async () => {
+    await testEnv.clearFirestore();
+  });
+
+  afterAll(async () => {
+    await testEnv.cleanup();
+  });
+
+  async function seedInvite() {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, `matches/${matchId}`), { users: ['u1', 'u2'] });
+      await setDoc(doc(db, 'gameInvites/inv1'), {
+        matchId,
+        from: 'u1',
+        to: 'u2',
+        status: 'pending',
+        acceptedBy: ['u1'],
+      });
+    });
+  }
+
+  test('only participants can update gameInvites', async () => {
+    await seedInvite();
+    const alice = testEnv.authenticatedContext('u1');
+    const bob = testEnv.authenticatedContext('u2');
+    const carol = testEnv.authenticatedContext('u3');
+
+    await assertSucceeds(
+      updateDoc(doc(alice.firestore(), 'gameInvites/inv1'), { status: 'ready' }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(bob.firestore(), 'gameInvites/inv1'), { status: 'declined' }),
+    );
+    await assertFails(
+      updateDoc(doc(carol.firestore(), 'gameInvites/inv1'), { status: 'ignored' }),
+    );
+  });
+
+  test('unauthorized users cannot access related gameSessions', async () => {
+    await seedInvite();
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'gameSessions/inv1'), { sessionMatchId: matchId });
+    });
+
+    const alice = testEnv.authenticatedContext('u1');
+    const carol = testEnv.authenticatedContext('u3');
+
+    await assertSucceeds(getDoc(doc(alice.firestore(), 'gameSessions/inv1')));
+    await assertFails(getDoc(doc(carol.firestore(), 'gameSessions/inv1')));
+    await assertFails(
+      updateDoc(doc(carol.firestore(), 'gameSessions/inv1'), { foo: 'bar' }),
+    );
   });
 });
 
