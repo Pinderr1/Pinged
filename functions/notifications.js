@@ -3,6 +3,10 @@ const admin = require('firebase-admin');
 const fetch = global.fetch;
 // Load environment variables from root .env file without external packages
 require('../loadEnv.js');
+const {
+  EXPO_PUSH_URL,
+  DEFAULT_NOTIFICATION_TITLE,
+} = require('../config');
 
 async function pushToUser(uid, title, body, extra = {}) {
   const db = admin.firestore();
@@ -43,12 +47,12 @@ async function pushToUser(uid, title, body, extra = {}) {
     }
   }
 
-  const res = await fetch('https://exp.host/--/api/v2/push/send', {
+  const res = await fetch(EXPO_PUSH_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       to: token,
-      title: title || 'Pinged',
+      title: title || DEFAULT_NOTIFICATION_TITLE,
       sound: 'default',
       body,
       data: extra,
