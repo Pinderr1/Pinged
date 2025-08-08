@@ -21,6 +21,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useUser } from "../contexts/UserContext";
 import getStyles from "../styles";
 import { HEADER_SPACING } from "../layout";
+import { PHONE_CODE_COOLDOWN_MS } from "../config";
 
 const countryItems = [
   { label: "+1 USA", value: "+1" },
@@ -65,7 +66,7 @@ export default function PhoneVerificationScreen({ navigation }) {
 
   const sendCode = async () => {
     const now = Date.now();
-    if (now - lastSent < 30000) {
+    if (now - lastSent < PHONE_CODE_COOLDOWN_MS) {
       Toast.show({
         type: "info",
         text1: "Please wait before requesting another code.",

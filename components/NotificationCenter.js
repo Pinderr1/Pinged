@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import PropTypes from 'prop-types';
+import { TOAST_DURATION_MS } from '../config';
 
 const screenWidth = Dimensions.get('window').width;
 const TOAST_HEIGHT = 60;
@@ -35,7 +36,7 @@ const ToastItem = ({ item, index, color, onDismiss }) => {
       }),
     ]).start();
 
-    const timer = setTimeout(() => onDismiss(), 3000);
+    const timer = setTimeout(() => onDismiss(), TOAST_DURATION_MS);
     return () => clearTimeout(timer);
   }, [translateY, opacity, onDismiss]);
 

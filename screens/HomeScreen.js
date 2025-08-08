@@ -30,6 +30,7 @@ import { FONT_FAMILY } from '../textStyles';
 import { useChats } from '../contexts/ChatContext';
 import firebase from '../firebase';
 import Toast from 'react-native-toast-message';
+import { MATCH_TIMEOUT_MS } from '../config';
 
 // Map app game slugs to boardgame registry keys for AI play
 const aiGameMap = allGames.reduce((acc, g) => {
@@ -253,7 +254,7 @@ const HomeScreen = ({ navigation }) => {
             await ref.delete();
           } catch (_) {}
           Toast.show({ type: 'error', text1: 'No match found, try again' });
-        }, 30000);
+        }, MATCH_TIMEOUT_MS);
       }
     } catch (e) {
       console.warn('Failed to match with stranger', e);
