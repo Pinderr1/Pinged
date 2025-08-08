@@ -23,9 +23,10 @@ import useRemoteConfig from "./hooks/useRemoteConfig";
 import RootNavigator from "./navigation/RootNavigator";
 import { useTheme } from "./contexts/ThemeContext";
 import initErrorHandling from "./initErrorHandling";
+import { APP_BASE_URL } from "./config";
 
 const linking = {
-  prefixes: ['https://pinged.app', 'pinged://'],
+  prefixes: [APP_BASE_URL, 'pinged://'],
   config: {
     screens: {
       HomeScreen: 'home',
