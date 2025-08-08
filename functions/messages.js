@@ -41,7 +41,11 @@ const sendChatMessage = functions.https.onCall(async (data, context) => {
     }
   }
 
-  const limiterRef = db.collection('messageLimits').doc(uid);
+  const limiterRef = db
+    .collection('messageLimits')
+    .doc(uid)
+    .collection('matches')
+    .doc(matchId);
   const now = Date.now();
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(limiterRef);
@@ -49,7 +53,13 @@ const sendChatMessage = functions.https.onCall(async (data, context) => {
     if (now - last < RATE_LIMIT_MS) {
       throw new functions.https.HttpsError('resource-exhausted', 'Too many messages');
     }
-    tx.set(limiterRef, { ts: now });
+    tx.set(limiterRef, {
+      ts: now,
+      // Use Firestore TTL on `expiresAt` to clean up old limiter docs.
+      expiresAt: admin.firestore.Timestamp.fromMillis(
+        now + 60 * 60 * 1000,
+      ),
+    });
   });
 
   const payload = {
