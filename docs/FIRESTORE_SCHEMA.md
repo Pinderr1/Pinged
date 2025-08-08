@@ -136,7 +136,12 @@ Each document in this collection represents a match between two users and serves
 - `gameover` (map|null)
 - `createdAt` (timestamp)
 - `updatedAt` (timestamp)
- - `turnExpiresAt` (timestamp) – when the current player's timer ends
+- `turnExpiresAt` (timestamp) – when the current player's timer ends
+- `moves` (array of map) – recent move history `{ action, args, player, at }`
+
+Older moves are periodically squashed into the `state` snapshot and pruned
+from the `moves` array. A scheduled job retains only the last **50** moves
+(`MAX_MOVE_HISTORY`), though this threshold can be adjusted.
 
 ## Game Stats (`gameStats/{statId}`)
 - `gameId` (string)

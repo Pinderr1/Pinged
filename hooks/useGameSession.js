@@ -158,11 +158,13 @@ export default function useGameSession(
   const computed = useMemo(() => {
     if (!Game || !session) return null;
     const moveCount = session.moves?.length || 0;
-    const baseState = session.state;
+    // `session.state` represents the snapshot after any pruned moves.
+    // Replaying only the remaining moves reconstructs the current state.
+    const snapshot = session.state;
     const prev = cacheRef.current;
-    if (!prev || prev.baseState !== baseState || moveCount < prev.moveCount) {
-      const fresh = replayGame(Game, baseState, session.moves);
-      const res = { ...fresh, moveCount, baseState };
+    if (!prev || prev.snapshot !== snapshot || moveCount < prev.moveCount) {
+      const fresh = replayGame(Game, snapshot, session.moves);
+      const res = { ...fresh, moveCount, snapshot };
       cacheRef.current = res;
       return res;
     }
@@ -172,7 +174,7 @@ export default function useGameSession(
       state = applyMove(Game, state, m);
       if (state.gameover) break;
     }
-    const res = { ...state, moveCount, baseState };
+    const res = { ...state, moveCount, snapshot };
     cacheRef.current = res;
     return res;
   }, [Game, session?.state, session?.moves?.length]);
