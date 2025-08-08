@@ -23,6 +23,7 @@ import { allGames } from '../constants/games';
 import { Ionicons } from '@expo/vector-icons';
 import LocationInfoModal from '../components/LocationInfoModal';
 import Loader from '../components/Loader';
+import { APP_BASE_URL } from '../config';
 
 const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser } = useUser();
@@ -181,7 +182,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const handleShare = async () => {
     if (!user) return;
     try {
-      const url = `https://pinged.app/user/${user.uid}?ref=${user.uid}`;
+      const url = `${APP_BASE_URL}/user/${user.uid}?ref=${user.uid}`;
       await Share.share({
         message: `Check out my Pinged profile: ${url}`,
         url,
