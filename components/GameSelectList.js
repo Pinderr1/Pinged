@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../contexts/UserContext';
 import { allGames } from '../constants/games';
-import { BADGE_LIST } from '../data/badges';
+import { BADGE_LIST } from '../utils/badges';
 
 export default function GameSelectList({ selected = [], onChange, theme, showPreviewBadges = false }) {
   const navigation = useNavigation();

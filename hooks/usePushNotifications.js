@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
-import { registerForPushNotificationsAsync } from '../utils/notifications';
+import { registerForPushNotificationsAsync } from '../utils/pushNotifications';
 import firebase from '../firebase';
 import { useNotification } from '../contexts/NotificationContext';
 
