@@ -34,7 +34,7 @@ import MultiSelectList from '../components/MultiSelectList';
 import GameSelectList from '../components/GameSelectList';
 import { FONT_SIZES, BUTTON_STYLE, HEADER_SPACING } from '../layout';
 import Header from '../components/Header';
-import { BADGE_LIST } from '../data/badges';
+import { BADGE_LIST } from '../utils/badges';
 import LocationInfoModal from '../components/LocationInfoModal';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
 import useVoicePlayback from '../hooks/useVoicePlayback';
@@ -114,7 +114,7 @@ export default function OnboardingScreen() {
       setTransitioning(false);
     }, 600);
   };
-  // favorite games selection uses static list from data/games.js
+  // favorite games selection uses static list from constants/games.js
   const badgeOptions = BADGE_LIST.map((b) => ({ label: b.title, value: b.id }));
   const [showLocationInfo, setShowLocationInfo] = useState(false);
   const [saving, setSaving] = useState(false);
