@@ -58,6 +58,16 @@ Pinged/
 ├── app.json               # Expo config
 ├── app.config.js          # Runtime env + plugin config
 
+## Configuration Files
+
+Common settings live at the repository root:
+
+- `.env.example` – shared environment variables. `functions/.env.example` lists only Cloud Function secrets.
+- `.gitignore` – global ignore rules. Add function-specific ignores here instead of `functions/.gitignore`.
+- `package.json` – project-wide scripts and shared dependencies. `functions/package.json` keeps only backend-specific packages.
+
+Update the root files for shared changes; only touch files under `functions/` when the setting applies exclusively to Cloud Functions.
+
 Features
 
     Push notifications with Expo
