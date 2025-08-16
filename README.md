@@ -62,7 +62,7 @@ Pinged/
 
 Common settings live at the repository root:
 
-- `.env.example` – shared environment variables. `functions/.env.example` lists only Cloud Function secrets.
+- `.env.example` – environment variables for both the Expo app and Cloud Functions.
 - `.gitignore` – global ignore rules. Add function-specific ignores here instead of `functions/.gitignore`.
 - `package.json` – project-wide scripts and shared dependencies. `functions/package.json` keeps only backend-specific packages.
 
