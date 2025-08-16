@@ -13,6 +13,7 @@ import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
 import { HEADER_SPACING, SPACING } from '../layout';
 import { CARD_STYLE } from '../components/Card';
+import { shadowStyle } from '../styles/common';
 import PropTypes from 'prop-types';
 
 const ActiveGamesScreen = ({ navigation }) => {
@@ -52,7 +53,7 @@ const ActiveGamesScreen = ({ navigation }) => {
     const title = games[item.gameId]?.meta?.name || 'Game';
     return (
       <TouchableOpacity
-        style={[styles.card, { backgroundColor: theme.card }]}
+        style={[styles.card, shadowStyle, { backgroundColor: theme.card }]}
         onPress={() =>
           navigation.navigate('GameSession', {
             sessionId: item.id,
@@ -102,10 +103,9 @@ const ActiveGamesScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   card: {
     padding: SPACING.LG,
-    borderRadius: 16,
+    borderRadius: CARD_STYLE.borderRadius,
     marginHorizontal: SPACING.LG,
     marginBottom: SPACING.MD,
-    ...CARD_STYLE,
   },
   gameText: {
     fontSize: 16,

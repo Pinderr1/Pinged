@@ -38,6 +38,7 @@ import { BADGE_LIST } from '../utils/badges';
 import LocationInfoModal from '../components/LocationInfoModal';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
 import useVoicePlayback from '../hooks/useVoicePlayback';
+import { shadowStyle } from '../styles/common';
 import { PRESETS } from '../data/presets';
 import Loader from '../components/Loader';
 
@@ -784,7 +785,7 @@ const validateField = () => {
 
         {renderDots()}
 
-        <View style={styles.card}>
+        <View style={[styles.card, shadowStyle]}>
           <Text style={styles.questionText}>{questions[step].label}</Text>
           {renderInput()}
         </View>
@@ -879,11 +880,6 @@ const getStyles = (theme) => {
       backgroundColor: cardBg,
       borderRadius: 12,
       padding: 20,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      elevation: 3,
     },
     questionText: {
       color: textColor,

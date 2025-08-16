@@ -25,6 +25,7 @@ import { useFilters } from '../contexts/FilterContext';
 import Toast from 'react-native-toast-message';
 import { HEADER_SPACING, SPACING } from '../layout';
 import { CARD_STYLE } from '../components/Card';
+import { shadowStyle } from '../styles/common';
 import { textStyles } from '../textStyles';
 import logger from '../utils/logger';
 
@@ -171,7 +172,7 @@ const SettingsScreen = ({ navigation }) => {
             Settings
           </Text>
 
-        <View style={local.sectionCard}>
+        <View style={[local.sectionCard, shadowStyle]}>
           <Text style={local.sectionTitle}>Account</Text>
           <Text style={[styles.settingText, { color: theme.textSecondary }]}>
             Account: {user?.email || 'Unknown'}
@@ -203,7 +204,7 @@ const SettingsScreen = ({ navigation }) => {
           />
         </View>
 
-        <View style={local.sectionCard}>
+        <View style={[local.sectionCard, shadowStyle]}>
           <Text style={local.sectionTitle}>Appearance</Text>
           <Text style={styles.settingText}>Pick a color theme</Text>
           <View style={{ flexDirection: 'row', marginBottom: SPACING.MD }}>
@@ -230,7 +231,7 @@ const SettingsScreen = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={local.sectionCard}>
+        <View style={[local.sectionCard, shadowStyle]}>
           <Text style={local.sectionTitle}>Discovery & Privacy</Text>
           {isPremium && (
             <>
@@ -456,7 +457,7 @@ const SettingsScreen = ({ navigation }) => {
           />
         </View>
 
-        <View style={local.sectionCard}>
+        <View style={[local.sectionCard, shadowStyle]}>
           <Text style={local.sectionTitle}>Payment</Text>
           <GradientButton
             text="Manage Payment Method"
@@ -480,7 +481,7 @@ const SettingsScreen = ({ navigation }) => {
           />
         </View>
 
-        <View style={local.sectionCard}>
+        <View style={[local.sectionCard, shadowStyle]}>
           <Text style={local.sectionTitle}>Support</Text>
           <GradientButton
             text="Contact Us"
@@ -524,7 +525,7 @@ const SettingsScreen = ({ navigation }) => {
         />
 
         {showAdvanced && (
-          <View style={local.sectionCard}>
+          <View style={[local.sectionCard, shadowStyle]}>
             <GradientButton
               text={`Toggle ${darkMode ? 'Light' : 'Dark'} Mode`}
               onPress={toggleTheme}
@@ -565,7 +566,6 @@ const getLocalStyles = (theme) =>
       marginBottom: SPACING.LG,
       padding: SPACING.LG,
       borderRadius: CARD_STYLE.borderRadius,
-      ...CARD_STYLE,
     },
     sectionTitle: {
       ...textStyles.subtitle,

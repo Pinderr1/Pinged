@@ -6,6 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { eventImageSource } from '../utils/avatar';
 import GradientButton from './GradientButton';
 import { textStyles } from '../textStyles';
+import { shadowStyle } from '../styles/common';
 
 const NEXT_EVENT = {
   title: 'Checkers Blitz Tournament',
@@ -22,6 +23,7 @@ export default function EventBanner() {
     <View
       style={[
         local.container,
+        shadowStyle,
         { backgroundColor: darkMode ? '#333' : '#fff' },
       ]}
     >
@@ -46,16 +48,11 @@ const getStyles = (theme) =>
     container: {
       flexDirection: 'row',
       alignItems: 'center',
-    borderRadius: 16,
-    marginHorizontal: 16,
-    padding: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
-  },
+      borderRadius: 16,
+      marginHorizontal: 16,
+      padding: 12,
+      marginBottom: 16,
+    },
   image: {
     width: 60,
     height: 60,

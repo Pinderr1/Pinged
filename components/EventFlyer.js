@@ -5,6 +5,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { eventImageSource } from '../utils/avatar';
 import GradientButton from './GradientButton';
 import { CARD_STYLE } from './Card';
+import { shadowStyle } from '../styles/common';
 
 const EventFlyer = ({ event, onJoin, joined, style, disabled }) => {
   const { darkMode, theme } = useTheme();
@@ -17,6 +18,7 @@ const EventFlyer = ({ event, onJoin, joined, style, disabled }) => {
     <View
       style={[
         styles.container,
+        shadowStyle,
         { backgroundColor: theme.card },
         style,
       ]}
@@ -68,11 +70,6 @@ const getStyles = (theme, darkMode) =>
       borderRadius: CARD_STYLE.borderRadius,
       borderWidth: 1,
       borderColor: darkMode ? 'rgba(255,255,255,0.1)' : '#e0d4b9',
-      shadowColor: '#000',
-      shadowOpacity: 0.25,
-      shadowOffset: { width: 0, height: 3 },
-      shadowRadius: 5,
-      elevation: 4,
       transform: [{ rotate: '-1deg' }],
     },
     image: {

@@ -546,11 +546,6 @@ const getStyles = (theme) =>
       padding: SPACING.MD,
       marginBottom: SPACING.MD,
       alignSelf: 'stretch',
-      shadowColor: '#000',
-      shadowOpacity: 0.05,
-      shadowOffset: { width: 0, height: 2 },
-      shadowRadius: 4,
-      elevation: 2,
     },
     featuredEventContent: {
       flex: 1,

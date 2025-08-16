@@ -4,6 +4,7 @@ import LottieView from 'lottie-react-native';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
 import GradientButton from './GradientButton';
+import { shadowStyle } from '../styles/common';
 
 export default function GamePreviewModal({
   visible,
@@ -30,7 +31,7 @@ export default function GamePreviewModal({
       onRequestClose={onClose}
     >
       <View style={styles.backdrop}>
-        <View style={styles.card}>
+        <View style={[styles.card, shadowStyle]}>
           <LottieView
             source={require('../assets/hearts.json')}
             autoPlay
@@ -104,11 +105,6 @@ const getStyles = (theme) =>
       borderRadius: 20,
       padding: 20,
       paddingBottom: 30,
-      shadowColor: '#000',
-      shadowOpacity: 0.12,
-      shadowOffset: { width: 0, height: 4 },
-      shadowRadius: 8,
-      elevation: 5,
       alignItems: 'center',
     },
     banner: { width: '100%', height: 80, marginBottom: 10 },
