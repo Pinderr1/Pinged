@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Load variables for both the Expo app and Cloud Functions from the root `.env` file.
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const envPath = path.resolve(__dirname, '.env');
