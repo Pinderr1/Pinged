@@ -599,7 +599,6 @@ const getStyles = (theme, skeletonColor) =>
     borderRadius: 16,
     padding: 16,
     marginBottom: 28,
-    ...CARD_STYLE,
   },
   bannerImage: {
     width: '100%',
@@ -626,7 +625,6 @@ const getStyles = (theme, skeletonColor) =>
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
-    ...CARD_STYLE,
   },
   flyerImage: {
     width: 70,
@@ -666,7 +664,6 @@ const getStyles = (theme, skeletonColor) =>
     padding: 14,
     marginHorizontal: 16,
     marginBottom: 16,
-    ...CARD_STYLE,
   },
   postTitle: {
     fontSize: FONT_SIZES.MD - 1,

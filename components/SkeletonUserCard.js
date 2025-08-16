@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import PropTypes from 'prop-types';
 import { useTheme } from '../contexts/ThemeContext';
+import { shadowStyle } from '../styles/common';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -11,7 +12,7 @@ function SkeletonUserCard() {
   const { theme } = useTheme();
   const styles = getStyles(theme);
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, shadowStyle]}>
       <View style={styles.image} />
       <View style={styles.info}>
         <View style={styles.name} />
@@ -34,11 +35,6 @@ const getStyles = (theme) =>
       borderRadius: 20,
       overflow: 'hidden',
       backgroundColor: theme.card,
-      elevation: 8,
-      shadowColor: '#000',
-      shadowOpacity: 0.2,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 4 },
     },
     image: {
       width: '100%',

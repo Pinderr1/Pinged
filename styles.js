@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { BUTTON_STYLE, FONT_SIZES } from './layout';
+import { shadowStyle } from './styles/common';
 
 const getStyles = (theme) =>
   StyleSheet.create({
@@ -41,11 +42,7 @@ const getStyles = (theme) =>
     marginBottom: 20,
     width: '100%',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 4
+    ...shadowStyle,
   },
     emailBtn: {
       backgroundColor: theme.accent,
@@ -55,11 +52,7 @@ const getStyles = (theme) =>
       width: '100%',
       alignItems: 'center',
     marginBottom: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 4
+    ...shadowStyle
   },
     btnText: {
       color: '#fff',
@@ -116,11 +109,7 @@ const getStyles = (theme) =>
     width: '100%',
     alignItems: 'center',
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 4
+    ...shadowStyle
   },
   navBtnText: {
     color: '#fff',
@@ -131,13 +120,13 @@ const getStyles = (theme) =>
       backgroundColor: theme.card,
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#000',
+    alignItems: 'center',
+    width: 320,
+    ...shadowStyle,
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 5 },
     shadowRadius: 10,
     elevation: 6,
-    alignItems: 'center',
-    width: 320
   },
   cardImage: {
     width: 280,
@@ -223,11 +212,8 @@ const getStyles = (theme) =>
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 5
+    ...shadowStyle,
+    elevation: 5,
   },
   buttonIcon: {
     fontSize: 28,

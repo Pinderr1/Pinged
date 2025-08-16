@@ -26,6 +26,7 @@ import PropTypes from 'prop-types';
 import { useSound } from '../contexts/SoundContext';
 import useCardPressAnimation from '../hooks/useCardPressAnimation';
 import EmptyState from '../components/EmptyState';
+import { shadowStyle } from '../styles/common';
 
 const AnimatedButton = ({ onPress, text, loading, disabled, style }) => {
   const {
@@ -155,7 +156,7 @@ const NotificationsScreen = ({ navigation }) => {
             [0, 1].map((i) => (
               <View
                 key={`skel-${i}`}
-                style={[local.card, { backgroundColor: theme.card }]}
+                style={[local.card, shadowStyle, { backgroundColor: theme.card }]}
               >
                 <View
                   style={[local.skelText, { backgroundColor: theme.textSecondary }]}
@@ -177,6 +178,7 @@ const NotificationsScreen = ({ navigation }) => {
               key={inv.id}
               style={[
                 local.card,
+                shadowStyle,
                 { backgroundColor: theme.card },
               ]}
             >
@@ -216,7 +218,7 @@ const NotificationsScreen = ({ navigation }) => {
           [0, 1].map((i) => (
             <View
               key={`note-skel-${i}`}
-              style={[local.card, { backgroundColor: theme.card }]}
+              style={[local.card, shadowStyle, { backgroundColor: theme.card }]}
             >
               <View
                 style={[local.skelText, { backgroundColor: theme.textSecondary }]}
@@ -232,7 +234,7 @@ const NotificationsScreen = ({ navigation }) => {
           notifications.map((note) => (
             <View
               key={note.id}
-              style={[local.card, { backgroundColor: theme.card }]}
+              style={[local.card, shadowStyle, { backgroundColor: theme.card }]}
             >
               <Text style={[local.text, { color: theme.text }]}>{note.message}</Text>
               <View style={local.actions}>
@@ -259,11 +261,6 @@ const local = StyleSheet.create({
     borderRadius: 14,
     padding: 16,
     marginBottom: 14,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3
   },
   text: {
     fontSize: 14,

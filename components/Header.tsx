@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -7,6 +7,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import useUnreadNotifications from '../hooks/useUnreadNotifications';
 import { HEADER_HEIGHT } from '../layout';
+import { shadowStyle } from '../styles/common';
 
 export interface HeaderProps {
   /** Only show the center logo */
@@ -31,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ showLogoOnly = false }) => {
       edges={['top']}
       style={[styles.safeArea, { backgroundColor: theme.headerBackground }]}
     >
-      <View style={styles.container}>
+      <View style={[styles.container, shadowStyle]}>
         {showLogoOnly ? (
           <Image source={require('../assets/logo.png')} style={styles.logo} />
         ) : (
@@ -76,7 +77,7 @@ const Header: React.FC<HeaderProps> = ({ showLogoOnly = false }) => {
         )}
       </View>
       {menuOpen && !showLogoOnly && (
-        <View style={[styles.dropdown, { backgroundColor: theme.card }]}>
+        <View style={[styles.dropdown, shadowStyle, { backgroundColor: theme.card }]}>
           {menuItems.map((item) => (
             <TouchableOpacity
               key={item.label}
@@ -110,17 +111,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
   },
   rightIcons: {
     flexDirection: 'row',
@@ -196,10 +186,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 8,
     width: 160,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 6,
   },
   menuItem: {
     paddingVertical: 8,

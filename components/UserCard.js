@@ -14,6 +14,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { SPACING } from '../layout';
 import PropTypes from 'prop-types';
 import { FONT_FAMILY } from '../textStyles';
+import { shadowStyle } from '../styles/common';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -41,6 +42,7 @@ export default function UserCard({
       {...panHandlers}
       style={[
         styles.card,
+        shadowStyle,
         {
           transform: [
             { translateX: pan.x },
@@ -115,11 +117,6 @@ const getStyles = (theme) =>
       borderRadius: 20,
       overflow: 'hidden',
       backgroundColor: '#fff',
-      elevation: 4,
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 4 },
     },
     image: {
       width: '100%',

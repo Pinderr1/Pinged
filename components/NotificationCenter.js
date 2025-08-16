@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import PropTypes from 'prop-types';
+import { shadowStyle } from '../styles/common';
 
 const screenWidth = Dimensions.get('window').width;
 const TOAST_HEIGHT = 60;
@@ -67,6 +68,7 @@ const ToastItem = ({ item, index, color, onDismiss }) => {
       {...panResponder.panHandlers}
       style={[
         styles.toast,
+        shadowStyle,
         {
           backgroundColor: color,
           top: index * (TOAST_HEIGHT + 8) + 20,
@@ -142,10 +144,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
   },
   text: {
     color: '#fff',

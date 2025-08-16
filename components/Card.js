@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import useCardPressAnimation from '../hooks/useCardPressAnimation';
 import PropTypes from 'prop-types';
+import { shadowStyle } from '../styles/common';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -36,7 +37,7 @@ const Card = ({
       {...rest}
     >
       <LinearGradient colors={colors} style={styles.gradient}>
-        <View style={[styles.card, { backgroundColor: theme.card }, style]}>
+        <View style={[styles.card, shadowStyle, { backgroundColor: theme.card }, style]}>
           {(icon || text) && (
             <View style={styles.headerRow}>
               {icon && <View style={styles.icon}>{icon}</View>}
@@ -66,11 +67,6 @@ Card.propTypes = {
 export const CARD_STYLE = {
   borderRadius: 16,
   padding: 16,
-  shadowColor: '#000',
-  shadowOpacity: 0.05,
-  shadowOffset: { width: 0, height: 2 },
-  shadowRadius: 4,
-  elevation: 2,
 };
 
 const styles = StyleSheet.create({
