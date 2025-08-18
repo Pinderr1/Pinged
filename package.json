@@ -9,7 +9,7 @@
     "web": "expo start --web",
     "deploy": "./scripts/deploy.sh",
     "test": "jest",
-    "test:emulators": "firebase emulators:exec --only firestore,functions \"jest\""
+    "test:emulators": "firebase emulators:exec --only firestore,functions,auth,database \"jest\""
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
