@@ -9,8 +9,8 @@ import {
   connectFirestoreEmulator,
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { getFunctions } from 'firebase/functions';
-import { getDatabase } from 'firebase/database';
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
 import { initCrashlytics } from './utils/crashlytics';
 
 // Validate required environment variables at runtime
@@ -76,7 +76,15 @@ try {
 }
 const storage = getStorage(app);
 const functions = getFunctions(app);
+if (process.env.FUNCTIONS_EMULATOR_HOST) {
+  const [host, port] = process.env.FUNCTIONS_EMULATOR_HOST.split(':');
+  connectFunctionsEmulator(functions, host, Number(port));
+}
 const realtimeDB = getDatabase(app);
+if (process.env.FIREBASE_DATABASE_EMULATOR_HOST) {
+  const [host, port] = process.env.FIREBASE_DATABASE_EMULATOR_HOST.split(':');
+  connectDatabaseEmulator(realtimeDB, host, Number(port));
+}
 
 const FieldValue = {
   serverTimestamp,
