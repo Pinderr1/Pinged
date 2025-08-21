@@ -6,6 +6,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isAdmin() {
+      return request.auth.token.admin == true;
+    }
+
     function isNotBlocked(a, b) {
       let data = get(/databases/$(database)/documents/users/$(a)).data;
       return !((data.blockedUsers != null && data.blockedUsers.hasAny([b])) ||
@@ -93,16 +97,16 @@ service cloud.firestore {
       allow delete: if isSignedIn() && request.auth.uid == uid;
 
       // Admins may read or write unrestricted
-      allow read, write: if request.auth.token.admin == true;
+      allow read, write: if isAdmin();
 
       match /tickets/{ticketId} {
-        allow read, write: if request.auth.uid == uid || request.auth.token.admin == true;
+        allow read, write: if request.auth.uid == uid || isAdmin();
       }
     }
 
     // Match documents are readable by the matched users but may only be created by the server
     match /matches/{matchId} {
-      allow read: if request.auth.token.admin == true ||
+      allow read: if isAdmin() ||
         (isSignedIn() &&
           request.auth.uid in resource.data.users);
       allow create: if isSignedIn() &&
@@ -112,10 +116,10 @@ service cloud.firestore {
         [request.resource.data.player1, request.resource.data.player2] hasAll([request.auth.uid, other]) &&
         exists(/databases/$(database)/documents/likes/$(request.auth.uid)/liked/$(other)) &&
         exists(/databases/$(database)/documents/likes/$(other)/liked/$(request.auth.uid));
-      allow delete: if request.auth.token.admin == true || (
+      allow delete: if isAdmin() || (
         isSignedIn() && request.auth.uid in resource.data.users
       );
-      allow update: if request.auth.token.admin == true || (
+      allow update: if isAdmin() || (
         isSignedIn() &&
         request.auth.uid in resource.data.users &&
         request.resource.data.diff(resource.data).changedKeys().hasOnly(['typingIndicator'])
@@ -123,28 +127,28 @@ service cloud.firestore {
 
       // Chat messages can be created by participants
       match /messages/{messageId} {
-        allow read: if request.auth.token.admin == true || (
+        allow read: if isAdmin() || (
           isSignedIn() &&
           isMatchParticipant(matchId));
-        allow create: if request.auth.token.admin == true || (
+        allow create: if isAdmin() || (
           isSignedIn() &&
           isMatchParticipant(matchId));
-        allow update, delete: if request.auth.token.admin == true;
+        allow update, delete: if isAdmin();
       }
 
       // Game state for a match is writable by the participants
       match /state/{docId} {
-        allow read, write: if request.auth.token.admin == true || (
+        allow read, write: if isAdmin() || (
           isSignedIn() &&
           isMatchParticipant(matchId));
       }
 
       // All other subcollections under a match follow the admin-only write pattern
       match /{document=**} {
-        allow read: if request.auth.token.admin == true || (
+        allow read: if isAdmin() || (
           isSignedIn() &&
           isMatchParticipant(matchId));
-        allow write: if request.auth.token.admin == true;
+        allow write: if isAdmin();
       }
     }
 
@@ -173,14 +177,14 @@ service cloud.firestore {
       allow read: if matchExists(resource.data.matchId) &&
         (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to) &&
         isMatchParticipant(resource.data.matchId);
-      allow create: if request.auth.token.admin == true || (
+      allow create: if isAdmin() || (
         matchExists(request.resource.data.matchId) &&
         isMatchParticipant(request.resource.data.matchId) &&
         request.auth.uid == request.resource.data.from &&
         isNotBlocked(request.resource.data.from, request.resource.data.to) &&
         areMatched(request.resource.data.from, request.resource.data.to)
       );
-      allow update: if request.auth.token.admin == true || (
+      allow update: if isAdmin() || (
         matchExists(resource.data.matchId) &&
         isMatchParticipant(resource.data.matchId) &&
         (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to) &&
@@ -201,13 +205,13 @@ service cloud.firestore {
     // restricted to administrators.
     match /games/{gameId} {
       allow read: if true;
-      allow write: if request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
 
     // Application remote configuration is public read, admin write
     match /config/{docId} {
       allow read: if true;
-      allow write: if request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
 
     // Game stats follow the same player restriction
@@ -243,33 +247,33 @@ service cloud.firestore {
     // Notification preferences per type
     match /users/{uid}/notificationSettings/{settingId} {
       allow read, delete: if isSignedIn() &&
-        (request.auth.uid == uid || request.auth.token.admin == true);
+        (request.auth.uid == uid || isAdmin());
 
       allow create: if isSignedIn() &&
-        (request.auth.uid == uid || request.auth.token.admin == true) &&
+        (request.auth.uid == uid || isAdmin()) &&
         request.resource.data.keys().hasOnly(['enabled']);
 
       allow update: if isSignedIn() &&
-        (request.auth.uid == uid || request.auth.token.admin == true) &&
+        (request.auth.uid == uid || isAdmin()) &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['enabled']);
     }
 
     match /blocks/{uid}/blocked/{targetUid} {
-      allow read, write: if request.auth.token.admin == true || request.auth.uid == uid;
+      allow read, write: if isAdmin() || request.auth.uid == uid;
     }
 
     match /likes/{uid}/liked/{targetId} {
-      allow write: if request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
 
     match /likes/{uid}/likedBy/{otherUid} {
-      allow read: if request.auth.token.admin == true || request.auth.uid == uid;
+      allow read: if isAdmin() || request.auth.uid == uid;
       allow delete: if request.auth.uid == otherUid;
     }
 
     // Cloud Functions may mirror likes here
     match /server/likes/{uid}/likedBy/{otherUid} {
-      allow write: if request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
 
     match /emails/{uid} {
